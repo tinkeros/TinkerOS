@@ -24,4 +24,4 @@ TinkerOS is essentially TempleOS renamed with some changes that allow it to run 
 - You can edit your MakeHome.HC to comment out some things like extra stuff from Adam like Utils and Autocomplete to save memory (I'm thinking this for the Raspberry PI or low power systems)
 - You can dynamically change the frame rate SetFPS(60);
 - Some people are annoyed by blinking and scrolling, functions ToggleBlink and ToggleScroll exist.
-- Other stuff TODO, update this
+

@@ -8,7 +8,7 @@ TinkerOS is essentially TempleOS renamed with some changes that allow it to run 
 - Cleanup some unfortunate language that was left in TempleOS.
 - Bring back some old TempleOS features and add new features.
 - Any bug fixes are welcome.
-- New device drivers.
+- Possibly new device driver support for modern storage and/or networking.
 
 ### The main features are:
 - VBE2 video mode support, provides 2x 4:3 (640x480 or 800x600) and 2x wide screen resolutions (640x340 or 1280x512)

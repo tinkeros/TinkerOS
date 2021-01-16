@@ -11,10 +11,9 @@ TinkerOS is essentially TempleOS renamed with some changes that allow it to run 
 - Any bug fixes are welcome.
 - Possibly new device driver support for modern storage and/or networking.
 
-### The main features are:
+### Semi-complete list changes from Terry's last TempleOS release:
 - Documentation similar to templeos.holyc.xyz, but functions are linkable and content which normally can only be accessed within TempleOS is now available on the web (see <a href="https://tinkeros.github.io/WbGit/Doc/HelpIndex.html#l93">here.</a>)
 - VBE2 video mode support, provides 2x 4:3 (640x480 or 800x600) and 2x wide screen resolutions (640x340 or 1280x512)
-- Slipstreamed TempleOS supplemental discs as well as some 3rd party software.
 - Modified installer to make it easy to install with different resolutions and easy to optionally copy additional software to your installation.
 - SSE support is enabled on the CPU (for now only used by some 3rd party apps)
 - If you have more than 1 core a second core is used to help render providing a faster system (since normally everything by default happens on core 1).  This is particularly useful when running it on slow Intel Atom chips or under QEMU on other architectures.
@@ -23,7 +22,10 @@ TinkerOS is essentially TempleOS renamed with some changes that allow it to run 
 - Added an old school Oregon Trail text adventure.
 - Minor improvements to Kernel to cause it to use less calls to MAlloc.
 - Slipstreamed additional software in Extras folder so you can just use MountFile to mount extra discs and don't have to deal with changing virtual cd drives.
-- You can edit your MakeHome.HC to comment out some things like extra stuff from Adam like Utils and Autocomplete to save memory (I'm thinking this for the Raspberry PI or low power systems)
+- You can edit your MakeHome.HC to comment out some things like extra stuff from Adam like Utils and Autocomplete to save cpu/memory (I'm thinking this for the Raspberry PI or low power systems)
 - You can dynamically change the frame rate SetFPS(60);
 - Some people are annoyed by blinking and scrolling, functions ToggleBlink and ToggleScroll exist.
+- You may access the up/down state of multiple keys without message parsing, see new <a href="https://tinkeros.github.io/WbGit/Demo/KeyState.html">KeyState Demo</a>
+- When on the command line if you mis-type a command followed by a ; and hit enter, you may be able to re-paste your last command if it is still scrolling as text in the top of the window by using the F8 key.
+- BMP file support has been restored.
 

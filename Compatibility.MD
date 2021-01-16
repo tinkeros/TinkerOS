@@ -15,5 +15,5 @@ NA - Not applicable
  N  - Does not work
  ```
  
- Note: TempleOS/TinkerOS may have difficulty being installed on some machines using the automated installer or with some SSD drives.  Successful installation may require advanced manual configuration of IO ports and/or using a compatible hard drive.  In general non-SSD drives seem to have better compatability.
+ Note: TempleOS/TinkerOS may have difficulty being installed on some machines using the automated installer or with some SSD drives.  Successful installation may require advanced manual configuration of IO ports and/or using a compatible hard drive.  In general non-SSD drives seem to have better compatability.  TempleOS/TinkerOS will not work on many newer machines/laptops.  Please only report successes.
  

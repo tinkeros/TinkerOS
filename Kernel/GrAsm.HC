@@ -1,0 +1,151 @@
+
+#help_index "Graphics/Misc"
+asm
+{//************************************
+  _IS_PIX_COVERED0::
+  PUSH	RBP
+  MOV	RBP,RSP
+#assert FONT_WIDTH==FONT_HEIGHT==8
+  MOV	RCX,U64 SF_ARG3[RBP]
+  SAR	RCX,3
+  MOV	RAX,U64 SF_ARG2[RBP]
+  SAR	RAX,3
+  MOV	RDX,U64 SF_ARG1[RBP]
+  IMUL2	RCX,80
+  MOV	RBX,U64 [&gr.win_z_buf]
+  MOV	DX,U16 CTask.win_z_num[RDX]
+  ADD	RCX,RAX
+  XOR	RAX,RAX
+  CMP	DX,U16 [RBX+RCX*2]
+  JAE	@@05	//Jump not covered
+  INC	RAX
+@@05:	POP	RBP
+  RET1	24
+//************************************
+  _GR_ROP_EQU_U8_NO_CLIPPING::
+//Puts foreground char shape onto gr.dc2.
+//ch.u8[1] is color as a whole byte
+//ch ATTRf_UNDERLINE attr flag is used.
+  PUSH	RBP
+  MOV	RBP,RSP
+  MOVZX	RAX,U8 SF_ARG1[RBP]
+  MOV	RDX,U64 [&text.font]
+  MOV	RAX,U64 [RDX+RAX*8]	//RAX is 8x8 char font data, 64-bits
+  BT	U64 SF_ARG1[RBP],ATTRf_UNDERLINE
+  JNC	@@05
+  MOV	RBX,0xFF00000000000000
+  OR	RAX,RBX
+@@05:	TEST	RAX,RAX
+  JZ	I32 @@10
+
+  PUSH	RSI
+  PUSH	RDI
+  MOVZX	RBX,U8 SF_ARG1+1[RBP]	//Warning color is 8-bit
+  MOV	RDX,U64 [&gr.to_8_colors]
+  MOV	R8,U64 [RDX+RBX*8]	//R8 is color repeated 8 times.
+  MOV	R9,U64 SF_ARG3[RBP]	//R9 is width_internal
+  MOV	RDI,U64 SF_ARG2[RBP]
+  MOV	RSI,U64 [&gr.to_8_bits] //RSI is gr.to_8_bits
+
+  MOVZX	RBX,AL
+  MOV	RDX,U64 [RSI+RBX*8]
+  SHR	RAX,8
+  MOV	RBX,U64 [RDI]
+  MOV	RCX,RDX
+  NOT	RCX
+  AND	RDX,R8
+  AND	RCX,RBX
+  OR	RCX,RDX
+  MOV	U64 [RDI],RCX
+  ADD	RDI,R9
+
+  MOVZX	RBX,AL
+  MOV	RDX,U64 [RSI+RBX*8]
+  SHR	RAX,8
+  MOV	RBX,U64 [RDI]
+  MOV	RCX,RDX
+  NOT	RCX
+  AND	RDX,R8
+  AND	RCX,RBX
+  OR	RCX,RDX
+  MOV	U64 [RDI],RCX
+  ADD	RDI,R9
+
+  MOVZX	RBX,AL
+  MOV	RDX,U64 [RSI+RBX*8]
+  SHR	RAX,8
+  MOV	RBX,U64 [RDI]
+  MOV	RCX,RDX
+  NOT	RCX
+  AND	RDX,R8
+  AND	RCX,RBX
+  OR	RCX,RDX
+  MOV	U64 [RDI],RCX
+  ADD	RDI,R9
+
+  MOVZX	RBX,AL
+  MOV	RDX,U64 [RSI+RBX*8]
+  SHR	RAX,8
+  MOV	RBX,U64 [RDI]
+  MOV	RCX,RDX
+  NOT	RCX
+  AND	RDX,R8
+  AND	RCX,RBX
+  OR	RCX,RDX
+  MOV	U64 [RDI],RCX
+  ADD	RDI,R9
+
+  MOVZX	RBX,AL
+  MOV	RDX,U64 [RSI+RBX*8]
+  SHR	RAX,8
+  MOV	RBX,U64 [RDI]
+  MOV	RCX,RDX
+  NOT	RCX
+  AND	RDX,R8
+  AND	RCX,RBX
+  OR	RCX,RDX
+  MOV	U64 [RDI],RCX
+  ADD	RDI,R9
+
+  MOVZX	RBX,AL
+  MOV	RDX,U64 [RSI+RBX*8]
+  SHR	RAX,8
+  MOV	RBX,U64 [RDI]
+  MOV	RCX,RDX
+  NOT	RCX
+  AND	RDX,R8
+  AND	RCX,RBX
+  OR	RCX,RDX
+  MOV	U64 [RDI],RCX
+  ADD	RDI,R9
+
+  MOVZX	RBX,AL
+  MOV	RDX,U64 [RSI+RBX*8]
+  SHR	RAX,8
+  MOV	RBX,U64 [RDI]
+  MOV	RCX,RDX
+  NOT	RCX
+  AND	RDX,R8
+  AND	RCX,RBX
+  OR	RCX,RDX
+  MOV	U64 [RDI],RCX
+  ADD	RDI,R9
+
+  MOV	RDX,U64 [RSI+RAX*8]
+  MOV	RBX,U64 [RDI]
+  MOV	RCX,RDX
+  NOT	RCX
+  AND	RDX,R8
+  AND	RCX,RBX
+  OR	RCX,RDX
+  MOV	U64 [RDI],RCX
+
+  POP	RDI
+  POP	RSI
+@@10:	POP	RBP
+  RET1	24
+}
+public _extern _GR_ROP_EQU_U8_NO_CLIPPING U0 GrRopEquU8NoClipping(I64 ch,
+    U8 *dst,I64 width_internal);
+public _extern _IS_PIX_COVERED0 Bool IsPixCovered0(
+CTask *task,I64 x,I64 y);//No clipping

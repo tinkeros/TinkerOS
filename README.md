@@ -6,7 +6,9 @@ TinkerOS is essentially TempleOS renamed with some changes that allow it to run 
 ### Goals
 - Keep a TempleOS like feel and do not make horrible refactoring and API changes which break compatability with existing TempleOS applications.
 - Cleanup some unfortunate language that was left in TempleOS.
-- Bring back some old TempleOS features and add new features.
+- Bring back some old TempleOS features and add new features, popular apps, and games.
+- Make most apps and games work and look decent on both 4:3 and widescreen monitors (install using either 640x480 or 640x340)
+- Make higher resolutions modes (mostly for programming) on both 4:3 and widescreen monitors (install using either 800x600 or 1280x512)
 - Improve documentation.
 - Any bug fixes are welcome.
 - Possibly new device driver support for modern storage and/or networking.
@@ -28,4 +30,7 @@ TinkerOS is essentially TempleOS renamed with some changes that allow it to run 
 - You may access the up/down state of multiple keys without message parsing, see new <a href="https://tinkeros.github.io/WbGit/Demo/KeyState.html">KeyState Demo</a>
 - When on the command line if you mis-type a command followed by a ; and hit enter, you may be able to re-paste your last command if it is still scrolling as text in the top of the window by using the F8 key.
 - BMP file support has been restored.
+- Raw mode text is also dumped out COM1 which helps when debugging the kernel without a display.
 
+### Known issues
+- Debugger doesn't accept keyboard input on all machines (can be resolved in QEMU by clicking the mouse).

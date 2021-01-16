@@ -1,0 +1,8 @@
+Brand,Model/Motherboard,Boots Legacy TempleOS ISO,Boots Legacy TinkerOS ISO,Boots TinkerOS MemDisk/USB image to RamDisk,Number of CPU cores detected / actual number of cores,Number of PS/2 ports,PS/2 emulation USB keyboard,PS/2 emulation USB mouse,Laptop Keyboard,PS/2 emulation Trackpad (laptops),IDE or BIOS support for IDE/ATA/Legacy mode for SATA,PC Speaker works,PC Speaker sound routed thru on-board audio 3.5mm jack,Intel HD Audio driver works,Successful hard drive install/boot of TempleOS,Successful hard drive install/boot of TinkerOS,TinkerOS OS test suite finished w/o crash,Comments
+Dell,Optiplex 755,Y,Y,Y,4/4,2,Y,Y,NA,NA,Y,Y,-,-,Y,Y,Y,Great cheap TempleOS/TinkerOS machine                                                                                                                                         
+Dell,Optiplex 9020,Y,Y,Y,8/8,2,Y,N,NA,NA,Y,Y,-,-,-,-,-,
+Dell,Latitude 5480,-,-,Y,8/8,0,Y,Y,Y,Y,Y,Y,-,-,-,-,-,
+Lenovo,Ideapad Y560D,Y,Y,Y,8/8,0,-,-,Y,N,Y,Y,-,-,Y,Y,Y,Great cheap TempleOS/TinkerOS laptop                                                                                                                
+Dell,Latitude D630,Y,Y,Y,2/2,"0, 2 with dock",-,-,Y,Y,Y,Y,-,-,Y,Y,Y,
+HP,Pavilion DV8000,-,-,Y,1/1,0,-,-,N,N,Y,-,-,-,-,-,NA,"Takes a very long time to boot, USB transfer speed must be very slow copying initial ramdisk."
+,,,,,,,,,,,,,,,`,,,

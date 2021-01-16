@@ -4,7 +4,9 @@
 - Use raw disk image software to write it to your flash drive. 
 
 Example (Linux):
-First unmount any paritions auto mounted that are on your flash drive
+
+First unmount any paritions auto mounted that are on your flash drive.
+
 Note everything will be overwritten, all data on the drive will be lost!
 
 `sudo dd if=TinkerOS_USB_5.06.img of=/dev/sdX` 
@@ -15,8 +17,11 @@ Where X is the appropriate value for your flash drive, make sure you are absolut
 
 Remove the drive.
 
-### Other platforms
+### Creating a bootable USB manually (various platforms)
 - Downloads the zip file version of <a href="https://clonezilla.org/">Clonezilla</a>
 - Follow directions to create a bootable <a href="https://clonezilla.org/liveusb.php">live USB version of Clonezilla</a> for your platform.
 - Copy isolinux.cfg from here to syslinux/isolinux.cfg and syslinux/syslinux.cfg on your Clonezilla flash drive.
 - Copy the TinkerOS MemDisk ISO to TinkerOS.ISO on the root of your flash drive.
+
+### Adding a TinkerOS entry to your legacy boot grub menu or creating a CD/DVD which boots to a TinkerOS ramdisk install.
+- Both are possible, proof is left as an exercise to the user.

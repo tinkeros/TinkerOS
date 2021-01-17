@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# It is recommended you use the latest QEMU 5.2 compiled from source, not all older versions of QEMU are compatible with TempleOS/TinkerOS and the OS test suite might fail on older versions.
+
+# with KVM acceleration
+#qemu-system-x86_64 -machine kernel_irqchip=off -m 4096 -rtc base=localtime -soundhw pcspk -smp cores=4 -kernel ~/Downloads/memdisk -initrd ~/Downloads/TinkerOS_MemDisk_5.06.ISO -append 'iso raw' -enable-kvm -cpu host
+# without KVM 
+qemu-system-x86_64 -machine kernel_irqchip=off -m 4096 -rtc base=localtime -soundhw pcspk -smp cores=4 -kernel ~/Downloads/memdisk -initrd ~/Downloads/TinkerOS_MemDisk_5.06.ISO -append 'iso raw'

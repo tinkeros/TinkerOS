@@ -12,8 +12,9 @@ emu_std_usb - Tests booting TinkerOS from a raw drive image which could be writt
 
 ### Writing Raw Disk Image to a USB drive (Multi-platform)
 - Download a released TinkerOS USB disk image file.
-- Download <a href="https://rufus.ie/">Rufus</a>
-- Use Rufus to write the image file to your flash drive. 
+- Download <a href="https://www.raspberrypi.org/software/">Raspberry PI Imager</a>
+- In imager select Choose OS, scroll down, select Use Custom and select TinkerOS img file.
+- In imager select Choose SD and select the SD card or USB flash drive you want to overwrite and install TinkerOS to.
 
 ### Writing Raw Disk Image to a USB drive (Linux)
 - Download a released TinkerOS USB disk image file.

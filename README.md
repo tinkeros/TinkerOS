@@ -12,6 +12,7 @@ TinkerOS is essentially TempleOS renamed with some changes that allow it to run 
 - Improve documentation.
 - Any bug fixes are welcome.
 - Possibly new device driver support for modern storage and/or networking.
+- Document bare-metal device compatability.  Please make a pull request to update Compatibility.csv if you want to help.
 
 ### Semi-complete list of changes between Terry's last TempleOS release and TinkerOS 5.06:
 - Documentation similar to templeos.holyc.xyz, but functions are linkable and content which normally can only be accessed within TempleOS is now available on the web (see <a href="https://tinkeros.github.io/WbGit/Doc/HelpIndex.html#l93">here.</a>)

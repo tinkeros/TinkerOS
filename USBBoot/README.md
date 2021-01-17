@@ -16,6 +16,8 @@ emu_std_usb - Tests booting TinkerOS from a raw drive image which could be writt
 - In imager select Choose OS, scroll down, select Use Custom and select TinkerOS img file.
 - In imager select Choose SD and select the SD card or USB flash drive you want to overwrite and install TinkerOS to.
 
+<center><img src="https://github.com/tinkeros/TinkerOS/raw/main/USBBoot/example.png"></center>
+
 ### Writing Raw Disk Image to a USB drive (Linux)
 - Download a released TinkerOS USB disk image file.
 - Use raw disk image software to write it to your flash drive. 

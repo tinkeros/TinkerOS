@@ -5,6 +5,7 @@ TinkerOS is essentially TempleOS renamed with some changes that allow it to run 
 
 ### Goals
 - Keep a TempleOS like feel and do not make horrible refactoring and API changes which break compatibility with most existing TempleOS applications (ahh, ahh, ahh <a href="https://github.com/ZenithOS/ZenithOS">Zenith</a>, sorry I had to sneeze).
+- <a href="https://github.com/tinkeros/TinkerOS/blob/main/USBBoot/README.md">Live USB boot</a> mode to allow trying it without having to install it that also works on systems lacking legacy storage support.
 - Cleanup some unfortunate language that was left in TempleOS.
 - Bring back some old TempleOS features and add new features, popular apps, and games.
 - Make most apps and games work and look decent on both 4:3 and widescreen monitors (install using either 640x480 or 640x340)

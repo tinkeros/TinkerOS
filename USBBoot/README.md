@@ -31,7 +31,7 @@ Remove the drive.
 ### Creating a bootable USB manually (various platforms)
 - Downloads the zip file version of <a href="https://clonezilla.org/">Clonezilla</a>
 - Follow directions to create a bootable <a href="https://clonezilla.org/liveusb.php">live USB version of Clonezilla</a> for your platform.
-- At this point you should test you clonezilla bootable USB drive. If it works you can follow the next two simple steps to turn it into a TinkerOS bootable USB drive.
+- At this point you should test your clonezilla bootable USB drive. If it works you can follow the next two simple steps to turn it into a TinkerOS bootable USB drive.
 - Copy isolinux.cfg from here to syslinux/isolinux.cfg and syslinux/syslinux.cfg on your Clonezilla flash drive (replacing them).
 - Copy the TinkerOS MemDisk ISO to TinkerOS.ISO on the root of your flash drive.
 

@@ -1,12 +1,14 @@
 # Bootable USB and MemDisk versions of TinkerOS
 
+### Note: These versions boot TinkerOS to a RAM disk in memory which allows you to try it without having to install it.  Because of this you can make changes and try them, but they are not saved anywhere and are lost upon rebooting.
+
 ### Testing USB boot / MemDisk images with QEMU
 - Download memdisk (this folder, same version that is shipped with Clonezilla), TinkerOS release MemDisk ISO and USB image file.
 - Download example QEMU test scripts from this folder:
 
 emu_std_memdisk - Tests booting TinkerOS using QEMU without any drives attached!
 
-emu_std_usb - Tests booting TinkerOS from a raw drive image which could be written to a USB flash drive and also boots bare metal on some machines.
+emu_std_usb - Tests booting TinkerOS from a raw drive image which could be written to a USB flash drive and also boots bare metal on some machines.  *Note that the USB disk image is also the 1st hard drive image so if you try installing you'll overwrite your USB image file*
 
 ### Writing Raw Disk Image to a USB drive (Linux)
 - Download a released TinkerOS USB disk image file.

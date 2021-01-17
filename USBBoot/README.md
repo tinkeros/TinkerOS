@@ -10,6 +10,11 @@ emu_std_memdisk - Tests booting TinkerOS using QEMU without any drives attached!
 
 emu_std_usb - Tests booting TinkerOS from a raw drive image which could be written to a USB flash drive and also boots bare metal on some machines.  *Note that the USB disk image is also the 1st hard drive image so if you try installing you'll overwrite your USB image file*
 
+### Writing Raw Disk Image to a USB drive (Multi-platform)
+- Download a released TinkerOS USB disk image file.
+- Download <a href="https://rufus.ie/">Rufus</a>
+- Use Rufus to write the image file to your flash drive. 
+
 ### Writing Raw Disk Image to a USB drive (Linux)
 - Download a released TinkerOS USB disk image file.
 - Use raw disk image software to write it to your flash drive. 

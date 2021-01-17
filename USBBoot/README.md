@@ -1,6 +1,14 @@
-# Creating a bootable USB version of TinkerOS
-### Via Raw Disk Image
-- Download a released TinkerOS_USB img file.
+# Bootable USB and MemDisk versions of TinkerOS
+
+### Testing USB boot / MemDisk images with QEMU
+- Download memdisk (this folder, same version that is shipped with Clonezilla), TinkerOS release MemDisk ISO and USB image file.
+- Download example QEMU test scripts from this folder:
+
+emu_std_memdisk - Tests booting TinkerOS using QEMU without any drives attached!
+emu_std_usb - Tests booting TinkerOS from a raw drive image which could be written to a USB flash drive and also boots bare metal on some machines.
+
+### Writing Raw Disk Image to a USB drive (Linux)
+- Download a released TinkerOS USB disk image file.
 - Use raw disk image software to write it to your flash drive. 
 
 Example (Linux):
@@ -20,8 +28,10 @@ Remove the drive.
 ### Creating a bootable USB manually (various platforms)
 - Downloads the zip file version of <a href="https://clonezilla.org/">Clonezilla</a>
 - Follow directions to create a bootable <a href="https://clonezilla.org/liveusb.php">live USB version of Clonezilla</a> for your platform.
-- Copy isolinux.cfg from here to syslinux/isolinux.cfg and syslinux/syslinux.cfg on your Clonezilla flash drive.
+- At this point you should test you clonezilla bootable USB drive. If it works you can follow the next two simple steps to turn it into a TinkerOS bootable USB drive.
+- Copy isolinux.cfg from here to syslinux/isolinux.cfg and syslinux/syslinux.cfg on your Clonezilla flash drive (replacing them).
 - Copy the TinkerOS MemDisk ISO to TinkerOS.ISO on the root of your flash drive.
+
 
 ### Adding a TinkerOS entry to your legacy boot grub menu or creating a CD/DVD which boots to a TinkerOS ramdisk install.
 - Both are possible, proof is left as an exercise to the user.

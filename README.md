@@ -46,6 +46,8 @@ TinkerOS is essentially TempleOS renamed with some changes that allow it to run 
 - Fixed IsDir hang if called with a path to an unmounted drive.
 - MountIDEAuto now has ability to mount only ATAPI drives via optional parameter.
 
+### Notes
+- Though only 16 colors are used at a time, the graphics mode is 32-bit.  The frame buffer is linear and has resolution FB_WIDTH by FB_HEIGHT which maybe larger than GR_WIDTH and GR_HEIGHT.  You can always suspend the window manager and draw whatever graphics you want instead.  text.fb_alias is a pointer to the frame buffer.
 
 ### Known issues
 - Debugger doesn't accept keyboard input on all machines (can be resolved in QEMU by clicking the mouse).

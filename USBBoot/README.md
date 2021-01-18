@@ -43,6 +43,21 @@ Remove the drive.
 - Copy isolinux.cfg from here to syslinux/isolinux.cfg and syslinux/syslinux.cfg on your Clonezilla flash drive (replacing them).
 - Copy the TinkerOS MemDisk ISO to TinkerOS.ISO on the root of your flash drive.
 
+### Adding your files to the Live boot RAM disk (Linux)
+- Download TinkerOS_MemDisk_Appendable_5.06.ISO
+- Prepare another RedSea ISO image with your files
+- Run the following commands:
+
+```
+cp TinkerOS_MemDisk_Appendable_5.06.ISO TinkerOS.ISO
+echo -n "ISOAPPENDISOAPPEND" >> TinkerOS.ISO
+cat YourRedSea.ISO.C >> TinkerOS.ISO
+echo -n "ISOENDISOENDISOEND" >> TinkerOS.ISO
+```
+
+- Now replace the TinkerOS.ISO with the one you created and the files from your RedSea ISO will be extracted onto the RAM disk also and can be found in B:/Sup
+
+
 
 ### Adding a TinkerOS entry to your legacy boot grub menu or creating a CD/DVD which boots to a TinkerOS ramdisk install.
 - Both are possible, proof is left as an exercise to the user.

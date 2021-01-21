@@ -5,7 +5,7 @@ TinkerOS is essentially TempleOS renamed with some changes that allow it to run 
 
 ### Goals
 - Keep a TempleOS like look and feel while attempting to keep a fully TempleOS compatible API.
-- <a href="https://github.com/tinkeros/TinkerOS/blob/main/USBBoot/README.md">Live USB boot</a> mode to allow trying it without having to install it that also works on systems lacking legacy storage support.  You are able to add your own files to be injected onto the RAM disk as well by placing them inside another RedSea ISO image and following the instructions to append it to the Memdisk ISO.
+- <a href="https://github.com/tinkeros/TinkerOS/blob/main/USBBoot/README.md">Live USB boot</a> mode to allow trying it without having to install it that also works on systems lacking legacy storage support.  You are able to add your own files to be injected onto the RAM disk as well by placing them inside another RedSea ISO image and following the instructions to append it to the Memdisk ISO.  Here's a <a href="https://youtu.be/d5e9RYla36Y">video of it booting up bare metal</a> on a PC via an emulated USB flash drive backed by the TinkerOS Live USB image.
 - Cleanup some unfortunate language that was left in TempleOS.
 - Bring back some old TempleOS features and add new features, popular apps, and games.
 - Make most apps and games work and look decent on both 4:3 and widescreen monitors (install using either 640x480 or 640x340)
@@ -17,7 +17,7 @@ TinkerOS is essentially TempleOS renamed with some changes that allow it to run 
 
 ### Semi-complete list of changes between Terry's last TempleOS release and TinkerOS 5.06:
 - Documentation similar to templeos.holyc.xyz, but functions are linkable and content which normally can only be accessed within TempleOS is now available on the web (see <a href="https://tinkeros.github.io/WbGit/Doc/HelpIndex.html#l93">here.</a>)
-- VBE2 video mode support, provides 2x 4:3 (640x480 or 800x600) and 2x wide screen resolutions (640x340 or 1280x512).  This can be configured using the auto installer or when building/configuring the kernel.
+- VBE2 video mode support, provides 2x 4:3 (640x480 or 800x600) and 2x wide screen resolutions (<a href="https://youtu.be/E8UvMijEiUA">640x340</a> or 1280x512).  This can be configured using the auto installer or when building/configuring the kernel.
 - Modified installer to make it easy to install with different resolutions and easy to optionally copy additional software to your installation.
 - SSE support is enabled on the CPU (for now only used by some 3rd party apps)
 - If you have more than 1 core a second core is used to help render providing a faster system (since normally everything by default happens on core 1).  This is particularly useful when running it on slow Intel Atom chips or under QEMU on other architectures.

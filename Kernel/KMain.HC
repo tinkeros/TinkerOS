@@ -150,10 +150,6 @@ U0 KMain()
   UncachedAliasAlloc;
   LoadKernel;
 
-  // Debug raw uart output
-  CommInit;
-  CommInit8n1(1,9600);
-
   SysGrInit;
 
   StrCpy(Fs->task_name,"Adam Task CPU00");

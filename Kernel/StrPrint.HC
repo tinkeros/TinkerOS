@@ -17,9 +17,6 @@ U0 SPutChar(U8 **_dst,U8 ch,U8 **_buf)
   *_dst=dst;
 }
 
-// It is silly to use the above function to append multiple
-// characters to a string (one by one) which then calls MSize 
-// (and possibly MAlloc/Free) many times more than necessary 
 U0 SPutChars(U8 **_dst,U8 *src,U8 **_buf, I64 len)
 {
   I64 i;
@@ -910,19 +907,7 @@ sp_out_eng: //Engineering notation
 	  break;
       }
     } else {
-
       SPutChar(_dst,ch,_buf);
-      /*
-      // write all non-format parts of the string with
-      // one call instead of one character at a time
-      k=1; // if we got here we already got 1 character
-      while ((ch = *fmt++) && (ch !='%')) {
-        k++;
-      }
-      fmt--;
-      SPutChars(_dst,fmt-k,_buf,k);
-      k=0;
-      */
     }
   }
   SPutChar(_dst,0,_buf);
@@ -963,7 +948,10 @@ U0 PrintErr(U8 *fmt,...)
 {//Print "Err:" and msg in blinking red.
   U8 *buf=StrPrintJoin(NULL,fmt,argc,argv);
   GetOutOfDollar;
-  "%,p %,p %,p %,p " ST_ERR_ST "%s",Caller,Caller(2),Caller(3),Caller(4),buf;
+  if (IsRaw)
+    "%,p %,p %,p %,p ERROR: %s",Caller,Caller(2),Caller(3),Caller(4),buf;
+  else
+    "%,p %,p %,p %,p " ST_ERR_ST "%s",Caller,Caller(2),Caller(3),Caller(4),buf;
   Free(buf);
 }
 
@@ -971,6 +959,9 @@ U0 PrintWarn(U8 *fmt,...)
 {//Print "Warn:" and msg in blinking red.
   U8 *buf=StrPrintJoin(NULL,fmt,argc,argv);
   GetOutOfDollar;
-  "%,p %,p %,p %,p " ST_WARN_ST "%s",Caller,Caller(2),Caller(3),Caller(4),buf;
+  if (IsRaw)
+    "%,p %,p %,p %,p WARNING: %s",Caller,Caller(2),Caller(3),Caller(4),buf;
+  else
+    "%,p %,p %,p %,p " ST_WARN_ST "%s",Caller,Caller(2),Caller(3),Caller(4),buf;
   Free(buf);
 }

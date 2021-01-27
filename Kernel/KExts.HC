@@ -128,9 +128,6 @@ extern I64 Unzip(U8 *files_find_mask="*.Z",U8 *fu_flags=NULL);
 extern U0 Unmount(U8 drv_let=0);
 extern U8 MountFile(U8 *filename);
 extern Bool Silent(Bool val=ON);
-extern U0 CommInit();
-extern CComm *CommInit8n1(I64 port,I64 baud);
-extern U0 CommPutChar(I64 port,U8 b);
 extern CHashGeneric *HashPublic(U8 *st,I64 mask,Bool val=TRUE);
 extern U0 DefinePrint(U8 *dname,U8 *src,...);
 

@@ -1,4 +1,16 @@
-U0 RawPutChar(I64 ch, Bool serial=TRUE)
+
+// Null output for now
+U0 MyCommPutChar(I64 port, U8 ch)
+{
+if (port)
+  return;
+if (ch)
+  return;
+return;
+}
+
+
+U0 RawPutChar(I64 ch, Bool serial=FALSE)
 {
   /*For RAW output during boot and in debugger.
   See $LK,"GrUpdateTextFG",A="MN:GrUpdateTextFG"$ for
@@ -34,12 +46,14 @@ U0 RawPutChar(I64 ch, Bool serial=TRUE)
   }
   if (ch=='\t')
   {
-    CommPutChar(1,' ');
+    if (serial)
+      MyCommPutChar(1,' ');
     RawPutChar(CH_SPACE);
     while (text.raw_col & 7)
     {
       RawPutChar(CH_SPACE);
-      CommPutChar(1,' ');
+      if (serial)
+        MyCommPutChar(1,' ');
     }
   }
   else if (ch==CH_BACKSPACE)
@@ -50,8 +64,11 @@ U0 RawPutChar(I64 ch, Bool serial=TRUE)
   }
   else if (ch=='\n')
   {
-    CommPutChar(1,0x0d);
-    CommPutChar(1,0x0a);
+    if (serial)
+    {
+      MyCommPutChar(1,0x0d);
+      MyCommPutChar(1,0x0a);
+    }
     RawPutChar(CH_SPACE,FALSE);
     while (text.raw_col % (FB_WIDTH/FONT_WIDTH))
       RawPutChar(CH_SPACE,FALSE);
@@ -59,7 +76,7 @@ U0 RawPutChar(I64 ch, Bool serial=TRUE)
   else if (Bt(char_bmp_displayable,ch))
   {
     if (serial)
-      CommPutChar(1,ch);
+      MyCommPutChar(1,ch);
     row = text.raw_col / (FB_WIDTH/FONT_WIDTH) % (FB_HEIGHT/FONT_HEIGHT);
     col = text.raw_col % (FB_WIDTH/FONT_WIDTH);
     if (!Bt(&sys_run_level,RLf_VGA))   //if text mode

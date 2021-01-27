@@ -29,3 +29,5 @@ LBts(&sys_run_level,RLf_DOC);
 #include "AMouse"
 #include "Host"
 Cd("..");;
+if (mp_cnt>1)
+  EnableSethGfx;

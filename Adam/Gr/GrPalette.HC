@@ -66,6 +66,7 @@ public U0 GrPaletteColorSet(I64 color_num,CBGR48 bgr48)
   gr_palette[color_num].r=bgr48.r.u8[1];
   gr_palette[color_num].g=bgr48.g.u8[1];
   gr_palette[color_num].b=bgr48.b.u8[1];
+  VGAFlush;
 }
 
 public CBGR48 GrPaletteColorGet(I64 color_num)

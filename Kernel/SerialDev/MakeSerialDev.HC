@@ -2,5 +2,4 @@
 #include "Keyboard"
 #include "Mouse"
 #include "Message"
-#include "Comm"
 #exe {Cd("..");};

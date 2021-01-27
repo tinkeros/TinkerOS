@@ -35,7 +35,7 @@
 #include "KMathB"
 #include "Sched"
 #include "Mem/MakeMem"
-#include "FontStd"
+#include "FontStd"
 #include "FontCyrillic"
 #include "StrB"
 #include "KHashA"

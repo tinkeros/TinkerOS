@@ -813,7 +813,6 @@ public _extern _TEXT_LEN_ATTR Bool TextLenAttr(CTask *task, I64 x, I64 y, I64 le
 public extern U0 TextPrint(CTask *task, I64 x, I64 y, I64 attr, U8 *fmt, ...);
 public extern U0 TextBorder(CTask *task=NULL, I64 l, I64 r, I64 t, I64 b, I64 attr, Bool solid);
 public extern U0 TextRect(I64 l, I64 r, I64 t, I64 b, I64 d);
-public extern CComm *comm_ports;
 public extern U8 *key_state, *sc_state;
 public extern I64 sc_flags_state;
 public extern U0 KeyStateRst();

@@ -11,7 +11,7 @@ Cd(__DIR__);;
 
 // Comment these if you do not want autocomplete
 
-#include "AutoComplete/MakeAC"
+#include "/Adam/AutoComplete/ACInit"
 Silent;       //no output to scrn
 ACInit("/*;!*/Bible.TXT*");
 Silent(OFF); //no output to scrn

@@ -259,18 +259,21 @@ U0 ACTask(I64)
 public Bool AutoComplete(Bool val=OFF)
 {//Turn AutoComplete OFF or ON.
   Bool	old_val=FALSE;
-  while (Bt(&ac.flags,ACf_INIT_IN_PROGRESS))
-    Sleep(10);
+  if (!val && !Bt(&sys_run_level,RLf_AUTO_COMPLETE)) {
+    return OFF;
+  }
+  if (val && !Bt(&sys_run_level,RLf_AUTO_COMPLETE)) {
+    "Must call ACInit first!\n";
+    return OFF;
+  }
   if (val) {
-    if (Bt(&sys_run_level,RLf_AUTO_COMPLETE)) {
-      if (TaskValidate(ac.task))
+    if (TaskValidate(ac.task))
 	old_val=TRUE;
-      else {
+    else {
 	ac.task=Spawn(&ACTask,NULL,"AutoComplete");
 	TaskWait(ac.task);
-      }
-      WinToTop(ac.task);
     }
+    WinToTop(ac.task);
   } else {
     if (TaskValidate(ac.task)) {
       if (Bt(&sys_run_level,RLf_AUTO_COMPLETE))

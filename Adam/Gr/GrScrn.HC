@@ -407,11 +407,15 @@ U0 GrUpdateVGAGraphics()
 
 U0 DCBlotColor8Seth()
 {
+  lock
+  {
+    seth_gfx_flag=1;
+  }
   while (TRUE)
   {
     while (!seth_gr_sema)
     {
-      SleepUntil(cnts.jiffies+JIFFY_FREQ/4000);
+      SleepUntil(cnts.jiffies+5*JIFFY_FREQ/1000);
       if (seth_gfx_flag == 0)
       {
         lock
@@ -462,7 +466,7 @@ U0 GrUpdateScrnSeth()
   {
     while (seth_gr_sema)
     {
-      SleepUntil(cnts.jiffies+JIFFY_FREQ/4000);
+      SleepUntil(cnts.jiffies+5*JIFFY_FREQ/1000);
     }
   }
   GrUpdateTextBG;
@@ -475,7 +479,7 @@ U0 GrUpdateScrnSeth()
   }
   while (seth_gr_sema)
   {
-    SleepUntil(cnts.jiffies+JIFFY_FREQ/4000);
+    SleepUntil(cnts.jiffies+5*JIFFY_FREQ/1000);
   }
   dc=DCAlias(gr.dc2,Fs);
   dc->flags|=DCF_ON_TOP;
@@ -499,14 +503,6 @@ U0 GrUpdateScrn()
   }
   else if (!TaskValidate(seth_gr_task))
   {
-    lock
-    {
-      seth_gr_sema=0;
-    }
-    lock
-    {
-      seth_gr_task = Spawn(&DCBlotColor8Seth, NULL, "Seth GFX Helper Blot8", 1);
-    }
     GrUpdateScrn0;
     return;
   }
@@ -527,7 +523,11 @@ public U0 EnableSethGfx()
 {
   lock
   {
-    seth_gfx_flag=1;
+    seth_gr_sema=0;
+  }
+  lock
+  {
+    seth_gr_task = Spawn(&DCBlotColor8Seth, NULL, "Seth GFX Helper Blot8", 1);
   }
 }
 

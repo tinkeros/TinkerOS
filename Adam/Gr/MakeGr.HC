@@ -9,8 +9,6 @@ Cd(__DIR__);;
 #include "GrInitB"
 #include "GrMath"
 #include "GrScrn"
-if (mp_cnt>1)
-  EnableSethGfx;
 #include "GrBitMap"
 #include "GrPrimatives"
 #include "GrComposites"

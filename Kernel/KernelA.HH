@@ -15,7 +15,6 @@ extern class CHeapCtrl;
 extern class CIntermediateCode;
 extern class CJobCtrl;
 extern class CTask;
-extern class CCom;
 
 #define NULL	0
 #define TRUE	1
@@ -4062,13 +4061,4 @@ public class CGrGlbls
   Bool	continuous_scroll,
 	hide_row,hide_col;
 };
-
-class CComm
-{
-  I64   base,
-        flags;
-  CFifoU8 *RX_fifo;
-  CFifoU8 *TX_fifo;
-};
-
 

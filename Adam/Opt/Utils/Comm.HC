@@ -12,9 +12,16 @@
 #define UART_MSR		6
 
 #define COMf_ENABLED	0
+class CComm
+{
+  I64   base,
+        flags;
+  CFifoU8 *RX_fifo;
+  CFifoU8 *TX_fifo;
+} comm_ports[5];
 
 public U0 CommHndlr(I64 port)
-{
+{// Com port IRQ handler
   CComm *c=&comm_ports[port];
   I64 b=0,stat;
   if (Bt(&c->flags,COMf_ENABLED))
@@ -33,21 +40,21 @@ public U0 CommHndlr(I64 port)
 }
 
 interrupt U0 IRQComm3()
-{
+{// Com 2/4 IRQ handler
   CommHndlr(2);
   CommHndlr(4);
   OutU8(0x20,0x20);
 }
 
 interrupt U0 IRQComm4()
-{
+{// Com 1/3 IRQ handler
   CommHndlr(1);
   CommHndlr(3);
   OutU8(0x20,0x20);
 }
 
 public U0 CommInit()
-{
+{// Com port base/IRQ init function
   MemSet(&comm_ports,0,sizeof(comm_ports));
   comm_ports[1].base=0x3F8;
   comm_ports[2].base=0x2F8;
@@ -56,9 +63,10 @@ public U0 CommInit()
   IntEntrySet(0x23,&IRQComm3);
   IntEntrySet(0x24,&IRQComm4);
 }
+CommInit;
 
 public CComm *CommInit8n1(I64 port,I64 baud)
-{
+{// Com port init function
   CComm *c=&comm_ports[port];
   PUSHFD
   CLI
@@ -87,7 +95,7 @@ public CComm *CommInit8n1(I64 port,I64 baud)
 }
 
 public U0 CommPutChar(I64 port,U8 b)
-{
+{// Write 1 byte to com port
   I64 base=comm_ports[port].base;
   while (!(InU8(base+UART_LSR) & 0x20))
     Yield;
@@ -96,22 +104,52 @@ public U0 CommPutChar(I64 port,U8 b)
     Yield;
 }
 
+public U8 CommGetChar(I64 port)
+{// Get 1 byte from com port
+  U8 chr;
+  while (1) {
+    if (FifoU8Rem(&comm_ports[port].RX_fifo, &chr))
+      return chr;
+    else
+      Yield;
+  }
+}
+
+public Bool CommGetCharNoWait(I64 port, U8 *byte_out)
+{// Try to get 1 byte from com port
+  U8 chr;
+  if (FifoU8Rem(&comm_ports[port].RX_fifo, &chr))
+  {
+      *byte_out=chr;
+      return TRUE;
+  }
+  return FALSE;
+}
+
+
+public U0 CommFlush(I64 port)
+{// Flush com port fifos
+  FifoU8Flush(&comm_ports[port].RX_fifo);
+  FifoU8Flush(&comm_ports[port].TX_fifo);
+}
+
 public U0 CommPutS(I64 port,U8 *st)
-{
+{// Writes string to com port
   I64 b;
   while (b=*st++)
     CommPutChar(port,b);
 }
 
 public U0 CommPutBlk(I64 port,U8 *buf,I64 cnt)
-{
+{// Writes a block to com port
   while (cnt--)
     CommPutChar(port,*buf++);
 }
 
 public U0 CommPrint(I64 port,U8 *fmt,...)
-{
+{// Prints format string to com port
   U8 *buf=StrPrintJoin(NULL,fmt,argc,argv);
   CommPutS(port,buf);
   Free(buf);
 }
+

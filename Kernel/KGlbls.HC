@@ -45,6 +45,5 @@ U8  *(*fp_getstr2)(I64 flags=0);
 U0 (*fp_update_ctrls)(CTask *task);
 CDoc *(*fp_doc_put)(CTask *task=NULL);
 U0 (*fp_set_std_palette)();
-CComm comm_ports[5];
 U8 *key_state, *sc_state;
 I64 sc_flags_state;

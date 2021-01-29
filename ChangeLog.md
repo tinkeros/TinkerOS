@@ -1,3 +1,6 @@
+### Changes added in TinkerOS 5.06.3:
+- Fix and simplify new serial functions
+- Minor documentation fixes
 
 ### Changes added in TinkerOS 5.06.2:
 - Improved documentation, now global variable symbols, ASM symbols, and defined constants are now links. Also fixed documentation containing symbols which are the same color as the background for examples see <a href="https://templeos.holyc.xyz/Wb/Kernel/KMisc.html#l179">here</a> vs <a href="https://tinkeros.github.io/WbGit/Kernel/KMisc.html#l191">here</a>.

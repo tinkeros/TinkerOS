@@ -18,7 +18,9 @@ class CComm
         flags;
   CFifoU8 *RX_fifo;
   CFifoU8 *TX_fifo;
-} comm_ports[5];
+};
+
+public CComm comm_ports[5];
 
 public U0 CommHndlr(I64 port)
 {// Com port IRQ handler
@@ -108,7 +110,7 @@ public U8 CommGetChar(I64 port)
 {// Get 1 byte from com port
   U8 chr;
   while (1) {
-    if (FifoU8Rem(&comm_ports[port].RX_fifo, &chr))
+    if (FifoU8Rem(comm_ports[port].RX_fifo, &chr))
       return chr;
     else
       Yield;
@@ -117,10 +119,8 @@ public U8 CommGetChar(I64 port)
 
 public Bool CommGetCharNoWait(I64 port, U8 *byte_out)
 {// Try to get 1 byte from com port
-  U8 chr;
-  if (FifoU8Rem(&comm_ports[port].RX_fifo, &chr))
+  if (FifoU8Rem(comm_ports[port].RX_fifo, byte_out))
   {
-      *byte_out=chr;
       return TRUE;
   }
   return FALSE;
@@ -129,8 +129,8 @@ public Bool CommGetCharNoWait(I64 port, U8 *byte_out)
 
 public U0 CommFlush(I64 port)
 {// Flush com port fifos
-  FifoU8Flush(&comm_ports[port].RX_fifo);
-  FifoU8Flush(&comm_ports[port].TX_fifo);
+  FifoU8Flush(comm_ports[port].RX_fifo);
+  FifoU8Flush(comm_ports[port].TX_fifo);
 }
 
 public U0 CommPutS(I64 port,U8 *st)

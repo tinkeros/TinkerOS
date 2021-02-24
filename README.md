@@ -18,7 +18,9 @@ TinkerOS is essentially TempleOS renamed with some changes that allow it to run 
 ### <a href="https://github.com/tinkeros/TinkerOS/blob/main/ChangeLog.md">Change Log</a>
 
 ### Notes
+- TempleOS and TinkerOS have no device drivers for CPU frequency control, temperature detection, fans, or other motherboard devices.  It may be the case that you are able to boot TinkerOS bare metal, but you may be putting your machine at risk and it may crash due to thermal issues or because a watchdog timer is tripped because the operating system does not take over control of critical hardware (since there is no driver for it).  For example on a Toshiba Satellite C655 TinkerOS will run for exactly 5 minutes and then halt.  There are no plans to fix this, if you system has these issues your only option is to run it inside a virtual machine instead of bare metal or to implement the required drivers yourself.
 - Though only 16 colors are used at a time, the graphics mode is 32-bit.  The frame buffer is linear and has resolution FB_WIDTH by FB_HEIGHT which maybe larger than GR_WIDTH and GR_HEIGHT.  You can always suspend the window manager and draw whatever graphics you want instead.  text.fb_alias is a pointer to the frame buffer.
+
 
 ### Known issues
 - Debugger doesn't accept keyboard input on all machines (can be resolved in QEMU by clicking the mouse).

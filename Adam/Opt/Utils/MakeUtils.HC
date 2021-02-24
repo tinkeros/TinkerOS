@@ -1,7 +1,6 @@
 Cd(__DIR__);;
 #include "Diff"
-#include "Find"
-#include "FindTask"
+#include "TaskRep"
 #include "Reindent"
 #include "HeapLog"
 #include "LineRep"
@@ -14,7 +13,6 @@ Cd(__DIR__);;
 #include "ToDolDoc"
 #include "ToTXT"
 #include "FileBMP"
-#include "TaskRep"
 #include "CPURep"
 #include "DevInfo"
 #include "Comm"

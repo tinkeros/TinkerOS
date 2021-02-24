@@ -47,3 +47,8 @@ CDoc *(*fp_doc_put)(CTask *task=NULL);
 U0 (*fp_set_std_palette)();
 U8 *key_state, *sc_state;
 I64 sc_flags_state;
+
+I64 sys_num_usb=0;
+CUSB sys_usb_devs[USB_NUM];
+
+

@@ -15,6 +15,8 @@ extern class CHeapCtrl;
 extern class CIntermediateCode;
 extern class CJobCtrl;
 extern class CTask;
+extern class CUSBTD;
+extern class CUSB;
 
 #define NULL	0
 #define TRUE	1
@@ -4060,5 +4062,60 @@ public class CGrGlbls
   //When zoomed, this keeps the mouse centered.
   Bool	continuous_scroll,
 	hide_row,hide_col;
+};
+
+#help_index "USB"
+
+#define USBP_CMD        0x00
+#define USBP_STS        0x02
+#define USBP_INTR       0x04
+#define USBP_FRNUM      0x06
+#define USBP_FRBASEADD  0x08
+#define USBP_SOFMOD     0x0C
+#define USBP_PORTSC0    0x10
+#define USBP_PORTSC1    0x12
+#define USB_NUM 16
+
+//USB Pkt ID's
+#define PID_OUT         0xE1
+#define PID_IN          0x69
+#define PID_SOF         0xA5
+#define PID_SETUP       0x2D
+#define PID_DATA0       0xC3
+#define PID_DATA1       0x4B
+#define PID_DATA2       0x87
+#define PID_MDATA       0x0F
+#define PID_ACK         0xD2
+#define PID_NAK         0x5A
+#define PID_STALL       0x1E
+#define PID_NYET        0x96
+#define PID_PRE         0x3C
+#define PID_ERR         0x3C
+#define PID_SPLIT       0x78
+#define PID_PING        0xB4
+
+//USB Std Rqsts
+#define RQ_GET_STAT     0x0
+#define RQ_CLR_FEAT     0x1
+#define RQ_SET_FEAT     0x3
+#define RQ_SET_ADDR     0x5
+#define RQ_SET_DESC     0x7
+#define RQ_GET_CFG      0x8
+#define RQ_SET_CFG      0x9
+#define RQ_GET_INTERFACE 0xA
+#define RQ_SET_INTERFACE 0xB
+#define RQ_SYNC_FRAME   0xC
+
+class CUSBTD //Not implemented
+{
+  U32 td[4];
+};
+
+class CUSB //Not implemented
+{
+  U8 num, //USB dev num
+        bus,dev,fun;
+  U16 ports,pad;
+  U32 *frame_lst;
 };
 

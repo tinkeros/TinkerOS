@@ -150,13 +150,6 @@ U0 CtrlAltF(I64)
   SwapI64(&text.font,&text.aux_font);
 }
 
-U0 CtrlAltH(I64)
-{
-  lock {
-    seth_gfx_flag^=1;
-  }
-}
-
 U0 CtrlAltM(I64)
 {
   Mute(!IsMute);
@@ -218,7 +211,6 @@ U0 KeyDevInit()
   CtrlAltCBSet('C',&CtrlAltC,"Cmd/Break Execution",,TRUE);
   CtrlAltCBSet('D',&CtrlAltD,"Cmd/Enter Debugger",,TRUE);
   CtrlAltCBSet('F',&CtrlAltF,"Cmd/Toggle Aux Font");
-  CtrlAltCBSet('H',&CtrlAltH,"Cmd/Toggle Seth Gfx");
   CtrlAltCBSet('M',&CtrlAltM,"Cmd/Toggle Mute");
   CtrlAltCBSet('N',&CtrlAltN,"Cmd/Next Focus Task",,TRUE);
   CtrlAltCBSet('T',&CtrlAltT,"Cmd/Terminal Window");

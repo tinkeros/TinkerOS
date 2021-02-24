@@ -82,8 +82,8 @@ public CComm *CommInit8n1(I64 port,I64 baud)
   OutU8(c->base+UART_LCR,0);	//Set for IER
   OutU8(c->base+UART_IER,0);	//Disable all IRQ
   OutU8(c->base+UART_LCR,0x80);	//Enable baud rate control
-  OutU8(c->base+UART_BRDL,(0x180/(baud/300)) & 0xFF);	//LSB
-  OutU8(c->base+UART_BRDH,(0x180/(baud/300)) / 256);	//MSB
+  OutU8(c->base+UART_BRDL,0x180/(baud/300) & 0xFF);	//LSB
+  OutU8(c->base+UART_BRDH,0x180/(baud/300) / 256);	//MSB
   OutU8(c->base+UART_LCR,3);	//8-none-1
   InU8(c->base+UART_RDR);	//read garbage
   InU8(c->base+UART_LSR);

@@ -64,6 +64,9 @@ U0 SysGlblsInit()
 
   dbg.fun_seg_cache=CAlloc(FUN_SEG_CACHE_SIZE*sizeof(CFunSegCache));
   dbg.int_fault_code=IntFaultHndlrsNew;
+
+  MemSet(sys_usb_devs,0,USB_NUM*sizeof(CUSB));
+  sys_num_usb=0;
 }
 
 U0 SysGrInit()

@@ -108,7 +108,7 @@ public U0 ProfRep(I64 filter_cnt=1,Bool leave_it=OFF,Bool print_max=ON)
     } else
       cpu_structs[pf_cpu].profiler_timer_irq=NULL;
   }
-  if (print_max && (max_percent > 0)) {
+  if (print_max && max_percent > 0) {
     "\nRoutine with max hits: %s\n\n",max_buf;
   }
 }

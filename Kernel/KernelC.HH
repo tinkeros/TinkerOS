@@ -222,7 +222,7 @@ public extern U0 RawD(I64 mS=100,U8 *addr,I64 cnt=0x80);
 public extern U0 RawDm(I64 mS=100,U8 *addr,I64 cnt=0x80);
 extern U0 RawDr(CTask *task=NULL);
 public extern U0 RawPrint(I64 mS=100,U8 *fmt,...);
-public extern U0 RawPutChar(I64 ch);
+public extern U0 RawPutChar(I64 ch, Bool serial=FALSE);
 public extern U0 VGAFlush();
 
 #help_index "Debugging;Debugging/Debugger"
@@ -286,6 +286,20 @@ public extern Bool DirMk(U8 *filename,I64 entry_cnt=0);
 public extern Bool Drv(U8 drv_let);
 public extern U0 DskChg(U8 drv_let=0);
 public extern U0 HomeSet(U8 *dirname);
+public extern Bool Copy(U8 *src_files_find_mask,U8 *dst_files_find_mask=".");
+public extern Bool Move(U8 *f1,U8 *f2);
+public extern I64 CopyTree(U8 *src_files_find_mask,U8 *dst_files_find_mask,Bool no_mask=TRUE);
+public extern I64 DelTree(U8 *files_find_mask,U8 *fu_flags=NULL);
+public extern U0 Touch(U8 *files_find_mask="*",U8 *attr="+?",U8 *fu_flags=NULL,CDate cdt=I64_MIN);
+public extern U8 *DirTreeSerialize(CDirEntry *tmpde,I64 *_size=NULL);
+public extern CDirEntry *DirTreeUnserialize(U8 *src);
+public extern I64 Size(U8 *files_find_mask="/*",U8 *fu_flags=NULL,I64 round_to=0);
+public extern I64 FileCnt(CDirEntry *tmpde);
+public extern I64 FF(U8 *files_find_mask,U8 *fu_flags=NULL);
+public extern I64 Zip(U8 *files_find_mask="*",U8 *fu_flags=NULL);
+public extern I64 Unzip(U8 *files_find_mask="*.Z",U8 *fu_flags=NULL);
+public extern U0 Unmount(U8 drv_let=0);
+public extern U8 MountFile(U8 *filename);
 
 #help_index "File/Cmd Line (Typically);Cmd Line (Typically);Install"
 public extern Bool DrvMap(U8 drv_let,CDrv *dv);
@@ -717,8 +731,8 @@ public _extern _YIELD U0 Yield();
 public extern I64 fps_master;
 public extern I64 blink_master_flag;
 public extern I64 scroll_master_flag;
-public extern I64 seth_gfx_flag;
 public extern I64 seth_gr_sema;
+public extern I64 seth_gfx_flag;
 public extern CTask *adam_task;
 public extern CTask *seth_gr_task;
 public extern CTask *last_init_task;
@@ -788,24 +802,17 @@ public extern F64 tS(); //From SysTimerFreq.
 #help_index "Windows"
 public extern Bool WinInside(I64 x,I64 y,CTask *task=NULL,I64 border=0);
 
-#help_index ""
-public extern Bool Copy(U8 *src_files_find_mask,U8 *dst_files_find_mask=".");
-public extern Bool Move(U8 *f1,U8 *f2);
-public extern I64 CopyTree(U8 *src_files_find_mask,U8 *dst_files_find_mask,Bool no_mask=TRUE);
-public extern I64 DelTree(U8 *files_find_mask,U8 *fu_flags=NULL);
-public extern U0 Touch(U8 *files_find_mask="*",U8 *attr="+?",U8 *fu_flags=NULL,CDate cdt=I64_MIN);
-public extern U8 *DirTreeSerialize(CDirEntry *tmpde,I64 *_size=NULL);
-public extern CDirEntry *DirTreeUnserialize(U8 *src);
-public extern I64 Size(U8 *files_find_mask="/*",U8 *fu_flags=NULL,I64 round_to=0);
-public extern I64 FileCnt(CDirEntry *tmpde);
-public extern I64 FF(U8 *files_find_mask,U8 *fu_flags=NULL);
-public extern I64 Zip(U8 *files_find_mask="*",U8 *fu_flags=NULL);
-public extern I64 Unzip(U8 *files_find_mask="*.Z",U8 *fu_flags=NULL);
-public extern U0 Unmount(U8 drv_let=0);
-public extern U8 MountFile(U8 *filename);
+#help_index "USB"
+public extern I64 sys_num_usb;
+public extern CUSB sys_usb_devs[USB_NUM];
+public extern U0 USBInitOne(I64 b,I64 d,I64 f);
+public extern U0 USBEndAll();
+public extern U0 USBInitAll(); //This is only valid for my ICH10 dev
+public extern CUSBTD *USBAllocTD();
+public extern U0 USBFreeTD(CUSBTD *tmptd);
+public extern U32 *USBAllocFrameLst(I64 usb_num,I64 size);
 
-
-#help_index ""
+#help_index "Graphics"
 public _extern _TEXT_CHAR Bool TextChar(CTask *task, Bool allow_border=FALSE, I64 x, I64 y, I64 d);
 public _extern _TEXT_LEN_STR Bool TextLenStr(CTask *task, I64 x, I64 y, I64 len,I64 attr, U8 *s);
 public _extern _TEXT_LEN_ATTR_STR Bool TextLenAttrStr(CTask *task, I64 x, I64 y, I64 len, U32 *_attr);
@@ -813,6 +820,8 @@ public _extern _TEXT_LEN_ATTR Bool TextLenAttr(CTask *task, I64 x, I64 y, I64 le
 public extern U0 TextPrint(CTask *task, I64 x, I64 y, I64 attr, U8 *fmt, ...);
 public extern U0 TextBorder(CTask *task=NULL, I64 l, I64 r, I64 t, I64 b, I64 attr, Bool solid);
 public extern U0 TextRect(I64 l, I64 r, I64 t, I64 b, I64 d);
+
+#help_index "Keyboard Devices"
 public extern U8 *key_state, *sc_state;
 public extern I64 sc_flags_state;
 public extern U0 KeyStateRst();

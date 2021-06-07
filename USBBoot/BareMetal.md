@@ -1,4 +1,4 @@
-## Baremetal install steps
+## Baremetal install steps and hints
 
 ### Step 1 - Check machine meets requirements and is setup to boot legacy operating systems.
 - Ensure you do not care about any data on the machine or its hardware (TinkerOS will not protect you from destroying your machine, it has no power management drivers)

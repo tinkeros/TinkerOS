@@ -48,3 +48,20 @@ ATAProbe(0x170,0x370,1,TRUE);
 ## Example lspci -vv output:
 ### Note you want to look for IO ports listed under IDE or SATA controllers:
 <img src="https://github.com/tinkeros/TinkerOS/raw/tinkeros-update-docs/USBBoot/lspci.png">
+
+## Known working PCs:
+ - Dell Optiplex 755/3010/7010/9010/3020/7020/9020
+ - Dell Precision T7400
+## Known PCs which boot to TinkerOS, but watchdog halts machine in less than 10 minutes
+## Known not working PCs:
+ - Many models of small Intel NUC PCs
+
+## Known working laptops:
+ - Dell Latitude D630
+ - Dell Latitude E5400
+ - Lenovo Thinkpad 420/430 (sometime probing is an issue, best to partition and enter IO ports manually)
+## Known laptops which boot to TinkerOS, but watchdog halts machine in less than 10 minutes
+ - HP Probook 655 G1
+ - Toshiba Satellite C655D
+## Known not working laptops:
+ 

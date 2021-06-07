@@ -23,7 +23,7 @@
 ### Step 6 - If automated installer fails, these steps might be helpful for advanced users
  - Boot into Clonezilla and wait for it to boot answering prompts.
  - At the main menu select the command line prompt option, run ```sudo -i``` to become root.
- - Run ```lspci | more``` to view possible useful I/O port information for manual installation
+ - Run ```lspci -vv | more``` to view possible useful I/O port information for manual installation
  - Run ```dd if=/dev/zero of=/dev/sda bs=1M count=1``` to wipe the partition table off your drive (where /dev/sda is changed appropriately for your hard drive)
  - Run ```cfdisk /dev/sda``` to partition your drive (where /dev/sda is changed appropriately for your hard drive)
    - Select label type: dos  (DO NOT select gpt or others)
@@ -42,3 +42,6 @@ ATAProbe(0x170,0x370,0,TRUE);
 ATAProbe(0x170,0x370,1,TRUE);
 ```
 
+## Example lspci -vv output:
+### Note you want to look for IO ports listed under IDE or SATA controllers:
+<img src="https://github.com/tinkeros/TinkerOS/raw/tinkeros-update-docs/USBBoot/lspci.png">

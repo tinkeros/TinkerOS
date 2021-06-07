@@ -2,6 +2,15 @@
 
 ### Note: These versions boot TinkerOS to a RAM disk in memory which allows you to try it without having to install it.  Because of this you can make changes and try them, but they are not saved anywhere and are lost upon rebooting.
 
+### The USB Live boot image contains:
+
+- TinkerOS able to be boot to RAM on most machines for trying without installing or for installing.
+- Super Grub to help users determine which <a href="./GraphicsModes.md">Graphics Modes</a> they can use with their hardware.
+- Clonezilla (normally used for backups, but the command line also provides easy access to tools lscpi for finding hard drive I/O ports which may be needed to install TinkerOS on some systems as well as cfdisk which can be used to partition disks manually in the case TinkerOS is unable to).
+- ttylinux - Very small light weight command line only Linux distro for older machines.  You can use this for partitioning with fdisk.
+- memtest - For testing the memory in your old machines to make sure it stable enough for your future awesome TinkerOS adventures.
+- FreeDOS 13 - Mainly an extra bonus because our focus here is Retro, but also is able to partition and create FAT32 partitions.
+
 ### Testing USB boot / MemDisk images with QEMU
 - Download memdisk (this folder, same version that is shipped with Clonezilla), TinkerOS release MemDisk ISO and USB image file.
 - Download example QEMU test scripts from this folder:

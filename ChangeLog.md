@@ -1,4 +1,14 @@
 ### Changes added in TinkerOS 5.06.3:
+
+#### Documentation changes:
+ - Classes are now clickable links
+
+#### Code changes:
+ - Fixed multiple inclusion of many find functions
+ - Minor code cleanup
+ - Updated Terry's old USB code scrap and broke it up into an initial kernel integration and demo application. Note don't get excited, there is no USB device support, only support to detect the UHCI USB Hosts for some Intel USB controllers. Mainly this has been added in case anyone wants to expand the feature out more or tinker with it. For an example see (QEMU/README.md)
+
+### Changes added in TinkerOS 5.06.3:
 - Fix and simplify new serial functions
 - Minor documentation fixes
 

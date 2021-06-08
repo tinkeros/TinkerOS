@@ -16,6 +16,7 @@
 
 ### Step 3 - Setup hard drive (for SATA drives / newer machines)
 - Go into the BIOS and change the Storage/SATA mode from AHCI/RAID to ATA/IDE/Legacy.
+- Note that not all SATA drives will work with TempleOS/TinkerOS in ATA/IDE/Legacy mode.  Some drives don't accept all the commands it tries to use and some seem to no like the timing used to communcate with the drives.  I've head better luck with older < 1TB spinning drives than I've had with newer SSDs.  I would suggest trying to throw the oldest SATA drive you have laying around into the computer you want to try installing TinkerOS on.
 
 ### Step 4 - Check supported graphics modes (optional, only you want > 640x480 resolution or widescreen options)
  - Boot the TinkerOS live USB drive and select Super Grub and note the supported modes as described <a href="./USBBoot/GraphicsModes.md">here.</a>

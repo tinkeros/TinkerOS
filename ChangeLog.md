@@ -1,4 +1,80 @@
-### Changes added in TinkerOS 5.06.3:
+
+### Changes added in TinkerOS 5.06.5:
+
+#### Compiler:
+
+- Warning about unnecessary parenthesis now tell you where the problem is located.
+
+#### Demos:
+
+- Demo/Bitfield.HC - test using new bit field functions
+- Demo/ScreenSavers - contains example screen savers
+
+#### Documentation:
+
+- Improved installation documentation displayed with auto installer.
+- Added <a href="./USBBoot/BareMetal.md">baremetal install doc</a>
+- Added <a href="./USBBoot/GraphicsModes.md">graphics mode doc</a>
+
+#### Graphics improvements:
+
+- Added screen saver functionality (since TinkerOS has no power management and cannot sleep the screen).  See /Demo/ScreenSavers for example screen savers and information on coding new ones.
+- Added letterbox modes for 4:3 on widescreen
+- Faster letterbox partial graphics updates.
+- Faster scaled mode graphics updates.
+- Added 239 more colors available for non-TempleOS apps to use. The first 16 (0-15) colors are the same as the TempleOS palette. The next 239 (16-254) are available for TinkerOS/3rd party apps.  Color 255 is transparent in both TempleOS and TinkerOS.
+- Added message to text mode which is displayed if a user attempted to boot into a graphics mode which their system does not support so they know why they ended up in text mode and what they can do to fix it.
+
+#### Hardware support:
+
+- Added probing of some commonly missed IO ports from some SATA controllers in legacy mode.
+- Serial communications functions.
+- Added new block device types for future support and function SetDrvLetType to allow their usage.
+
+#### Installer:
+
+- Added more graphics mode options in installer
+- Added ability to define a custom resolution
+- Installer can now automatically install between 1 and 4 copies of TinkerOS with different graphics settings.
+- Improved hard drive probing to increase likelihood of a successful baremetal install using the automated installer.
+- Added the ability to NOT probe for hard drives which is useful on some machines where probing crashes the system, but TinkerOS can install normally if you do not probe and instead manually enter the IO ports.
+
+#### Live USB version improvements:
+
+- Added Super Grub to probe available graphics modes for bare metal installs
+- Added Clonezilla for backups and command line tools such as lspci for finding IO ports and cfdisk for paritioning
+- Added ttylinux for parititioning on older systems
+- Added FreeDOS for partitioning on older system
+- Added memtest (bonus if you want to test your memory)
+- Assuming a baremetal install is possible on your machine, the Live USB should now have everything you would need to do it.
+
+#### Legacy functionality:
+ - Added back kernel snd symbol required by Terry's supplemential audio test code.
+
+#### New functionality:
+```
+// Functions to save and restore RAM disks:
+I64 RamDiskToFile(U8 drv_let='B',U8 *filename); // Save a RAM disk to a file
+I64 FileToRamDisk(U8 drv_let='B', U8 *filename); // Replace contents of RAM disk with a disk image file.
+
+// Functions to get and put files to/from a host machine while running (for use with snail_lite.py):
+I64 Fget(U8 *filename); //Gets file from another PC over serial
+I64 Fput(U8 *filename); //Transfers file using to another PC over serial
+
+// Screen saver function:
+U0 SetScreenSaverTimeout(I64 new_timeout); // Set timeout value for screen saver in seconds
+
+// Bit-field helper functions:
+U0 BitFieldSet(U8 *bit_field, U8 offset, U8 size, U8 value);
+U64 BitFieldGet(U8 *bit_field, U8 offset, U8 size);
+
+// File/Disk functions:
+U8 *FileBaseName(U8 *filename); // Returns file name without the path
+Bool SetDrvLetType(U8 drv_let, U8 type); //Sets the BlkDev type for this drive letter to override default type
+Bool DrvMounted(I64 drv_let); //Returns true if drv_let is mounted
+```
+
+### Changes added in TinkerOS 5.06.4:
 
 #### Documentation changes:
  - Classes are now clickable links

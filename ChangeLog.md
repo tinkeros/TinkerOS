@@ -24,6 +24,7 @@
 - Faster scaled mode graphics updates.
 - Added 239 more colors available for non-TempleOS apps to use. The first 16 (0-15) colors are the same as the TempleOS palette. The next 239 (16-254) are available for TinkerOS/3rd party apps.  Color 255 is transparent in both TempleOS and TinkerOS.
 - Added message to text mode which is displayed if a user attempted to boot into a graphics mode which their system does not support so they know why they ended up in text mode and what they can do to fix it.
+- Correct issues with pitch when pitch != 4 * width to support resolutions like 1366x768
 
 #### Hardware support:
 

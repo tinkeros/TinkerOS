@@ -37,7 +37,7 @@
    - Choose write, respond yes and quit
 
 
-### Step 8 - Boot TinkerOS live and install answering no to the automated installer.  You can try probing to see if your manually partitioned drive now works, if not try rebooting and answering no to probing and manually enter the IO ports.
+### Step 8 - Boot TinkerOS live and install answering no to the automated installer.  You can try probing to see if your manually partitioned drive now works, if not try rebooting and answering no to probing and manually mount and enter the IO ports.
   - If you are unsure of which IO ports go in what order, you can quit the installer and test combinations of IO ports and unit numbers on the command line like this:
   ```
 ATAProbe(0x1f0,0x3f0,0,TRUE);
@@ -61,10 +61,12 @@ ATAProbe(0x170,0x370,1,TRUE);
 ## Known working laptops:
  - Dell Latitude D630
  - Dell Latitude E5400
- - Lenovo Thinkpad 420/430 (sometime probing is an issue, best to partition and enter IO ports manually)
+ - Lenovo Thinkpad 420/430 (sometime probing is an issue, best to partition and enter IO ports manually and boot from CD/DVD instead of USB)
 ## Known laptops which boot to TinkerOS, but watchdog halts machine in less than 10 minutes:
  - HP Probook 655 G1
  - Toshiba Satellite C655D
 ## Known not working laptops:
  - Lenovo Yoga Pro 3
  
+### Other Notes:
+ - Sometimes Legacy SATA support seems to not work if you boot from a USB flash drive.  The Lenovo Thinkpad T420 is one such example where this is the case.  Installing works when booting from CD/DVD if you manually partition the drive in advance and manaully enter the IO ports.

@@ -153,7 +153,9 @@ public U0 WinZBufUpdate()
 #help_index "Graphics"
 U0 GrInit2()
 {
+  CVBEMode *vbemode=VBE_MODE;
   MemSet(&gr,0,sizeof(CGrGlbls));
+  gr.pitch=vbemode->pitch;
   gr.sprite_hash=HashTableNew(512);
   HashDefineLstAdd("ST_SPRITE_ELEM_CODES",SPHT_ELEM_CODE,gr.sprite_hash);
   gr.scrn_zoom=1;
@@ -169,6 +171,9 @@ U0 GrInit2()
   gr.win_z_buf=MAlloc(TEXT_ROWS*TEXT_COLS*sizeof(U16));
   gr.dc2=DCNew(GR_WIDTH,GR_HEIGHT);
   gr.dc2->flags|=DCF_SCRN_BITMAP;
+  gr.ss=DCNew(GR_WIDTH,GR_HEIGHT);
+  gr.scrn_saver_task=NULL;
+  gr.scrn_saver_timeout = SCREEN_SAVER_TIMEOUT;
   gr.dc_cache=DCNew(GR_WIDTH,GR_HEIGHT);
   gr.dc=DCNew(GR_WIDTH,GR_HEIGHT);
   gr.dc->flags|=DCF_SCRN_BITMAP|DCF_ON_TOP;

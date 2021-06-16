@@ -328,21 +328,104 @@ U0 GrUpdateTextModeText()
 }
 
 
-U0 GrPartialUpdate()
+U0 GrPartialUpdateScaling(U8 *screen)
 {
-  U16 *screen = gr.dc2->body, *last_screen = gr.screen_cache;
-  I64 i, *dst = text.fb_alias, diffs_size = GR_WIDTH * GR_HEIGHT / 2;
-  for (i = 0; i < diffs_size; i++)
+  U8 *screen2, *last_screen = gr.screen_cache;
+  I64 i,j,k,l,idx,dst_row=0;
+  I32 *dst=text.fb_alias;
+  for (i=0; i<GR_HEIGHT; i++)
   {
-    if (screen[i] != last_screen[i])
+    k=HEIGHT_SCALE;
+    while (k--)
     {
-      last_screen[i] = screen[i];
-      dst[i] = gr_palette[screen[i].u8[0]] | gr_palette[screen[i].u8[1]] << 32;
+      dst=text.fb_alias;
+      dst=dst+dst_row*gr.pitch/4;
+      screen2=screen;
+      for (l=0; l<GR_WIDTH; l++)
+      {
+        idx=i*GR_WIDTH+l;
+        if (screen[idx]!=last_screen[idx])
+        {
+          for (j=0; j<WIDTH_SCALE; j++)
+          {
+            dst[l*WIDTH_SCALE+j]=gr_palette[screen[idx]];
+          }
+        }
+      }
+      dst_row++;
+    }
+  }
+  MemCpy(gr.screen_cache,screen,GR_HEIGHT*GR_WIDTH);
+}
+
+
+U0 GrPartialUpdateLetterbox(U8 *screen)
+{
+  U8 *last_screen = gr.screen_cache;
+  I64 i,j,idx;
+  U32 *dst;
+  for (i=0; i<GR_HEIGHT; i++)
+  {
+    dst=text.fb_alias;
+    dst=dst+i*gr.pitch/4+LETTER_BOX_BAR_WIDTH;
+    for (j=0; j<GR_WIDTH; j++)
+    {
+      idx=i*GR_WIDTH+j;
+      if (screen[idx] != last_screen[idx])
+      {
+        last_screen[idx] = screen[idx];
+        dst[j] = gr_palette[screen[idx]];
+      }
     }
   }
 }
 
-U0 GrDoFinalScale()
+
+U0 GrPartialUpdate(U16 *screen)
+{
+  U16 *last_screen = gr.screen_cache;
+  I64 i,j,idx,*dst = text.fb_alias;
+  for (i=0; i<GR_HEIGHT; i++)
+  {
+    dst=text.fb_alias;
+    dst=dst+i*gr.pitch/8;
+    for (j=0; j<GR_WIDTH/2; j++)
+    {
+      idx=i*GR_WIDTH/2+j;
+      if (screen[idx] != last_screen[idx])
+      {
+        last_screen[idx] = screen[idx];
+        dst[j] = gr_palette[screen[idx].u8[0]] | gr_palette[screen[idx].u8[1]] << 32;
+      }
+    }
+  }
+}
+
+U0 GrDoLetterBox()
+{
+  I64 i,j,dst_row=0;
+  U32 *src, *dst;
+  src=text.raw_scrn_image;
+  for (i=0; i<GR_HEIGHT; i++)
+  {
+    dst=text.fb_alias+dst_row*gr.pitch/4;
+    for (j=0; j<LETTER_BOX_BAR_WIDTH; j++)
+    {
+      *dst++=0;
+    }
+    for (j=0; j<GR_WIDTH; j++)
+    {
+      *dst++=*src++;
+    }
+    for (j=0; j<LETTER_BOX_BAR_WIDTH; j++)
+    {
+      *dst++=0;
+    }
+    dst_row++;
+  }
+}
+
+U0 GrDoFinalScaling()
 {
   I64 i,j,k,l,dst_row=0;
   U32 *src, *dst, *src2;
@@ -352,7 +435,7 @@ U0 GrDoFinalScale()
     k=HEIGHT_SCALE;
     while (k--)
     {
-      dst=text.fb_alias+dst_row*FB_WIDTH;
+      dst=text.fb_alias+dst_row*gr.pitch/4;
       src2=src;
       for (l=0; l<GR_WIDTH; l++)
       {
@@ -371,23 +454,86 @@ U0 GrDoFinalScale()
 U0 GrUpdateVGAGraphics()
 {
   U64 size, *dst = text.raw_scrn_image;
-  U8 *src;
-  if (gr.scrn_zoom == 1)
+  I64 last_event, i,j;
+  U8 *src, *src_start;
+  U32 *dst2;
+  last_event = KbdMsEvtTime;
+  if (gr.scrn_saver_timeout && (GetTSC - last_event)/cnts.time_stamp_freq > gr.scrn_saver_timeout)
   {
-    if (LBtr(&sys_semas[SEMA_FLUSH_VGA_IMAGE],0) || DO_SCALING)
+    if (!gr.scrn_saver)
     {
-      src = gr.dc2->body;
-      size = src + gr.dc2->height * gr.dc2->width_internal;
-      while (src < size)
-        *dst++ = gr_palette[*src++ & 0xFF] | gr_palette[*src++ & 0xFF] << 32;
-      MemCpy(gr.screen_cache,gr.dc2->body, text.buffer_size/4);
-      if (DO_SCALING)
-        GrDoFinalScale;
-      else
-        MemCpy(text.fb_alias, text.raw_scrn_image, text.buffer_size);
+      VGAFlush;
+      gr.scrn_zoom = 1;
+      gr.scrn_saver=TRUE;
+      gr.scrn_saver_cnts=0;
+      if (TaskValidate(gr.scrn_saver_task))
+      {
+        Kill(gr.scrn_saver_task);
+      }
+      gr.scrn_saver_task=NULL;
     }
     else
-      GrPartialUpdate;
+    {
+      gr.scrn_saver_cnts++;
+    }
+    (*gr.fp_draw_ss)(gr.ss,gr.scrn_saver_cnts);
+    src_start = gr.ss->body;
+  }
+  else
+  {
+    if (gr.scrn_saver)
+    {
+      VGAFlush;
+      gr.scrn_zoom = 1;
+      gr.scrn_saver=FALSE;
+      gr.scrn_saver_cnts=0;
+      if (TaskValidate(gr.scrn_saver_task))
+      {
+        Kill(gr.scrn_saver_task);
+      }
+      gr.scrn_saver_task=NULL;
+    }
+    src_start = gr.dc2->body;
+  }
+  if (gr.scrn_zoom == 1)
+  {
+    if (LBtr(&sys_semas[SEMA_FLUSH_VGA_IMAGE],0))
+    {
+      if (gr.dc2->width_internal == GR_WIDTH)
+      {
+        size = src_start + gr.dc2->height * gr.dc2->width_internal;
+        src = src_start;
+        while (src < size)
+          *dst++ = gr_palette[*src++ & 0xFF] | gr_palette[*src++ & 0xFF] << 32;
+      }
+      else
+      {
+        for (i=0; i<GR_HEIGHT; i++)
+        {
+          src = src_start + i*gr.dc2->width_internal;
+          dst2 = text.raw_scrn_image + i*GR_WIDTH;
+          for (j=0; j<GR_WIDTH; j++)
+            dst2[j]=gr_palette[src[j] & 0xff];
+        }
+      }
+      MemCpy(gr.screen_cache,src_start, text.buffer_size/4);
+      if (LETTER_BOX)
+        GrDoLetterBox;
+      else if (DO_SCALING)
+        GrDoFinalScaling;
+      else if (FB_WIDTH*4==gr.pitch)
+        MemCpy(text.fb_alias, text.raw_scrn_image, text.buffer_size);
+      else
+        GrDoLetterBox;
+    }
+    else if (LETTER_BOX)
+      GrPartialUpdateLetterbox(src_start);
+    else if (DO_SCALING)
+      GrPartialUpdateScaling(src_start);
+    else if (FB_WIDTH*4==gr.pitch)
+      GrPartialUpdate(src_start);
+    else
+      GrPartialUpdateLetterbox(src_start);
   }
   else
   {
@@ -397,10 +543,14 @@ U0 GrUpdateVGAGraphics()
     while (src < size)
       *dst++ = gr_palette[*src++ & 0xFF] | gr_palette[*src++ & 0xFF] << 32;
     MemCpy(gr.screen_cache,gr.zoomed_dc->body, text.buffer_size/4);
-    if (DO_SCALING)
-      GrDoFinalScale;
-    else
+    if (LETTER_BOX)
+      GrDoLetterBox;
+    else if (DO_SCALING)
+      GrDoFinalScaling;
+    else if (FB_WIDTH*4==gr.pitch)
       MemCpy(text.fb_alias, text.raw_scrn_image, text.buffer_size);
+    else
+      GrDoLetterBox;
     VGAFlush;
   }
 }
@@ -531,8 +681,16 @@ public U0 EnableSethGfx()
   }
 }
 
+public U0 SetScreenSaverTimeout(I64 new_timeout)
+{//Set timeout value for screen saver in seconds
+  if (new_timeout<1)
+    gr.scrn_saver_timeout=0;
+  else
+    gr.scrn_saver_timeout=new_timeout;
+}
+
 public U0 SetFPS(I64 new_fps)
-{// Sets target frame rate
+{//Sets target frame rate
   if (new_fps<1)
   {
     lock

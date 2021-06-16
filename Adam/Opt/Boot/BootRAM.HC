@@ -58,3 +58,8 @@ public U0 BootRAM(U8 *filename=NULL)
   HiMemCpy(lo_image,hi_image,size);
   HiCall(sys_ram_reboot);
 }
+
+public U0 RAMReboot(U8 *filename=NULL)
+{//Softboot Kernel.BIN file. No hardware reset.
+BootRAM(filename);
+}

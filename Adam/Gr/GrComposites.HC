@@ -360,11 +360,14 @@ public U0 DrawStdMs(CDC *dc,I64 x,I64 y)
 {//This is a callback. See $LK,"::/Demo/Graphics/Grid.HC"$.
 //Called by $LK,"DrawMs",A="MN:DrawMs"$() which is
   //called by $LK,"WinFinalUpdate",A="MN:WinFinalUpdate"$().
+  I64 old_color=dc->color;
+  dc->color=BLACK;
   dc->thick=2;
   dc->flags&=~(DCF_TRANSFORMATION|DCF_SYMMETRY);
   GrArrow3(dc,x+8,y+8,0,x,y,0,2.0);
   GrArrow3(dc,x+9,y+9,0,x+1,y+1,0,1.5);
   GrArrow3(dc,x+10,y+10,0,x+2,y+2,0,0.75);
+  dc->color=old_color;
 }
 
 gr.fp_draw_ms=&DrawStdMs;

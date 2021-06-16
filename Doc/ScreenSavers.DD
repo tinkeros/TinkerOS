@@ -1,0 +1,42 @@
+$WW,1$The screen saver timeout can be set with the function SetScreenSaverTimeout.  A value of 0 will disable the screen saver feature.
+
+Programming TinkerOS screen savers:
+
+When the window manager activates screen saver mode it switches from drawing the normal device context (gr.dc2) and instead draws the screen saver device context (gr.ss).  Before drawing the screen saver gr.ss with every update it calls the function gr.fp_draw_ss which is used to either draw to gr.ss before it is output to the screen or spawn a task which draws to it.
+
+There are 3 main ways to implement drawing screen saver output:
+
+1) Most light-weight: Draw only once 
+
+Example:
+
+$LK,"::/Demo/ScreenSavers/Blank.HC.Z"$
+
+2) Draw something quickly just when the window manager calls gr.fp_draw_ss
+
+Example:
+
+$LK,"::/Demo/ScreenSavers/Default.HC.Z"$
+
+3) Most complex: Use gr.fp_draw_ss to simply spawn a new task which draws continously.  You can even do cool things like copy the window manager screen and draw over the top of it with transparency.
+
+Example:
+
+$LK,"::/Demo/ScreenSavers/TDance.HC.Z"$
+
+Note on colors:
+
+TinkerOS allows for the use of 255 colors (0-254).  This first 16 colors (0-15) are used for the default 16-color palette and should not be overwritten by your screen saver.  They are used by all the legacy code which expects those 16 colors to be the "official" palette to draw with.  The rest of the colors (16-254) are "TinkerOS extended colors" and are free for 3rd party apps to use and change as they see fit.  The last color (255) is used by both TempleOS and TinkerOS as a transparent.  If you call GrBlot and use color number 255, it will not display a color, it will instead treat any pixels with color 255 as transparent.
+
+Other important notes:
+
+1) TempleOS/TinkerOS only force context switches for interrupts!  What this means is that if you spawn a new task to draw your screen saver, then you must call Yield or Sleep inside your loop or the window manager and other tasks will never be allowed to run again and you will see nothing and not be able to do anything since no other task on the system will be allowed to execute.
+
+2) If you decided to spawn a task to continuously draw your screen saver, be sure to set gr.scrn_saver_task to the CTask pointer of your task.  That way it will be killed automatically when it is time for the screen saver to end.
+
+3) The window manager is run by Adam, so you need to Adam include your screen savers if you want to run them.  You can for testing purposes do a normal include for the purpose of finding code errors which the compiler will report.
+
+4) The function KbdMsEvtTime provides the time of the last keyboard and mouse input which serves as the start of the screen saver activation countdown time.
+
+5) If your screensaver crashes at runtime (without dropping you to the debugger), you might be able to find useful output from Adam in the output window at the top of the wallpaper.
+

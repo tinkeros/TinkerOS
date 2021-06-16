@@ -169,9 +169,21 @@ U8 Let2Let(U8 drv_let=0)
   return ToUpper(drv_let);
 }
 
+Bool SetDrvLetType(U8 drv_let, U8 type)
+{//Sets the BlkDev type for this drive letter to override default type
+  if ('A'<=drv_let<='Z')
+  {
+      BlkDevLtrOverride[drv_let-'A']=type;
+      return TRUE;
+  }
+  return FALSE;
+}
+
 I64 Let2BlkDevType(U8 drv_let)
 {//Drv letter to BlkDev Type. drv_let=0 not allowed. See $LK,"BDT_NULL",A="MN:BDT_NULL"$.
   drv_let=Let2Let(drv_let);
+  if (BlkDevLtrOverride[drv_let-'A']!=BDT_NULL)
+      return BlkDevLtrOverride[drv_let-'A'];
   if ('A'<=drv_let<='B')
     return BDT_RAM;
   if ('C'<=drv_let<='L')
@@ -286,7 +298,7 @@ Bool Drv(U8 drv_let)
   }
 }
 
-U8 blkdev_text_attr[BDT_TYPES_NUM]={BLACK,LTCYAN,WHITE,LTGREEN,LTRED,LTBLUE};
+U8 blkdev_text_attr[BDT_TYPES_NUM]={BLACK,LTCYAN,WHITE,LTGREEN,LTRED,LTBLUE,WHITE,LTBLUE,LTPURPLE};
 U8 drv_text_attr[3]={BLACK,BLUE,RED};
 
 U8 DrvTextAttrGet(U8 drv_let=0)
@@ -298,6 +310,26 @@ U8 DrvTextAttrGet(U8 drv_let=0)
   else
     return BLACK<<4|WHITE;
 }
+
+
+Bool DrvMounted(I64 drv_let)
+{//Returns true if drv_let is mounted
+  I64 i;
+  CDrv *dv=dv=blkdev.drvs;
+  for (i=0;i<DRVS_NUM;i++)
+  {
+    if (dv->dv_signature==DRV_SIGNATURE_VAL)
+    {
+      if (drv_let==Drv2Let(dv))
+      {
+          return TRUE;
+      }
+    }
+    dv++;
+  }
+  return FALSE;
+}
+      
 
 U0 DrvRep()
 {//Drive report.

@@ -1,7 +1,7 @@
 //This is run in a $LK,"#exe",A="FF:::/Kernel/Kernel.PRJ,KCfg"${}.
 
 U8 *kernel_cfg_options="MemInit\0HeapInit\0VarInit\0StaffMode\0"
-                       "HomeDir\0NoMP\0TextMode\0DontProbe\0MountIDEAuto\0DbgDistro\0Resolution\0Help\0";
+                       "HomeDir\0NoMP\0TextMode\0DontProbe\0MountIDEAuto\0DbgDistro\0Resolution\0ScreenSaver\0Help\0";
 
 #define CFG_MEM_INIT		0
 #define CFG_HEAP_INIT		1
@@ -14,9 +14,10 @@ U8 *kernel_cfg_options="MemInit\0HeapInit\0VarInit\0StaffMode\0"
 #define CFG_MOUNT_IDE_AUTO	8
 #define CFG_DBG_DISTRO		9
 #define CFG_RESOLUTION		10
-#define CFG_OPTIONS_NUM		11
+#define CFG_SCREEN_SAVER	11
+#define CFG_OPTIONS_NUM		12
 
-#define CFG_HELP		11
+#define CFG_HELP		12
 
 class CKCfg
 {
@@ -28,7 +29,8 @@ class CKCfg
   U8 mem_init_val,heap_init_val,var_init_val,
   boot_drv_let,mount_ide_auto_hd_let,mount_ide_auto_cd_let;
   U64 gr_width,gr_height,gr_scale,
-      fb_width,fb_height,x_scale,y_scale;
+      fb_width,fb_height,x_scale,y_scale,letter_box,
+      letter_box_bar_width,screen_saver_timeout;
 };
 
 CDoc *KCfgAddDev(CKCfg *c)
@@ -52,7 +54,7 @@ CDoc *KCfgAddDev(CKCfg *c)
 
 U0 KCfgOptions(CKCfg *c)
 {
-  I64 i;
+  I64 i,x_scale_max,y_scale_max;
   U8 *st=NULL,*st2,*st3,*cfgfile;
   Bool state;
   do
@@ -63,6 +65,8 @@ U0 KCfgOptions(CKCfg *c)
         "$$PURPLE$$%13tz$$FG$$:\"%s\"\n",i,kernel_cfg_options,c->home_dir;
       else if (i==CFG_RESOLUTION)
         "$$PURPLE$$%13tz$$FG$$:\"%dx%d\"\n",i,kernel_cfg_options,c->gr_width,c->gr_height;
+      else if (i==CFG_SCREEN_SAVER)
+        "$$PURPLE$$%13tz$$FG$$:\"%d\"\n",i,kernel_cfg_options,c->screen_saver_timeout;
       else
         "$$PURPLE$$%13tz$$FG$$:%Z\n",i,kernel_cfg_options,c->opts[i],"ST_OFF_ON";
     "\nType '$$PURPLE$$Help$$FG$$' for help.\n";
@@ -83,6 +87,10 @@ U0 KCfgOptions(CKCfg *c)
       "$$PURPLE$$DbgDistro$$FG$$ Include RAM Drv in Kernel.BIN.\n";
       "$$PURPLE$$Resolution$$FG$$ Change Resolution (%dx%d)\n"
       ,c->gr_width,c->gr_height;
+      if (c->screen_saver_timeout>0)
+        "$$PURPLE$$ScreenSaver$$FG$$ Change Screen Saver Timeout (%d seconds)\n",c->screen_saver_timeout;
+      else
+        "$$PURPLE$$ScreenSaver$$FG$$ Change Screen Saver Timeout (0=disabled)\n";
       "\n";
     }
     else if (0<=i<CFG_OPTIONS_NUM)
@@ -90,53 +98,96 @@ U0 KCfgOptions(CKCfg *c)
       state=c->opts[i]=!c->opts[i];
       switch (i)
       {
+      case CFG_SCREEN_SAVER:
+        if (state)
+          c->screen_saver_timeout=GetI64("Screen Saver Timeout (seconds, 0=disable): ",300,0,3600*24);
+        break;
       case CFG_RESOLUTION:
         if (state)
         {
-          "\n\nAllowed resolutions:\n\n"
+          "\n\nPlease enter a 32-bit resolution\n"
+          "supported by your hardware:\n\n"
+          "Widely supported resolutions:\n\n"
           "640 x 480 (default 4:3)\n"
-          "640 x 340* (for wide screen monitors)\n"
-          "800 x 600 (alt 4:3, some games may not look right)\n"
-          "1280 x 512* (alt wide screen, some games may not look right)\n"
-          "\n* - These are the resolutions the OS renders at, but the output\n"
-          "\n    is scaled both before going to the frame buffer and by the\n"
-          "\n    users display.\n\n";
-          c->gr_width=GetI64("Desired Width (640, 800, or 1280):",640,640,1280);
-          if (c->gr_width == 640)
+          "800 x 600 (alt 4:3, some games may not look right)\n\n";
+          c->fb_width=GetI64("Enter width (min 640, max 1920):",640,640,1920);
+          c->fb_height=GetI64("Enter height (min 480, max 1080):",480,480,1080);
+          c->gr_width=c->fb_width;
+          c->gr_height=c->fb_height;
+          c->gr_scale=0;
+          c->letter_box=0;
+          c->letter_box_bar_width=(c->fb_width-c->gr_width)/2;
+          "\nWould you like to configure advanced\n"
+          "options such as letterboxing or scaling ";
+          if (YorN)
           {
-            c->gr_height=GetI64("Desired Height (480 or 340):",480,340,480);
-            if (c->gr_height != 480 && c->gr_height != 340)
+            if (c->fb_width>640 && c->fb_height==480 || c->fb_width>800 && c->fb_height==600 || c->fb_width>1024 && c->fb_height==768 || c->fb_width % 8)
             {
-              "Invalid height %d, Setting height to %d\n",c->gr_height,480;
-              c->gr_height=480;
+              if (c->fb_width % 8 == 0)
+              {
+                "\nWould you like to letterbox for a true"
+                " 4:3 experience";
+                if (YorN)
+                {
+                  c->letter_box=1;
+                  if (c->fb_height==480)
+                  {
+                    c->gr_width=640;
+                  }
+                  if (c->fb_height==600)
+                  {
+                    c->gr_width=800;
+                  }
+                  if (c->fb_height==768)
+                  {
+                    c->gr_width=1024;
+                  }
+                  c->letter_box_bar_width=(c->fb_width-c->gr_width)/2;
+                  break;
+                }
+              }
+              else
+              {
+                c->gr_width=1;
+                while (c->gr_width % 8 != 0)
+                  c->gr_width=GetI64("Letterbox width (min 640, multiple of 8):",640,640,c->fb_width - c->fb_width%8);
+                c->letter_box_bar_width=(c->fb_width-c->gr_width)/2;
+                break;
+              }
             }
-            if (c->gr_height==340)
+            if (c->fb_width>=800 && c->fb_height>=600)
             {
-              c->fb_width=1280;
-              c->fb_height=1024;
-              c->gr_scale=1;
-              c->x_scale=2;
-              c->y_scale=3;
+              "\nScaling allows you to generate a lower\n"
+              "effective resolution using a higher\n"
+              "resolutions by repeating columns/rows for\n"
+              "the purpose of making objects larger\n"
+              "and/or correcting for differences between\n"
+              "4:3 and widescreen monitors\n\n"
+              "\nWould you like to configure x/y scaling ";
+              if (YorN)
+              {
+                for (i=1; i<c->fb_width/400; i++)
+                {
+                  if (c->fb_width % i == 0)
+                    x_scale_max=i;
+                }
+                y_scale_max = c->fb_height/300;
+                if (x_scale_max<1)
+                  x_scale_max=1;
+                if (y_scale_max<1)
+                  y_scale_max=1;
+                "Max allowed x scale for width %d is: %d\n"
+                ,c->fb_width,x_scale_max;
+                c->x_scale=GetI64("Enter x scale >=1:",1,1,x_scale_max);
+                "Max allowed y scale for width %d is: %d\n"
+                ,c->fb_height,y_scale_max;
+                c->y_scale=GetI64("Enter y scale >=1:",1,1,y_scale_max);
+              }
+              if (c->x_scale>1 || c->y_scale>1)
+                c->gr_scale=1;
+              c->gr_width=c->fb_width/c->x_scale;
+              c->gr_height=c->fb_height/c->y_scale;
             }
-          }
-          if (c->gr_width == 800)
-          {
-            c->fb_width=800;
-            c->fb_height=600;
-            c->gr_height=600;
-            "Setting height to %d\n"
-            ,c->gr_height;
-          }
-          if (c->gr_width == 1280)
-          {
-            c->gr_height=512;
-            "Setting height to %d\n"
-            ,c->gr_height;
-            c->fb_width=1280;
-            c->fb_height=1024;
-            c->gr_scale=1;
-            c->x_scale=1;
-            c->y_scale=2;
           }
         }
         break;
@@ -225,6 +276,9 @@ U0 KCfgOptions(CKCfg *c)
   DocPrint(cfgdoc,"#define WIDTH_SCALE %d\n",c->x_scale);
   DocPrint(cfgdoc,"#define HEIGHT_SCALE %d\n",c->y_scale);
   DocPrint(cfgdoc,"#define DO_SCALING %d\n",c->gr_scale);
+  DocPrint(cfgdoc,"#define LETTER_BOX %d\n",c->letter_box);
+  DocPrint(cfgdoc,"#define SCREEN_SAVER_TIMEOUT %d\n",c->screen_saver_timeout);
+  DocPrint(cfgdoc,"#define LETTER_BOX_BAR_WIDTH %d\n",c->letter_box_bar_width);
   DocPrint(cfgdoc,"#define GR_TEXT_MODE %d\n",c->opts[CFG_TEXT_MODE]);
   DocWrite(cfgdoc);
   DocDel(cfgdoc);
@@ -240,6 +294,7 @@ CKCfg *KCfgNew()
                         "gets rounded-up funny,\n"
                         "($$PURPLE$$<ENTER>$$FG$$ will use default.):",
                         "Scale2Mem(0x80000,0x8000000)");
+  c->screen_saver_timeout=300;
   c->gr_width=640;
   c->gr_height=480;
   c->fb_width=640;

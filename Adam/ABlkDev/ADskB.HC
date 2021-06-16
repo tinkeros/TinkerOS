@@ -207,3 +207,40 @@ public I64 Unzip(U8 *files_find_mask="*.Z",U8 *fu_flags=NULL)
   DirTreeDel(tmpde1);
   return res;
 }
+
+public I64 RamDiskToFile(U8 drv_let='B',U8 *filename)
+{//Save a RAM disk to a file
+  I64 cnt=0;
+  CBlkDev *ram_disk=Let2BlkDev(drv_let);
+  if (ram_disk)
+  {
+    "Attempting to write %d blocks from drive %c to file %s\n",ram_disk->max_blk,drv_let,filename;
+    cnt=FileWrite(filename,ram_disk->RAM_dsk,BLK_SIZE*ram_disk->max_blk,,RS_ATTR_CONTIGUOUS);
+  }
+  return cnt;
+}
+
+public I64 FileToRamDisk(U8 drv_let='B', U8 *filename)
+{//Replace contents of RAM disk with a disk image file.
+  I64 cnt=0;
+  U8 *buf;
+  CBlkDev *ram_disk=Let2BlkDev(drv_let);
+  if (ram_disk)
+  {
+    "Attempting to read %d blocks to drive %c from file %s\n",ram_disk->max_blk,drv_let,filename;
+    buf=FileRead(filename,&cnt);
+    if (cnt == BLK_SIZE*ram_disk->max_blk)
+    {
+      MemCpy(ram_disk->RAM_dsk,buf,BLK_SIZE*ram_disk->max_blk);
+    }
+    else
+    {
+      "Error file block count != RAM disk block count!\n";
+      Free(buf);
+      return 0;
+    }
+  }
+  Free(buf);
+  return cnt;
+}
+

@@ -26,15 +26,12 @@ Bool BootDVDProbe(CBlkDev *bd)
   return res;
 }
 
-Bool BootDVDProbeAll(CBlkDev *bd)
+Bool ProbeClass(I64 code,CBlkDev *bd)
 {
-  I64 d1,d2,i,j,k;
-
-  bd->base1=0;
+    I64 i=-1,j,k,d1,d2;
   for (k=0;k<256;k++) {
-    i=-1;
     while (TRUE) {
-      j=PCIClassFind(0x010100+k,++i);
+      j=PCIClassFind(code+k,++i);
       if (j<0)
 	break;
       "Subcode:0x%X Bus:0x%X Dev:0x%X Fun:0x%X\n",k,j.u8[2],j.u8[1],j.u8[0];
@@ -64,6 +61,18 @@ Bool BootDVDProbeAll(CBlkDev *bd)
       }
     }
   }
+}
+
+Bool BootDVDProbeAll(CBlkDev *bd)
+{
+  I64 d1,d2;
+
+  bd->base1=0;
+
+  "Probing for IDE controllers (if any)\n";
+  ProbeClass(0x010100,bd);
+
+  "Testing other IO ports probing may not find.\n";
 
   d1=0x1F0;
   d2=0x3F6;
@@ -86,10 +95,83 @@ Bool BootDVDProbeAll(CBlkDev *bd)
     if (BootDVDProbe(bd))
       return TRUE;
   }
+
+  d1=0x170;
+  d2=0x374;
+  if (bd->base0=d1&~7) {
+    bd->base1=d2;
+    bd->unit=0;
+    if (BootDVDProbe(bd))
+      return TRUE;
+    bd->unit=1;
+    if (BootDVDProbe(bd))
+      return TRUE;
+  }
+
+  d1=0x1f0;
+  d2=0x3f4;
+  if (bd->base0=d1&~7) {
+    bd->base1=d2;
+    bd->unit=0;
+    if (BootDVDProbe(bd))
+      return TRUE;
+    bd->unit=1;
+    if (BootDVDProbe(bd))
+      return TRUE;
+  }
+
+  d1=0x2118;
+  d2=0x2124;
+  if (bd->base0=d1&~7) {
+    bd->base1=d2;
+    bd->unit=0;
+    if (BootDVDProbe(bd))
+      return TRUE;
+    bd->unit=1;
+    if (BootDVDProbe(bd))
+      return TRUE;
+  }
+
+  d1=0x2110;
+  d2=0x2120;
+  if (bd->base0=d1&~7) {
+    bd->base1=d2;
+    bd->unit=0;
+    if (BootDVDProbe(bd))
+      return TRUE;
+    bd->unit=1;
+    if (BootDVDProbe(bd))
+      return TRUE;
+  }
+
+  d1=0x5118;
+  d2=0x5124;
+  if (bd->base0=d1&~7) {
+    bd->base1=d2;
+    bd->unit=0;
+    if (BootDVDProbe(bd))
+      return TRUE;
+    bd->unit=1;
+    if (BootDVDProbe(bd))
+      return TRUE;
+  }
+
+  d1=0x5110;
+  d2=0x5120;
+  if (bd->base0=d1&~7) {
+    bd->base1=d2;
+    bd->unit=0;
+    if (BootDVDProbe(bd))
+      return TRUE;
+    bd->unit=1;
+    if (BootDVDProbe(bd))
+      return TRUE;
+  }
+
 }
 
 U0 ATARepEntry(I64 base0,I64 base1,I64 unit,U8 *msg,
-	CATARep **_head,I64 *num_hints)
+	CATARep **_head,I64 *num_hints, I64 *_type=NULL)
 {
   I64 type;
   base0&=-8;
@@ -117,6 +199,8 @@ U0 ATARepEntry(I64 base0,I64 base1,I64 unit,U8 *msg,
       tmpha->base1=base1;
       tmpha->unit=unit;
     }
+    if (_type)
+        *_type=type;
   }
 }
 
@@ -133,7 +217,7 @@ Bool ATARepExitAllApplications()
 
 public I64 ATARep(Bool pmt=TRUE,Bool just_ide=FALSE,CATARep **_head=NULL)
 {//Report possible ATA devices by probing.  Hard disks and CD/DVDs.
-  I64 d1,d2,i,j,k,cnt=0,unlock_flags=0,num_hints=0;
+  I64 d1,d2,i,j,k,type,old_hints,hd_cnt=0,cnt=0,unlock_flags=0,num_hints=0;
 #assert BLKDEVS_NUM<=64
   if (_head) *_head=NULL;
 
@@ -159,33 +243,70 @@ public I64 ATARep(Bool pmt=TRUE,Bool just_ide=FALSE,CATARep **_head=NULL)
 	d1=PCIReadU32(j.u8[2],j.u8[1],j.u8[0],0x10);
 	d2=PCIReadU32(j.u8[2],j.u8[1],j.u8[0],0x14);
 	if (d1&1 && d2&1) {
-	  ATARepEntry(d1,d2,0,"Primary IDE",_head,&num_hints);
-	  ATARepEntry(d1,d2,1,"Primary IDE",_head,&num_hints);
-	} else {
-	  d1=0x1F0; d2=0x3F6;
-	  ATARepEntry(d1,d2,0,"Primary IDE",_head,&num_hints);
-	  ATARepEntry(d1,d2,1,"Primary IDE",_head,&num_hints);
+	  ATARepEntry(d1,d2,0,"Primary IDE",_head,&num_hints,&type);
+      if (type==BDT_ATA && d1 & -8 != 0) hd_cnt++;
+	  ATARepEntry(d1,d2,1,"Primary IDE",_head,&num_hints,&type);
+      if (type==BDT_ATA && d1 & -8 != 0) hd_cnt++;
 	}
 	d1=PCIReadU32(j.u8[2],j.u8[1],j.u8[0],0x18);
 	d2=PCIReadU32(j.u8[2],j.u8[1],j.u8[0],0x1C);
 	if (d1&1 && d2&1) {
-	  ATARepEntry(d1,d2,0,"Secondary IDE",_head,&num_hints);
-	  ATARepEntry(d1,d2,1,"Secondary IDE",_head,&num_hints);
-	} else {
-	  d1=0x170; d2=0x376;
-	  ATARepEntry(d1,d2,0,"Secondary IDE",_head,&num_hints);
-	  ATARepEntry(d1,d2,1,"Secondary IDE",_head,&num_hints);
+	  ATARepEntry(d1,d2,0,"Secondary IDE",_head,&num_hints,&type);
+      if (type==BDT_ATA && d1 & -8 != 0) hd_cnt++;
+	  ATARepEntry(d1,d2,1,"Secondary IDE",_head,&num_hints,&type);
+      if (type==BDT_ATA && d1 & -8 != 0) hd_cnt++;
 	}
       }
     }
-  if (!cnt) {
+  old_hints = num_hints;
+  if (!cnt || !hd_cnt) {
     d1=0x1F0; d2=0x3F6;
-    ATARepEntry(d1,d2,0,"Primary IDE",_head,&num_hints);
-    ATARepEntry(d1,d2,1,"Primary IDE",_head,&num_hints);
-
+    ATARepEntry(d1,d2,0,"Primary IDE",_head,&num_hints,&type);
+    Sleep(2);
+    if (type==BDT_ATA) hd_cnt++;
+    ATARepEntry(d1,d2,1,"Primary IDE",_head,&num_hints,&type);
+    Sleep(2);
+    if (type==BDT_ATA) hd_cnt++;
     d1=0x170; d2=0x376;
-    ATARepEntry(d1,d2,0,"Secondary IDE",_head,&num_hints);
-    ATARepEntry(d1,d2,1,"Secondary IDE",_head,&num_hints);
+    ATARepEntry(d1,d2,0,"Secondary IDE",_head,&num_hints,&type);
+    Sleep(2);
+    if (type==BDT_ATA) hd_cnt++;
+    ATARepEntry(d1,d2,1,"Secondary IDE",_head,&num_hints,&type);
+    Sleep(2);
+    if (type==BDT_ATA) hd_cnt++;
+    Sleep(2);
+  }
+  if (!just_ide && !hd_cnt) {
+    // Some non-standard ports for some Legacy mode SATA
+    // that do not show up from scans above
+    d1=0x2118; d2=0x2124;
+    ATARepEntry(d1,d2,0,"Primary IDE",_head,&num_hints,&type);
+    Sleep(2);
+    if (type==BDT_ATA) hd_cnt++;
+    ATARepEntry(d1,d2,1,"Primary IDE",_head,&num_hints,&type);
+    Sleep(2);
+    if (type==BDT_ATA) hd_cnt++;
+    d1=0x2110; d2=0x2120;
+    ATARepEntry(d1,d2,0,"Primary IDE",_head,&num_hints,&type);
+    Sleep(2);
+    if (type==BDT_ATA) hd_cnt++;
+    ATARepEntry(d1,d2,1,"Primary IDE",_head,&num_hints,&type);
+    Sleep(2);
+    if (type==BDT_ATA) hd_cnt++;
+    d1=0x5118; d2=0x5124;
+    ATARepEntry(d1,d2,0,"Primary IDE",_head,&num_hints,&type);
+    Sleep(2);
+    if (type==BDT_ATA) hd_cnt++;
+    ATARepEntry(d1,d2,1,"Primary IDE",_head,&num_hints,&type);
+    Sleep(2);
+    if (type==BDT_ATA) hd_cnt++;
+    d1=0x5110; d2=0x5120;
+    ATARepEntry(d1,d2,0,"Primary IDE",_head,&num_hints,&type);
+    Sleep(2);
+    if (type==BDT_ATA) hd_cnt++;
+    ATARepEntry(d1,d2,1,"Primary IDE",_head,&num_hints,&type);
+    Sleep(2);
+    if (type==BDT_ATA) hd_cnt++;
   }
   '\n\n';
   for (i=0;i<BLKDEVS_NUM;i++)
@@ -212,23 +333,24 @@ CATARep *ATAIDDrvs(CATARep *head,CATARep **_ata_drv,CATARep **_atapi_drv)
   bd=Let2BlkDev(':',FALSE);
   Silent(was_silent);
   while (tmpha) {
+    if (tmpha->base0) {
     if (!res && bd && bd->type==tmpha->type) {
       if (bd->type==BDT_ATAPI &&
 	    bd->base0==tmpha->base0 && bd->unit==tmpha->unit)
-	res=atapi_drv=tmpha;
+            res=atapi_drv=tmpha;
       else if (bd->type==BDT_ATA && bd->base0==tmpha->base0 &&
 	    bd->base1==tmpha->base1 && bd->unit==tmpha->unit)
-	res=ata_drv=tmpha;
+            res=ata_drv=tmpha;
     }
     if (!res || res->type!=tmpha->type) {
       if (tmpha->type==BDT_ATA) {
 	if (!ata_drv || tmpha->unit<ata_drv->unit ||
 	      tmpha->unit==ata_drv->unit && tmpha->num<ata_drv->num)
-	  ata_drv=tmpha;
+	        ata_drv=tmpha;
       } else if (tmpha->type==BDT_ATAPI) {
 	if (!atapi_drv || !ins_found && (tmpha->unit<atapi_drv->unit ||
 	      tmpha->unit==atapi_drv->unit && tmpha->num<atapi_drv->num))
-	  atapi_drv=tmpha;
+	        atapi_drv=tmpha;
       }
     }
     if (tmpha->type==BDT_ATAPI && bd && bd->type==BDT_ATA &&
@@ -237,6 +359,7 @@ CATARep *ATAIDDrvs(CATARep *head,CATARep **_ata_drv,CATARep **_atapi_drv)
 	atapi_drv=tmpha;
 	ins_found=TRUE;
       }
+    }
     }
     tmpha=tmpha->next;
   }

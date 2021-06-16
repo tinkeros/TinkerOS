@@ -5,6 +5,11 @@ U0 SysGlblsInit()
 
   CPUId(0x1,&ee);
   sys_cache_line_width=ee.rbx.u8[1]*8;
+  CPUId(0x40000000,&ee);
+  hype_info[0]=ee.rbx.u32[0];
+  hype_info[1]=ee.rcx.u32[0];
+  hype_info[2]=ee.rdx.u32[0];
+  hype_info[3]=0;
 
   sys_focus_task=Fs;
   QueInit(&sys_macro_head);
@@ -57,6 +62,10 @@ U0 SysGlblsInit()
   scrncast.t0_tS=tS;
   scrncast.ona=scrncast.snd_head.ona=0;
 
+  snd.ona=ONA_REST;
+  QueInit(&snd.record_head);
+  snd.record_head.time=tS;
+
   ProgressBarsRst;
 
   QueInit(&dev.pci_head);
@@ -67,6 +76,9 @@ U0 SysGlblsInit()
 
   MemSet(sys_usb_devs,0,USB_NUM*sizeof(CUSB));
   sys_num_usb=0;
+
+  for (i=0;i<26;i++)
+      BlkDevLtrOverride[i]=BDT_NULL;
 }
 
 U0 SysGrInit()
@@ -85,7 +97,7 @@ U0 SysGrInit()
     text.cols = GR_WIDTH / FONT_WIDTH;
     text.rows = GR_HEIGHT / FONT_HEIGHT;
     text.screen_size = GR_WIDTH * GR_HEIGHT;
-    text.buffer_size = text.screen_size * 4; //buffer for 32-bit, but only 16 colors now.
+    text.buffer_size = text.screen_size * 4; //buffer for 32-bit
     text.raw_scrn_image = CAlloc(text.buffer_size);
     text.fb_alias = sys_frame_buffer;
     MemSetU32(text.fb_alias, BLACK32, FB_WIDTH*FB_HEIGHT);

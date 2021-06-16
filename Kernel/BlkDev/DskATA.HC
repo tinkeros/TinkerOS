@@ -472,6 +472,12 @@ public I64 ATAProbe(I64 base0,I64 base1,I64 unit,Bool verbose=FALSE)
       ATAReadNativeMax(&bd,tS+0.1);
       "Block max: %d\n"
       ,bd.max_blk;
+      if (bd.type == BDT_ATA)
+        "BlkDev Type: BDT_ATA\n";
+      else if (bd.type == BDT_ATAPI)
+        "BlkDev Type: BDT_ATAPI\n";
+      else
+        "BlkDev Type: %d (not BDT_ATA or BDT_ATAPI)\n",bd.type;
     }
   return ATAGetDevId(&bd,tS+0.1,FALSE);
 }

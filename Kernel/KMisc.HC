@@ -196,9 +196,11 @@ U0 Snd(I8 ona=0)
 	!LBts(&sys_semas[SEMA_SND],0)) { //Mutex. Just throw-out if in use
     if (!ona) {
       scrncast.ona=ona;
+      snd.ona=ona;
       OutU8(0x61,InU8(0x61)&~3);
-    } else if (ona!=scrncast.ona) {
+    } else if (ona!=scrncast.ona || ona!=snd.ona) {
       scrncast.ona=ona;
+      snd.ona=ona;
       period=ClampI64(SYS_TIMER_FREQ/Ona2Freq(ona),1,U16_MAX);
       OutU8(0x43,0xB6);
       OutU8(0x42,period);
@@ -206,6 +208,12 @@ U0 Snd(I8 ona=0)
       OutU8(0x61,3|InU8(0x61));
     }
     if (!IsDbgMode && scrncast.record) {
+      d=ACAlloc(sizeof(CSndData));
+      d->ona=ona;
+      d->tS=tS;
+      QueIns(d,scrncast.snd_head.last);
+    }
+    if (!IsDbgMode && snd.record) {
       d=ACAlloc(sizeof(CSndData));
       d->ona=ona;
       d->tS=tS;
@@ -343,8 +351,31 @@ U0 ProgressBarsRst(U8 *path=NULL)
 }
 
 U0 KeyStateRst()
-{
+{//Clears state of all keys in key_state and sc_state
   MemSetI64(key_state,0,16);
   MemSetI64(sc_state,0,32);
   sc_flags_state=0;
+}
+
+U0 BitFieldSet(U8 *bit_field, U8 offset, U8 size, U8 value)
+{//Sets values in a bit field
+I64 i;
+for (i=0;i<size;i++)
+    BEqu(bit_field,offset+i,value>>i);
+
+}
+
+
+U64 BitFieldGet(U8 *bit_field, U8 offset, U8 size)
+{//Gets values from a bit field
+I64 i;
+U64 val=0;
+for (i=0;i<size;i++) 
+    BEqu(&val,i,Bt(bit_field,offset+i));
+return val;
+}
+
+U8 *HypeInfo()
+{
+    return hype_info;
 }

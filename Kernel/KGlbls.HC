@@ -39,6 +39,7 @@ CKbdStateGlbls	kbd;
 CKeyDevGlbls	keydev;
 CMsHardStateGlbls ms_hard,ms_hard_last;
 CScrnCastGlbls	scrncast;
+CSndGlbls   snd;
 CTextGlbls	text;
 
 U8  *(*fp_getstr2)(I64 flags=0);
@@ -51,4 +52,6 @@ I64 sc_flags_state;
 I64 sys_num_usb=0;
 CUSB sys_usb_devs[USB_NUM];
 
+Bool BlkDevLtrOverride[26];
+U32 hype_info[4];
 

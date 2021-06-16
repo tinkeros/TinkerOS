@@ -1,5 +1,5 @@
 #help_index "Install;File/Cmd Line (Typically);Cmd Line (Typically);"
-U8 Mount2(U8 boot_drv_let,CDoc *_doc,Bool _caller_is_prtdsk)
+U8 Mount2(U8 boot_drv_let,CDoc *_doc,Bool _caller_is_prtdsk, Bool just_ide=FALSE)
 {//If _doc, called by $LK,"::/Kernel/KCfg.HC"$ else called by $LK,"Mount",A="MN:Mount"$().
   I64 cnt,total=0,num_hints,drv_let,type,unit,prt_num;
   U8 blks_buf[STR_LEN],addr_buf[STR_LEN],base0_buf[STR_LEN],base1_buf[STR_LEN],
@@ -56,7 +56,7 @@ U8 Mount2(U8 boot_drv_let,CDoc *_doc,Bool _caller_is_prtdsk)
       case BDT_ATA:
         prt_num=GetI64("Partition Num (Default=All):",prt_num);
       case BDT_ATAPI:
-        num_hints=ATARep(,,&head);
+        num_hints=ATARep(,just_ide,&head);
         if (type==BDT_ATAPI && boot_drv_let)
           "<ENTER> to use booted CD/DVD\n"; //Only $LK,"::/Kernel/KCfg.HC"$
         do
@@ -161,8 +161,8 @@ U8 Mount2(U8 boot_drv_let,CDoc *_doc,Bool _caller_is_prtdsk)
   return res;
 }
 
-public U8 Mount(Bool caller_is_prtdsk=FALSE)
+public U8 Mount(Bool caller_is_prtdsk=FALSE,Bool just_ide=FALSE)
 {//Mount drives. Called from $LK,"DskPrt(Mount)",A="FF:::/Adam/ABlkDev/DskPrt.HC,Mount("$.
-  return Mount2(0,NULL,caller_is_prtdsk);
+  return Mount2(0,NULL,caller_is_prtdsk, just_ide=FALSE);
 }
 

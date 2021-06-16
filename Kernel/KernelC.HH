@@ -312,6 +312,7 @@ public extern U8 *DirNameAbs(U8 *dirname);
 public extern CBlkDev *DrvIsWritable(U8 drv_let=0,Bool except=FALSE);
 public extern U8 *ExtChg(U8 *filename,U8 *extension);
 public extern U8 *ExtDft(U8 *filename,U8 *extension);
+public extern U8 *FileBaseName(U8 *filename);
 public extern U8 *FileExtDot(U8 *src);
 public extern U8 *FileExtRem(U8 *src,U8 *dst=NULL);
 public extern U8 *FileNameAbs(U8 *filename,I64 fuf_flags=0);
@@ -371,6 +372,7 @@ public extern Bool DrvUnlock(CDrv *dv,Bool rst=FALSE);
 public extern U0 DrvsRelease();
 extern U0 FAT32FreeClus(CDrv *dv,I64 c);
 public extern CBlkDev *Let2BlkDev(U8 drv_let=0,Bool except=TRUE);
+public extern Bool SetDrvLetType(U8 drv_let, U8 type);
 public extern I64 Let2BlkDevType(U8 drv_let);
 public extern CDrv *Let2Drv(U8 drv_let=0,Bool except=TRUE);
 public extern U8 Let2Let(U8 drv_let=0);
@@ -464,6 +466,7 @@ public extern I64 HashDefineLstAdd(U8 *dname,I64 type,CHashTable *table);
 public extern U0 Help();
 
 #help_index "Info;File/Cmd Line (Typically);Cmd Line (Typically);Install"
+public extern Bool DrvMounted(I64 drv_let);
 public extern U0 DrvRep();
 
 #help_index "Install"
@@ -576,7 +579,8 @@ public extern I64 RandI64();
 public extern U16 RandU16();
 public extern U32 RandU32();
 public extern U64 RandU64();
-public extern I64 RandRange(I64 min, I64 max);
+public extern I64 RandRange(I64 min=0, I64 max);
+public extern I64 RandRangeSeed(I64 min=0, I64 max, I64 seed);
 public extern I64 RoundI64(I64 num,I64 to);
 public extern I64 Seed(I64 seed=0,CTask *task=NULL);
 
@@ -812,6 +816,9 @@ public extern CUSBTD *USBAllocTD();
 public extern U0 USBFreeTD(CUSBTD *tmptd);
 public extern U32 *USBAllocFrameLst(I64 usb_num,I64 size);
 
+#help_index "Sound"
+public extern CSndGlbls snd;
+
 #help_index "Graphics"
 public _extern _TEXT_CHAR Bool TextChar(CTask *task, Bool allow_border=FALSE, I64 x, I64 y, I64 d);
 public _extern _TEXT_LEN_STR Bool TextLenStr(CTask *task, I64 x, I64 y, I64 len,I64 attr, U8 *s);
@@ -825,4 +832,12 @@ public extern U0 TextRect(I64 l, I64 r, I64 t, I64 b, I64 d);
 public extern U8 *key_state, *sc_state;
 public extern I64 sc_flags_state;
 public extern U0 KeyStateRst();
+
+#help_index "Bit field"
+public extern U0 BitFieldSet(U8 *bit_field, U8 offset, U8 size, U8 value);
+public extern U64 BitFieldGet(U8 *bit_field, U8 offset, U8 size);
+
+#help_index "Virtualization"
+public extern U8 *GetHypeInfo();
+
 

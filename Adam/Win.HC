@@ -203,6 +203,22 @@ U0 DrawMs(CDC *dc)
   }
 }
 
+U0 ScreenSaverDefault(CDC *dc, I64 ss_cnts)
+{
+  I64 rand_x, rand_y;
+
+  if (ss_cnts % fps_master == 0) {
+    rand_x = RandRange(,GR_WIDTH-100);
+    rand_y = RandRange(,GR_HEIGHT-FONT_HEIGHT);
+
+    DCClear(dc);
+    dc->color=WHITE;
+    GrPrint(dc,rand_x,rand_y,"Screen Saver");
+  }
+}
+
+gr.fp_draw_ss=&ScreenSaverDefault;
+
 U0 WinFinalUpdate(CDC *dc)
 {
   if (ms_grid.show)

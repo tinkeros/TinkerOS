@@ -3,6 +3,8 @@
 #define ROUND_DRV_TO	(63*255)
 #define DRV_HEADER	63
 
+Bool install_just_ide=FALSE;
+
 class CPlannedDrv
 {
   CPlannedDrv *next,*last;
@@ -24,6 +26,12 @@ drv_let=0 means add new drive that is not already mounted.
   Bool pri=TRUE;
   I64 ext_base,drv_let2,pri_cnt=0,i,start_offset,offset,
 	total,remaining,cur_arg=0;
+  if (argc>4) {
+    "This command will only create up to 4\n"
+    "primary partitions and should not be\n"
+    "used to partition drives in general.\n";
+    return 0;
+  }
   "This command does not play well\n"
 	"with other operating systems.\n"
 	"You really should use another\n"
@@ -40,7 +48,7 @@ drv_let=0 means add new drive that is not already mounted.
 
   if (drv_let && !Let2BlkDev(drv_let,FALSE))
     drv_let=0;
-  if (!drv_let && !(drv_let=Mount(TRUE)) ||
+  if (!drv_let && !(drv_let=Mount(TRUE,install_just_ide)) ||
 	!(bd=Let2BlkDev(drv_let,FALSE)) || bd->type!=BDT_ATA)
     return 0;
 
@@ -58,7 +66,7 @@ drv_let=0 means add new drive that is not already mounted.
 	if (argc>cur_arg || YorN) {
 	  pri_cnt++;
 	  tmppp->pri=TRUE;
-	  if (pri_cnt==3)
+	  if (pri_cnt==4)
 	    pri=FALSE;
 	} else
 	  pri=FALSE;

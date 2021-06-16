@@ -17,7 +17,6 @@ class CComm
   I64   base,
         flags;
   CFifoU8 *RX_fifo;
-  CFifoU8 *TX_fifo;
 };
 
 public CComm comm_ports[5];
@@ -25,19 +24,12 @@ public CComm comm_ports[5];
 public U0 CommHndlr(I64 port)
 {// Com port IRQ handler
   CComm *c=&comm_ports[port];
-  I64 b=0,stat;
+  I64 stat;
   if (Bt(&c->flags,COMf_ENABLED))
   {
     stat=InU8(c->base+UART_IIR);
     if (stat & 4)	//RX
       FifoU8Ins(c->RX_fifo,InU8(c->base+UART_RDR));
-    if (stat & 2)  	//TX
-    {
-      if (FifoU8Rem(c->TX_fifo,&b))
-        OutU8(c->base+UART_THR,b);
-      else
-        OutU8(c->base+UART_IER,1); //RX but no THR empty
-    }
   }
 }
 
@@ -75,10 +67,8 @@ public CComm *CommInit8n1(I64 port,I64 baud)
   if (LBts(&c->flags,COMf_ENABLED))
   {
     FifoU8Del(c->RX_fifo);
-    FifoU8Del(c->TX_fifo);
   }
-  c->RX_fifo=FifoU8New(256);
-  c->TX_fifo=FifoU8New(256);
+  c->RX_fifo=FifoU8New(512);
   OutU8(c->base+UART_LCR,0);	//Set for IER
   OutU8(c->base+UART_IER,0);	//Disable all IRQ
   OutU8(c->base+UART_LCR,0x80);	//Enable baud rate control
@@ -109,7 +99,8 @@ public U0 CommPutChar(I64 port,U8 b)
 public U8 CommGetChar(I64 port)
 {// Get 1 byte from com port
   U8 chr;
-  while (1) {
+  while (1)
+  {
     if (FifoU8Rem(comm_ports[port].RX_fifo, &chr))
       return chr;
     else
@@ -121,7 +112,7 @@ public Bool CommGetCharNoWait(I64 port, U8 *byte_out)
 {// Try to get 1 byte from com port
   if (FifoU8Rem(comm_ports[port].RX_fifo, byte_out))
   {
-      return TRUE;
+    return TRUE;
   }
   return FALSE;
 }
@@ -130,7 +121,6 @@ public Bool CommGetCharNoWait(I64 port, U8 *byte_out)
 public U0 CommFlush(I64 port)
 {// Flush com port fifos
   FifoU8Flush(comm_ports[port].RX_fifo);
-  FifoU8Flush(comm_ports[port].TX_fifo);
 }
 
 public U0 CommPutS(I64 port,U8 *st)

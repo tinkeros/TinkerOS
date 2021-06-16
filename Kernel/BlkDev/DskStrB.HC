@@ -105,3 +105,16 @@ I64 Name2ParentDirClus(CDrv *dv,U8 *dirname)
   Free(buf2);
   return cur_dir_clus2;
 }
+
+U8 *FileBaseName(U8 *filename)
+{// Returns file name without the path
+  U8 *res;
+  if (filename)
+  {
+    res=MAlloc(StrLen(filename)+1);
+    StrLastRem(filename,"/",res);
+  }
+  return res;
+}
+
+

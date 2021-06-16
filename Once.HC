@@ -44,18 +44,34 @@ U0 Tmp()
     break;
   case BOOT_SRC_RAM:
   case BOOT_SRC_HARDDRV:
-    "$$PURPLE$$$$TX+CX,\"Tip of the Day\"$$$$FG$$\n"
-    ;
-    TipOfDay;
-    Type("::/Doc/Customize.DD");
-    if (FileFind("::/Misc/Tour"))
+    if ((!Bt(&sys_run_level,RLf_VGA)) && !GR_TEXT_MODE)
     {
-      "\nTake Tour";
-      if (YorN)
+      "Welcome to TinkerOS text mode!\n\n";
+      "It appears you are here unexpectedly.\n\n";
+      "This is because the video resolution\n";
+      "you selected is not supported by your\n";
+      "hardware.\n\n";
+      "If you are an advanced user you can\n";
+      "manually re-install the kernel and\n";
+      "change it using BootHDIns.  Otherwise\n";
+      "perform a manual re-install of this\n";
+      "partition using a lower resolution.\n\n";
+    }
+    else
+    {
+      "$$PURPLE$$$$TX+CX,\"Tip of the Day\"$$$$FG$$\n"
+      ;
+      TipOfDay;
+      Type("::/Doc/Customize.DD");
+      if (FileFind("::/Misc/Tour"))
       {
-        DocBottom;
-        Cd("::/Misc/Tour");
-        InFile("Tour");
+        "\nTake Tour";
+        if (YorN)
+        {
+          DocBottom;
+          Cd("::/Misc/Tour");
+          InFile("Tour");
+        }
       }
     }
     break;

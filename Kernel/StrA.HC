@@ -592,7 +592,7 @@ U8 *StrFirstRem(U8 *src,U8 *marker,U8 *dst=NULL)
 }
 
 U8 *StrLastOcc(U8 *src,U8 *marker)
-{//Point to last occurrence of market set in str.
+{//Point to last occurrence of marker set in str.
   I64 ch;
   U8 *res=NULL;
   while (ch=*src++)

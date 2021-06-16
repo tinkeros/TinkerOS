@@ -16,4 +16,5 @@ Cd(__DIR__);;
 #include "CPURep"
 #include "DevInfo"
 #include "Comm"
+#include "FileXfr"
 Cd("..");;

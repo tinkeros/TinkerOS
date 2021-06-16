@@ -11,6 +11,7 @@ Cd(__DIR__);;
 #include "Menu"
 #include "Win"
 #include "WinMgr"
+SetFPS(10); // slow FPS while compiling below
 #include "ADbg"
 #include "::/Adam/God/GodExt"
 #include "DolDoc/MakeDoc"
@@ -28,6 +29,8 @@ LBts(&sys_run_level,RLf_DOC);
 #include "WallPaper"
 #include "AMouse"
 #include "Host"
+#include "Opt/Utils/Comm"
 Cd("..");;
 if (mp_cnt>1)
   EnableSethGfx;
+SetFPS(30); // restore default FPS now

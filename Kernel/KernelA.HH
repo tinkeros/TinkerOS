@@ -2722,7 +2722,10 @@ public class CDirEntry
 #define BDT_ISO_FILE_READ	3
 #define BDT_ISO_FILE_WRITE	4
 #define BDT_ATAPI		5
-#define BDT_TYPES_NUM		6
+#define BDT_AHCI_SATA		6
+#define BDT_AHCI_SATAPI	7
+#define BDT_OTHER		8
+#define BDT_TYPES_NUM		9
 
 #define BDF_REMOVABLE		0x001
 #define BDF_INITIALIZED		0x002
@@ -2753,16 +2756,15 @@ public class CBlkDev
 {
   CBlkDev *lock_fwding; //If two blkdevs on same controller, use just one lock
   I64	locked_flags;
-  U32	bd_signature,
-	type,flags;
-  U8	first_drv_let,unit,pad[2];
+  U32	bd_signature, type,flags;
+  U8	first_drv_let,unit,pad[2],port;
   U32	base0,base1,
 	blk_size;
   I64	drv_offset,init_root_dir_blks,
 	max_blk;
   U16	*dev_id_record;
   U8	*RAM_dsk,
-	*file_dsk_name;
+	*file_dsk_name, *read_func, *write_func, *max_func;
   CFile *file_dsk;
   CTask *owning_task;
   F64	last_time;
@@ -3047,6 +3049,7 @@ public class CDevGlbls
 #define WHITE			15
 
 #define COLORS_NUM		16
+#define PAL_COLORS_NUM		256
 #define COLOR_INVALID		16
 #define COLOR_MONO		0xFF
 
@@ -3888,7 +3891,6 @@ class CKeyDevGlbls
 	*hndlr;
 };
 
-#help_index "Snd"
 #help_index "ScrnCast;Snd/AU Files"
 public class CAUData
 {//Fmt of AU files
@@ -3896,11 +3898,21 @@ public class CAUData
   I8	ona;
 };
 
+#help_index "Snd"
+#define ONA_REST    0
 class CSndData
 {//Fmt recorded in mem
   CSndData *next,*last;
   F64	tS;
+  F64   time;
   I8	ona;
+};
+
+public class CSndGlbls
+{
+  CSndData record_head;
+  I8    ona;
+  Bool  record;
 };
 
 public class CScrnCastGlbls
@@ -4024,11 +4036,12 @@ public class CInsReg
 
 public class CGrGlbls
 {
-  I64	*to_8_bits,*to_8_colors;
+  I64	pitch,*to_8_bits,*to_8_colors;
   CDC	*scrn_image,	//Read only.
 	*dc,		//Persistent
 	*dc1,
 	*dc2,		//Updated every refresh
+	*ss,		//Screen Saver
 	*dc_cache,
 	*zoomed_dc;
   U32	*text_base;	//See $LK,"TextBase Layer",A="HI:TextBase Layer"$. (Similar to 0xB8000 but 32 bits)
@@ -4044,6 +4057,7 @@ public class CGrGlbls
   U0	(*fp_final_scrn_update)(CDC *dc);//Mouse cursor is handled here.
   U0	(*fp_wall_paper)(CTask *task);
   U0	(*fp_draw_ms)(CDC *dc,I64 x,I64 y);
+  U0	(*fp_draw_ss)(CDC *dc,I64 x);
   U0	(*fp_draw_grab_ms)(CDC *dc,I64 x,I64 y,Bool closed);
   U8	*empty_sprite; //Gets assigned $LK,"gr.empty_sprite",A="FF:::/Adam/AMouse.HC,empty_sprite"$
   U8    *screen_cache;
@@ -4057,11 +4071,12 @@ public class CGrGlbls
 	circle_hi[GR_PEN_BRUSHES_NUM][GR_PEN_BRUSHES_NUM];
 
   #define GR_SCRN_ZOOM_MAX	16
-  I64	scrn_zoom,sx,sy;
+  I64	scrn_zoom,sx,sy,scrn_saver_cnts,scrn_saver_timeout;
+  CTask *scrn_saver_task;
 
   //When zoomed, this keeps the mouse centered.
   Bool	continuous_scroll,
-	hide_row,hide_col;
+	hide_row,hide_col,scrn_saver;
 };
 
 #help_index "USB"

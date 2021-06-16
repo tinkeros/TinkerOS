@@ -144,9 +144,17 @@ F64 Rand()
   return (res&0x3FFFFFFFFFFFFFFF)/ToF64(0x4000000000000000);
 }
 
-I64 RandRange(I64 min, I64 max)
+I64 RandRange(I64 min=0, I64 max)
 {// Returns a random integer in [min,max], biased, but fast
   return (RandU32()(U64) * (max-min+1)) >> 32 + min;
+}
+
+I64 RandRangeSeed(I64 min=0, I64 max, I64 seed)
+{// Returns a reproducibly random integer in [min,max]
+  I64 res, res2;
+  res=LIN_CONGRUE_A*seed^(seed&0xFFFFFFFF0000)>>16+LIN_CONGRUE_C;
+  res2=res * (1 + 1<<16 + 1<<32 + 1<<48);
+  return ((res2&0xffffffff)(U64) * (max-min+1)) >> 32 + min;
 }
 
 I64 Seed(I64 seed=0,CTask *task=NULL)

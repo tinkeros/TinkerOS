@@ -1,4 +1,10 @@
 
+### Changes added in TinkerOS 5.06.5.1:
+
+#### Bug fixes:
+
+- Fix RAMReboot (must be installed to hard drive to use, must do a normal reboot if you are changing graphics modes)
+
 ### Changes added in TinkerOS 5.06.5:
 
 #### Compiler:

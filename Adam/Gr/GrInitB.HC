@@ -153,9 +153,8 @@ public U0 WinZBufUpdate()
 #help_index "Graphics"
 U0 GrInit2()
 {
-  CVBEMode *vbemode=VBE_MODE;
   MemSet(&gr,0,sizeof(CGrGlbls));
-  gr.pitch=vbemode->pitch;
+  gr.pitch=sys_vbe_mode_pitch;
   gr.sprite_hash=HashTableNew(512);
   HashDefineLstAdd("ST_SPRITE_ELEM_CODES",SPHT_ELEM_CODE,gr.sprite_hash);
   gr.scrn_zoom=1;

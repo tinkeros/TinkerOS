@@ -46,6 +46,7 @@ GDT_TR_RING3:
 #assert $$ - SYS_GDT == sizeof(CGDT)
 
   SYS_FRAME_BUFFER::	DU8 	4 DUP(0);
+  SYS_VBE_MODE_PITCH::  DU8 	2 DUP(0);
 #assert $$ - SYS_KERNEL == sizeof(CKernel) - sizeof(CBinFile)
 
 VBE_INFO::	DU8 	sizeof(CVBEInfo) DUP(0);
@@ -143,6 +144,8 @@ GET_IP:
   JNE 	@@10
   MOV 	EAX, CVBEMode.framebuffer[DI]
   MOV U32 [SYS_FRAME_BUFFER], EAX
+  MOV 	AX, CVBEMode.pitch[DI]
+  MOV U16 [SYS_VBE_MODE_PITCH], AX
   BTS 	U32 [SYS_RUN_LEVEL], RLf_VGA
 @@10:
   XOR	CX, CX

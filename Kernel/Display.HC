@@ -21,7 +21,6 @@ U0 RawPutChar(I64 ch, Bool serial=FALSE)
   U8 *ptr;
   U32 *framebuffer;
   U64 ch_bitmap;
-  CVBEMode *vbe_mode=VBE_MODE;
   if (!(text.raw_flags&RWF_SHOW_DOLLAR))
   {
     if (ch=='$$')
@@ -108,7 +107,7 @@ U0 RawPutChar(I64 ch, Bool serial=FALSE)
       x = col * FONT_WIDTH;
       y = row * FONT_HEIGHT;
       ch_bitmap = text.font[ch & 0xFF];
-      framebuffer = text.fb_alias + vbe_mode->pitch * y / 4 + x;
+      framebuffer = text.fb_alias + sys_vbe_mode_pitch * y / 4 + x;
       PUSHFD
       CLI
       for (i = 0; i < FONT_WIDTH * FONT_HEIGHT; i++)
@@ -118,7 +117,7 @@ U0 RawPutChar(I64 ch, Bool serial=FALSE)
         else
           *framebuffer++ = BLACK32;
         if (i & (FONT_WIDTH-1) == FONT_WIDTH-1)
-          framebuffer += vbe_mode->pitch / 4 - FONT_WIDTH;
+          framebuffer += sys_vbe_mode_pitch / 4 - FONT_WIDTH;
         ch_bitmap >>= 1;
       }
       POPFD

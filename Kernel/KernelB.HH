@@ -293,5 +293,6 @@ public _intern IC_RDTSC I64 GetTSC(); //Get time stamp counter.
 
 #help_index "Graphics"
 public _extern SYS_FRAME_BUFFER U32 sys_frame_buffer;
+public _extern SYS_VBE_MODE_PITCH U16 sys_vbe_mode_pitch;
 
 #help_index ""

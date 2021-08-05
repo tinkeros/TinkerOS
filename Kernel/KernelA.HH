@@ -491,6 +491,7 @@ class CKernel
   ;$$=($$+15)&-16;
   CGDT	sys_gdt;
   U32  sys_frame_buffer;
+  U16  sys_vbe_mode_pitch;
 };
 
 //Run-Levels

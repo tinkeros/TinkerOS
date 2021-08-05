@@ -43,14 +43,14 @@
 #### Live USB version improvements:
 
 - Added Super Grub to probe available graphics modes for bare metal installs
-- Added Clonezilla for backups and command line tools such as lspci for finding IO ports and cfdisk for paritioning
-- Added ttylinux for parititioning on older systems
+- Added Clonezilla for backups and command line tools such as lspci for finding IO ports and cfdisk for partitioning
+- Added ttylinux for partitioning on older systems
 - Added FreeDOS for partitioning on older system
 - Added memtest (bonus if you want to test your memory)
 - Assuming a baremetal install is possible on your machine, the Live USB should now have everything you would need to do it.
 
 #### Legacy functionality:
- - Added back kernel snd symbol required by Terry's supplemential audio test code.
+ - Added back kernel snd symbol required by Terry's supplemental audio test code.
 
 #### New functionality:
 ```

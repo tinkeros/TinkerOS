@@ -290,6 +290,46 @@ public class CMathODE
   I64	user_data;
 };
 
+//PCI Registers, used with $LK,"PCIRead",A="MN:PCIReadU16"$ functions.
+#define PCIR_VENDOR_ID          0x00
+#define PCIR_DEVICE_ID          0x02
+#define PCIR_COMMAND            0x04
+#define PCIR_STATUS             0x06
+#define PCIR_REVISION_ID        0x08
+#define PCIR_PROG_IF            0x09
+#define PCIR_SUB_CODE           0x0A
+#define PCIR_CLASS_CODE         0x0B
+#define PCIR_CACHE_LINE_SIZE    0x0C
+#define PCIR_LATENCY_TIMER      0x0D
+#define PCIR_HEADER_TYPE        0x0E
+#define PCIR_BIST               0x0F
+#define PCIR_BASE0              0x10
+#define PCIR_BASE1              0x14
+#define PCIR_BASE2              0x18
+#define PCIR_BASE3              0x1C
+#define PCIR_BASE4              0x20
+#define PCIR_BASE5              0x24
+#define PCIR_SUBSYS_VENDOR_ID   0x2C
+#define PCIR_SUBSYS_ID          0x2E
+#define PCIR_EXPANSION_ROM      0x30
+#define PCIR_CAPABILITIES       0x34
+#define PCIR_INTERRUPT_LINE     0x3C
+#define PCIR_INTERRUPT_PIN      0x3D
+#define PCIR_MIN_GRANT          0x3E
+#define PCIR_MAX_LATENCY        0x3F
+
+//PCI class codes
+#define PCIC_STORAGE    0x1
+#define PCIC_NETWORK    0x2
+
+//PCI subclass codes
+#define PCISC_ETHERNET  0x0
+#define PCISC_AHCI      0x6
+
+//PCI I/O ports
+#define PCI_ADDR    0xCF8
+#define PCI_DATA    0xCFC
+
 #help_index "Processor"
 //IDT entry types
 #define IDTET_TASK		0x05
@@ -434,6 +474,8 @@ class CPatchTableAbsAddr
 
 #define BLACK32	0x000000
 #define WHITE32	0xFFFFFF
+#define to_8_bits_55 0xff00ff00ff00ff
+#define to_8_bits_AA 0xff00ff00ff00ff00
 
 class CVBEInfo
 {
@@ -2322,9 +2364,13 @@ public class CATARep
 #define ATA_SET_MAX_EXT		0x37
 #define ATA_READ_MULTI		0xC4
 #define ATA_READ_MULTI_EXT	0x29
+#define ATA_READ_DMA_EXT    0x25
 #define ATA_WRITE_MULTI		0xC5
 #define ATA_WRITE_MULTI_EXT	0x39
+#define ATA_WRITE_DMA_EXT   0x35
 #define ATA_ID_DEV		0xEC
+#define ATA_IDENTIFY    0xEC
+#define ATA_IDENTIFY_PACKET  0xA1
 
 #define ATAS_ERR	0x01
 #define ATAS_DRQ	0x08
@@ -2715,6 +2761,292 @@ public class CDirEntry
 #define FUG_FILE_FIND	(FUF_JUST_DIRS|FUF_JUST_FILES|FUF_Z_OR_NOT_Z|\
   FUF_SCAN_PARENTS)
 
+#help_index "Devices;Disk/AHCI"
+#define AHCI_MAX_PORTS			32
+
+//Physical Region Descriptor Table
+#define AHCI_PRD_MAX_BYTES		(4 * 1024 * 1024) //Max bytes that can go in one PRD entry ($ER$4 MiB). Section 4.2.3.3 Fig. 17 (DBC) 
+#define AHCI_PRDT_MAX_BLOCKS	(U16_MAX + 1) 	  //Max blocks you can transfer in one command. 
+#define AHCI_PRDT_MAX_LEN		8 				  //Max PRD entries in one command. This is equal to (MAX_BLOCKS * BLK_SIZE) ö MAX_BYTES.
+
+//Global Host Control (Controller) flags
+#define AHCI_GHCf_HBA_RESET			0
+#define AHCI_GHCf_INTERRUPT_ENABLE	1
+#define AHCI_GHCf_AHCI_ENABLE		31
+
+#define AHCI_CAPSf_S64A		31	//Supports 64-bit Addressing
+
+#define AHCI_CAPSEXTf_BOH	0	//Supports BIOS/OS Handoff
+#define AHCI_CAPSEXTf_NVMP	1	//NVMHCI Supported & Present
+
+//BIOS/OS Handoff Control
+#define AHCI_BOHCf_BOS		0	//BIOS-Owned Semaphore (BIOS owns controller)
+#define AHCI_BOHCf_OOS		1	//OS-Owned Semaphore (OS owns controller)
+#define AHCI_BOHCf_BB		4	//BIOS Busy (polling bit while BIOS cleans up things after ownership transfer)
+
+//Command Header flags
+#define AHCI_CH_DESCf_A		5	//'ATAPI' bit. Set when ATAPI command is being sent.
+#define AHCI_CH_DESCF_A		(1 << AHCI_CH_DESCf_A)
+#define AHCI_CH_DESCf_W		6	//'Write' bit. Set when data is being written.
+#define AHCI_CH_DESCF_W		(1 << AHCI_CH_DESCf_W)
+
+//Command FIS flags
+#define AHCI_CF_DESCf_C		7	//'Command' bit. Set when FIS is an ATA command.
+#define AHCI_CF_DESCF_C		(1 << AHCI_CF_DESCF_C)
+
+//Port register flags
+//Command and Status register flags
+#define AHCI_PxCMDf_ST		0	//'Start'. Start processing commmand list. FRE must be set before.
+#define AHCI_PxCMDf_SUD		1	//'Spin-Up Device'. For devices that support Staggered Spin-up. We attempt to set it for all ports.
+#define AHCI_PxCMDf_POD		2	//'Power-On Device'. For devices that support Cold Presence. We attempt to set it for all ports.
+#define AHCI_PxCMDf_FRE		4	//'FIS Receive Enable'. Allows the processing of FISes.
+#define AHCI_PxCMDf_FR		14	//'FIS receive Running'. Status indicator for FRE.
+#define AHCI_PxCMDf_CR		15	//'Command list Running'. Status indicator for ST.
+#define AHCI_PxCMDf_ATAPI	24	//'Device is ATAPI'. When set, HBA turns on desktop LED when device is in use. For ATAPI devices.
+#define AHCI_PxCMDF_ST		(1 << AHCI_PxCMDf_ST)
+#define AHCI_PxCMDF_SUD		(1 << AHCI_PxCMDf_SUD)
+#define AHCI_PxCMDF_POD		(1 << AHCI_PxCMDf_POD)
+#define AHCI_PxCMDF_FRE		(1 << AHCI_PxCMDf_FRE)
+#define AHCI_PxCMDF_FR		(1 << AHCI_PxCMDf_FR)
+#define AHCI_PxCMDF_CR		(1 << AHCI_PxCMDf_CR)
+#define AHCI_PxCMDF_ATAPI	(1 << AHCI_PxCMDf_ATAPI)
+
+//Task File Data register flags
+#define AHCI_PxTFDf_STS_ERR	0 // Error Bit of Status register
+
+//Signature types
+#define AHCI_PxSIG_ATA		0x00000101
+#define AHCI_PxSIG_ATAPI	0xEB140101
+#define AHCI_PxSIG_SEMB		0xC33C0101 //Enclosure Management Bridge... rare to encounter in wild.
+#define AHCI_PxSIG_PM		0x96690101 //Port multiplier... not relevant to PC-type systems.
+
+//Interrupt flags (same in PxIE and PxIS)
+#define AHCI_PxIf_OFS	24	//Overflow Status
+#define AHCI_PxIf_INFS	26	//SATA Interface Non-Fatal Error
+#define AHCI_PxIf_IFS	27	//SATA Interface Fatal Error
+#define AHCI_PxIf_HBDS	28	//Host Bus Data Error
+#define AHCI_PxIf_HBFS	29	//Host Bus Fatal Error
+#define AHCI_PxIf_TFE	30	//Task File Error, see $LK,"ATAS_ERR",A="MN:ATAS_ERR"$.
+#define AHCI_PxIf_CPDS	31	//Cold Port Detect Status
+
+//COMRESET flags
+//SATA Control register flags
+#define AHCI_PxSCTLf_DET_INIT		1
+#define AHCI_PxSCTLF_DET_INIT		(1 << AHCI_PxSCTLf_DET_INIT)
+//SATA Status register flags
+#define AHCI_PxSSTSF_DET_PRESENT	3
+
+//SATA Error register flags
+#define AHCI_PxSERR_ERR_I	0	// Recovered Data Integrity Error
+#define AHCI_PxSERR_ERR_M	1	// Recovered Communication Error
+#define AHCI_PxSERR_ERR_T	8	// Transient Data Integrity Error
+#define AHCI_PxSERR_ERR_C	9	// Persistent Communication Error
+#define AHCI_PxSERR_ERR_P	10	// SATA Protocol Error
+#define AHCI_PxSERR_ERR_E	11	// Internal Error
+#define AHCI_PxSERR_DIAG_I	17	// Phy Internal Error
+#define AHCI_PxSERR_DIAG_C	21	// Link Layer CRC Error
+#define AHCI_PxSERR_DIAG_H	22	// Handshake Error
+#define AHCI_PxSERR_DIAG_S	23	// Link Sequence Error
+#define AHCI_PxSERR_DIAG_T	24	// Transport State Transition Error
+
+class CAHCIPort
+{//Port register layout
+	U32	cmd_list_base,
+		cmd_list_base_upper,
+		fis_base,
+		fis_base_upper,
+		interrupt_status,
+		interrupt_enable,
+		command,
+		reserved,
+		task_file_data,
+		signature,
+		sata_status,
+		sata_ctrl,
+		sata_error,
+		sata_active,
+		cmd_issue,
+		sata_notif,
+		fis_switch_ctrl,
+		device_sleep;
+	U8	reserved[40],
+		vendor[16];
+};
+
+class CAHCIHba
+{//HBA register layout
+	U32			caps,
+				ghc,		//Global Host Control
+				interrupt_status,
+				ports_implemented,
+				version,
+				ccc_ctrl,	//Command Completion Coalescing
+				ccc_ports,
+				em_location,//Enclosure Management
+				em_ctrl,
+				caps_ext,
+				bohc;
+	U8			reserved[116],
+				vendor[96];
+	CAHCIPort	ports[32];
+};
+
+#define FISt_H2D	0x27
+
+class CFisH2D
+{//Host To Device
+	U8	type,
+		desc,	//We are concerned with bit #7 ($LK,"AHCI_CF_DESCf_C",A="MN:AHCI_CF_DESCf_C"$) 1=command, 0=control.
+		command,
+		feature_low,
+		lba0,
+		lba1,
+		lba2,
+		device,
+		lba3,
+		lba4,
+		lba5,
+		feature_high;
+	U16	count;
+	U8	icc,
+		ctrl;
+	U32	reserved;
+};
+
+class CFisReceived
+{
+	U8	dma_fis[28],
+		reserved[4],
+		pio_fis[20],
+		reserved[12],
+		r_fis[20],
+		reserved[4],
+		devbits_fis[8],
+		unknown_fis[64],
+		reserved[96];
+};
+
+class CPrdtEntry
+{
+	U32	data_base,
+		data_base_upper,
+		reserved,
+		data_byte_count; //bit 31 is "Interrupt on Completion". bits 21:0 are the actual count.
+};
+
+/*
+Bits of first U32:
+	4:0 - Command FIS Length, in U32s
+	  5 - ATAPI bit (A) for ATAPI command
+	  6 - Write bit (W) for write commands $LK,"AHCI_CH_DESCf_W",A="MN:AHCI_CH_DESCf_W"$ 1=write 0=read
+	  7 - Prefetchable (P)
+	  8 - Reset (R)
+	  9 - Built-in Self Test (BIST)
+	 10 - Clear busy upon R_OK
+	 11 - Reserved
+  15:12 - Port Multiplier Port (PMP)
+  31:16 - Physical Region Descriptor Table Length (PRDTL)
+*/
+class CPortCmdHeader
+{//What the CAHCIPort.cmd_list consists of.
+	U16	desc,
+		prdt_len;
+	U32	prd_byte_count,
+		cmd_table_base,
+		cmd_table_base_upper,
+		reserved[4];
+};
+
+class CPortCmdTable
+{
+	U8			cmd_fis[64],
+				acmd[16],
+				reserved[48];
+	CPrdtEntry	prdt[8];
+};
+
+class CAtapiReadCmd
+{
+	U8	command,
+		reserved;
+	U32 lba,
+		count;
+	U8	reserved,
+		ctrl,
+		zero[4];
+};
+
+class CAtapiWriteCmd
+{
+	U8	command,
+		reserved;
+	U32 lba;
+	U8	reserved;
+	U16	count;
+};
+
+class CAtapiCloseCmd
+{
+	U8	command,
+		reserved,
+		code,
+		reserved;
+	U16	track_num;
+};
+
+class CAtapiModeHeader
+{
+	U16	data_length;
+	U8	reserved[4];
+	U16	block_desc_len;
+};
+
+class CAtapiModeWritePage
+{
+	U8	code,	//0
+		length,
+		type,
+		mode,
+		block_type,
+		link_size,
+		reserved,
+		host_app_code,
+		session_format,
+		reserved; // 9
+	U32	packet_size; // 10-13
+	U16	audio_pause_length;// 14-15
+	U8	media_catalog_num[16],//16-31
+		recording_code[16],//32-47
+		sub_0,
+		sub_1,
+		sub_2,
+		sub_3;
+};
+
+class CAtapiModeWriteList
+{
+	CAtapiModeHeader	header;
+	CAtapiModeWritePage	page;
+};
+
+
+//ATA_IDENTIFY command array indexes (array of U16s)
+#define ATA_IDENT_SERIAL_NUM        10
+#define ATA_IDENT_MODEL_NUM         27
+#define ATA_IDENT_LBA48_CAPACITY    100
+
+#define ATAPI_FORMAT_UNIT           0x0400
+#define ATAPI_START_STOP_UNIT       0x1B00
+#define ATAPI_READ_CAPACITY         0x2500
+#define ATAPI_SEEK                  0x2B00
+#define ATAPI_SYNC_CACHE            0x3500
+#define ATAPI_MODE_SELECT           0x5500
+#define ATAPI_CLOSE_TRACK_SESSION   0x5B00
+#define ATAPI_BLANK                 0xA100
+#define ATAPI_READ                  0xA800
+#define ATAPI_WRITE                 0x2A00
+#define ATAPI_SET_CD_SPEED          0xBB00
+
 #help_index "File/Low Level"
 //See $LK,"ST_BLKDEV_TYPES",A="MN:ST_BLKDEV_TYPES"$
 #define BDT_NULL		0
@@ -2747,6 +3079,18 @@ public class CDirEntry
 #define BDf_FMT			6
 #define BDf_INIT_IN_PROGRESS	7
 #define BDf_EXT_SIZE		8
+#define BDf_INTERNAL_BUF        9
+
+#define BDF_REMOVABLE           (1 << BDf_REMOVABLE)
+#define BDF_INITIALIZED         (1 << BDf_INITIALIZED)
+#define BDF_READ_ONLY           (1 << BDf_READ_ONLY)
+#define BDF_READ_ONLY_OVERRIDE  (1 << BDf_READ_ONLY_OVERRIDE)
+#define BDF_LAST_WAS_WRITE      (1 << BDf_LAST_WAS_WRITE)
+#define BDF_READ_CACHE          (1 << BDf_READ_CACHE)
+#define BDF_FORMAT              (1 << BDf_FORMAT)
+#define BDF_INIT_IN_PROGRESS    (1 << BDf_INIT_IN_PROGRESS)
+#define BDF_EXT_SIZE            (1 << BDf_EXT_SIZE)
+#define BDF_INTERNAL_BUF        (1 << BDf_INTERNAL_BUF)
 
 //locked flags
 #define BDlf_LOCKED		0
@@ -2756,16 +3100,17 @@ public class CDirEntry
 public class CBlkDev
 {
   CBlkDev *lock_fwding; //If two blkdevs on same controller, use just one lock
+  CAHCIPort       *ahci_port;
   I64	locked_flags;
   U32	bd_signature, type,flags;
   U8	first_drv_let,unit,pad[2],port;
   U32	base0,base1,
 	blk_size;
   I64	drv_offset,init_root_dir_blks,
-	max_blk;
+	max_blk, port_num;
   U16	*dev_id_record;
-  U8	*RAM_dsk,
-	*file_dsk_name, *read_func, *write_func, *max_func;
+  U8	*RAM_dsk, *file_dsk_name, *prd_buf,
+        *read_func, *write_func, *max_func;
   CFile *file_dsk;
   CTask *owning_task;
   F64	last_time;
@@ -2851,6 +3196,7 @@ class CCacheBlk
 public class CBlkDevGlbls
 {
   CBlkDev *blkdevs;
+  CAHCIHba   *ahci_hba;
   U8	*dft_iso_filename;	//$TX,"\"::/Tmp/CDDVD.ISO\"",D="DFT_ISO_FILENAME"$
   U8	*dft_iso_c_filename;	//$TX,"\"::/Tmp/CDDVD.ISO.C\"",D="DFT_ISO_C_FILENAME"$
   U8	*tmp_filename;
@@ -2859,7 +3205,8 @@ public class CBlkDevGlbls
   I64	cache_size,read_cnt,write_cnt;
   CDrv	*drvs,*let_to_drv[32];
   I64	mount_ide_auto_cnt,
-	ins_base0,ins_base1;	//Install cd/dvd controller.
+	ins_base0,ins_base1,
+    cmd_slot_count, read_count, write_count;
   U8	boot_drv_let,first_hd_drv_let,first_dvd_drv_let;
   Bool	dvd_boot_is_good,ins_unit,pad[3];
 };

@@ -7,6 +7,7 @@ Cd(__DIR__);;
 #include "AMem"
 #include "Training"
 #include "ASnd"
+#include "Device/DevInfo"
 #include "ABlkDev/MakeABlkDev"
 #include "Menu"
 #include "Win"
@@ -29,7 +30,7 @@ LBts(&sys_run_level,RLf_DOC);
 #include "WallPaper"
 #include "AMouse"
 #include "Host"
-#include "Opt/Utils/Comm"
+#include "Device/Comm"
 Cd("..");;
 if (mp_cnt>1)
   EnableSethGfx;

@@ -31,6 +31,7 @@ public U0 BootHDIns(U8 drv_let=0)
     switch (Let2BlkDevType(dv->drv_let))
     {
     case BDT_RAM:
+    case BDT_AHCI_SATA:
     case BDT_ATA:
       Move("/Kernel/Kernel.BIN.Z","/" KERNEL_BIN_C);
       if (!FileFind("/" KERNEL_BIN_C,&de,FUF_JUST_FILES))

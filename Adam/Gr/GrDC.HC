@@ -9,7 +9,9 @@ public U0 Mat4x4MulXYZ(I64 *r,I64 *_x,I64 *_y,I64 *_z)
   x1=(r[0*4+0]*xx+r[0*4+1]*yy+r[0*4+2]*zz+r[0*4+3])>>32;
   y1=(r[1*4+0]*xx+r[1*4+1]*yy+r[1*4+2]*zz+r[1*4+3])>>32;
   z1=(r[2*4+0]*xx+r[2*4+1]*yy+r[2*4+2]*zz+r[2*4+3])>>32;
-  *_x=x1;*_y=y1;*_z=z1;
+  *_x=x1;
+  *_y=y1;
+  *_z=z1;
 }
 
 public U0 DCTransform(CDC *dc,I64 *_x,I64 *_y,I64 *_z)
@@ -40,8 +42,8 @@ public I64 Mat4x4NormSqr65536(I64 *r)
 {//Norm Squared of r.
 //(1.0/Sqrt(3))*65536=37837.22
   return SqrI64((r[0*4+0]*37838+r[0*4+1]*37838+r[0*4+2]*37838)>>32)+
-	SqrI64((r[1*4+0]*37837+r[1*4+1]*37837+r[1*4+2]*37837)>>32)+
-	SqrI64((r[2*4+0]*37837+r[2*4+1]*37837+r[2*4+2]*37837)>>32);
+         SqrI64((r[1*4+0]*37837+r[1*4+1]*37837+r[1*4+2]*37837)>>32)+
+         SqrI64((r[2*4+0]*37837+r[2*4+1]*37837+r[2*4+2]*37837)>>32);
 }
 
 public U0 DCMat4x4Set(CDC *dc=NULL,I64 *r)
@@ -55,23 +57,19 @@ public U0 DCMat4x4Set(CDC *dc=NULL,I64 *r)
 
 #help_index "Graphics/Mesh"
 public U0 DCLighting(CDC *dc,
-	CD3I32 *p1,CD3I32 *p2,CD3I32 *p3,CColorROPU32 color)
+                     CD3I32 *p1,CD3I32 *p2,CD3I32 *p3,CColorROPU32 color)
 {//This is the dft dc->lighting() callback.
   CD3I32 v1,v2;
   I64 i,vn_x,vn_y,vn_z;
   F64 d;
-
   v1.x=p1->x-p2->x;
   v1.y=p1->y-p2->y;
   v1.z=p1->z-p2->z;
-
   v2.x=p3->x-p2->x;
   v2.y=p3->y-p2->y;
   v2.z=p3->z-p2->z;
-
   //V1 and V2 are vects along two sides
   //of the tri joined at p2.
-
   vn_x=v1.y*v2.z-v1.z*v2.y;
   vn_y=v1.z*v2.x-v1.x*v2.z;
   vn_z=v1.x*v2.y-v1.y*v2.x;
@@ -84,35 +82,40 @@ public U0 DCLighting(CDC *dc,
   //which means it is perpendicular.It
   //is the normal vect to the surface.
   //It has been scaled to length 65536.
-
   //Light source has been scaled to length 65536.
   i=(vn_x*dc->ls.x+vn_y*dc->ls.y+vn_z*dc->ls.z)>>16;
 //The dot product of the light source
   //vect and the surface normal
   //gives an illumination number.
   //65536*65536>>16=65536
-
   //TempleOS will generate a random U16
   //and compare to dither_probability_u16 and
   //will pick from two colors.
   //Probability dithering does not work with thick>1 at this time.
-  if (color.c0.rop&ROPBF_TWO_SIDED) {
+  if (color.c0.rop&ROPBF_TWO_SIDED)
+  {
     color.c0.rop&=~ROPBF_TWO_SIDED;
     i=AbsI64(i)<<1;
-  } else
+  }
+  else
     i+=65536;
-  if (color.c0.rop&ROPBF_HALF_RANGE_COLOR) {
+  if (color.c0.rop&ROPBF_HALF_RANGE_COLOR)
+  {
     color.c0.rop&=~ROPBF_HALF_RANGE_COLOR;
     i>>=1;
-    if (color>=8) {
+    if (color>=8)
+    {
       color-=8;
       i+=65536;
     }
   }
-  if (i<65536) {
+  if (i<65536)
+  {
     dc->color=ROPF_PROBABILITY_DITHER+color<<16+BLACK;
     dc->dither_probability_u16=i;
-  } else {
+  }
+  else
+  {
     dc->color=ROPF_PROBABILITY_DITHER+(color^8)<<16+color;
     dc->dither_probability_u16=i-65536;
   }
@@ -149,7 +152,7 @@ public U0 DCRst(CDC *dc)
   Mat4x4IdentEqu(dc->r);
   dc->r_norm=GR_SCALE;
   dc->flags&=~(DCF_SYMMETRY|DCF_TRANSFORMATION|DCF_JUST_MIRROR);
-  MemCpy(dc->palette,gr_palette_std,sizeof(CBGR48)*COLORS_NUM);
+  MemCpy64(dc->palette,gr_palette_std,COLORS_NUM);
 }
 
 public U0 DCExtentsInit(CDC *dc=NULL)
@@ -174,7 +177,7 @@ public CDC *DCAlias(CDC *dc=NULL,CTask *task=NULL)
   if (dc->dc_signature!=DCS_SIGNATURE_VAL)
     throw('Graphics');
   res=MAlloc(sizeof(CDC),task);
-  MemCpy(res,dc,sizeof(CDC));
+  MemCpy64(res,dc,sizeof(CDC)/8);
   res->win_task=res->mem_task=task;
   res->r=MAlloc(16*sizeof(I64),task);
   DCRst(res);
@@ -255,7 +258,7 @@ public CDC *DCCopy(CDC *dc,CTask *task=NULL)
 }
 
 public U0 DCMono(CDC *dc,
-  I64 quest=TRANSPARENT,I64 true_color=0,I64 false_color=COLOR_MONO)
+                 I64 quest=TRANSPARENT,I64 true_color=0,I64 false_color=COLOR_MONO)
 {//Set entire device context to one of two colors.
   I64 i;
   U8 *dst;
@@ -275,10 +278,12 @@ public I64 DCColorChg(CDC *dc,I64 src_color,I64 dst_color=TRANSPARENT)
   dst=dc->body;
   i=dc->width_internal*dc->height;
   while (i--)
-    if (*dst==src_color) {
+    if (*dst==src_color)
+    {
       *dst++=dst_color;
       res++;
-    } else
+    }
+    else
       dst++;
   return res;
 }
@@ -289,47 +294,44 @@ public U8 *DCSave(CDC *dc,I64 *_size=NULL,I64 dcsf_flags=DCSF_COMPRESSED)
   CArcCompress *arc;
   I64 body_size=dc->width_internal*dc->height,total_size,flags;
   CBGR48 palette[COLORS_NUM];
-
-  if (dcsf_flags&DCSF_COMPRESSED) {
+  if (dcsf_flags&DCSF_COMPRESSED)
+  {
     arc=CompressBuf(dc->body,body_size);
     body_size=arc->compressed_size;
     body=arc;
-  } else {
+  }
+  else
+  {
     arc=NULL;
     body=dc->body;
   }
-
   total_size=offset(CDC.end)-offset(CDC.start)+body_size;
   if (dcsf_flags&DCSF_COMPRESSED)
     flags=DCF_COMPRESSED;
   else
     flags=0;
-
   if (dcsf_flags&DCSF_PALETTE_GET)
     GrPaletteGet(palette);
   else
-    MemCpy(palette,&dc->palette,COLORS_NUM*sizeof(CBGR48));
-  if (MemCmp(palette,gr_palette_std,COLORS_NUM*sizeof(CBGR48))) {
+    MemCpy64(palette,&dc->palette,COLORS_NUM);
+  if (MemCmp(palette,gr_palette_std,COLORS_NUM*sizeof(CBGR48)))
+  {
     flags|=DCF_PALETTE;
     total_size+=COLORS_NUM*sizeof(CBGR48);
   }
-
   ptr=res=MAlloc(total_size);
-
 #assert !offset(CDC.start)
   MemCpy(ptr,&dc->start,offset(CDC.end)-offset(CDC.start));
   ptr(CDC *)->flags=flags;
   ptr+=offset(CDC.end)-offset(CDC.start);
-
 #assert offset(CDC.end)==offset(CDC.palette)
-  if (flags&DCF_PALETTE) {
-    MemCpy(ptr,palette,COLORS_NUM*sizeof(CBGR48));
+  if (flags&DCF_PALETTE)
+  {
+    MemCpy64(ptr,palette,COLORS_NUM);
     ptr+=COLORS_NUM*sizeof(CBGR48);
   }
-
   MemCpy(ptr,body,body_size);
   ptr+=body_size;
-
   Free(arc);
   if (_size) *_size=total_size;
   return res;
@@ -347,20 +349,23 @@ public CDC *DCLoad(U8 *src,I64 *_size=NULL,CTask *task=NULL)
   res->mem_task=task;
   MemCpy(&res->start,ptr,offset(CDC.end)-offset(CDC.start));
   ptr+=offset(CDC.end)-offset(CDC.start);
-
-  if (res->flags&DCF_PALETTE) {
-    MemCpy(&res->palette,ptr,COLORS_NUM*sizeof(CBGR48));
+  if (res->flags&DCF_PALETTE)
+  {
+    MemCpy64(&res->palette,ptr,COLORS_NUM);
     ptr+=COLORS_NUM*sizeof(CBGR48);
-  } else
-    MemCpy(&res->palette,gr_palette_std,COLORS_NUM*sizeof(CBGR48));
-
+  }
+  else
+    MemCpy64(&res->palette,gr_palette_std,COLORS_NUM);
   body_size=res->width_internal*res->height;
-  if (res->flags&DCF_COMPRESSED) {
+  if (res->flags&DCF_COMPRESSED)
+  {
     res->flags&=~DCF_COMPRESSED;
     arc=ptr;
     res->body=ExpandBuf(arc,task);
     ptr+=arc->compressed_size;
-  } else {
+  }
+  else
+  {
     res->body=MAlloc(body_size,task);
     MemCpy(res->body,ptr,body_size);
     ptr+=body_size;
@@ -384,7 +389,7 @@ public I64 GRWrite(U8 *filename,CDC *dc,I64 dcsf_flags=DCSF_COMPRESSED)
 {//TempleOS GR File.
   I64	size;
   U8	*st=ExtDft(filename,"GR.Z"),
-	*src=DCSave(dc,&size,dcsf_flags);
+       *src=DCSave(dc,&size,dcsf_flags);
   FileWrite(st,src,size);
   Free(st);
   Free(src);
@@ -395,7 +400,7 @@ public CDC *GRRead(U8 *filename,CTask *task=NULL)
 {//TempleOS GR File.
   CDC	*dc=NULL;
   U8	*st=ExtDft(filename,"GR.Z"),
-	*src=FileRead(st);
+       *src=FileRead(st);
   if (src)
     dc=DCLoad(src,,task);
   Free(src);
@@ -427,7 +432,7 @@ public CDC *DCScrnCapture(Bool include_zoom=TRUE,CTask *task=NULL)
   dst=MAlloc(dc->width_internal*dc->height,task);
 //Pick background color that never occurs. COLOR_INVALID
   GrBitMap4ToBitMap8(dst,dc->body,
-	(dc->width_internal*dc->height)>>1,COLOR_INVALID);
+                     (dc->width_internal*dc->height)>>1,COLOR_INVALID);
   Free(dc->body);
   dc->body=dst;
   return dc;

@@ -223,8 +223,8 @@ I64 WinQueIPMsgs(Bool que)
         }
       }
     }
-    MemCpy(&ms_last,&ms,sizeof(CMsStateGlbls));
-    MemCpy(&old_ms,&ms,sizeof(CMsStateGlbls));
+    MemCpy64(&ms_last,&ms,sizeof(CMsStateGlbls)/8);
+    MemCpy64(&old_ms,&ms,sizeof(CMsStateGlbls)/8);
   }
   return msg_code;
 }

@@ -248,6 +248,25 @@ public extern U8 *Mem64DevAlloc(I64 *_pages1Gig);
 public extern U0 Mem64DevFree(U8 *base,I64 pages1Gig);
 public extern CDevGlbls dev;
 
+#help_index "Disk/AHCI"
+public extern Bool AHCIMode;
+public extern I64 MountAHCIAuto();
+extern U0 AHCIHbaReset();
+extern U0 AHCIPortReset(I64 port_num);
+extern U0 AHCIDebug( I64 port_num);
+extern U0 AHCIDebugMode(Bool mode=TRUE);
+extern U0 AHCIPortInit(CBlkDev *bd, CAHCIPort *port, I64 port_num);
+extern I64 AHCIPortSignatureGet(I64 port_num);
+extern I64 AHCIAtaBlksRW( CBlkDev *bd, U8 *buf, I64 blk, I64 count, Bool write);
+extern I64 AHCIAtaBlksRead( CBlkDev *bd, U8 *buf, I64 blk, I64 count);
+extern I64 AHCIAtaBlksWrite( CBlkDev *bd, U8 *buf, I64 blk, I64 count);
+extern I64 AHCIAtapiBlksRead( CBlkDev *bd, U8 *buf, I64 blk, I64 count);
+extern Bool AHCIAtapiStartStop(CBlkDev *bd, Bool start);
+extern Bool AHCIAtapiBlank(CBlkDev *bd, Bool minimal=TRUE);
+extern Bool DiscEject(U8 drv_let);
+extern Bool DiscLoad( U8 drv_let);
+extern Bool SwitchToAHCI();
+
 #help_index "DolDoc/Clip"
 public extern CDoc *sys_clip_doc;
 
@@ -398,6 +417,7 @@ public extern CATARep *ATAIDDrvs(CATARep *head,CATARep **_ata_drv,
 	CATARep **_atapi_drv);
 extern CBlkDev *ATAMount(U8 first_drv_let,
 	I64 type,I64 base0,I64 base1,I64 unit);
+extern CBlkDev *AHCIMount(U8 first_drive_let, I64 type, I64 port_num);
 extern Bool ATAPIStartStop(CBlkDev *bd,F64 timeout,Bool start);
 public extern I64 ATAProbe(I64 base0,I64 base1,I64 unit,Bool verbose=FALSE);
 extern U0 ATAReadBlks(CBlkDev *bd,U8 *buf, I64 blk, I64 cnt);

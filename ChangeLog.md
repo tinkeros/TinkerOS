@@ -1,3 +1,50 @@
+### Changes added in TinkerOS 5.06.5.3:
+
+#### Debugger:
+
+- Moved register output farther right to make it less likely to block important text
+- Returned keyboard message filtering to same state as in TempleOS
+
+#### Hardware changes:
+
+- Added experimental AHCI support
+- Added PCNet driver (not yet used)
+
+#### Installer:
+
+- Added ability to install to drives in AHCI mode
+
+#### New functionality:
+```
+public extern Bool AHCIMode;
+public extern I64 MountAHCIAuto();
+extern U0 AHCIHbaReset();
+extern U0 AHCIPortReset(I64 port_num);
+extern U0 AHCIDebug( I64 port_num);
+extern U0 AHCIDebugMode(Bool mode=TRUE);
+extern U0 AHCIPortInit(CBlkDev *bd, CAHCIPort *port, I64 port_num);
+extern I64 AHCIPortSignatureGet(I64 port_num);
+extern I64 AHCIAtaBlksRW( CBlkDev *bd, U8 *buf, I64 blk, I64 count, Bool write);
+extern I64 AHCIAtaBlksRead( CBlkDev *bd, U8 *buf, I64 blk, I64 count);
+extern I64 AHCIAtaBlksWrite( CBlkDev *bd, U8 *buf, I64 blk, I64 count);
+extern I64 AHCIAtapiBlksRead( CBlkDev *bd, U8 *buf, I64 blk, I64 count);
+extern Bool AHCIAtapiStartStop(CBlkDev *bd, Bool start);
+extern Bool AHCIAtapiBlank(CBlkDev *bd, Bool minimal=TRUE);
+extern Bool DiscEject(U8 drv_let);
+extern Bool DiscLoad( U8 drv_let);
+extern Bool SwitchToAHCI();
+public _extern _MEMCPY64 U8 *MemCpy64(U8 *dst,U8 *src,I64 cnt); //Copy 64-bit blocks of memory. Only goes fwd
+extern CPCIDev *PCIDevFind(U16 class_code=NULL, U16 sub_code=NULL, U16 vendor_id=NULL, U16 device_id=NULL, U8 _bus=0xFF, U8 _dev=0xFF, U8 _fun=0xFF);
+extern I64 SATARep(I64 bd_type=BDT_NULL);
+
+```
+
+#### Misc
+
+- Replaced some instances of MemCpy with MemCpy64 for speedup on some platforms
+- Minor graphics performance tweaks
+- Removed dictionary support / dictionary
+- More code reformatting
 
 ### Changes added in TinkerOS 5.06.5.1:
 

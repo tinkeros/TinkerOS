@@ -1,11 +1,13 @@
 Bool ChkPtr(U8 *ptr)
 {//Check if addr is valid ptr.
-  if (mem_heap_base<=ptr<=mem_mapped_space) {
+  if (mem_heap_base<=ptr<=mem_mapped_space)
+  {
     if (*MemPageTable(ptr)&1)
       return TRUE;
     else
       return FALSE;
-  } else if (ptr<mem_boot_base)
+  }
+  else if (ptr<mem_boot_base)
     return FALSE;
   else if (ptr<VGAM_GRAPHICS)
     return TRUE;
@@ -15,12 +17,14 @@ Bool ChkPtr(U8 *ptr)
 
 Bool ChkCodePtr(U8 *ptr)
 {//Check if addr is valid code addr.
-  if (mem_heap_base<=ptr<=mem_heap_limit) {
+  if (mem_heap_base<=ptr<=mem_heap_limit)
+  {
     if (*MemPageTable(ptr)&1)
       return TRUE;
     else
       return FALSE;
-  } else if (ptr<mem_boot_base)
+  }
+  else if (ptr<mem_boot_base)
     return FALSE;
   else if (ptr<VGAM_GRAPHICS)
     return TRUE;
@@ -33,11 +37,13 @@ Bool ChkOnStk(U8 *ptr,CTask *task=NULL)
   Bool res=FALSE;
   PUSHFD
   CLI
-  if (task) {
+  if (task)
+  {
     if (&task->stk->stk_base<=ptr<=
-	  (&task->stk->stk_base)(U8 *)+task->stk->stk_size)
+        (&task->stk->stk_base)(U8 *)+task->stk->stk_size)
       res=TRUE;
-  } else if (mem_heap_base<=ptr<=mem_heap_limit)
+  }
+  else if (mem_heap_base<=ptr<=mem_heap_limit)
     res=TRUE;
   POPFD
   return res;
@@ -61,7 +67,8 @@ U8 *Caller(I64 num=1)
 {//Returns the addr of the fun which called this one,
 //or the caller of the caller, etc.
   U8 **rbp=GetRBP,**ptr;
-  while (num--) {
+  while (num--)
+  {
     if (rbp>=*rbp)
       return NULL;
     rbp=*rbp;
@@ -82,17 +89,21 @@ U8 *TaskCaller(CTask *task=NULL,I64 num=0,Bool saved_context=FALSE)
     return NULL;
   rbp=task->rbp;
   rsp=task->rsp;
-  if (num) {
-    while (ChkOnStk(rbp,task)) {
+  if (num)
+  {
+    while (ChkOnStk(rbp,task))
+    {
       ptr=rbp+1;
       if (! --num)
-	return *ptr;
+        return *ptr;
       if (rbp>=*rbp)
-	break;
+        break;
       rbp=*rbp;
     }
     return NULL;
-  } else {
+  }
+  else
+  {
     if (task->rip==_RET)
       return *rsp;
     else
@@ -104,18 +115,21 @@ U8 *TaskCaller(CTask *task=NULL,I64 num=0,Bool saved_context=FALSE)
 U0 StkRep(CTask *task=NULL)
 {//Reports whats on the stk.
   I64 i,j,addr,
-	**rbp,**rsp,*my_rsp[STK_REP_LEN];
+      **rbp,**rsp,*my_rsp[STK_REP_LEN];
   CHashTable *old_hash=Fs->hash_table;
   if (!task) task=Fs;
   if (!TaskValidate(task))
     return;
   PUSHFD
   CLI
-  if (task==Fs) {
+  if (task==Fs)
+  {
     rbp=GetRBP;
     rsp=rbp+3;
     rbp=*rbp;
-  } else {
+  }
+  else
+  {
     rsp=task->rsp;
     rbp=task->rbp;
   }
@@ -126,24 +140,27 @@ U0 StkRep(CTask *task=NULL)
   MemCpy(my_rsp,rsp,STK_REP_LEN*sizeof(U8 *));
   POPFD
   Fs->hash_table=task->hash_table;
-  for (i=0;i<STK_REP_LEN;i++) {
+  for (i=0; i<STK_REP_LEN; i++)
+  {
     "%08X [RSP+%04X]: %016X ",rsp+i,
-	  i*sizeof(U8 *),my_rsp[i];
-    while (TRUE) {
+    i*sizeof(U8 *),my_rsp[i];
+    while (TRUE)
+    {
       if (!(&task->stk->stk_base<=rbp<
-	    (&task->stk->stk_base)(U8 *)+task->stk->stk_size))
-	break;
+            (&task->stk->stk_base)(U8 *)+task->stk->stk_size))
+        break;
       j=rbp-rsp;
       if (j>=i)
-	break;
+        break;
       addr=my_rsp[j+1];
       if (rbp>=my_rsp[j])
-	break;
+        break;
       rbp=my_rsp[j];
     }
     if (my_rsp[i]==addr)
       "$$RED$$";
-    "%P$$FG$$\n",my_rsp[i];
+    "%P$$FG$$\n"
+    ,my_rsp[i];
   }
   '\n';
   Fs->hash_table=old_hash;
@@ -153,16 +170,19 @@ U0 CallerRep(U8 **rbp=NULL,CTask *task=NULL)
 {//Prints a report of calling routines.
   I64 **ptr;
   if (!task) task=Fs;
-  if (!rbp) {
+  if (!rbp)
+  {
     if (task==Fs)
       rbp=GetRBP;
     else
       rbp=task->rbp;
   }
   "CallerRep:\n";
-  while (ChkOnStk(rbp,task)) {
+  while (ChkOnStk(rbp,task))
+  {
     ptr=rbp+1;
-    "%08X:%08tX:%P\n",ptr,*ptr,*ptr;
+    "%08X:%08tX:%P\n"
+    ,ptr,*ptr,*ptr;
     if (rbp>=*rbp)
       break;
     rbp=*rbp;
@@ -174,7 +194,8 @@ U0 D(U8 *addr,I64 cnt=0x80,Bool show_offset=TRUE)
 //See $LK,"DocD",A="MN:DocD"$() for a live dump.
   I64 i,j,ch;
   U8 *ptr=addr;
-  while (cnt) {
+  while (cnt)
+  {
     if (show_offset)
       "%08X",ptr-addr;
     else
@@ -183,17 +204,19 @@ U0 D(U8 *addr,I64 cnt=0x80,Bool show_offset=TRUE)
       j=16;
     else
       j=cnt;
-    for (i=0;i<j;i++)
+    for (i=0; i<j; i++)
       "%02X ",ptr[i];
-    for (;i<16;i++)
+    for (; i<16; i++)
       "";
-    for (i=0;i<j;i++) {
+    for (i=0; i<j; i++)
+    {
       ch=ptr[i];
       if (ch<CH_SHIFT_SPACE || ch==CH_BACKSPACE)
-	ch='.';
-      '' ch;
+        ch='.';
+      ''
+      ch;
       if (ch=='$$')
-	'' ch;
+        '' ch;
     }
     '\n';
     cnt-=j;
@@ -208,7 +231,8 @@ U0 Dm(U8 *addr,I64 cnt=0x80)
 
 U0 Da(U8 **addr,I64 cnt=0x10)
 {//Dump mem, showing symbolic addresses.
-  while (cnt-->0) {
+  while (cnt-->0)
+  {
     "%08X:%08X,%P\n",addr,*addr,*addr;
     addr++;
   }
@@ -223,7 +247,8 @@ U0 RawPrint(I64 mS=100,U8 *fmt,...)
   CLI
   old_raw=Raw(ON);
   old_input_filter=LBtr(&Fs->task_flags,TASKf_INPUT_FILTER_TASK);
-  "%s",buf;
+  "%s"
+  ,buf;
   Busy(mS<<10);
   POPFD
   LBEqu(&Fs->task_flags,TASKf_INPUT_FILTER_TASK,old_input_filter);
@@ -265,62 +290,79 @@ U0 RawDm(I64 mS=100,U8 *addr,I64 cnt=0x80)
 
 I64 *TaskRegAddr(CTask *task,I64 reg_num)
 {
-  switch (reg_num) {
-    case REG_RAX: return &task->rax;
-    case REG_RCX: return &task->rcx;
-    case REG_RDX: return &task->rdx;
-    case REG_RBX: return &task->rbx;
-    case REG_RSP: return &task->rsp;
-    case REG_RBP: return &task->rbp;
-    case REG_RSI: return &task->rsi;
-    case REG_RDI: return &task->rdi;
-    case 8 : return &task->r8;
-    case 9 : return &task->r9;
-    case 10: return &task->r10;
-    case 11: return &task->r11;
-    case 12: return &task->r12;
-    case 13: return &task->r13;
-    case 14: return &task->r14;
-    case 15: return &task->r15;
+  switch (reg_num)
+  {
+  case REG_RAX:
+    return &task->rax;
+  case REG_RCX:
+    return &task->rcx;
+  case REG_RDX:
+    return &task->rdx;
+  case REG_RBX:
+    return &task->rbx;
+  case REG_RSP:
+    return &task->rsp;
+  case REG_RBP:
+    return &task->rbp;
+  case REG_RSI:
+    return &task->rsi;
+  case REG_RDI:
+    return &task->rdi;
+  case 8 :
+    return &task->r8;
+  case 9 :
+    return &task->r9;
+  case 10:
+    return &task->r10;
+  case 11:
+    return &task->r11;
+  case 12:
+    return &task->r12;
+  case 13:
+    return &task->r13;
+  case 14:
+    return &task->r14;
+  case 15:
+    return &task->r15;
   }
   return NULL;
 }
 
-#define RAWDR_COL	40
+#define RAWDR_COL	56
 
 U0 RawDr(CTask *task=NULL)
 {
   I64 i,j,old_col=text.raw_col;
   Bool old_raw=Raw(ON);
   U8 buf[200];
-
   if (!task) task=Fs;
-
-  for (i=0;i<16;i++) {
+  for (i=0; i<16; i++)
+  {
     text.raw_col=i*text.cols+RAWDR_COL;
-    "º%3Z:%016X\n",i,"ST_U64_REGS",*TaskRegAddr(task,i);
+    "º%3Z:%016X\n"
+    ,i,"ST_U64_REGS",*TaskRegAddr(task,i);
   }
-
   text.raw_col=i++*text.cols+RAWDR_COL;
-  "ºRIP:%016X\n",task->rip;
-
+  "ºRIP:%016X\n"
+  ,task->rip;
   text.raw_col=i++*text.cols+RAWDR_COL;
-  "º%-*tp\n",text.cols-(RAWDR_COL+1)-1,Fs->rip;
-
+  "º%-*tp\n"
+  ,text.cols-(RAWDR_COL+1)-1,Fs->rip;
   text.raw_col=i++*text.cols+RAWDR_COL;
   'º';
-  if (Bt(&sys_run_level,RLf_COMPILER)) {
+  if (Bt(&sys_run_level,RLf_COMPILER))
+  {
     j=Fs->rip;
     Ui(buf,&j,,,TRUE);
-    "%s",buf;
-  } else
+    "%s"
+    ,buf;
+  }
+  else
     '\n';
-
   text.raw_col=i*text.cols+RAWDR_COL;
   'È';
-  for (j=0;j<text.cols-RAWDR_COL-1;j++)
+  for (j=0; j<text.cols-RAWDR_COL-1; j++)
     'Í';
-
   text.raw_col=old_col;
   Raw(old_raw);
 }
@@ -329,9 +371,10 @@ U0 Dr(CTask *task=NULL)
 {//Dump regs
   I64 i;
   if (!task) task=Fs;
-  for (i=0;i<16;i++)
+  for (i=0; i<16; i++)
     "%3Z:%016X\n",i,"ST_U64_REGS",*TaskRegAddr(task,i);
-  "RIP:%016X\n",task->rip;
+  "RIP:%016X\n"
+  ,task->rip;
 }
 
 U8 *SysGetStr2(I64)
@@ -349,15 +392,18 @@ CBpt *BptFind(U8 *needle_addr,CTask *haystack_task=NULL,Bool rem=FALSE)
   CLI
   tmpb1=&haystack_task->bpt_lst;
   tmpb=haystack_task->bpt_lst;
-  while (tmpb) {
+  while (tmpb)
+  {
     tmpb2=tmpb->next;
-    if (tmpb->addr==needle_addr) {
+    if (tmpb->addr==needle_addr)
+    {
       res=tmpb;
       if (rem)
-	tmpb1->next=tmpb2;
+        tmpb1->next=tmpb2;
       else
-	tmpb1=&tmpb->next;
-    } else
+        tmpb1=&tmpb->next;
+    }
+    else
       tmpb1=&tmpb->next;
     tmpb=tmpb2;
   }
@@ -372,7 +418,8 @@ Bool BptS(U8 *addr,CTask *task=NULL,Bool live=TRUE)
   if (!task) task=Fs;
   PUSHFD
   CLI
-  if (!(tmpb=BptFind(addr,task,FALSE))) {
+  if (!(tmpb=BptFind(addr,task,FALSE)))
+  {
     tmpb=CAlloc(sizeof(CBpt),task);
     tmpb->addr=addr;
     tmpb->val=*addr;
@@ -393,7 +440,8 @@ Bool BptR(U8 *addr,CTask *task=NULL,Bool live=TRUE,Bool rem=TRUE)
   if (!task) task=Fs;
   PUSHFD
   CLI
-  if (tmpb=BptFind(addr,task,rem)) {
+  if (tmpb=BptFind(addr,task,rem))
+  {
     if (task==Fs && live)
       *tmpb->addr=tmpb->val;
     res=TRUE;
@@ -410,10 +458,12 @@ Bool B(U8 *addr,CTask *task=NULL,Bool live=TRUE)
   Bool res=FALSE;
   PUSHFD
   CLI
-  if (BptFind(addr,task,FALSE)) {
+  if (BptFind(addr,task,FALSE))
+  {
     BptR(addr,task,live,TRUE);
     res=TRUE;
-  } else
+  }
+  else
     BptS(addr,task,live);
   POPFD
   return res;
@@ -429,7 +479,8 @@ I64 B2(CTask *task=NULL,Bool live=TRUE)
   CLI
   tmpb=task->bpt_lst;
   task->bpt_lst=NULL;
-  while (tmpb) {
+  while (tmpb)
+  {
     tmpb1=tmpb->next;
     if (task==Fs && live)
       *tmpb->addr=tmpb->val;
@@ -447,21 +498,25 @@ U0 G(U8 *ip=INVALID_PTR,CTask *task=NULL)
   if (ip!=INVALID_PTR) task->rip=ip;
   if (BptFind(task->rip,task))
     "\nDo one of the following, first:\n"
-	  ">S;\t\t\t//Single step\n"
-	  ">B2;\t\t\t//Clear all break points\n"
-	  ">G2;\t\t\t//Clear all break points and Go\n\n"
-	  "After resuming, <CTRL-ALT-n> next focus task\n"
-	  "After resuming, <CTRL-ALT-v> flushes scrn VGA cache\n";
-  else {
+    ">S;\t\t\t//Single step\n"
+    ">B2;\t\t\t//Clear all break points\n"
+    ">G2;\t\t\t//Clear all break points and Go\n\n"
+    "After resuming, <CTRL-ALT-n> next focus task\n"
+    "After resuming, <CTRL-ALT-v> flushes scrn VGA cache\n";
+  else
+  {
     LBtr(&task->task_flags,TASKf_DISABLE_BPTS);
     LBtr(&task->rflags,RFLAGf_TRAP);//No single step
     Suspend(task,FALSE);
-    if (task==Fs) {
-      if (IsDbgMode && task->next_cc!=&task->next_cc) {
-	"Exit Dbg\n";
-	Btr(&task->last_cc->flags,CCf_PMT);
+    if (task==Fs)
+    {
+      if (IsDbgMode && task->next_cc!=&task->next_cc)
+      {
+        "Exit Dbg\n";
+        Btr(&task->last_cc->flags,CCf_PMT);
       }
-    } else
+    }
+    else
       Exit;
   }
 }
@@ -485,12 +540,15 @@ public U0 S(U8 *ip=INVALID_PTR,CTask *task=NULL) //Single-step.
   LBts(&task->task_flags,TASKf_DISABLE_BPTS);
   LBts(&task->rflags,RFLAGf_TRAP);
   Suspend(task,FALSE);
-  if (task==Fs) {
-    if (IsDbgMode) {
+  if (task==Fs)
+  {
+    if (IsDbgMode)
+    {
       if (task->next_cc!=&task->next_cc)
-	Btr(&task->last_cc->flags,CCf_PMT);
+        Btr(&task->last_cc->flags,CCf_PMT);
     }
-  } else
+  }
+  else
     Exit;
   POPFD
 }
@@ -498,36 +556,36 @@ public U0 S(U8 *ip=INVALID_PTR,CTask *task=NULL) //Single-step.
 U0 DbgHelp()
 {
   "\n"
-	"The cmd line is basically the same as normal.	Here are some common\n"
-	"debugging commands.\n\n"
-	">EdLite(\"FileName\");\t\t//Edit file.\n"
-	">D(0x100000);\t\t\t//Dump page tables.\n"
-	">Dm(0x100000);\t\t\t//Dump page tables.\n"
-	">Dm(Fs,sizeof(CTask));\t\t//Dump current task record.\n"
-	">ClassRep(Fs,\"CTask\",1);\t//Dump current task record.\n"
-	">ClassRep(Fs,,1);\t\t//(It knows lastclass.)\n"
-	">CallerRep;\t\t\t//Stack trace report.\n"
-	">Da(_RSP);\t\t\t//Dump stk.\n"
-	">Dr;\t\t\t\t//Dump Regs.\n"
-	">1+2*3+&Print;\t\t\t//Show calculation res.\n"
-	">*(0x70000)(I64 *)=0x123456789;\t//Assign value to 0x70000-0x70007.\n"
-	">_RAX=0x1234;\t\t\t//Set RAX to 0x1234.\n"
-	">_RIP=&Break;\t\t//Set RIP.\n"
-	">I64 i;\t\t\t\t//Declare variable.\n"
-	">i=_RCX+_RDX;\t\t\t//Assign to variable.\n"
-	">U(&Print+0x8);\t\t\t//Unassemble Print.\n"
-	">Uf(\"Print\");\t\t\t//Unassembler function \"Print\".\n"
-	">Man(\"Print\");\t\t\t//Edit Src for \"Print\".\n"
-	">E(_RIP);\t\t\t//Edit Src Code.\n"
-	">Fix;\t\t\t\t//Edit Last Err Src Code.\n"
-	">B(&Main+0x20);\t\t\t//Toggle break point.\n"
-	">B2;\t\t\t\t//Clear all break points.\n"
-	">S;\t\t\t\t//Single step.\n"
-	">G;\t\t\t\t//Resume execution.\n"
-	">G2;\t\t\t\t//B2;VGAFlush;WinFocus;G;\n"
-	">Exit;\t\t\t\t//Exit (kill) task.\n\n"
-	"After resuming, <CTRL-ALT-n> next focus task.\n"
-	"After resuming, <CTRL-ALT-v> flushes scrn VGA cache.\n\n";
+  "The cmd line is basically the same as normal.	Here are some common\n"
+  "debugging commands.\n\n"
+  ">EdLite(\"FileName\");\t\t//Edit file.\n"
+  ">D(0x100000);\t\t\t//Dump page tables.\n"
+  ">Dm(0x100000);\t\t\t//Dump page tables.\n"
+  ">Dm(Fs,sizeof(CTask));\t\t//Dump current task record.\n"
+  ">ClassRep(Fs,\"CTask\",1);\t//Dump current task record.\n"
+  ">ClassRep(Fs,,1);\t\t//(It knows lastclass.)\n"
+  ">CallerRep;\t\t\t//Stack trace report.\n"
+  ">Da(_RSP);\t\t\t//Dump stk.\n"
+  ">Dr;\t\t\t\t//Dump Regs.\n"
+  ">1+2*3+&Print;\t\t\t//Show calculation res.\n"
+  ">*(0x70000)(I64 *)=0x123456789;\t//Assign value to 0x70000-0x70007.\n"
+  ">_RAX=0x1234;\t\t\t//Set RAX to 0x1234.\n"
+  ">_RIP=&Break;\t\t//Set RIP.\n"
+  ">I64 i;\t\t\t\t//Declare variable.\n"
+  ">i=_RCX+_RDX;\t\t\t//Assign to variable.\n"
+  ">U(&Print+0x8);\t\t\t//Unassemble Print.\n"
+  ">Uf(\"Print\");\t\t\t//Unassembler function \"Print\".\n"
+  ">Man(\"Print\");\t\t\t//Edit Src for \"Print\".\n"
+  ">E(_RIP);\t\t\t//Edit Src Code.\n"
+  ">Fix;\t\t\t\t//Edit Last Err Src Code.\n"
+  ">B(&Main+0x20);\t\t\t//Toggle break point.\n"
+  ">B2;\t\t\t\t//Clear all break points.\n"
+  ">S;\t\t\t\t//Single step.\n"
+  ">G;\t\t\t\t//Resume execution.\n"
+  ">G2;\t\t\t\t//B2;VGAFlush;WinFocus;G;\n"
+  ">Exit;\t\t\t\t//Exit (kill) task.\n\n"
+  "After resuming, <CTRL-ALT-n> next focus task.\n"
+  "After resuming, <CTRL-ALT-v> flushes scrn VGA cache.\n\n";
 }
 
 U0 Dbg2()
@@ -535,14 +593,19 @@ U0 Dbg2()
   Bool old_win_inhibit,old_waiting_msg,old_single;
   I64 i,old_getstr2;
   U8 buf[200];
-  if (dbg.panic) {
-    if (IsRaw) {
+  if (dbg.panic)
+  {
+    if (IsRaw)
+    {
       i=Fs->rip;
       Ui(buf,&i);
-      "%s",buf;
-    } else
+      "%s"
+      ,buf;
+    }
+    else
       U(Fs->rip,1);
-  } else
+  }
+  else
     dbg.panic=TRUE;
   old_waiting_msg=LBtr(&Fs->task_flags,TASKf_AWAITING_MSG);
   old_win_inhibit=Fs->win_inhibit;
@@ -566,7 +629,8 @@ U0 Fault3(I64 fault_num,I64 fault_err_code)
   no_warn fault_err_code;
   PUSHFD
   CLI
-  if (Gs->num && dbg.mp_crash) {
+  if (Gs->num && dbg.mp_crash)
+  {
     mp_cnt=1;
     dbg.mp_crash->cpu_num=Gs->num;
     dbg.mp_crash->task=Fs;
@@ -577,13 +641,15 @@ U0 Fault3(I64 fault_num,I64 fault_err_code)
     SysHlt;
   }
   "\n\tTinkerOS Debugger\n\n"
-	">Help;\t//For help.\n\n";
+  ">Help;\t//For help.\n\n";
   Beep(62,TRUE);
-  if (fault_num==I_DBG) {
-    if (dbg.msg) {
+  if (fault_num==I_DBG)
+  {
+    if (dbg.msg)
+    {
       "\n!!!%s",dbg.msg;
       if (dbg.msg_num)
-	"%016X",dbg.msg_num;
+        "%016X",dbg.msg_num;
       "!!!\n\n";
     }
   }
@@ -606,23 +672,29 @@ U0 Fault2(I64 fault_num,I64 fault_err_code)
     Fs->rip--;
   if (Fs->dbg_task)
     CallExtNum(EXT_DBG_RESUME,fault_num,fault_err_code);
-  else {
+  else
+  {
     was_raw=Raw(ON);
     was_silent=Silent(OFF);
     text.raw_flags|=RWF_SHOW_DOLLAR|RWF_SCROLL;
-
     "Task \"";
-    "%s",Fs->task_title;
+    "%s"
+    ,Fs->task_title;
     "\"\n";
-    "Fault:0x%02X %Z\t\tErr Code:%08X\n",
-	  fault_num,fault_num,"ST_INT_NAMES",fault_err_code;
+    "Fault:0x%02X %Z\t\tErr Code:%08X\n"
+    ,
+    fault_num,fault_num,"ST_INT_NAMES",fault_err_code;
     was_in_dbg=DbgMode(ON);
-    "RIP:%08X",Fs->rip; //Sometimes crashes on %p, so do this first
-    ":%pRSP:%08X\n",Fs->rip,Fs->rsp;
-    if (fault_num==I_PAGE_FAULT) {
+    "RIP:%08X"
+    ,Fs->rip; //Sometimes crashes on %p, so do this first
+    ":%pRSP:%08X\n"
+    ,Fs->rip,Fs->rsp;
+    if (fault_num==I_PAGE_FAULT)
+    {
       MOV_RAX_CR2
       i=GetRAX;
-      "Fault Addr:%08X:%p\n",i,i;
+      "Fault Addr:%08X:%p\n"
+      ,i,i;
     }
     Fault3(fault_num,fault_err_code);
     DbgMode(was_in_dbg);

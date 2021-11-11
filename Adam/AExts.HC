@@ -74,14 +74,15 @@ extern U8 *PopUpGetStr(U8 *header=NULL);
 extern I64 PopUpMenu(CDoc *doc,I64 dof_flags=0, U8 *title=NULL);
 extern Bool PopUpNoYes(U8 *header=NULL,U8 *footer=NULL);
 extern Bool PopUpOk(U8 *header=NULL,U8 *footer=NULL);
-extern I64 PopUpRangeI64(
-I64 lo,I64 hi,I64 step=1,U8 *header=NULL,U8 *footer=NULL);
+extern I64 PopUpRangeI64(I64 lo,I64 hi,I64 step=1,U8 *header=NULL,U8 *footer=NULL);
 extern Bool PopUpTransform(I64 *r);
+extern CPCIDev	*PCIDevFind(U16 class_code=NULL, U16 sub_code=NULL, U16 vendor_id=NULL, U16 device_id=NULL, U8 _bus=0xFF, U8 _dev=0xFF, U8 _fun=0xFF);
 extern I64 RedSeaISO(U8 *_iso_filename=NULL,U8 *_src_dir,
                      U8 *_stage2_filename=NULL);
 extern U0 Refresh(I64 cnt=1,Bool force=FALSE);
 extern U0 RegOneTimePopUp(I64 flag_num,U8 *msg);
 extern Bool RegWrite(U8 *path,U8 *fmt,...);
+extern I64 SATARep(I64 bd_type=BDT_NULL);
 extern U0 SettingsPop(CTask *task=NULL,I64 flags=0);
 extern CTaskSettings *SettingsPush(CTask *task=NULL,I64 flags=0);
 extern U0 TemplateCtrlSlider(CDoc *doc);

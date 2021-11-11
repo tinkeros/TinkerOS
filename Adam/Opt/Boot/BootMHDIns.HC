@@ -29,7 +29,10 @@ public U0 BootMHDOldRead(U8 src_drv,U8 dst_drv)
   {
 //Bypass partition bounds-checking
     BlkDevLock(bd);
-    ATAReadBlks(bd,&mbr,0,1);
+    if (AHCIMode)
+        AHCIAtaBlksRead(bd, &mbr, 0, 1);
+    else
+      ATAReadBlks(bd,&mbr,0,1);
     BlkDevUnlock(bd);
     Drv(dst_drv);
     DirMk(BOOT_DIR);
@@ -48,6 +51,9 @@ public U0 BootMHDOldWrite(U8 src_drv,U8 dst_drv)
   {
 //Bypass partition bounds-checking
     BlkDevLock(bd);
+    if (AHCIMode)
+        AHCIAtaBlksWrite(bd, mbr, 0, 1);
+        else
     ATAWriteBlks(bd,mbr,0,1);
     BlkDevUnlock(bd);
   }
@@ -67,6 +73,9 @@ public U0 BootMHDZero(U8 dst_drv)
   MemSet(&mbr,0,BLK_SIZE);
 //Bypass partition bounds-checking
   BlkDevLock(bd);
+    if (AHCIMode)
+        AHCIAtaBlksWrite(bd, mbr, 0, 1);
+        else
   ATAWriteBlks(bd,&mbr,0,1);
   BlkDevUnlock(bd);
 }
@@ -152,6 +161,9 @@ public Bool BootMHDIns(U8 drv_let,U8 *drv_lst=NULL)
         *BMHD_DAP_BLK(I64 *)=Clus2Blk(dv,de.clus);
 //Bypass partition bounds-checking
         BlkDevLock(bd);
+        if (AHCIMode)
+            AHCIAtaBlksRead(bd, &mbr, 0, 1);
+            else
         ATAReadBlks(bd,&mbr,0,1);
         for (i=0; i<BMHD_END-BMHD_CODE; i++)
           mbr.code[i]=BMHD_CODE(U8 *)[i];
@@ -162,6 +174,9 @@ public Bool BootMHDIns(U8 drv_let,U8 *drv_lst=NULL)
           mbr.media_id=RandU32;
         mbr.zero=0;
         mbr.signature=0xAA55;
+        if (AHCIMode)
+            AHCIAtaBlksWrite(bd, &mbr, 0, 1);
+            else
         ATAWriteBlks(bd,&mbr,0,1);
         BlkDevUnlock(bd);
         res=TRUE;

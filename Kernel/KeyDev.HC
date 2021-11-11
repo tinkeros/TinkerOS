@@ -1,17 +1,20 @@
 U0 PutKey(I64 ch=0,I64 sc=0)
 {//See $LK,"Keyboard Devices",A="HI:Keyboard Devices/System"$.
   CKeyDevEntry *tmpk;
-  if (ch||sc) {
+  if (ch||sc)
+  {
     tmpk=keydev.put_key_head.next;
-    if (!Bt(&Fs->display_flags,DISPLAYf_SILENT)) {
+    if (!Bt(&Fs->display_flags,DISPLAYf_SILENT))
+    {
       if (kbd.scan_code & SCF_SCROLL && sys_focus_task==Fs)
-	while (kbd.scan_code & SCF_SCROLL)
-	  Yield; //Wait on SCROLL LOCK Key
-      while (tmpk!=&keydev.put_key_head) {
-	if ((!(sc&SCF_KEY_DESC) || tmpk->flags & KDF_HAS_DESCS) &&
-	      (*tmpk->put_key)(ch,sc))
-	  break;
-	tmpk=tmpk->next;
+        while (kbd.scan_code & SCF_SCROLL)
+          Yield; //Wait on SCROLL LOCK Key
+      while (tmpk!=&keydev.put_key_head)
+      {
+        if ((!(sc&SCF_KEY_DESC) || tmpk->flags & KDF_HAS_DESCS) &&
+            (*tmpk->put_key)(ch,sc))
+          break;
+        tmpk=tmpk->next;
       }
     }
   }
@@ -20,7 +23,8 @@ U0 PutKey(I64 ch=0,I64 sc=0)
 U0 PutChars(U64 ch)
 {//Output chars. Up to 8 chars in a single U64.
 //Don't use this.  $LK,"See Print() shortcut.",A="FF:::/Doc/HolyC.DD,DemoHolyC"$
-  while (ch) {
+  while (ch)
+  {
     PutKey(ch&255,0);
     ch>>=8;
   }
@@ -34,19 +38,24 @@ U0 PutS(U8 *st)
   Bool cont=TRUE;
   if (!st) return;
   CKeyDevEntry *tmpk=keydev.put_key_head.next;
-  if (!Bt(&Fs->display_flags,DISPLAYf_SILENT)) {
+  if (!Bt(&Fs->display_flags,DISPLAYf_SILENT))
+  {
     if (kbd.scan_code & SCF_SCROLL && sys_focus_task==Fs)
       while (kbd.scan_code & SCF_SCROLL)
-	Yield;
-    while (cont && tmpk!=&keydev.put_key_head) {
-      if (tmpk->put_s) {
-	if ((*tmpk->put_s)(st))
-	  break;
-      } else {
-	ptr=st;
-	while (ch=*ptr++)
-	  if ((*tmpk->put_key)(ch,0))
-	    cont=FALSE;
+        Yield;
+    while (cont && tmpk!=&keydev.put_key_head)
+    {
+      if (tmpk->put_s)
+      {
+        if ((*tmpk->put_s)(st))
+          break;
+      }
+      else
+      {
+        ptr=st;
+        while (ch=*ptr++)
+          if ((*tmpk->put_key)(ch,0))
+            cont=FALSE;
       }
       tmpk=tmpk->next;
     }
@@ -68,10 +77,10 @@ U0 KeyDevRem(CKeyDevEntry *tmpk)
 }
 
 CKeyDevEntry *KeyDevAdd(Bool (*fp_put_key)(I64 ch,I64 sc),
-	Bool (*fp_puts)(U8 *st),I64 priority,Bool key_descs=FALSE)
+                        Bool (*fp_puts)(U8 *st),I64 priority,Bool key_descs=FALSE)
 {//Places hook in StdOut chain. See $LK,"Keyboard Devices",A="HI:Keyboard Devices/System"$.
   CKeyDevEntry *tmpk=keydev.put_key_head.last,
-	*tmpk1=ACAlloc(sizeof(CKeyDevEntry));
+                *tmpk1=ACAlloc(sizeof(CKeyDevEntry));
   tmpk1->put_key=fp_put_key;
   tmpk1->put_s=fp_puts;
   tmpk1->priority=priority;
@@ -87,41 +96,49 @@ CKeyDevEntry *KeyDevAdd(Bool (*fp_put_key)(I64 ch,I64 sc),
 
 Bool KDRawPutKey(I64 ch,I64)
 {
-  if (IsRaw) {
+  if (IsRaw)
+  {
     RawPutChar(ch);
     return TRUE;
-  } else
+  }
+  else
     return FALSE;
 }
 
 Bool KDRawPutS(U8 *st)
 {
   I64 ch;
-  if (IsRaw) {
+  if (IsRaw)
+  {
     while (ch=*st++)
       RawPutChar(ch);
     return TRUE;
-  } else
+  }
+  else
     return FALSE;
 }
 
 Bool KDInputFilterPutKey(I64 ch,I64 scan_code)
 {
-  if (Bt(&Fs->task_flags,TASKf_INPUT_FILTER_TASK)) {
+  if (Bt(&Fs->task_flags,TASKf_INPUT_FILTER_TASK))
+  {
     Msg(MSG_KEY_DOWN,ch,scan_code);
     return TRUE;
-  } else
+  }
+  else
     return FALSE;
 }
 
 Bool KDInputFilterPutS(U8 *st)
 {
   I64 ch;
-  if (Bt(&Fs->task_flags,TASKf_INPUT_FILTER_TASK)) {
+  if (Bt(&Fs->task_flags,TASKf_INPUT_FILTER_TASK))
+  {
     while (ch=*st++)
       Msg(MSG_KEY_DOWN,ch,0);
     return TRUE;
-  } else
+  }
+  else
     return FALSE;
 }
 
@@ -137,7 +154,8 @@ U0 CtrlAltC(I64)
 
 U0 CtrlAltD(I64)
 {
-  if (!IsDbgMode) {
+  if (!IsDbgMode)
+  {
     if (Fs==Gs->idle_task)
       BptS(sys_winmgr_task->rip,sys_winmgr_task);
     else
@@ -176,24 +194,22 @@ U0 CtrlAltX(I64)
 }
 
 U0 CtrlAltCBSet(U8 ch,U0 (*fp_hndlr)(I64 sc),
-	U8 *no_shift_desc=NULL,U8 *shift_desc=NULL,Bool in_irq=FALSE)
+                U8 *no_shift_desc=NULL,U8 *shift_desc=NULL,Bool in_irq=FALSE)
 {//Set callback for <CTRL-ALT-letter>.
   ch=ToUpper(ch)-'A';
-  if (ch<26) {
+  if (ch<26)
+  {
     keydev.fp_ctrl_alt_cbs[ch]=fp_hndlr;
-
     Free(keydev.ctrl_alt_no_shift_descs[ch]);
     if (no_shift_desc)
       keydev.ctrl_alt_no_shift_descs[ch]=AStrNew(no_shift_desc);
     else
       keydev.ctrl_alt_no_shift_descs[ch]=NULL;
-
     Free(keydev.ctrl_alt_shift_descs[ch]);
     if (shift_desc)
       keydev.ctrl_alt_shift_descs[ch]=AStrNew(shift_desc);
     else
       keydev.ctrl_alt_shift_descs[ch]=NULL;
-
     BEqu(&keydev.ctrl_alt_in_irq_flags,ch,in_irq);
   }
 }

@@ -53,5 +53,6 @@ I64 sys_num_usb=0;
 CUSB sys_usb_devs[USB_NUM];
 
 Bool BlkDevLtrOverride[26];
+Bool AHCIMode=FALSE;
 U32 hype_info[4];
 

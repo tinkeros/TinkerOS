@@ -13,82 +13,100 @@ class CPlannedDrv
 };
 
 public I64 DskPrt(U8 drv_let=0,...)
-{/*Partition the disk containing partition drv_let.
+{
+  /*Partition the disk containing partition drv_let.
 
-drv_let=0 means add new drive that is not already mounted.
+  drv_let=0 means add new drive that is not already mounted.
 
->DskPrt('C',0.5,0.25,0.25); //Make three.  50% C, 25% D, 25% E, round-up to blk.
+  >DskPrt('C',0.5,0.25,0.25); //Make three.  50% C, 25% D, 25% E, round-up to blk.
 
-*/
+  A negative value means to stop partitioning even if there is free space left.
+
+  */
   CBlkDev *bd;
   CPlannedDrv head,*tmppp;
   CMasterBoot mbr;
   Bool pri=TRUE;
   I64 ext_base,drv_let2,pri_cnt=0,i,start_offset,offset,
-	total,remaining,cur_arg=0;
-  if (argc>4) {
+                        total,remaining,cur_arg=0;
+  if (argc>4 && argv[5](F64)>=0)
+  {
     "This command will only create up to 4\n"
     "primary partitions and should not be\n"
     "used to partition drives in general.\n";
     return 0;
   }
   "This command does not play well\n"
-	"with other operating systems.\n"
-	"You really should use another\n"
-	"operating system's partitioner.\n"
-	"If you use this, it may, in fact,\n"
-	"make your hard drive impossible\n"
-	"to repartition with other operating\n"
-	"until you set block zero to zero\n"
-	"with $$LK,\"BootMHDZero\",\"MN:BootMHDZero\"$$()\n\n\n"
-	"Continue";
+  "with other operating systems.\n"
+  "You really should use another\n"
+  "operating system's partitioner.\n"
+  "If you use this, it may, in fact,\n"
+  "make your hard drive impossible\n"
+  "to repartition with other operating\n"
+  "until you set block zero to zero\n"
+  "with $$LK,\"BootMHDZero\",\"MN:BootMHDZero\"$$()\n\n\n"
+  "Continue";
   if (argc<=cur_arg && !YorN)
     return 0;
   '\n';
-
   if (drv_let && !Let2BlkDev(drv_let,FALSE))
     drv_let=0;
   if (!drv_let && !(drv_let=Mount(TRUE,install_just_ide)) ||
-	!(bd=Let2BlkDev(drv_let,FALSE)) || bd->type!=BDT_ATA)
+      !(bd=Let2BlkDev(drv_let,FALSE)))
+  {
+    "Failed to mount block device to partition!\n";
     return 0;
-
+  }
+  if (bd->type!=BDT_ATA && bd->type!=BDT_AHCI_SATA)
+  {
+    "Unable to parition mounted block device type!\n";
+    return 0;
+  }
   total=bd->max_blk+1;
   QueInit(&head);
   drv_let2=bd->first_drv_let;
   remaining=FloorU64(bd->max_blk+1,ROUND_DRV_TO);
-  while (FloorU64(remaining,ROUND_DRV_TO)>=ROUND_DRV_TO) {
+  while (FloorU64(remaining,ROUND_DRV_TO)>=ROUND_DRV_TO)
+  {
+    if (cur_arg>0&&argv[cur_arg](F64)<0.0)
+      break;
     tmppp=MAlloc(sizeof(CPlannedDrv));
-    do {
+    do
+    {
       "$$RED$$Partition %C$$FG$$\n",drv_let2;
       tmppp->pri=FALSE;
-      if (pri) {
-	"Primary Partition";
-	if (argc>cur_arg || YorN) {
-	  pri_cnt++;
-	  tmppp->pri=TRUE;
-	  if (pri_cnt==4)
-	    pri=FALSE;
-	} else
-	  pri=FALSE;
+      if (pri)
+      {
+        "Primary Partition";
+        if (argc>cur_arg || YorN)
+        {
+          pri_cnt++;
+          tmppp->pri=TRUE;
+          if (pri_cnt==4)
+            pri=FALSE;
+        }
+        else
+          pri=FALSE;
       }
       "\nBlocks Remaining:%d (0x%X)\n",
-	    remaining-DRV_HEADER,remaining-DRV_HEADER;
+      remaining-DRV_HEADER,remaining-DRV_HEADER;
       if (argc>cur_arg)
-	tmppp->size=MinI64(CeilU64(MaxI64(remaining,DRV_HEADER),ROUND_DRV_TO),
-	      CeilU64(argv[cur_arg++](F64)*total,ROUND_DRV_TO));
+        tmppp->size=MinI64(CeilU64(MaxI64(remaining,DRV_HEADER),ROUND_DRV_TO),
+                           CeilU64(argv[cur_arg++](F64)*total,ROUND_DRV_TO));
       else
-	tmppp->size=CeilU64(GetI64("Size in Blocks:",
-	      remaining-DRV_HEADER)+DRV_HEADER,ROUND_DRV_TO);
-    } while (!(ROUND_DRV_TO<=tmppp->size<=FloorU64(remaining,ROUND_DRV_TO)));
+        tmppp->size=CeilU64(GetI64("Size in Blocks:",
+                                   remaining-DRV_HEADER)+DRV_HEADER,ROUND_DRV_TO);
+    }
+    while (!(ROUND_DRV_TO<=tmppp->size<=FloorU64(remaining,ROUND_DRV_TO)));
     QueIns(tmppp,head.last);
     remaining-=tmppp->size;
     drv_let2++;
   }
-
   "\n\n!!! Repartition Drive !!!\n\n";
   tmppp=head.next;
   drv_let2=bd->first_drv_let;
-  while (tmppp!=&head) {
+  while (tmppp!=&head)
+  {
     "Drive %C:%08X ",drv_let2,tmppp->size;
     if (tmppp->pri)
       "Primary\n";
@@ -99,13 +117,13 @@ drv_let=0 means add new drive that is not already mounted.
   }
   if (!argc && !AreYouSure)
     goto pd_done;
-
   remaining=FloorU64(bd->max_blk+1,ROUND_DRV_TO)-ROUND_DRV_TO;
   tmppp=head.next;
   MemSet(&mbr,0,BLK_SIZE);
   mbr.signature=0xAA55;
   offset=0;
-  for (i=0;i<pri_cnt;i++) {
+  for (i=0; i<pri_cnt; i++)
+  {
     mbr.p[i].active=0x80;
     mbr.p[i].start_head=0;
     mbr.p[i].start_cyl=0x101;
@@ -119,7 +137,8 @@ drv_let=0 means add new drive that is not already mounted.
     tmppp=tmppp->next;
   }
   if (!i) i++;
-  if (tmppp!=&head) {
+  if (tmppp!=&head)
+  {
     mbr.p[i].active=0x80;
     mbr.p[i].start_head=0;
     mbr.p[i].start_cyl=0x101;
@@ -130,13 +149,15 @@ drv_let=0 means add new drive that is not already mounted.
     mbr.p[i].size=remaining;
     ext_base=offset;
   }
-  ATAWriteBlks(bd,&mbr,0,1);
-
-  while (tmppp!=&head) {
+  if (AHCIMode)
+    AHCIAtaBlksWrite(bd, &mbr, 0, 1);
+  else
+    ATAWriteBlks(bd,&mbr,0,1);
+  while (tmppp!=&head)
+  {
     start_offset=offset;
     MemSet(&mbr,0,BLK_SIZE);
     mbr.signature=0xAA55;
-
     mbr.p[0].active=0x80;
     mbr.p[0].start_head=1;
     mbr.p[0].start_cyl=0x101;
@@ -147,7 +168,8 @@ drv_let=0 means add new drive that is not already mounted.
     mbr.p[0].size=tmppp->size-DRV_HEADER;
     offset+=tmppp->size;
     tmppp=tmppp->next;
-    if (tmppp!=&head) {
+    if (tmppp!=&head)
+    {
       mbr.p[1].active=0x80;
       mbr.p[1].start_head=0;
       mbr.p[1].start_cyl=0x101;
@@ -157,16 +179,18 @@ drv_let=0 means add new drive that is not already mounted.
       mbr.p[1].offset=offset-ext_base;
       mbr.p[1].size=tmppp->size;
     }
-    ATAWriteBlks(bd,&mbr,start_offset,1);
+    if (AHCIMode)
+      AHCIAtaBlksWrite(bd, &mbr, start_offset, 1);
+    else
+      ATAWriteBlks(bd,&mbr,start_offset,1);
   }
-
   bd->flags&=~(BDF_INITIALIZED | BDF_INIT_IN_PROGRESS);
   BlkDevAdd(bd,,FALSE,TRUE);
-  for (i=bd->first_drv_let;i<drv_let2;i++)
+  for (i=bd->first_drv_let; i<drv_let2; i++)
     Fmt(i,,FALSE);
-
-    pd_done:
-  while (head.next!=&head) {
+pd_done:
+  while (head.next!=&head)
+  {
     tmppp=head.next;
     QueRem(tmppp);
     Free(tmppp);

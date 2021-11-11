@@ -12,33 +12,36 @@ U0 ProfTimerInt(CTask *task)
 {//See $LK,"profiler_timer_irq",A="FF:::/Kernel/KInts.HC,profiler_timer_irq"$.
   I64 i,k;
   if (Bt(&pf_prof_active,0))
-    for (k=0;k<=pf_depth;k++) {
+    for (k=0; k<=pf_depth; k++)
+    {
       if (task==Gs->idle_task)
-	i=SYS_IDLE_PT;
+        i=SYS_IDLE_PT;
       else
-	i=TaskCaller(task,k,TRUE);
-      if (pf_buf_in_ptr<PF_ARRAY_CNT) {
-	pf_array[pf_buf_in_ptr++]=i;
-	pf_jiffy_end=cnts.jiffies;
+        i=TaskCaller(task,k,TRUE);
+      if (pf_buf_in_ptr<PF_ARRAY_CNT)
+      {
+        pf_array[pf_buf_in_ptr++]=i;
+        pf_jiffy_end=cnts.jiffies;
       }
     }
 }
 
 public U0 Prof(I64 depth=0,I64 cpu_num=0)
-{/*Start collecting profiler statistics.
-Profilers report where time is spent
-by sampling RIP during the $TX,"1000Hz",D="DD_JIFFY_HZ"$
-timer interrupt.
+{
+  /*Start collecting profiler statistics.
+  Profilers report where time is spent
+  by sampling RIP during the $TX,"1000Hz",D="DD_JIFFY_HZ"$
+  timer interrupt.
 
-Do a $LK,"ProfRep",A="MN:ProfRep"$(), (profiler report)
-after you have collected data.
-*/
+  Do a $LK,"ProfRep",A="MN:ProfRep"$(), (profiler report)
+  after you have collected data.
+  */
   if (!(0<=cpu_num<mp_cnt))
     ST_ERR_ST "Invalid CPU\n";
-  else {
+  else
+  {
     cpu_structs[pf_cpu].profiler_timer_irq=NULL;
     pf_cpu=cpu_num;
-
     pf_depth=depth;
     pf_buf_in_ptr=0;
     if (!pf_array)
@@ -64,51 +67,62 @@ public U0 ProfRep(I64 filter_cnt=1,Bool leave_it=OFF,Bool print_max=ON)
     "Profiler Not Active\n";
   if (!pf_buf_in_ptr)
     "No Profiler Statistic\n";
-  else {
+  else
+  {
     if (!(total_time=pf_jiffy_end-pf_jiffy_start))
       total_time=1;
     QSortI64(pf_array,pf_buf_in_ptr,&ProfCompare);
     *last_buf=0;
-    for (i=0;i<pf_buf_in_ptr;i+=hits) {
+    for (i=0; i<pf_buf_in_ptr; i+=hits)
+    {
       rip=pf_array[i];
       hits=0;
       do hits++;
       while (i+hits<pf_buf_in_ptr && pf_array[i+hits]==rip);
-
       StrPrint(buf,"%p",rip);
       StrFirstRem(buf,"+",buf2);
-      if (StrCmp(buf2,last_buf)) {
-	if (*last_buf && routine_total>=filter_cnt) {
+      if (StrCmp(buf2,last_buf))
+      {
+        if (*last_buf && routine_total>=filter_cnt)
+        {
           routine_percent = 100*routine_total/total_time;
-	  "$$GREEN$$%6.2f%08X:%s\n$$FG$$",routine_percent,
-		routine_total,last_buf;
-          if (routine_percent > max_percent) {
-            if (StrCmp(last_buf,"SYS_IDLE_PT")) {
+          "$$GREEN$$%6.2f%08X:%s\n$$FG$$"
+          ,routine_percent,
+          routine_total,last_buf;
+          if (routine_percent > max_percent)
+          {
+            if (StrCmp(last_buf,"SYS_IDLE_PT"))
+            {
               max_percent = routine_percent;
               StrCpy(max_buf,last_buf);
             }
           }
         }
-	StrCpy(last_buf,buf2);
-	routine_total=0;
+        StrCpy(last_buf,buf2);
+        routine_total=0;
       }
       routine_total+=hits;
-      if (hits>=filter_cnt) {
-	"%6.2f%08X:%P\n",100*hits/total_time,hits,rip;
-	last_rip=rip;
+      if (hits>=filter_cnt)
+      {
+        "%6.2f%08X:%P\n",100*hits/total_time,hits,rip;
+        last_rip=rip;
       }
     }
     if (*last_buf && routine_total>=filter_cnt)
       "$$GREEN$$%6.2f%08X:%s\n$$FG$$",100*routine_total/total_time,
-	    routine_total,last_buf;
-    "Total Time:%0.6fs\n",total_time/JIFFY_FREQ;
-    if (leave_it) {
+      routine_total,last_buf;
+    "Total Time:%0.6fs\n"
+    ,total_time/JIFFY_FREQ;
+    if (leave_it)
+    {
       cpu_structs[pf_cpu].profiler_timer_irq=&ProfTimerInt;
       LBts(&pf_prof_active,0);
-    } else
+    }
+    else
       cpu_structs[pf_cpu].profiler_timer_irq=NULL;
   }
-  if (print_max && max_percent > 0) {
+  if (print_max && max_percent > 0)
+  {
     "\nRoutine with max hits: %s\n\n",max_buf;
   }
 }

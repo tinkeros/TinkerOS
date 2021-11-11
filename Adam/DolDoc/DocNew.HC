@@ -2,28 +2,32 @@
 
 public Bool DocLock(CDoc *doc)
 {//Make this task have exclusive access to this doc.
-  if (!Bt(&doc->locked_flags,DOClf_LOCKED) || doc->owning_task!=Fs) {
+  if (!Bt(&doc->locked_flags,DOClf_LOCKED) || doc->owning_task!=Fs)
+  {
     while (LBts(&doc->locked_flags,DOClf_LOCKED))
       Yield;
     if (doc->owning_task!=Fs)
       LBEqu(&doc->flags,DOCf_BREAK_UNLOCKED,BreakLock(Fs));
     doc->owning_task=Fs;
     return TRUE;
-  } else
+  }
+  else
     return FALSE;
 }
 
 public Bool DocUnlock(CDoc *doc)
 {//Release exclusive lock on access to doc.
   Bool unlock_break;
-  if (Bt(&doc->locked_flags,DOClf_LOCKED) && doc->owning_task==Fs) {
+  if (Bt(&doc->locked_flags,DOClf_LOCKED) && doc->owning_task==Fs)
+  {
     doc->owning_task=0;
     unlock_break=Bt(&doc->flags,DOCf_BREAK_UNLOCKED);
     LBtr(&doc->locked_flags,DOClf_LOCKED);
     if (unlock_break)
       BreakUnlock(Fs);
     return TRUE;
-  } else
+  }
+  else
     return FALSE;
 }
 
@@ -36,7 +40,7 @@ Bool IsEditableText(CDocEntry *doc_e)
 }
 
 CDocEntry *DocEntryNewBase(CDoc *doc,I64 type,I64 de_flags=0,
-	I64 x=0,I64 y=0,I64 page_line_num=0)
+                           I64 x=0,I64 y=0,I64 page_line_num=0)
 {//See also $LK,"MAllocIdent",A="FF:::/Adam/DolDoc/DocRecalc.HC,MAllocIdent"$ and $MA-X+PU,"CDocEntry",LM="F(\"sizeof(CDocEntry)\");View;"$.
   CDocEntry *res=CAlloc(sizeof(CDocEntryBase),doc->mem_task);
   res->type=type;
@@ -51,12 +55,12 @@ CDocEntry *DocEntryNewTag(CDoc *doc,CDocEntry *doc_ce,U8 *tag)
 {
   I64 l=StrLen(tag);
   CDocEntry *res=DocEntryNewBase(doc,doc_ce->type,doc_ce->de_flags,
-	doc_ce->x,doc_ce->y,doc_ce->page_line_num);
+                                 doc_ce->x,doc_ce->y,doc_ce->page_line_num);
   res->de_flags=doc_ce->de_flags; //Override
   res->max_col=l;
   res->tag=MAlloc(l+1,doc->mem_task);
   MemCpy(res->tag,tag,l+1);
-  MemCpy(&res->settings,&doc_ce->settings,sizeof(CDocSettings));
+  MemCpy64(&res->settings,&doc_ce->settings,sizeof(CDocSettings)/8);
   return res;
 }
 
@@ -64,7 +68,8 @@ public U0 DocEntryDel(CDoc *doc,CDocEntry *doc_e)
 {//Free entry and all parts of entry.
   if (!doc || doc==doc_e)
     RawPrint(3000,"DocEntryDel");
-  else {
+  else
+  {
     if (doc->cur_entry==doc_e)
       doc->cur_entry=doc_e->next;
     QueRem(doc_e);
@@ -125,7 +130,8 @@ U0 DocUndoCntSet(CDoc *doc)
   Bool unlock=DocLock(doc);
   CDocUndo *u=doc->undo_head.next;
   doc->undo_cnt=0;
-  while (u!=&doc->undo_head) {
+  while (u!=&doc->undo_head)
+  {
     doc->undo_cnt++;
     u=u->next;
   }
@@ -155,7 +161,8 @@ public CDocEntry *DocEntryCopy(CDoc *doc,CDocEntry *doc_e)
     doc_ne->right_macro=MAllocIdent(doc_e->right_macro,task);
   if (doc_e->de_flags & DOCEF_BIN_PTR_LINK)
     doc_ne->bin_ptr_link=MAllocIdent(doc_e->bin_ptr_link,task);
-  if (doc_e->de_flags & DOCEF_HAS_BIN) {
+  if (doc_e->de_flags & DOCEF_HAS_BIN)
+  {
     tmpb=MAllocIdent(doc_e->bin_data,task);
     tmpb->data=MAllocIdent(doc_e->bin_data->data,task);
     doc_ne->bin_num=doc->cur_bin_num;
@@ -180,15 +187,19 @@ U0 DocRemSoftNewLines(CDoc *doc=NULL,CDocEntry *doc_e=NULL)
     return;
   unlock=DocLock(doc);
   if (!doc_e) doc_e=doc->head.next;
-  while (doc_e!=doc) {
+  while (doc_e!=doc)
+  {
     doc_e2=doc_e->next;
-    if (doc_e->type_u8==DOCT_SOFT_NEW_LINE) {
-      if (doc->cur_entry==doc_e) {
-	doc->cur_entry=doc_e2;
-	doc->cur_col=doc->cur_entry->min_col;
+    if (doc_e->type_u8==DOCT_SOFT_NEW_LINE)
+    {
+      if (doc->cur_entry==doc_e)
+      {
+        doc->cur_entry=doc_e2;
+        doc->cur_col=doc->cur_entry->min_col;
       }
       DocEntryDel(doc,doc_e);
-    } else if (saved_ll && doc_e->type_u8==DOCT_NEW_LINE)
+    }
+    else if (saved_ll && doc_e->type_u8==DOCT_NEW_LINE)
       break;
     doc_e=doc_e2;
   }
@@ -201,16 +212,16 @@ public U0 DocInsEntry(CDoc *doc,CDocEntry *doc_e)
   U8 *dst;
   Bool unlock=DocLock(doc);
   CDocEntry *doc_ce=doc->cur_entry,*doc_ne;
-
   doc_e->x=doc_ce->x;
   doc_e->y=doc_ce->y;
   doc_e->page_line_num=doc_ce->page_line_num;
-  MemCpy(&doc_e->settings,&doc_ce->settings,sizeof(CDocSettings));
+  MemCpy64(&doc_e->settings,&doc_ce->settings,sizeof(CDocSettings)/8);
   if (doc->cur_col>0 &&
-	doc_ce->type_u8==DOCT_TEXT &&
-	!(doc_ce->de_flags&(DOCEF_TAG_CB|DOCEF_DEFINE|DOCEF_AUX_STR|
-	DOCEF_HTML_LINK|DOCEF_BIN_PTR_LINK)) &&
-	doc->cur_col<doc_ce->max_col) {
+      doc_ce->type_u8==DOCT_TEXT &&
+      !(doc_ce->de_flags&(DOCEF_TAG_CB|DOCEF_DEFINE|DOCEF_AUX_STR|
+                          DOCEF_HTML_LINK|DOCEF_BIN_PTR_LINK)) &&
+      doc->cur_col<doc_ce->max_col)
+  {
     dst=doc_ce->tag+doc->cur_col;
     doc_ne=DocEntryNewTag(doc,doc_ce,dst);
     *dst=0;
@@ -220,10 +231,13 @@ public U0 DocInsEntry(CDoc *doc,CDocEntry *doc_e)
     doc->cur_col=0;
     doc_ce=doc_ne;
   }
-  if (doc_ce->type_u8==DOCT_TEXT && doc->cur_col>=doc_ce->max_col) {
+  if (doc_ce->type_u8==DOCT_TEXT && doc->cur_col>=doc_ce->max_col)
+  {
     QueIns(doc_e,doc_ce);
     doc->cur_entry=doc_e->next;
-  } else {
+  }
+  else
+  {
     QueIns(doc_e,doc_ce->last);
     doc->cur_entry=doc_ce;
   }
@@ -243,21 +257,25 @@ public U0 DocRst(CDoc *doc,Bool is_old)
   if (!doc && !(doc=DocPut))
     return;
   unlock=DocLock(doc);
-  if (is_old) {
+  if (is_old)
+  {
     doc_e=doc->head.next;
-    while (doc_e!=doc) {
+    while (doc_e!=doc)
+    {
       doc_e2=doc_e->next;
       DocEntryDel(doc,doc_e);
       doc_e=doc_e2;
     }
     u=doc->undo_head.next;
-    while (u!=&doc->undo_head) {
+    while (u!=&doc->undo_head)
+    {
       u8=u->next;
       DocUndoDel(doc,u);
       u=u8;
     }
     b=doc->bin_head.next;
-    while (b!=&doc->bin_head) {
+    while (b!=&doc->bin_head)
+    {
       b1=b->next;
       QueRem(b);
       Free(b->data);
@@ -277,7 +295,6 @@ public U0 DocRst(CDoc *doc,Bool is_old)
   doc->cmd_U8=CH_SPACE;
   doc->page_line_num=0;
   doc->best_d=I64_MAX;
-
   s=&doc->settings_head;
   s->left_margin=DOC_DFT;
   s->right_margin=DOC_DFT;
@@ -292,7 +309,6 @@ public U0 DocRst(CDoc *doc,Bool is_old)
   s->shifted_x=0;
   s->shifted_y=0;
   s->cur_text_attr=s->dft_text_attr=DOC_ATTR_DFT_TEXT;
-
   doc_e=&doc->head;
   doc_e->type=DOCT_ERROR;
   doc_e->de_flags=0;
@@ -301,8 +317,7 @@ public U0 DocRst(CDoc *doc,Bool is_old)
   doc_e->min_col=0;
   doc_e->max_col=0;
   doc_e->page_line_num=doc->page_line_num;
-  MemCpy(&doc_e->settings,s,sizeof(CDocSettings));
-
+  MemCpy64(&doc_e->settings,s,sizeof(CDocSettings)/8);
   DocTop(doc);
   if (unlock)
     DocUnlock(doc);
@@ -327,30 +342,28 @@ public I64 DocSize(CDoc *doc)
   CDocUndo *u;
   CDocBin *b;
   I64 res=0;
-
   if (!doc || doc->doc_signature!=DOC_SIGNATURE_VAL) return 0;
   unlock=DocLock(doc);
-
   doc_e=doc->head.next;
-  while (doc_e!=doc) {
+  while (doc_e!=doc)
+  {
     res+=DocEntrySize(doc,doc_e);
     doc_e=doc_e->next;
   }
-
   u=doc->undo_head.next;
-  while (u!=&doc->undo_head) {
+  while (u!=&doc->undo_head)
+  {
     res+=MSize2(u->body);
     res+=MSize2(u);
     u=u->next;
   }
-
   b=doc->bin_head.next;
-  while (b!=&doc->bin_head) {
+  while (b!=&doc->bin_head)
+  {
     res+=MSize2(b->data);
     res+=MSize2(b);
     b=b->next;
   }
-
   res+=MSize2(doc->find_replace);
   res+=MSize2(doc->dollar_buf);
   res+=MSize2(doc);

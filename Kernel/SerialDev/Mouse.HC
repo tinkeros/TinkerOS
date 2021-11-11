@@ -334,8 +334,10 @@ U0 KbdMsHndlr(Bool poll_kbd,Bool poll_ms)
         MsHardPktRead;
       POPFD
     }
+    // TempleOS original to supress mouse noise in QEMU
+    // instead use while (InU8(KBD_CTRL)&0x21<2)
     if (poll_kbd)
-      while (InU8(KBD_CTRL)&0x21<2)
+      while (InU8(KBD_CTRL)&1)
         KbdPktRead;
     if (kbd.rst)
       KbdMsRst;

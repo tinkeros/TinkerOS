@@ -16,66 +16,79 @@ Bool Cd(U8 *dirname=NULL,Bool make_dirs=FALSE)
     dirname="~";
   else if (!*dirname)
     return TRUE;
-  if (dirname[1]==':') {
-    if (*dirname==':') {
+  if (dirname[1]==':')
+  {
+    if (*dirname==':')
+    {
       if (Fs->cur_dv!=Let2Drv(':') && !Drv(*dirname))
-	return FALSE;
-    } else if (Fs->cur_dv!=Let2Drv(*dirname) && !Drv(*dirname))
+        return FALSE;
+    }
+    else if (Fs->cur_dv!=Let2Drv(*dirname) && !Drv(*dirname))
       return FALSE;
     dirname+=2;
   }
-  if (*dirname=='/' || !*dirname || !Fs->cur_dir) {
+  if (*dirname=='/' || !*dirname || !Fs->cur_dir)
+  {
     Free(Fs->cur_dir);
     Fs->cur_dir=StrNew("/");
     if (*dirname=='/')
       dirname++;
   }
   chg_to_buf=MStrUtil(dirname,
-	SUF_REM_LEADING|SUF_REM_TRAILING|SUF_REM_CTRL_CHARS);
+                      SUF_REM_LEADING|SUF_REM_TRAILING|SUF_REM_CTRL_CHARS);
   maxlen=StrLen(Fs->cur_dir)+1+StrLen(chg_to_buf)+1;
   new_cur_dir=MAlloc(maxlen);
   buf=MAlloc(maxlen);
   StrCpy(new_cur_dir,Fs->cur_dir);
-  while (*chg_to_buf && res) {
+  while (*chg_to_buf && res)
+  {
     StrFirstRem(chg_to_buf,"/",buf);
     if (!*buf)
       StrCpy(new_cur_dir,"/");
-    else if (!StrCmp(buf,"..")) {
+    else if (!StrCmp(buf,".."))
+    {
       StrLastRem(new_cur_dir,"/");
       if (!*new_cur_dir)
-	StrCpy(new_cur_dir,"/");
-    } else if (!StrCmp(buf,"~")) {
+        StrCpy(new_cur_dir,"/");
+    }
+    else if (!StrCmp(buf,"~"))
+    {
       Free(new_cur_dir);
       new_cur_dir=MAlloc(StrLen(blkdev.home_dir+2)+1+StrLen(chg_to_buf)+1);
       StrCpy(new_cur_dir,blkdev.home_dir+2);
       if (Fs->cur_dv!=Let2Drv('~') && !Drv('~'))
-	return FALSE;
-    } else if (StrCmp(buf,".") && *buf) {
+        return FALSE;
+    }
+    else if (StrCmp(buf,".") && *buf)
+    {
       dv=Fs->cur_dv;
       cur_dir_clus=Name2DirClus(dv,new_cur_dir);
-      switch (dv->fs_type) {
-	case FSt_REDSEA:
-	  res=RedSeaCd(buf,cur_dir_clus);
-	  break;
-	case FSt_FAT32:
-	  res=FAT32Cd(buf,cur_dir_clus);
-	  break;
-	case FSt_ISO9660:
-	  res=ISO1Cd(buf,cur_dir_clus);
-	  break;
-	default:
-	  PrintErr("File System Not Supported\n");
-	  res=FALSE;
+      switch (dv->fs_type)
+      {
+      case FSt_REDSEA:
+        res=RedSeaCd(buf,cur_dir_clus);
+        break;
+      case FSt_FAT32:
+        res=FAT32Cd(buf,cur_dir_clus);
+        break;
+      case FSt_ISO9660:
+        res=ISO1Cd(buf,cur_dir_clus);
+        break;
+      default:
+        PrintErr("File System Not Supported\n");
+        res=FALSE;
       }
-      if (!res && make_dirs) {
-	Free(Fs->cur_dir);
-	Fs->cur_dir=StrNew(new_cur_dir);
-	res=DirMk(buf);
+      if (!res && make_dirs)
+      {
+        Free(Fs->cur_dir);
+        Fs->cur_dir=StrNew(new_cur_dir);
+        res=DirMk(buf);
       }
-      if (res) {
-	if (StrCmp(new_cur_dir,"/"))
-	  CatPrint(new_cur_dir,"/");
-	CatPrint(new_cur_dir,buf);
+      if (res)
+      {
+        if (StrCmp(new_cur_dir,"/"))
+          CatPrint(new_cur_dir,"/");
+        CatPrint(new_cur_dir,buf);
       }
     }
   }
@@ -95,10 +108,12 @@ Bool IsDir(U8 *dir_name)
       return FALSE;
   Bool res,old_silent=Silent;
   CDirContext *dirc;
-  if (dirc=DirContextNew(mask)) {
+  if (dirc=DirContextNew(mask))
+  {
     DirContextDel(dirc);
     res=TRUE;
-  } else
+  }
+  else
     res=FALSE;
   Free(mask);
   Silent(old_silent);
@@ -114,51 +129,58 @@ I64 Dir(U8 *files_find_mask="*",Bool full=FALSE)
   tmpde1=FilesFind(files_find_mask);
   if (!(st=DirCur))
     PrintErr("Invalid Drive\n");
-  else {
-    if (tmpde1) {
+  else
+  {
+    if (tmpde1)
+    {
       Free(st);
       st=MAllocIdent(tmpde1->full_name);
       StrLastRem(st,"/");
       if (!st[2])
-	StrCpy(st+2,"/");
+        StrCpy(st+2,"/");
 //Find max columns
       tmpde2=tmpde1;
-      while (tmpde2) {
-	if (tmpde2->size>csize)
-	  csize=tmpde2->size;
-	if (tmpde2->clus>c)
-	  c=tmpde2->clus;
-	tmpde2=tmpde2->next;
+      while (tmpde2)
+      {
+        if (tmpde2->size>csize)
+          csize=tmpde2->size;
+        if (tmpde2->clus>c)
+          c=tmpde2->clus;
+        tmpde2=tmpde2->next;
       }
       csize=Bsr(csize)/4+1;
       c=Bsr(c)/4+1;
-
-      "$$MA,T=\"Directory\",LM=\"PopUpCd;Dir;\n\"$$of%s\n",st;
+      "$$MA,T=\"Directory\",LM=\"PopUpCd;Dir;\n\"$$of%s\n"
+      ,st;
       if (full)
-	"__DATE____TIME__%*ts%*ts\n",
-	      csize,"SIZE",c,"BLK";
+        "__DATE____TIME__%*ts%*ts\n",
+        csize,"SIZE",c,"BLK";
       else
-	"DATE_TIME_%*ts\n",csize,"SIZE";
-      while (tmpde1) {
-	tmpde2=tmpde1->next;
-	res++;
-	if (full)
-	  "%D%T%0*tX%0*tX ",tmpde1->datetime,tmpde1->datetime,
-		csize,tmpde1->size,c,tmpde1->clus;
-	else {
-	  Date2Struct(&ds,tmpde1->datetime+local_time_offset);
-	  "%02d/%02d%02d:%02d%0*tX ",ds.mon,ds.day_of_mon,ds.hour,ds.min,
-		csize,tmpde1->size;
-	}
-	if (tmpde1->attr & RS_ATTR_DIR)
-	  PutDirLink(tmpde1->name,tmpde1->full_name);
-	else
-	  PutFileLink(tmpde1->name,tmpde1->full_name);
-	'\n';
-	DirEntryDel(tmpde1);
-	tmpde1=tmpde2;
+        "DATE_TIME_%*ts\n",csize,"SIZE";
+      while (tmpde1)
+      {
+        tmpde2=tmpde1->next;
+        res++;
+        if (full)
+          "%D%T%0*tX%0*tX ",tmpde1->datetime,tmpde1->datetime,
+          csize,tmpde1->size,c,tmpde1->clus;
+        else
+        {
+          Date2Struct(&ds,tmpde1->datetime+local_time_offset);
+          "%02d/%02d%02d:%02d%0*tX "
+          ,ds.mon,ds.day_of_mon,ds.hour,ds.min,
+          csize,tmpde1->size;
+        }
+        if (tmpde1->attr & RS_ATTR_DIR)
+          PutDirLink(tmpde1->name,tmpde1->full_name);
+        else
+          PutFileLink(tmpde1->name,tmpde1->full_name);
+        '\n';
+        DirEntryDel(tmpde1);
+        tmpde1=tmpde2;
       }
-    } else
+    }
+    else
       "No matching entries\n";
     Free(st);
   }
@@ -181,28 +203,32 @@ Bool DirMk(U8 *filename,I64 entry_cnt=0)
   Bool res=FALSE;
   if (FileFind(filename,,FUF_JUST_DIRS))
     return FALSE;
-  if (dirc=DirContextNew(filename)) {
-    if (*dirc->mask) {
+  if (dirc=DirContextNew(filename))
+  {
+    if (*dirc->mask)
+    {
       if (!FileNameChk(dirc->mask))
-	PrintErr("Invalid FileName.\n");
-      else {
-	"Make Directory:%s\n",filename;
-	name=MStrUtil(dirc->mask,
-	      SUF_REM_LEADING|SUF_REM_TRAILING|SUF_REM_CTRL_CHARS);
-	switch (dirc->dv->fs_type) {
-	  case FSt_REDSEA:
-	    res=RedSeaMkDir(dirc->dv,Fs->cur_dir,name,entry_cnt);
-	    break;
-	  case FSt_FAT32:
-	    res=FAT32MkDir(dirc->dv,Fs->cur_dir,name,entry_cnt);
-	    break;
-	  case FSt_ISO9660:
-	    PrintErr("Not Writable\n");
-	    break;
-	  default:
-	    PrintErr("File System Not Supported\n");
-	}
-	Free(name);
+        PrintErr("Invalid FileName.\n");
+      else
+      {
+        "Make Directory:%s\n",filename;
+        name=MStrUtil(dirc->mask,
+                      SUF_REM_LEADING|SUF_REM_TRAILING|SUF_REM_CTRL_CHARS);
+        switch (dirc->dv->fs_type)
+        {
+        case FSt_REDSEA:
+          res=RedSeaMkDir(dirc->dv,Fs->cur_dir,name,entry_cnt);
+          break;
+        case FSt_FAT32:
+          res=FAT32MkDir(dirc->dv,Fs->cur_dir,name,entry_cnt);
+          break;
+        case FSt_ISO9660:
+          PrintErr("Not Writable\n");
+          break;
+        default:
+          PrintErr("File System Not Supported\n");
+        }
+        Free(name);
       }
     }
     DirContextDel(dirc);

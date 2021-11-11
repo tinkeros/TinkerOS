@@ -53,7 +53,8 @@ I64 FloorI64(I64 num,I64 to)
 {//Int multiples of num.
   if (num>=0)
     return num-num%to;
-  else {
+  else
+  {
     num++;
     return num-num%to-to;
   }
@@ -61,10 +62,13 @@ I64 FloorI64(I64 num,I64 to)
 
 I64 CeilI64(I64 num,I64 to)
 {//Int multiples of num.
-  if (num>=0) {
+  if (num>=0)
+  {
     num+=to-1;
     return num-num%to;
-  } else {
+  }
+  else
+  {
     num+=to-1;
     return num-num%to-to;
   }
@@ -160,10 +164,13 @@ I64 RandRangeSeed(I64 min=0, I64 max, I64 seed)
 I64 Seed(I64 seed=0,CTask *task=NULL)
 {//Set $LK,"Rand",A="MN:Rand"$() seed. Zero for timer-based.
   if (!task) task=Fs;
-  if (seed) {
+  if (seed)
+  {
     LBts(&task->task_flags,TASKf_NONTIMER_RAND);
     return task->rand_seed=seed;
-  } else {
+  }
+  else
+  {
     LBtr(&task->task_flags,TASKf_NONTIMER_RAND);
     return task->rand_seed^=GetTSC;
   }

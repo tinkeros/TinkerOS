@@ -1,6 +1,7 @@
 #exe {Cd(__DIR__);};
 #include "DskStrA"
 #include "DskCache"
+#include "DskAHCI"
 #include "DskATA"
 #include "DskATAId"
 #include "DskBlkDev"

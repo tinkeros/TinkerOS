@@ -1,9 +1,9 @@
 #help_index "Install;File/Cmd Line (Typically);Cmd Line (Typically);"
 U8 Mount2(U8 boot_drv_let,CDoc *_doc,Bool _caller_is_prtdsk, Bool just_ide=FALSE)
 {//If _doc, called by $LK,"::/Kernel/KCfg.HC"$ else called by $LK,"Mount",A="MN:Mount"$().
-  I64 cnt,total=0,num_hints,drv_let,type,unit,prt_num;
+  I64 cnt,total=0,num_hints,drv_let,type,unit,prt_num,port;
   U8 blks_buf[STR_LEN],addr_buf[STR_LEN],base0_buf[STR_LEN],base1_buf[STR_LEN],
-  *filename=NULL,*filename2=NULL,res=0;
+  *filename=NULL,*filename2=NULL,res=0,port_str[STR_LEN];
   CATARep *head=NULL,*tmpha;
   Bool whole_drv,make_free;
   CDoc *doc;
@@ -39,6 +39,7 @@ U8 Mount2(U8 boot_drv_let,CDoc *_doc,Bool _caller_is_prtdsk, Bool just_ide=FALSE
       }
       unit=0;
       prt_num=I64_MIN;
+      port = -1;
       switch (type)
       {
       case BDT_RAM:
@@ -54,52 +55,86 @@ U8 Mount2(U8 boot_drv_let,CDoc *_doc,Bool _caller_is_prtdsk, Bool just_ide=FALSE
         filename=GetStr("File Name:");
         break;
       case BDT_ATA:
+      case BDT_AHCI_SATA:
         prt_num=GetI64("Partition Num (Default=All):",prt_num);
       case BDT_ATAPI:
-        num_hints=ATARep(,just_ide,&head);
-        if (type==BDT_ATAPI && boot_drv_let)
+        if (AHCIMode)
+        {
+          num_hints=SATARep(type);
+        }
+        else
+        {
+          num_hints=ATARep(,just_ide,&head);
+        }
+        if ((type==BDT_ATAPI || type==BDT_AHCI_SATAPI) && boot_drv_let)
           "<ENTER> to use booted CD/DVD\n"; //Only $LK,"::/Kernel/KCfg.HC"$
-        do
+        if (AHCIMode)
         {
-          if (num_hints)
-            "Enter dev number or\nport with $$PURPLE$$0x$$FG$$ prefix.\n"
-            "I/O Port Base0:\n";
-          else
-            "Include $$PURPLE$$0x$$FG$$ prefix.\nI/O Port Base0:\n";
-          GetS(base0_buf,STR_LEN);
-        }
-        while (!Str2I64(base0_buf) && (type!=BDT_ATAPI || !boot_drv_let));
-        if (1<=Str2I64(base0_buf)<=num_hints)
-        {
-          tmpha=ATARepFind(head,Str2I64(base0_buf));
-          StrPrint(base0_buf,"0x%X",tmpha->base0);
-          StrPrint(base1_buf,"0x%X",tmpha->base1);
-          unit=tmpha->unit;
-        }
-        else if (type!=BDT_ATAPI || *base0_buf)
-        {
-          if (type==BDT_ATAPI)
-            StrCpy(base1_buf,"0");
-          else
-            do
-            {
-              "I/O Port Base1:\n";
-              GetS(base1_buf,STR_LEN);
-            }
-            while (!Str2I64(base1_buf));
           do
           {
-            "\t$$PURPLE$$0$$FG$$=Master\n\t$$PURPLE$$1$$FG$$=Slave\nUnit:";
-            unit=GetChar-'0';
+            if (num_hints)
+              "Enter port number: \n";
+            GetS(port_str, STR_LEN);
           }
-          while (!(0<=unit<=1));
-          '\n';
+          while ((	type == BDT_ATAPI && AHCIPortSignatureGet(Str2I64(port_str)) != AHCI_PxSIG_ATAPI ||
+                    type == BDT_ATA   && AHCIPortSignatureGet(Str2I64(port_str)) != AHCI_PxSIG_ATA ||
+                    0 > Str2I64(port_str) || Str2I64(port_str) > num_hints - 1
+                 ) &&
+                 (type != BDT_AHCI_SATAPI || !boot_drv_let));
+          port = Str2I64(port_str);
+          break;
         }
-        LinkedLstDel(head);
-        break;
+        else
+        {
+          do
+          {
+            if (num_hints)
+              "Enter dev number or\nport with $$PURPLE$$0x$$FG$$ prefix.\n"
+              "I/O Port Base0:\n";
+            else
+              "Include $$PURPLE$$0x$$FG$$ prefix.\nI/O Port Base0:\n";
+            GetS(base0_buf,STR_LEN);
+          }
+          while (!Str2I64(base0_buf) && (type!=BDT_ATAPI || !boot_drv_let));
+          // TODO from here
+          if (1<=Str2I64(base0_buf)<=num_hints)
+          {
+            tmpha=ATARepFind(head,Str2I64(base0_buf));
+            StrPrint(base0_buf,"0x%X",tmpha->base0);
+            StrPrint(base1_buf,"0x%X",tmpha->base1);
+            unit=tmpha->unit;
+          }
+          else if (type!=BDT_ATAPI || *base0_buf)
+          {
+            if (type==BDT_ATAPI)
+              StrCpy(base1_buf,"0");
+            else
+              do
+              {
+                "I/O Port Base1:\n";
+                GetS(base1_buf,STR_LEN);
+              }
+              while (!Str2I64(base1_buf));
+            do
+            {
+              "\t$$PURPLE$$0$$FG$$=Master\n\t$$PURPLE$$1$$FG$$=Slave\nUnit:";
+              unit=GetChar-'0';
+            }
+            while (!(0<=unit<=1));
+            '\n';
+          }
+          LinkedLstDel(head);
+          break;
+        }
       }
+      // TODO continue adding AHCI
       DocPrint(doc,"bd=BlkDevNextFreeSlot(\'%C\',%d);bd->unit=%d;\n",
                drv_let,type,unit);
+      if (AHCIMode && port != -1 && *port_str)
+      {
+        DocPrint(doc, "\"AHCIPortInit(bd, &blkdev.ahci_hba->ports[%d], %d);\n\";\n", port, port);
+        DocPrint(doc, "AHCIPortInit(bd, &blkdev.ahci_hba->ports[%d], %d);\n", port, port);
+      }
       switch (type)
       {
       case BDT_RAM:
@@ -119,15 +154,19 @@ U8 Mount2(U8 boot_drv_let,CDoc *_doc,Bool _caller_is_prtdsk, Bool just_ide=FALSE
         break;
       case BDT_ATA:
       case BDT_ATAPI:
-        if (type==BDT_ATAPI && !*base0_buf)
+      case BDT_AHCI_SATA:
+      case BDT_AHCI_SATAPI:
+        if ((type==BDT_ATAPI || type==BDT_AHCI_SATAPI) && !*base0_buf)
         {
           DocPrint(doc,"GetBaseUnit(bd);\n"); //Only $LK,"::/Kernel/KCfg.HC"$
           if (drv_let==boot_drv_let)
             make_free=TRUE;
         }
-        else
+        else if (!AHCIMode)
+        {
           DocPrint(doc,"bd->base0=%s;bd->base1=%s;\n",base0_buf,base1_buf);
-        if (type==BDT_ATA && _caller_is_prtdsk)
+        }
+        if ((type==BDT_ATA || type==BDT_AHCI_SATA) && _caller_is_prtdsk)
         {
           "\nReformat WHOLE drive!";
           whole_drv=YorN;

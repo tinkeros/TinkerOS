@@ -1,5 +1,10 @@
 U0 ATABlkSel(CBlkDev *bd,I64 blk,I64 cnt)
 {
+  if (AHCIMode)
+  {
+    AdamErr("Error: ATABlkSel called in AHCI mode?\n");
+    return;
+  }
   if (bd->type!=BDT_ATAPI && bd->base1)
     OutU8(bd->base1+ATAR1_CTRL,0x8);
   if (bd->flags & BDF_EXT_SIZE)   //48 Bit LBA?
@@ -26,6 +31,11 @@ U0 ATABlkSel(CBlkDev *bd,I64 blk,I64 cnt)
 
 Bool ATAWaitNotBUSY(CBlkDev *bd,F64 timeout)
 {
+  if (AHCIMode)
+  {
+    AdamErr("Error: ATAWaitNotBUSY called in AHCI mode?\n");
+    return TRUE;
+  }
   I64 i;
   do
   {
@@ -41,6 +51,11 @@ Bool ATAWaitNotBUSY(CBlkDev *bd,F64 timeout)
 Bool ATAWaitDRQ(CBlkDev *bd,F64 timeout)
 {
   I64 i;
+  if (AHCIMode)
+  {
+    AdamErr("Error: ATAWaitDRQ called in AHCI mode?\n");
+    return TRUE;
+  }
   do
   {
     for (i=0; i<3; i++)
@@ -54,6 +69,11 @@ Bool ATAWaitDRQ(CBlkDev *bd,F64 timeout)
 
 Bool ATANop(CBlkDev *bd,F64 timeout)
 {
+  if (AHCIMode)
+  {
+    AdamErr("Error: ATANop called in AHCI mode?\n");
+    return TRUE;
+  }
   if (bd->flags & BDF_EXT_SIZE)
     OutU8(bd->base0+ATAR0_SEL,0xEF|bd->unit<<4);
   else
@@ -65,6 +85,11 @@ Bool ATANop(CBlkDev *bd,F64 timeout)
 
 U0 ATACmd(CBlkDev *bd,U8 cmd)
 {
+  if (AHCIMode)
+  {
+    AdamErr("Error: ATACmd called in AHCI mode?\n");
+    return;
+  }
   OutU8(bd->base0+ATAR0_FEAT,0);
   OutU8(bd->base0+ATAR0_CMD,cmd);
   bd->last_time=tS;
@@ -158,6 +183,10 @@ Bool ATAPISeek(CBlkDev *bd,I64 native_blk)
 Bool ATAPIStartStop(CBlkDev *bd,F64 timeout,Bool start)
 {
   I64 i;
+  if (AHCIMode)
+  {
+    return AHCIAtapiStartStop(bd,start);
+  }
   if (start)
     i=0x100;
   else
@@ -177,27 +206,35 @@ Bool ATAPIStartStop(CBlkDev *bd,F64 timeout,Bool start)
 I64 ATAGetDevId(CBlkDev *bd,F64 timeout,Bool keep_id_record)
 {
   I64 res=BDT_NULL;
-  U16 *id_record=NULL;
-  if (bd->type!=BDT_ATAPI && bd->base1)
-    OutU8(bd->base1+ATAR1_CTRL,0x8);
-  if (bd->flags & BDF_EXT_SIZE)
-    OutU8(bd->base0+ATAR0_SEL,0xEF|bd->unit<<4);
-  else
-    OutU8(bd->base0+ATAR0_SEL,0xE0|bd->unit<<4);
-  ATACmd(bd,ATA_ID_DEV);
-  if (ATAWaitNotBUSY(bd,timeout))
+  if (AHCIMode)
   {
-    if (InU8(bd->base0+ATAR0_STAT)&ATAS_ERR)
-      res=BDT_ATAPI;
+    AHCIPortIdentify(bd);
+    return bd->type;
+  }
+  else
+  {
+    U16 *id_record=NULL;
+    if (bd->type!=BDT_ATAPI && bd->base1)
+      OutU8(bd->base1+ATAR1_CTRL,0x8);
+    if (bd->flags & BDF_EXT_SIZE)
+      OutU8(bd->base0+ATAR0_SEL,0xEF|bd->unit<<4);
     else
+      OutU8(bd->base0+ATAR0_SEL,0xE0|bd->unit<<4);
+    ATACmd(bd,ATA_ID_DEV);
+    if (ATAWaitNotBUSY(bd,timeout))
     {
-      id_record=ACAlloc(512);
-      if (ATAGetRes(bd,timeout,id_record,512,512,FALSE))
-        res=BDT_ATA;
+      if (InU8(bd->base0+ATAR0_STAT)&ATAS_ERR)
+        res=BDT_ATAPI;
       else
       {
-        Free(id_record);
-        id_record=NULL;
+        id_record=ACAlloc(512);
+        if (ATAGetRes(bd,timeout,id_record,512,512,FALSE))
+          res=BDT_ATA;
+        else
+        {
+          Free(id_record);
+          id_record=NULL;
+        }
       }
     }
   }
@@ -213,6 +250,11 @@ I64 ATAReadNativeMax(CBlkDev *bd,F64 timeout)
 {//Returns zero on err
   I64 res=0;
   Bool okay=TRUE;
+  if (AHCIMode)
+  {
+    AHCIPortIdentify(bd);
+    return bd->max_blk;
+  }
   if (bd->type==BDT_ATAPI)
   {
     if (bd->flags & BDF_EXT_SIZE)
@@ -338,6 +380,10 @@ CATAPITrack *ATAPIReadTrackInfo(CBlkDev *bd,I64 blk)
 
 Bool ATAInit(CBlkDev *bd)
 {
+  if (AHCIMode)
+  {
+    return AHCIAtaInit(bd);
+  }
   Bool unlock=BlkDevLock(bd),okay=FALSE;
   if (bd->type==BDT_ATAPI)
     bd->flags&=~BDF_EXT_SIZE;
@@ -389,6 +435,11 @@ Bool ATAPIWaitReady(CBlkDev *bd,F64 timeout)
 
 U0 ATAReadBlks(CBlkDev *bd,U8 *buf, I64 blk, I64 cnt)
 {
+  if (AHCIMode)
+  {
+    AHCIAtaBlksRead(bd, buf, blk, cnt);
+    return;
+  }
   I64 retries=3;
   Bool unlock=BlkDevLock(bd);
 retry:
@@ -507,13 +558,17 @@ Bool ATAPIReadBlks2(CBlkDev *bd,F64 timeout,U8 *buf,
       res=TRUE;
     }
   }
-//  ATAPIStartStop(bd,0,FALSE);
   if (lock && unlock) BlkDevUnlock(bd);
   return res;
 }
 
 U0 ATAPIReadBlks(CBlkDev *bd,U8 *buf, I64 blk, I64 cnt)
 {
+  if (AHCIMode)
+  {
+    AHCIAtapiRBlks(bd, buf, blk, cnt);
+    return;
+  }
   CDrv *dv=Let2Drv(bd->first_drv_let);
   I64 retry,spc=bd->blk_size>>BLK_SIZE_BITS,n,blk2,
             l2=bd->max_reads<<1+spc<<1;
@@ -544,13 +599,17 @@ U0 ATAPIReadBlks(CBlkDev *bd,U8 *buf, I64 blk, I64 cnt)
 Bool ATARBlks(CDrv *dv,U8 *buf, I64 blk, I64 cnt)
 {
   I64 n;
+  if (AHCIMode)
+  {
+    return AHCIAtaRBlks(dv, buf, blk, cnt);
+  }
   CBlkDev *bd=dv->bd;
   while (cnt>0)
   {
     n=cnt;
     if (n>bd->max_reads)
       n=bd->max_reads;
-    if (bd->type==BDT_ATAPI)
+    if (bd->type==BDT_ATAPI || bd->type==BDT_AHCI_SATAPI)
       ATAPIReadBlks(bd,buf,blk,n);
     else
       ATAReadBlks(bd,buf,blk,n);
@@ -564,6 +623,11 @@ Bool ATARBlks(CDrv *dv,U8 *buf, I64 blk, I64 cnt)
 U0 ATAWriteBlks(CBlkDev *bd,U8 *buf, I64 blk, I64 cnt)
 {//For low level disk access.
 //Use BlkWrite() instead.
+  if (AHCIMode)
+  {
+    AHCIAtaBlksWrite(bd, buf, blk, cnt);
+    return;
+  }
   I64 i,U32s_avail,sects_avail,retries=3;
   F64 timeout;
   Bool unlock=BlkDevLock(bd);
@@ -692,6 +756,10 @@ Bool ATAWBlks(CDrv *dv,U8 *buf, I64 blk, I64 cnt)
   CBlkDev *bd=dv->bd;
   Bool unlock;
   spc=bd->blk_size>>BLK_SIZE_BITS;
+  if (AHCIMode)
+  {
+    return AHCIAtaWBlks(dv, buf, blk, cnt);
+  }
   if (bd->type==BDT_ATAPI)
   {
     unlock=BlkDevLock(bd);

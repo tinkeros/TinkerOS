@@ -1,3 +1,49 @@
+### Changes added in TinkerOS 5.07:
+
+#### Adam changes:
+
+- BootRAM is now the first thing loaded by Adam so if you mess up Adam and it crashes to the debugger on boot and you use Fix to correct the issue then you can reboot quickly using BootRAM instead of having to use Reboot
+- Added function ACBottomRight to make the Autocomplete window stay towards the bottom right
+- Added function ACDefault to restore default Autocomplete location
+- Added variables to allow the user to override the default Autocomplete locations (see top of ACTask.HC)
+- Serial port interrupt routine now tries to fill FIFO before exiting to speed up transfers
+- Added SethREPL function to allow user to run NON-INTERACTIVE commands as Seth on any core easily
+- Added Snailnet networking from Shrine
+- Added multiple new operations to Snailnet to allow easy file transfers
+- Snailnet python server (now called tos_server.py) can work either over TCP to QEMU virtual machine or using a real serial port to provide networking and file transfers to a real baremetal TinkerOS machine.  The server has been tested with python3 on Linux, it may not work on other operating systems
+
+#### App changes:
+
+- Added Sudoku game
+- Added Shrine Pkg/Wget Apps from Shrine (note that not all 3rd party software you can download with Pkg is compatible with TinkerOS, many use legacy VGA)
+
+#### Graphics related changes:
+
+- Fixed Graphics Glitches when width > 640
+- Fixed cursor in raw mode when GR_WIDTH != FB_WIDTH
+- Fixed Autocomplete window default location for different resolutions (Terry had hard coded values for 640x480)
+- Misc. code optimization
+
+#### Installer changes:
+
+- AHCI detection improvements, USB installer should auto-switch to AHCI mode if available
+- Fixed bug preventing selection of hard drives on certain port values in AHCI mode
+- Added 960x540 resolution option (1920x1080 with 2x scaling), nice option for widescreens on supported hardware. Note: Virtualbox does not support any widescreen VBE graphics modes, use QEMU, use Linux.
+
+#### Kernel:
+
+- Added support for keys F13-F24 (if you are lucky enough to have a keyboard that has them)
+- Added function IsFile to check if file exists
+- Brought in prep code for future virtual block devices
+- EdLite fixed cursor when GR_WIDTH != FB_WIDTH and in raw mode
+- New kernel configs now default to current AHCI mode
+- MsHardRst is now a public function and seems to be useful for enabling some PS/2 mice and USB PS/2 mouse emulation on some hardware such as a Levono Thinkpad T430 laptops.  If your mouse doesn't work at boot-up, try running MsHardRst; and maybe you'll get lucky like I did!
+
+#### Misc. changes:
+
+- Added Sudoku and Screensaver to OS test suite
+- Minor bug fixes and code reformatting
+
 ### Changes added in TinkerOS 5.06.5.3:
 
 #### Debugger:

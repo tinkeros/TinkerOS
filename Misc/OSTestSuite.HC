@@ -139,29 +139,44 @@ U0 DoSudoku()
 
 U0 DoTDScreenSaver()
 {
+  CTask *task=User;
   AdamFile("/Demo/ScreenSavers/TDance.HC.Z");
   SetScreenSaverTimeout(1);
   Sleep(10000);
   AdamFile("/Demo/ScreenSavers/Default.HC.Z");
-  SetScreenSaverTimeout(300);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_ESC,0);
+  SetScreenSaverTimeout(0);
+  ms_hard.timestamp = GetTSC;
+  Sleep(1);
+  Kill(task);
 }
 
 U0 DoLSScreenSaver()
 {
+  CTask *task=User;
   AdamFile("/Demo/ScreenSavers/LineSand.HC.Z");
   SetScreenSaverTimeout(1);
-  Sleep(8000);
+  Sleep(5000);
   AdamFile("/Demo/ScreenSavers/Default.HC.Z");
-  SetScreenSaverTimeout(300);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_ESC,0);
+  SetScreenSaverTimeout(0);
+  ms_hard.timestamp = GetTSC;
+  Sleep(1);
+  Kill(task);
 }
 $PL,1000$$PL,1000$
 U0 DoNGScreenSaver()
 {
+  CTask *task=User;
   AdamFile("/Demo/ScreenSavers/NewGlass.HC.Z");
   SetScreenSaverTimeout(1);
-  Sleep(8000);
+  Sleep(10000);
   AdamFile("/Demo/ScreenSavers/Default.HC.Z");
-  SetScreenSaverTimeout(300);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_ESC,0);
+  SetScreenSaverTimeout(0);
+  ms_hard.timestamp = GetTSC;
+  Sleep(1);
+  Kill(task);
 }
 $PL,1000$
 U0 DoRandDemo()

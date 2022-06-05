@@ -77,7 +77,7 @@ U0 RiverMake()
 {
   I64 i,x=2*MAP_WIDTH<<32/3,y,dx=0,w=15<<32;
   waterfall_y=(MAP_HEIGHT-WATERFALL_HEIGHT)/2*Rand+
-    (MAP_HEIGHT-WATERFALL_HEIGHT)/4;
+        (MAP_HEIGHT-WATERFALL_HEIGHT)/4;
   for (y=MAP_BORDER;y<MAP_HEIGHT-MAP_BORDER;y++) {
     r_x[y]=x.i32[1]; r_width[y]=w.i32[1];
     if (waterfall_y-5<y<waterfall_y+WATERFALL_HEIGHT+5) {
@@ -154,12 +154,12 @@ U0 RiverDropsNext(CTask *mem_task)
       Free(tmpr);
     } else {
       do {
-	if (RandU16&1 && GrPeek(map_dc,r_x[tmpr->y]+tmpr->dx,
+        if (RandU16&1 && GrPeek(map_dc,r_x[tmpr->y]+tmpr->dx,
 	      tmpr->y+tmpr->dy)==BLUE)
 	  break;
-	tmpr->dx=ClampI64(tmpr->dx+RandU16%3-1,-r_width[tmpr->y]/2,
+        tmpr->dx=ClampI64(tmpr->dx+RandU16%3-1,-r_width[tmpr->y]/2,
 	      r_width[tmpr->y]/2);
-	tmpr->dy=ClampI64(tmpr->dy+RandU16%3-1,-r_width[tmpr->y]/2,
+        tmpr->dy=ClampI64(tmpr->dy+RandU16%3-1,-r_width[tmpr->y]/2,
 	      r_width[tmpr->y]/2);
       } while (GrPeek(map_dc,r_x[tmpr->y]+tmpr->dx,
 	    tmpr->y+tmpr->dy)!=BLUE &&
@@ -203,8 +203,8 @@ U0 DrawIt(CTask *task,CDC *dc)
   static Bool left=TRUE;
   F64 t;
   I64 i,frame=4*tS,
-	cx=(MAP_WIDTH -task->pix_width)/2,
-	cy=(MAP_HEIGHT-task->pix_height)/2;
+        cx=(MAP_WIDTH -task->pix_width)/2,
+        cy=(MAP_HEIGHT-task->pix_height)/2;
   if (task->scroll_x+cx<0)
     task->scroll_x=-cx;
   if (task->scroll_x+cx>MAP_WIDTH-task->pix_width)
@@ -222,8 +222,8 @@ U0 DrawIt(CTask *task,CDC *dc)
   for (i=0;i<ANIMALS_NUM;i++)
     if (!a[i].dead) {
       if (a[i].dx<0) {
-	dc->flags|=DCF_JUST_MIRROR|DCF_SYMMETRY;
-	DCSymmetrySet(dc,a[i].x.i32[1]-cx,0,a[i].x.i32[1]-cx,1);
+        dc->flags|=DCF_JUST_MIRROR|DCF_SYMMETRY;
+        DCSymmetrySet(dc,a[i].x.i32[1]-cx,0,a[i].x.i32[1]-cx,1);
       }
       Sprite3(dc,a[i].x.i32[1]-cx,a[i].y.i32[1]-cy,0,
 	    a[i].imgs[(frame+a[i].frame0)&3]);
@@ -240,7 +240,7 @@ U0 DrawIt(CTask *task,CDC *dc)
 	  ms.pos.x-task->pix_left-task->scroll_x,1);
   }
   Sprite3(dc,ms.pos.x-task->pix_left-task->scroll_x,
-	     ms.pos.y-task->pix_top -task->scroll_y,0,horse_imgs[frame&3]);
+        ms.pos.y-task->pix_top -task->scroll_y,0,horse_imgs[frame&3]);
   dc->flags&=~(DCF_JUST_MIRROR|DCF_SYMMETRY);
   last_pos_x=ms.pos.x;
 
@@ -256,8 +256,8 @@ U0 DrawIt(CTask *task,CDC *dc)
     t=tS-t0;
   }
   GrPrint(dc,-task->scroll_x,-task->scroll_y,
-	"Outside:%03d Time:%7.2fs Best:%7.2fs",
-	outside_cnt,t,best_score);
+        "Outside:%03d Time:%7.2fs Best:%7.2fs",
+        outside_cnt,t,best_score);
 }
 
 U0 BuddySel(I64 i)
@@ -269,8 +269,8 @@ U0 BuddySel(I64 i)
 	    SqrI64(a[b].x.i32[1]-a[i].x.i32[1])+
 	    SqrI64(a[b].y.i32[1]-a[i].y.i32[1]);
       if (score<best_score) {
-	best_score=score;
-	best_b=b;
+        best_score=score;
+        best_b=b;
       }
     }
   }
@@ -292,7 +292,7 @@ U0 RedrawGate()
 
   map_dc->color=LTGREEN;
   GrRect(map_dc,x1,y1-0.8*GATE_WIDTH-GATE_HEIGHT,
-	46,0.8*GATE_WIDTH+GATE_HEIGHT+3);
+        46,0.8*GATE_WIDTH+GATE_HEIGHT+3);
 
   map_dc->color=BLACK;
 
@@ -315,13 +315,13 @@ Bool CheckMap(I64 x,I64 y)
 {
   I64 i,j,c;
   if (SqrI64(x-(waterfall_x+waterfall_width/2))>>1+
-	SqrI64(y-(waterfall_y+WATERFALL_HEIGHT/2))<2500)
+        SqrI64(y-(waterfall_y+WATERFALL_HEIGHT/2))<2500)
     return FALSE;
   for (j=-4;j<=2;j++)
     for (i=-4;i<=4;i++) {
       c=GrPeek(map_dc,x+i,y+j);
       if (c==LTGRAY || c==BLACK)
-	return FALSE;
+        return FALSE;
     }
   return TRUE;
 }
@@ -329,7 +329,7 @@ Bool CheckMap(I64 x,I64 y)
 U0 AnimateTask(CTask *parent)
 {
   I64 i,cx,cy,cursor_x,cursor_y,dd,ddx,ddy,cnt,max_speed=I64_MAX,updates=0,
-	my_outside_cnt;
+        my_outside_cnt;
   F64 f,d,dx,dy,s,stress;
   Animal *tmpa,*tmpa1;
   while (TRUE) {
@@ -347,28 +347,28 @@ U0 AnimateTask(CTask *parent)
       tmpa=&a[i];
       if (!tmpa->dead) {
 //Move away from horse
-	ddx=tmpa->x.i32[1]-cursor_x;
-	ddy=tmpa->y.i32[1]-cursor_y;
-	if (dd=SqrI64(ddx)+SqrI64(ddy)) {
+        ddx=tmpa->x.i32[1]-cursor_x;
+        ddy=tmpa->y.i32[1]-cursor_y;
+        if (dd=SqrI64(ddx)+SqrI64(ddy)) {
 	  d=Sqrt(dd);
 	  dx=ddx/d;
 	  dy=ddy/d;
 	  f=5.0e2*U32_MAX/dd;
 	  tmpa->dx+=f*dx;
 	  tmpa->dy+=f*dy;
-	}
+        }
 
-	//Resel buddy about every ANIMALS_NUM*10ms=5.12 seconds
-	tmpa1=&a[tmpa->buddy];
-	if (tmpa1->dead || i==updates%ANIMALS_NUM) {
+        //Resel buddy about every ANIMALS_NUM*10ms=5.12 seconds
+        tmpa1=&a[tmpa->buddy];
+        if (tmpa1->dead || i==updates%ANIMALS_NUM) {
 	  BuddySel(i);
 	  tmpa1=&a[tmpa->buddy];
-	}
+        }
 
-	//Move toward buddy
-	ddx=tmpa->x.i32[1]-tmpa1->x.i32[1];
-	ddy=tmpa->y.i32[1]-tmpa1->y.i32[1];
-	if (dd=SqrI64(ddx)+SqrI64(ddy)) {
+        //Move toward buddy
+        ddx=tmpa->x.i32[1]-tmpa1->x.i32[1];
+        ddy=tmpa->y.i32[1]-tmpa1->y.i32[1];
+        if (dd=SqrI64(ddx)+SqrI64(ddy)) {
 	  d=Sqrt(dd);
 	  s=d`1.25-80;
 	  stress+=Abs(s);
@@ -377,40 +377,40 @@ U0 AnimateTask(CTask *parent)
 	  f=-0.001*s*U32_MAX;
 	  tmpa->dx+=f*dx;
 	  tmpa->dy+=f*dy;
-	}
+        }
 
-	//Make velocity similar to buddy
-	tmpa->dx+=0.1*(tmpa1->dx-tmpa->dx);
-	tmpa->dy+=0.1*(tmpa1->dy-tmpa->dy);
+        //Make velocity similar to buddy
+        tmpa->dx+=0.1*(tmpa1->dx-tmpa->dx);
+        tmpa->dy+=0.1*(tmpa1->dy-tmpa->dy);
 
-	//Add random movement, limit speed and dampen speed
-	tmpa->dx=0.995*ClampI64(tmpa->dx+RandI32/32,-max_speed,max_speed);
-	tmpa->dy=0.995*ClampI64(tmpa->dy+RandI32/32,-max_speed,max_speed);
+        //Add random movement, limit speed and dampen speed
+        tmpa->dx=0.995*ClampI64(tmpa->dx+RandI32/32,-max_speed,max_speed);
+        tmpa->dy=0.995*ClampI64(tmpa->dy+RandI32/32,-max_speed,max_speed);
 
-	//Slow in river
-	if (GrPeek(map_dc,tmpa->x.i32[1],tmpa->y.i32[1])!=LTGREEN) {
+        //Slow in river
+        if (GrPeek(map_dc,tmpa->x.i32[1],tmpa->y.i32[1])!=LTGREEN) {
 	  tmpa->dx/=2;
 	  tmpa->dy/=2;
-	}
+        }
 
-	if (CheckMap((tmpa->x+tmpa->dx)>>32,(tmpa->y+tmpa->dy)>>32)) {
+        if (CheckMap((tmpa->x+tmpa->dx)>>32,(tmpa->y+tmpa->dy)>>32)) {
 	  tmpa->x+=tmpa->dx;
 	  tmpa->y+=tmpa->dy;
-	}
+        }
 
-	//Keep on map
-	if (!(MAP_BORDER+ANIMAL_WIDTH/2
+        //Keep on map
+        if (!(MAP_BORDER+ANIMAL_WIDTH/2
 	      <=tmpa->x.i32[1]<MAP_WIDTH-MAP_BORDER-ANIMAL_WIDTH/2)) {
 	  tmpa->x -=tmpa->dx;
 	  tmpa->dx=-tmpa->dx;
-	}
-	if (!(MAP_BORDER+ANIMAL_HEIGHT
+        }
+        if (!(MAP_BORDER+ANIMAL_HEIGHT
 	      <=tmpa->y.i32[1]<MAP_HEIGHT-MAP_BORDER)) {
 	  tmpa->y -=tmpa->dy;
 	  tmpa->dy=-tmpa->dy;
-	}
-	cnt++;
-	if (tmpa->x>>32>=FENCE_WIDTH || tmpa->y>>32>=FENCE_HEIGHT)
+        }
+        cnt++;
+        if (tmpa->x>>32>=FENCE_WIDTH || tmpa->y>>32>=FENCE_HEIGHT)
 	  my_outside_cnt++;
       }
     }
@@ -424,8 +424,8 @@ U0 AnimateTask(CTask *parent)
       music.mute=TRUE;
       Snd(86);Sleep(200);Snd;Sleep(100);
       if (tf-t0<best_score) {
-	best_score=tf-t0;
-	Snd(86);Sleep(200);Snd;Sleep(100);
+        best_score=tf-t0;
+        Snd(86);Sleep(200);Snd;Sleep(100);
       }
       music.mute=FALSE;
     }
@@ -482,7 +482,7 @@ U0 ReInit()
   map_dc->thick=MAP_BORDER;
   map_dc->color=RED;
   GrBorder(map_dc,MAP_BORDER/2,MAP_BORDER/2,
-	MAP_WIDTH-(MAP_BORDER+1)/2,MAP_HEIGHT-(MAP_BORDER+1)/2);
+        MAP_WIDTH-(MAP_BORDER+1)/2,MAP_HEIGHT-(MAP_BORDER+1)/2);
 
   for (i=MAP_BORDER;i<=MAP_HEIGHT-MAP_BORDER;i++)
     RiverDropsNext(Fs);
@@ -531,24 +531,24 @@ U0 RawHide()
   I64 msg_code,arg1,arg2;
   SettingsPush; //See $LK,"SettingsPush",A="MN:SettingsPush"$
   MenuPush(
-	"File {"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Play {"
-	"  Restart(,'\n');"
-	"}"
-	);
+        "File {"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Play {"
+        "  Restart(,'\n');"
+        "}"
+        );
   Fs->song_task=Spawn(&SongTask,NULL,"Song",,Fs);
 
   PopUpOk(
-	"Coral the cattle.  The coral is in the\n"
-	"upper-left corner if you scroll.\n\n"
-	"Keep holding the $$GREEN$$<CTRL>$$FG$$ key and\n"
-	"scroll with $$GREEN$${CTRL-Left Grab}$$FG$$.");
+        "Coral the cattle.  The coral is in the\n"
+        "upper-left corner if you scroll.\n\n"
+        "Keep holding the $$GREEN$$<CTRL>$$FG$$ key and\n"
+        "scroll with $$GREEN$${CTRL-Left Grab}$$FG$$.");
 
   Fs->win_inhibit=WIG_TASK_DFT-WIF_SELF_FOCUS
-	-WIF_SELF_BORDER-WIF_SELF_GRAB_SCROLL-WIF_FOCUS_TASK_MENU;
+        -WIF_SELF_BORDER-WIF_SELF_GRAB_SCROLL-WIF_FOCUS_TASK_MENU;
   AutoComplete;
   WinBorder;
   WinMax;
@@ -562,11 +562,11 @@ U0 RawHide()
       msg_code=GetMsg(&arg1,&arg2,
 	    1<<MSG_KEY_DOWN+1<<MSG_MS_L_DOWN+1<<MSG_MS_R_DOWN);
       switch (msg_code) {
-	case MSG_MS_L_DOWN:  //Doesn't do anything, yet.
+        case MSG_MS_L_DOWN:  //Doesn't do anything, yet.
 	  break;
-	case MSG_MS_R_DOWN:  //Doesn't do anything, yet.
+        case MSG_MS_R_DOWN:  //Doesn't do anything, yet.
 	  break;
-	case MSG_KEY_DOWN:
+        case MSG_KEY_DOWN:
 	  switch (arg1) {
 	    case '\n':
 	      ReInit;

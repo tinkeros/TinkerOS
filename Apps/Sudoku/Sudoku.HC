@@ -50,7 +50,7 @@ F64 GetBestTime(I64 start_cnt)
   F64 res;
   U8 *tmp,*var = MStrPrint("sudoku_best_time_%d",start_cnt);
   if (!HashFind(var,adam_task->hash_table,HTT_GLBL_VAR))
-  {
+    {
     tmp=MStrPrint("F64 %s=99999999;\n",var);
     Adam(tmp);
     Free(tmp);
@@ -77,11 +77,11 @@ U0 SaveBestTimes()
   F64 time;
   U8 *regstr=CAlloc(64*81),*var;
   for (i=0; i<81; i++)
-  {
+    {
     var = MStrPrint("sudoku_best_time_%d",i);
     time=GetBestTime(i);
     if (time<99999999)
-    {
+      {
       CatPrint(regstr,"F64 %s=%1.2f;\n",var,time);
     }
   }
@@ -110,7 +110,7 @@ U0 LoadGame()
   if (!savedata)
     return;
   if (size == sizeof(SaveState))
-  {
+    {
     MemCpy(&ss,savedata,sizeof(SaveState));
     board_seed=ss.board_seed;
     time_add=ss.time_add;
@@ -127,11 +127,11 @@ U0 FillInitialSolution()
 {
   I64 x,y,tmp=board_seed%9;
   for (y=0; y<9; y++)
-  {
+    {
     if (y%3 == 0)
       tmp=(tmp%9)+1;
     for (x=0; x<9; x++)
-    {
+      {
       solution[y*9+x]=tmp;
       tmp=(tmp%9)+1;
     }
@@ -162,9 +162,9 @@ U0 RandomizeSolutionPass()
 {
   I64 i,j,k,l=0;
   for (i=0; i<3; i++)
-  {
-    do
     {
+    do
+      {
       j=RandRangeSeed(0,2,board_seed+l++);
       k=RandRangeSeed(0,2,board_seed+i+l++);
     }
@@ -173,9 +173,9 @@ U0 RandomizeSolutionPass()
   }
   l=RandRangeSeed(0,100000,board_seed);
   for (i=0; i<3; i++)
-  {
-    do
     {
+    do
+      {
       j=RandRangeSeed(0,2,board_seed+l++);
       k=RandRangeSeed(0,2,board_seed+i+l++);
     }
@@ -184,9 +184,9 @@ U0 RandomizeSolutionPass()
   }
   l=RandRangeSeed(0,100000,board_seed*2);
   for (i=0; i<3; i++)
-  {
-    do
     {
+    do
+      {
       j=RandRangeSeed(0,2,board_seed+l++);
       k=RandRangeSeed(0,2,board_seed+i+l++);
     }
@@ -196,9 +196,9 @@ U0 RandomizeSolutionPass()
   }
   l=RandRangeSeed(0,100000,board_seed*3);
   for (i=0; i<3; i++)
-  {
-    do
     {
+    do
+      {
       j=RandRangeSeed(0,2,board_seed*l++);
       k=RandRangeSeed(0,2,board_seed*i*l++);
     }
@@ -232,9 +232,9 @@ U0 DrawBoard(CDC *dc)
   dc->color=LTGRAY;
   GrRect(dc,board_x_ul,board_y_ul,box_width*9,box_width*9);
   for (y=0; y<9; y++)
-  {
-    for (x=0; x<9; x++)
     {
+    for (x=0; x<9; x++)
+      {
       cell_idx=y*9+x;
       cell_val=state[cell_idx];
       if (0<cell_val<10)
@@ -243,55 +243,55 @@ U0 DrawBoard(CDC *dc)
         f=0;
       dc->color=WHITE;
       GrRect(dc,
-             board_x_ul+box_width*x+cell_border_width,
-             board_y_ul+box_width*y+cell_border_width,
-             box_width-2*cell_border_width,
-             box_width-2*cell_border_width);
+	    board_x_ul+box_width*x+cell_border_width,
+	    board_y_ul+box_width*y+cell_border_width,
+	    box_width-2*cell_border_width,
+	    box_width-2*cell_border_width);
       k=0;
       for (i=0; i<FONT_HEIGHT; i++)
-      {
-        for (j=0; j<FONT_WIDTH; j++)
         {
-          if (cur_x==x && cur_y==y)
-          {
-            if (Bt(&f,k++))
-              dc->color=WHITE;
-            else
-              dc->color=BLACK;
-          }
-          else
-          {
-            if (check[9*y+x]==0)
-            {
-              if (Bt(&f,k++))
-                dc->color=BLACK;
-              else
-                dc->color=WHITE;
-            }
-            else if (check[9*y+x]==1)
-            {
-              if (Bt(&f,k++))
-                dc->color=WHITE;
-              else
-                dc->color=RED;
-            }
-            else if (check[9*y+x]==2)
-            {
-              if (Bt(&f,k++))
-                dc->color=WHITE;
-              else
-                dc->color=LTGREEN;
-            }
-          }
-          for (dx=0; dx<font_scale; dx++)
-          {
-            for (dy=0; dy<font_scale; dy++)
-            {
-              GrPlot(dc,
-                     board_x_ul+box_width*x+j*font_scale+dx+font_scale,
-                     board_y_ul+box_width*y+i*font_scale+dy+font_scale);
-            }
-          }
+        for (j=0; j<FONT_WIDTH; j++)
+	  {
+	  if (cur_x==x && cur_y==y)
+	    {
+	    if (Bt(&f,k++))
+	      dc->color=WHITE;
+	    else
+	      dc->color=BLACK;
+	  }
+	  else
+	    {
+	    if (check[9*y+x]==0)
+	      {
+	      if (Bt(&f,k++))
+	        dc->color=BLACK;
+	      else
+	        dc->color=WHITE;
+	    }
+	    else if (check[9*y+x]==1)
+	      {
+	      if (Bt(&f,k++))
+	        dc->color=WHITE;
+	      else
+	        dc->color=RED;
+	    }
+	    else if (check[9*y+x]==2)
+	      {
+	      if (Bt(&f,k++))
+	        dc->color=WHITE;
+	      else
+	        dc->color=LTGREEN;
+	    }
+	  }
+	  for (dx=0; dx<font_scale; dx++)
+	    {
+	    for (dy=0; dy<font_scale; dy++)
+	      {
+	      GrPlot(dc,
+		    board_x_ul+box_width*x+j*font_scale+dx+font_scale,
+		    board_y_ul+box_width*y+i*font_scale+dy+font_scale);
+	    }
+	  }
         }
       }
     }
@@ -300,21 +300,21 @@ U0 DrawBoard(CDC *dc)
   x=0;
   y=0;
   while (0<=x<=box_width*9)
-  {
-    for (y=0; y<cell_border_width; y++)
     {
-      for (i=0; i<3; i++)
+    for (y=0; y<cell_border_width; y++)
       {
+      for (i=0; i<3; i++)
+        {
         GrLine(dc,
-               board_x_ul+x+y-i,
-               board_y_ul-2,
-               board_x_ul+x+y-i,
-               board_y_ul-2+box_width*9);
+	      board_x_ul+x+y-i,
+	      board_y_ul-2,
+	      board_x_ul+x+y-i,
+	      board_y_ul-2+box_width*9);
         GrLine(dc,
-               board_x_ul,
-               board_y_ul+x+y-i,
-               board_x_ul+box_width*9,
-               board_y_ul+x+y-i);
+	      board_x_ul,
+	      board_y_ul+x+y-i,
+	      board_x_ul+box_width*9,
+	      board_y_ul+x+y-i);
       }
     }
     x+=box_width*3;
@@ -325,7 +325,7 @@ U0 ClearAll()
 {
   I64 i=0;
   for (i=0; i<81; i++)
-  {
+    {
     state[i]=0;
     check[i]=0;
   }
@@ -335,7 +335,7 @@ U0 ClearCheck()
 {
   I64 i=0;
   for (i=0; i<81; i++)
-  {
+    {
     check[i]=0;
   }
 }
@@ -344,88 +344,88 @@ U0 RunCheck()
 {
   I64 bx,by,x,x2,y,y2,z,val;
   for (y=0; y<9; y++)
-  {
-    for (x=0; x<8; x++)
     {
+    for (x=0; x<8; x++)
+      {
       val=state[y*9+x];
       if (val>0)
-      {
-        for (z=x+1; z<9; z++)
         {
-          if (state[y*9+z]==val)
-          {
-            check[y*9+z]=1;
-            check[y*9+x]=1;
-          }
+        for (z=x+1; z<9; z++)
+	  {
+	  if (state[y*9+z]==val)
+	    {
+	    check[y*9+z]=1;
+	    check[y*9+x]=1;
+	  }
         }
       }
     }
   }
   for (x=0; x<9; x++)
-  {
-    for (y=0; y<8; y++)
     {
+    for (y=0; y<8; y++)
+      {
       val=state[y*9+x];
       if (val>0)
-      {
-        for (z=y+1; z<9; z++)
         {
-          if (state[z*9+x]==val)
-          {
-            check[z*9+x]=1;
-            check[y*9+x]=1;
-          }
+        for (z=y+1; z<9; z++)
+	  {
+	  if (state[z*9+x]==val)
+	    {
+	    check[z*9+x]=1;
+	    check[y*9+x]=1;
+	  }
         }
       }
     }
   }
   for (bx=0; bx<3; bx++)
-  {
-    for (by=0; by<3; by++)
     {
-      for (y=0; y<3; y++)
+    for (by=0; by<3; by++)
       {
-        for (x=0; x<3; x++)
+      for (y=0; y<3; y++)
         {
-          val = state[27*by + 9*y + 3*bx + x];
-          if (val != 0)
-          {
-            for (x2=0; x2<3; x2++)
-            {
-              for (y2=0; y2<3; y2++)
-              {
-                if (y!=y2 && x!=x2)
-                {
-                  if (val ==  state[27*by + 9*y2 + 3*bx + x2])
-                  {
-                    check[27*by + 9*y2 + 3*bx + x2]=1;
-                    check[27*by + 9*y + 3*bx + x]=1;
-                  }
-                }
-              }
-            }
-          }
+        for (x=0; x<3; x++)
+	  {
+	  val = state[27*by + 9*y + 3*bx + x];
+	  if (val != 0)
+	    {
+	    for (x2=0; x2<3; x2++)
+	      {
+	      for (y2=0; y2<3; y2++)
+	        {
+	        if (y!=y2 && x!=x2)
+		  {
+		  if (val ==  state[27*by + 9*y2 + 3*bx + x2])
+		    {
+		    check[27*by + 9*y2 + 3*bx + x2]=1;
+		    check[27*by + 9*y + 3*bx + x]=1;
+		  }
+	        }
+	      }
+	    }
+	  }
         }
       }
     }
   }
   if (validate)
-  {
+    {
     val=0;
     for (y=0; y<9; y++)
-    {
-      for (x=0; x<9; x++)
       {
+      for (x=0; x<9; x++)
+        {
         if (state[y*9+x]>0)
-          if (state[y*9+x]!=solution[y*9+x])
-          {
-            check[y*9+x]=1;
-            val++;
-          }
-          else
-          {
-            check[y*9+x]=2;
-          }
+	  if (state[y*9+x]!=solution[y*9+x])
+	    {
+	    check[y*9+x]=1;
+	    val++;
+	  }
+	  else
+	    {
+	    check[y*9+x]=2;
+	  }
       }
     }
     if (val == 0)
@@ -438,9 +438,9 @@ I64 CountFilled()
   I64 cnt=0;
   I64 x,y;
   for (y=0; y<9; y++)
-  {
-    for (x=0; x<9; x++)
     {
+    for (x=0; x<9; x++)
+      {
       if (state[y*9+x]>0)
         cnt++;
     }
@@ -454,15 +454,15 @@ Bool ValidateBox(I64 box)
   y=box/3;
   x=box%3;
   for (i=0; i<3; i++)
-  {
-    for (j=0; j<3; j++)
     {
-      if (state[27*y+9*i+3*x+j] == solution[27*y+9*i+3*x+j])
+    for (j=0; j<3; j++)
       {
+      if (state[27*y+9*i+3*x+j] == solution[27*y+9*i+3*x+j])
+        {
         val+=1;
       }
       else
-      {
+        {
         return FALSE;
       }
     }
@@ -476,11 +476,11 @@ Bool BoxContains(I64 box, I64 value)
   y=box/3;
   x=box%3;
   for (i=0; i<3; i++)
-  {
-    for (j=0; j<3; j++)
     {
-      if (state[27*y+9*i+3*x+j] == value)
+    for (j=0; j<3; j++)
       {
+      if (state[27*y+9*i+3*x+j] == value)
+        {
         return TRUE;
       }
     }
@@ -494,16 +494,16 @@ I64 GetBoxNum(I64 box)
   y=box/3;
   x=box%3;
   for (i=0; i<3; i++)
-  {
-    for (j=0; j<3; j++)
     {
+    for (j=0; j<3; j++)
+      {
       val=val*10;
       if (state[27*y+9*i+3*x+j]>0)
-      {
+        {
         val+=state[27*y+9*i+3*x+j];
       }
       else
-      {
+        {
         return -1;
       }
     }
@@ -517,58 +517,58 @@ U0 RevealHint(I64 value=-1)
   I64 mincnt=9;
   I64 cnt=0,n=0;
   for (bx=0; bx<3; bx++)
-  {
-    for (by=0; by<3; by++)
     {
+    for (by=0; by<3; by++)
+      {
       cnt=0;
       for (y=0; y<3; y++)
-      {
-        for (x=0; x<3; x++)
         {
-          if (state[27*by + 9*y + 3*bx + x]!=0)
-            cnt++;
-          if ((value>0) && (value == state[27*by + 9*y + 3*bx + x]))
-            cnt+=9;
+        for (x=0; x<3; x++)
+	  {
+	  if (state[27*by + 9*y + 3*bx + x]!=0)
+	    cnt++;
+	  if ((value>0) && (value == state[27*by + 9*y + 3*bx + x]))
+	    cnt+=9;
         }
       }
       if (cnt < mincnt)
-      {
+        {
         bbx=bx;
         bby=by;
         mincnt=cnt;
       }
       if (cnt == mincnt)
-      {
-        if (RandRangeSeed(0,1,board_seed+hint_cnt))
         {
-          bbx=bx;
-          bby=by;
+        if (RandRangeSeed(0,1,board_seed+hint_cnt))
+	  {
+	  bbx=bx;
+	  bby=by;
         }
       }
     }
   }
   if (mincnt<9)
-  {
+    {
     x=RandRangeSeed(0,2,board_seed+mincnt+hint_cnt+cnt++);
     y=RandRangeSeed(0,2,board_seed+mincnt+hint_cnt+cnt++);
     n=x*3+y;
     while (TRUE)
-    {
+      {
       Yield;
       if (state[27*bby + 9*y + 3*bbx + x]==0)
-      {
-        if (value<1)
         {
-          state[27*bby + 9*y + 3*bbx + x]=solution[27*bby + 9*y + 3*bbx + x];
-          break;
+        if (value<1)
+	  {
+	  state[27*bby + 9*y + 3*bbx + x]=solution[27*bby + 9*y + 3*bbx + x];
+	  break;
         }
         else
-        {
-          if (value==solution[3*bby*9 + 9*y + 3*bbx + x])
-          {
-            state[27*bby + 9*y + 3*bbx + x]=solution[27*bby + 9*y + 3*bbx + x];
-            break;
-          }
+	  {
+	  if (value==solution[3*bby*9 + 9*y + 3*bbx + x])
+	    {
+	    state[27*bby + 9*y + 3*bbx + x]=solution[27*bby + 9*y + 3*bbx + x];
+	    break;
+	  }
         }
       }
       n++;
@@ -594,11 +594,11 @@ U0 DrawIt(CTask *, CDC *dc)
   I64 num_lines=3;
   I64 start_line=0;
   if (final_time>0)
-  {
+    {
     game_time = final_time;
   }
   else
-  {
+    {
     game_time = tS - start_time + time_add;
   }
   DrawBoard(dc);
@@ -609,11 +609,11 @@ U0 DrawIt(CTask *, CDC *dc)
   x=board_x_ul+9*box_width+16;
   y=board_y_ul - FONT_HEIGHT*4;
   if (final_time>0)
-  {
+    {
     GrPrint(dc,x,y,"Final Time: %1.2f", final_time);
   }
   else
-  {
+    {
     GrPrint(dc,x,y,"Time: %1.2f", game_time);
   }
   y+=FONT_HEIGHT*2;
@@ -651,13 +651,13 @@ U0 DrawIt(CTask *, CDC *dc)
   x=FONT_WIDTH/2;
   y+=FONT_HEIGHT*2;
   for(i=0; i<9; i++)
-  {
+    {
     y+=FONT_HEIGHT;
     box_num=GetBoxNum(i);
     if (box_num>0)
-    {
-      if (ValidateBox(i))
       {
+      if (ValidateBox(i))
+        {
         Yield;
         GrPrint(dc,x,y,"%d",box_num);
         y+=FONT_HEIGHT;
@@ -669,7 +669,7 @@ U0 DrawIt(CTask *, CDC *dc)
     }
   }
   if (box_count==9)
-  {
+    {
     bible_line+=board_seed;
     y+=FONT_HEIGHT*2;
     start_line=bible_line%(ST_BIBLE_LINES-(num_lines-1))+1;
@@ -680,10 +680,10 @@ U0 DrawIt(CTask *, CDC *dc)
       verse=BibleLine2Verse(start_line);
     GrPrint(dc,x,y, "Bible verse: %s\n\n",verse);
     if (final_time == 0)
-    {
+      {
       final_time = game_time;
       if ((best_time < 0) || (0 < final_time < best_time))
-      {
+        {
         SetBestTime(start_cnt,final_time);
         best_time = final_time;
       }
@@ -702,9 +702,9 @@ U0 GetMousePos(I64 arg1,I64 arg2,I64 *x, I64 *y)
 {
   I64 ms_x, ms_y;
   if (0<(arg1 - board_x_ul)<(9*box_width))
-  {
-    if (0<(arg2 - board_y_ul)<(9*box_width))
     {
+    if (0<(arg2 - board_y_ul)<(9*box_width))
+      {
       ms_x = (arg1 - board_x_ul)/box_width;
       ms_y = (arg2 - board_y_ul)/box_width;
       *x=ms_x;
@@ -721,76 +721,76 @@ U0 GetInput()
   I64 x,y,cell_idx;
   Bool input=FALSE;
   while (running&&!input)
-  {
-    switch (ScanMsg(&arg1,&arg2,1<<MSG_MS_L_DOWN+1<<MSG_KEY_DOWN))
     {
-    case 0:
-      Refresh;
-      break;
-start:
-      cell_idx=cur_y*9+cur_x;
-    case MSG_MS_L_DOWN:
-      GetMousePos(arg1,arg2,&x,&y);
-      if (x>=0 && y>=0)
+    switch (ScanMsg(&arg1,&arg2,1<<MSG_MS_L_DOWN+1<<MSG_KEY_DOWN))
       {
-        cur_x=x;
-        cur_y=y;
-      }
-    case MSG_KEY_DOWN:
-      DocClear;
-      if(CH_ESC==arg1)
-        GameOver;
-      if (SC_CURSOR_RIGHT == arg2.u8[0] )
-        if (cur_x<9 - 1)
-          cur_x++;
-      if (SC_CURSOR_LEFT == arg2.u8[0])
-        if (cur_x>0)
-          cur_x--;
-      if (SC_CURSOR_UP == arg2.u8[0])
-        if (cur_y>0)
-          cur_y--;
-      if (SC_CURSOR_DOWN == arg2.u8[0])
-        if (cur_y<9-1)
-          cur_y++;
-      if(48<arg1<58)
-      {
-        state[cell_idx]=arg1-48;
-      }
-      if (arg1=='R')
-      {
-        resetBoard=FALSE;
-        running=FALSE;
-      }
-      if (arg1=='+')
-        if (start_cnt<9*(9-1))
-          start_cnt++;
-      if (arg1=='-')
-        if (start_cnt>9*2-1)
-          start_cnt--;
-      if ((arg1=='N')||(arg1=='+')||(arg1=='-'))
-      {
-        resetBoard=TRUE;
-        running=FALSE;
-      }
-      if (arg1=='H')
-      {
-        RevealHint;
-        time_add+=60;
-      }
-      if (arg1=='S')
-        SaveGame();
-      if (arg1=='L')
-        LoadGame();
-      if (arg1=='V')
-      {
-        validate=TRUE;
-        time_add+=60;
-      }
-      if (arg1==' ')
-        state[cell_idx]=0;
-end:
-      input=TRUE;
-      break;
+      case 0:
+        Refresh;
+        break;
+      start:
+        cell_idx=cur_y*9+cur_x;
+        case MSG_MS_L_DOWN:
+	  GetMousePos(arg1,arg2,&x,&y);
+	  if (x>=0 && y>=0)
+	    {
+	    cur_x=x;
+	    cur_y=y;
+	  }
+        case MSG_KEY_DOWN:
+	  DocClear;
+	  if(CH_ESC==arg1)
+	    GameOver;
+	  if (SC_CURSOR_RIGHT == arg2.u8[0] )
+	    if (cur_x<9 - 1)
+	      cur_x++;
+	  if (SC_CURSOR_LEFT == arg2.u8[0])
+	    if (cur_x>0)
+	      cur_x--;
+	  if (SC_CURSOR_UP == arg2.u8[0])
+	    if (cur_y>0)
+	      cur_y--;
+	  if (SC_CURSOR_DOWN == arg2.u8[0])
+	    if (cur_y<9-1)
+	      cur_y++;
+	  if(48<arg1<58)
+	    {
+	    state[cell_idx]=arg1-48;
+	  }
+	  if (arg1=='R')
+	    {
+	    resetBoard=FALSE;
+	    running=FALSE;
+	  }
+	  if (arg1=='+')
+	    if (start_cnt<9*(9-1))
+	      start_cnt++;
+	  if (arg1=='-')
+	    if (start_cnt>9*2-1)
+	      start_cnt--;
+	  if ((arg1=='N')||(arg1=='+')||(arg1=='-'))
+	    {
+	    resetBoard=TRUE;
+	    running=FALSE;
+	  }
+	  if (arg1=='H')
+	    {
+	    RevealHint;
+	    time_add+=60;
+	  }
+	  if (arg1=='S')
+	    SaveGame();
+	  if (arg1=='L')
+	    LoadGame();
+	  if (arg1=='V')
+	    {
+	    validate=TRUE;
+	    time_add+=60;
+	  }
+	  if (arg1==' ')
+	    state[cell_idx]=0;
+      end:
+        input=TRUE;
+        break;
     }
   }
 }
@@ -801,11 +801,11 @@ U0 SetStartHints()
   for (i=1; i<=9; i++)
     RevealHint((board_seed+i)%9+1);
   for (i=0; i<3; i++)
-  {
+    {
     RevealHint(board_seed%9+1);
   }
   while(CountFilled < start_cnt)
-  {
+    {
     RevealHint;
   }
 }
@@ -813,7 +813,7 @@ U0 SetStartHints()
 U0 MainLoop()
 {
   while(running)
-  {
+    {
     GetInput;
     Yield;
     CheckBoard;
@@ -825,33 +825,33 @@ U0 Sudoku(U64 seed=0)
 {
   Bool old_ac=AutoComplete(0);
   MenuPush(
-	"File {"
-	"  Load(,'L');"
-	"  Save(,'S');"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Game {"
-	"  New(,'N');"
-	"  Reset(,'R');"
-	"  Hint(,'H');"
-	"  Validate(,'V');"
-	"}"
-	);
+        "File {"
+        "  Load(,'L');"
+        "  Save(,'S');"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Game {"
+        "  New(,'N');"
+        "  Reset(,'R');"
+        "  Hint(,'H');"
+        "  Validate(,'V');"
+        "}"
+        );
   SettingsPush;
   WinBorder;
   WinMax;
   DocCursor;
   DocClear;
   if (seed>0)
-  {
+    {
     board_seed=seed;
   }
   do
-  {
-    Fs->draw_it=NULL;
+    {
+    Fs->draw_it=NULL;
     Yield;
     if (resetBoard)
-    {
+      {
       board_seed=RandI64;
       time_add=0;
     }

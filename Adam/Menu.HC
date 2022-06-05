@@ -12,9 +12,10 @@ CTask *MenuTask()
 CMenuEntry *sys_cur_submenu_entry=NULL;
 
 public CMenuEntry *MenuSubEntryFind(
-	CMenuEntry *haystack_first,U8 *needle_entry_name)
+CMenuEntry *haystack_first,U8 *needle_entry_name)
 {//You probably don't need this. Use dir / and $LK,"MenuEntryFind",A="MN:MenuEntryFind"$().
-  while (haystack_first) {
+  while (haystack_first)
+  {
     if (!StrCmp(haystack_first->name,needle_entry_name))
       return haystack_first;
     haystack_first=haystack_first->next;
@@ -32,7 +33,8 @@ public CMenuEntry *MenuEntryFind(CMenu *haystack_menu,U8 *needle_full_name)
   st=StrNew(needle_full_name);
   st2=StrNew(needle_full_name);
   tmpse=(&haystack_menu->sub)(U8 *)-offset(CMenuEntry.sub);
-  while (*st && tmpse) {
+  while (*st && tmpse)
+  {
     StrFirstRem(st,"/",st2);
     tmpse=MenuSubEntryFind(tmpse->sub,st2);
   }
@@ -44,39 +46,44 @@ public CMenuEntry *MenuEntryFind(CMenu *haystack_menu,U8 *needle_full_name)
 CMenuEntry *MenuNewSub(CCmpCtrl *cc,CTask *task)
 {
   CMenuEntry *tmpme=NULL,*tmpse;
-  if (cc->token==TK_IDENT) {
+  if (cc->token==TK_IDENT)
+  {
     tmpme=CAlloc(sizeof(CMenuEntry),task);
     if (StrLen(cc->cur_str)>31)
       cc->cur_str[31]=0;
     StrCpy(tmpme->name,cc->cur_str);
-    if (Lex(cc)=='(') {
+    if (Lex(cc)=='(')
+    {
       tmpme->msg_code=MSG_KEY_DOWN_UP;
       if (Lex(cc)!=',' && cc->token!=')')
-	tmpme->msg_code=LexExpressionI64(cc);
+        tmpme->msg_code=LexExpressionI64(cc);
       if (cc->token==',')
-	Lex(cc);
+        Lex(cc);
       if (cc->token!=',' && cc->token!=')')
-	tmpme->arg1=LexExpressionI64(cc);
+        tmpme->arg1=LexExpressionI64(cc);
       if (cc->token==',')
-	Lex(cc);
+        Lex(cc);
       if (cc->token!=',' && cc->token!=')')
-	tmpme->arg2=LexExpressionI64(cc);
+        tmpme->arg2=LexExpressionI64(cc);
       if (cc->token!=')')
-	LexExcept(cc,"Missing ')' at ");
+        LexExcept(cc,"Missing ')' at ");
       if (Lex(cc)!=';')
-	LexExcept(cc,"Missing ';' at");
+        LexExcept(cc,"Missing ';' at");
       Lex(cc); //Skip ;
-    } else if (cc->token=='{') {
+    }
+    else if (cc->token=='{')
+    {
       Lex(cc); //Skip {
       tmpme->dir=TRUE;
       tmpse=&tmpme->sub;
       while (tmpse && cc->token!='}')
-	tmpse=tmpse->next=MenuNewSub(cc,task);
+        tmpse=tmpse->next=MenuNewSub(cc,task);
       if (cc->token!='}')
-	LexExcept(cc,"Missing '}' at ");
+        LexExcept(cc,"Missing '}' at ");
       else
-	Lex(cc); //Skip }
-    } else
+        Lex(cc); //Skip }
+    }
+    else
       LexExcept(cc,"Expecting '{' at ");
   }
   return tmpme;
@@ -112,9 +119,11 @@ public CMenu *MenuFile(U8 *filename,I64 flags=0,CTask *task=NULL)
 U0 MenuDelSub(CMenuEntry *tmpme)
 {
   CMenuEntry *tmpse,*tmpse1;
-  if (tmpme) {
+  if (tmpme)
+  {
     tmpse=tmpme->sub;
-    while (tmpse) {
+    while (tmpse)
+    {
       tmpse1=tmpse->next;
       MenuDelSub(tmpse);
       tmpse=tmpse1;
@@ -128,7 +137,8 @@ public U0 MenuDel(CMenu *m)
   CMenuEntry *tmpme,*tmpme1;
   if (!m) return;
   tmpme=m->sub;
-  while (tmpme) {
+  while (tmpme)
+  {
     tmpme1=tmpme->next;
     MenuDelSub(tmpme);
     tmpme=tmpme1;
@@ -140,7 +150,8 @@ I64 MenuEntryWidth(CMenuEntry *tmpme)
 {
   I64 res=StrLen(tmpme->name);
   CMenuEntry *tmpse=tmpme->sub;
-  while (tmpse) {
+  while (tmpse)
+  {
     res=MaxI64(res,StrLen(tmpse->name));
     tmpse=tmpse->next;
   }
@@ -178,7 +189,8 @@ U0 DrawMenu(CDC *dc)
   U8 *st=NULL;
   CTask *task=MenuTask;
   I64 i,w,x0,y0,x1=ms.pos.x,y1=ms.pos.y;
-  if (!TaskValidate(task) || !(m=task->cur_menu)) {
+  if (!TaskValidate(task) || !(m=task->cur_menu))
+  {
     sys_cur_submenu_entry=NULL;
     return;
   }
@@ -186,53 +198,65 @@ U0 DrawMenu(CDC *dc)
   GrRect(dc,0,0,GR_WIDTH,FONT_HEIGHT);
   x0=0;
   tmpme=m->sub;
-  while (tmpme) {
+  while (tmpme)
+  {
     w=MenuEntryWidth(tmpme)*FONT_WIDTH;
-    if (x0<=x1<x0+w) {
-      if (0<=y1<FONT_HEIGHT) {
-	dc->color=m->attr&15;
-	GrRect(dc,x0,0,w,FONT_HEIGHT);
-	dc->color=m->attr>>4;
-      } else
-	dc->color=m->attr&15;
+    if (x0<=x1<x0+w)
+    {
+      if (0<=y1<FONT_HEIGHT)
+      {
+        dc->color=m->attr&15;
+        GrRect(dc,x0,0,w,FONT_HEIGHT);
+        dc->color=m->attr>>4;
+      }
+      else
+        dc->color=m->attr&15;
       GrPrint(dc,x0,0,"%s",tmpme->name);
       y0=FONT_HEIGHT;
       tmpse=tmpme->sub;
-      while (tmpse) {
-	if (tmpse->checked)
-	  i=m->attr^0xFF;
-	else
-	  i=m->attr;
-	if (y0<=y1<y0+FONT_HEIGHT) {
-	  if (tmpse->msg_code==MSG_KEY_DOWN||
-		tmpse->msg_code==MSG_KEY_DOWN_UP) {
-	    if (!tmpse->arg2)
-	      tmpse->arg2=Char2ScanCode(tmpse->arg1);
-	    st=ScanCode2KeyName(tmpse->arg2);
-	  }
-	  sys_cur_submenu_entry=cur_submenu=tmpse;
-	  dc->color=i&15;
-	  GrRect(dc,x0,y0,w,FONT_HEIGHT);
-	  dc->color=i>>4;
-	  GrPrint(dc,x0,y0,"%s",tmpse->name);
-	  if (st) {
-	    dc->color=i>>4;
-	    GrRect(dc,x0+w,y0-FONT_HEIGHT,
-		  (StrLen(st)+1)*FONT_WIDTH,FONT_HEIGHT*3);
-	    dc->color=i&15;
-	    GrPrint(dc,x0+w,y0,"%s",st);
-	    Free(st);
-	  }
-	} else {
-	  dc->color=i>>4;
-	  GrRect(dc,x0,y0,w,FONT_HEIGHT);
-	  dc->color=i&15;
-	  GrPrint(dc,x0,y0,"%s",tmpse->name);
-	}
-	y0+=FONT_HEIGHT;
-	tmpse=tmpse->next;
+      while (tmpse)
+      {
+        if (tmpse->checked)
+          i=m->attr^0xFF;
+        else
+          i=m->attr;
+        if (y0<=y1<y0+FONT_HEIGHT)
+        {
+          if (tmpse->msg_code==MSG_KEY_DOWN||
+              tmpse->msg_code==MSG_KEY_DOWN_UP)
+          {
+            if (!tmpse->arg2)
+              tmpse->arg2=Char2ScanCode(tmpse->arg1);
+            st=ScanCode2KeyName(tmpse->arg2);
+          }
+          sys_cur_submenu_entry=cur_submenu=tmpse;
+          dc->color=i&15;
+          GrRect(dc,x0,y0,w,FONT_HEIGHT);
+          dc->color=i>>4;
+          GrPrint(dc,x0,y0,"%s",tmpse->name);
+          if (st)
+          {
+            dc->color=i>>4;
+            GrRect(dc,x0+w,y0-FONT_HEIGHT,
+                   (StrLen(st)+1)*FONT_WIDTH,FONT_HEIGHT*3);
+            dc->color=i&15;
+            GrPrint(dc,x0+w,y0,"%s",st);
+            Free(st);
+          }
+        }
+        else
+        {
+          dc->color=i>>4;
+          GrRect(dc,x0,y0,w,FONT_HEIGHT);
+          dc->color=i&15;
+          GrPrint(dc,x0,y0,"%s",tmpse->name);
+        }
+        y0+=FONT_HEIGHT;
+        tmpse=tmpse->next;
       }
-    } else {
+    }
+    else
+    {
       dc->color=m->attr&15;
       GrPrint(dc,x0,0,"%s",tmpme->name);
     }

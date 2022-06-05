@@ -1,3 +1,12 @@
+I64 AC_def_win_x = 51;
+I64 AC_def_win_y = 13;
+I64 AC_def_win_x_override = -1;
+I64 AC_def_win_y_override = -1;
+I64 AC_ctr_win_x = 27;
+I64 AC_ctr_win_y = 3;
+I64 AC_ctr_win_x_override = -1;
+I64 AC_ctr_win_y_override = -1;
+
 #help_index "AutoComplete/Dictionary"
 U0 ACDDictWordsAdd(U8 *st)
 {
@@ -20,6 +29,26 @@ U0 ACDDictWordsAdd(U8 *st)
 }
 
 #help_index "AutoComplete"
+
+U0 ACBottomRight()
+{
+  AC_def_win_x_override=TEXT_COLS-29;
+  AC_def_win_y_override=TEXT_ROWS-21;
+  AC_ctr_win_x_override=TEXT_COLS/2+10;
+  AC_ctr_win_y_override=TEXT_ROWS/3;
+  AutoComplete(AutoComplete);
+}
+
+U0 ACDefault()
+{
+  AC_def_win_x_override=-1;
+  AC_def_win_y_override=-1;
+  AC_ctr_win_x_override=-1;
+  AC_ctr_win_y_override=-1;
+  AutoComplete(AutoComplete);
+}
+
+
 U0 ACDocRst(I64 left,I64 top)
 {
   CDoc *doc=DocPut;
@@ -123,7 +152,7 @@ U0 ACPutChoices(CDoc *focus_l,CDocEntry *doc_e,CTask *focus_task,
           tmpw=tmpw->next;
         }
       }
-    ACDocRst(51,13);
+    ACDocRst(AC_def_win_x,AC_def_win_y);
     if (ac.cur_word && *ac.cur_word)
     {
       "$$PURPLE$$Word:%s$$FG$$\n",ac.cur_word;
@@ -197,7 +226,7 @@ U0 ACTaskCtrl(I64 sc,I64 last_sc,
     {
       if (sc&SCF_ALT)
       {
-        ACDocRst(27,3);
+        ACDocRst(AC_ctr_win_x,AC_ctr_win_y);
         if (TaskValidate(original_focus_task) &&
             !Bt(&original_focus_task->win_inhibit,WIf_SELF_KEY_DESC))
           KeyMapFamily(original_focus_task,0,
@@ -208,7 +237,7 @@ U0 ACTaskCtrl(I64 sc,I64 last_sc,
       else if (TaskValidate(original_focus_task) &&
                !Bt(&original_focus_task->win_inhibit,WIf_SELF_KEY_DESC))
       {
-        ACDocRst(27,3);
+        ACDocRst(AC_ctr_win_x,AC_ctr_win_y);
         KeyMapFamily(original_focus_task,SCF_CTRL,
                      ToBool(!(sc&SCF_SHIFT)),ToBool(sc&SCF_SHIFT));
       }
@@ -224,7 +253,7 @@ U0 ACTaskAlt(I64 sc,I64 last_sc,
   if (sc!=last_sc && TaskValidate(original_focus_task) &&
       !Bt(&original_focus_task->win_inhibit,WIf_SELF_KEY_DESC))
   {
-    ACDocRst(27,3);
+    ACDocRst(AC_ctr_win_x,AC_ctr_win_y);
     KeyMapFamily(original_focus_task,SCF_ALT,
                  ToBool(!(sc&SCF_SHIFT)),ToBool(sc&SCF_SHIFT));
   }
@@ -246,7 +275,7 @@ U0 ACTask(I64)
   Fs->task_end_cb=&ACTaskEndCB;
   DocTermNew;
   LBts(&Fs->display_flags,DISPLAYf_SHOW);
-  WinHorz(51,Fs->win_right);
+  WinHorz(AC_def_win_x,Fs->win_right);
   LBts(&Fs->display_flags,DISPLAYf_WIN_ON_TOP);
   Fs->win_inhibit=WIG_NO_FOCUS_TASK_DFT;
   Free(ac.cur_word);
@@ -289,6 +318,24 @@ U0 ACTask(I64)
 public Bool AutoComplete(Bool val=OFF)
 {//Turn AutoComplete OFF or ON.
   Bool	old_val=FALSE;
+  if (TEXT_COLS>80)
+    AC_def_win_x = TEXT_COLS - 80 + 51;
+  if (TEXT_COLS<80)
+    AC_def_win_x = 51 - (80-TEXT_COLS);
+  if (TEXT_ROWS>60)
+    AC_def_win_y = TEXT_ROWS - 60 + 13;
+  if (TEXT_ROWS<60)
+    AC_def_win_y = 13 - (60-TEXT_ROWS);
+  if (AC_def_win_x_override>0)
+    AC_def_win_x=AC_def_win_x_override;
+  if (AC_def_win_y_override>0)
+    AC_def_win_y=AC_def_win_y_override;
+  AC_ctr_win_x = TEXT_COLS/2 - 13;
+  AC_ctr_win_y = 3;
+  if (AC_ctr_win_x_override>0)
+    AC_ctr_win_x=AC_ctr_win_x_override;
+  if (AC_ctr_win_y_override>0)
+    AC_ctr_win_y=AC_ctr_win_y_override;
   if (!val && !Bt(&sys_run_level,RLf_AUTO_COMPLETE))
   {
     return OFF;

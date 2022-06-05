@@ -101,6 +101,20 @@ public Bool Line(U8 *aux_data,I64 x1,I64 y1,I64 z1,I64 x2,I64 y2,I64 z2,
 }
 
 #help_index "Graphics/Math/3D Transformation"
+public U0 Mat4x4Print(I64 *m)
+{//Print a 4x4 matrix
+  I64 i,j;
+  "\n";
+  for (i=0; i<4; i++)
+  {
+    for (j=0; j<4; j++)
+    {
+      "%1.4f ",ToF64(m[i*4+j]);
+    }
+    "\n";
+  }
+}
+
 public I64 *Mat4x4MulMat4x4Equ(I64 *dst,I64 *m1,I64 *m2)
 {//Multiply 4x4 matrices and store in dst. Uses $LK,"fixed-point",A="FI:::/Demo/Lectures/FixedPoint.HC"$.
 //Conceptually, the transform m1 is applied after m2
@@ -136,11 +150,28 @@ public I64 *Mat4x4New(I64 *src,CTask *mem_task=NULL)
   return Mat4x4Equ(MAlloc(sizeof(I64)*16,mem_task),src);
 }
 
+
 public I64 *Mat4x4RotX(I64 *m,F64 è)
 {//Rot matrix about X axis. Uses $LK,"fixed-point",A="FI:::/Demo/Lectures/FixedPoint.HC"$.
   F64 my_cos=Cos(è)*GR_SCALE,my_sin=Sin(è)*GR_SCALE;
+  I64 r[4];
+  r[0]=(my_cos*ToF64(m[4])-my_sin*ToF64(m[8]))/GR_SCALE;
+  r[1]=(my_cos*ToF64(m[5])-my_sin*ToF64(m[9]))/GR_SCALE;
+  r[2]=(my_cos*ToF64(m[6])-my_sin*ToF64(m[10]))/GR_SCALE;
+  r[3]=(my_cos*ToF64(m[7])-my_sin*ToF64(m[11]))/GR_SCALE;
+  m[8]=(my_sin*ToF64(m[4])+my_cos*ToF64(m[8]))/GR_SCALE;
+  m[9]=(my_sin*ToF64(m[5])+my_cos*ToF64(m[9]))/GR_SCALE;
+  m[10]=(my_sin*ToF64(m[6])+my_cos*ToF64(m[10]))/GR_SCALE;
+  m[11]=(my_sin*ToF64(m[7])+my_cos*ToF64(m[11]))/GR_SCALE;
+  MemCpy64(&m[4],r,4);
+  return m;
+}
+
+public I64 *Mat4x4RotXOld(I64 *m,F64 è)
+{//Rot matrix about X axis. Uses $LK,"fixed-point",A="FI:::/Demo/Lectures/FixedPoint.HC"$.
+  F64 my_cos=Cos(è)*GR_SCALE,my_sin=Sin(è)*GR_SCALE;
   I64 r[16],r2[16];
-  MemSet(r,0,sizeof(r));
+  MemSetI64(r,0,16);
   r[5]=my_cos;
   r[10]=my_cos;
   r[9]=my_sin;
@@ -154,7 +185,7 @@ public I64 *Mat4x4RotY(I64 *m,F64 ê)
 {//Rot matrix about Y axis. Uses $LK,"fixed-point",A="FI:::/Demo/Lectures/FixedPoint.HC"$.
   F64 my_cos=Cos(ê)*GR_SCALE,my_sin=Sin(ê)*GR_SCALE;
   I64 r[16],r2[16];
-  MemSet(r,0,sizeof(r));
+  MemSetI64(&r[1],0,15);
   r[0]=my_cos;
   r[10]=my_cos;
   r[8]=-my_sin;
@@ -167,8 +198,24 @@ public I64 *Mat4x4RotY(I64 *m,F64 ê)
 public I64 *Mat4x4RotZ(I64 *m,F64 é)
 {//Rot matrix about Z axis. Uses $LK,"fixed-point",A="FI:::/Demo/Lectures/FixedPoint.HC"$.
   F64 my_cos=Cos(é)*GR_SCALE,my_sin=Sin(é)*GR_SCALE;
+  I64 r[4];
+  r[0]=(my_cos*ToF64(m[0])-my_sin*ToF64(m[4]))/GR_SCALE;
+  r[1]=(my_cos*ToF64(m[1])-my_sin*ToF64(m[5]))/GR_SCALE;
+  r[2]=(my_cos*ToF64(m[2])-my_sin*ToF64(m[6]))/GR_SCALE;
+  r[3]=(my_cos*ToF64(m[3])-my_sin*ToF64(m[7]))/GR_SCALE;
+  m[4]=(my_sin*ToF64(m[0])+my_cos*ToF64(m[4]))/GR_SCALE;
+  m[5]=(my_sin*ToF64(m[1])+my_cos*ToF64(m[5]))/GR_SCALE;
+  m[6]=(my_sin*ToF64(m[2])+my_cos*ToF64(m[6]))/GR_SCALE;
+  m[7]=(my_sin*ToF64(m[3])+my_cos*ToF64(m[7]))/GR_SCALE;
+  MemCpy64(m,r,4);
+  return m;
+}
+
+public I64 *Mat4x4RotZOld(I64 *m,F64 é)
+{//Rot matrix about Z axis. Uses $LK,"fixed-point",A="FI:::/Demo/Lectures/FixedPoint.HC"$.
+  F64 my_cos=Cos(é)*GR_SCALE,my_sin=Sin(é)*GR_SCALE;
   I64 r[16],r2[16];
-  MemSet(r,0,sizeof(r));
+  MemSetI64(r,0,16);
   r[0]=my_cos;
   r[5]=my_cos;
   r[4]=my_sin;
@@ -285,7 +332,7 @@ public Bool DCSymmetry3Set(CDC *dc=gr.dc,I64 x1,I64 y1,I64 z1,
   return TRUE;
 }
 
-public U0 DCReflect(CDC *dc,I64 *_x,I64 *_y,I64 *_z)
+public U0 DCReflectOld(CDC *dc,I64 *_x,I64 *_y,I64 *_z)
 {//Reflect 3D point about device context's symmetry. Uses $LK,"fixed-point",A="FI:::/Demo/Lectures/FixedPoint.HC"$.
   I64 x=*_x<<32,y=*_y<<32,z=*_z<<32,
       xx=*_x-dc->sym.sx,yy=*_y-dc->sym.sy,zz=*_z-dc->sym.sz,
@@ -300,6 +347,40 @@ public U0 DCReflect(CDC *dc,I64 *_x,I64 *_y,I64 *_z)
   xx2=x+xn;
   yy2=y+yn;
   zz2=z+zn;
+  if (SqrI64(xx>>16 -dc->sym.sx<<16)+
+      SqrI64(yy>>16 -dc->sym.sy<<16)+
+      SqrI64(zz>>16 -dc->sym.sz<<16)<
+      SqrI64(xx2>>16-dc->sym.sx<<16)+
+      SqrI64(yy2>>16-dc->sym.sy<<16)+
+      SqrI64(zz2>>16-dc->sym.sz<<16))
+  {
+    *_x=xx.i32[1];
+    *_y=yy.i32[1];
+    *_z=zz.i32[1];
+  }
+  else
+  {
+    *_x=xx2.i32[1];
+    *_y=yy2.i32[1];
+    *_z=zz2.i32[1];
+  }
+}
+
+
+public U0 DCReflect(CDC *dc,I64 *_x,I64 *_y,I64 *_z)
+{//Reflect 3D point about device context's symmetry. Uses $LK,"fixed-point",A="FI:::/Demo/Lectures/FixedPoint.HC"$.
+  I64 x=*_x<<32,y=*_y<<32,z=*_z<<32,
+      xx=*_x-dc->sym.sx,yy=*_y-dc->sym.sy,zz=*_z-dc->sym.sz,xx2,yy2,zz2;
+  xx2=yy2=zz2=(xx*dc->sym.snx+yy*dc->sym.sny+zz*dc->sym.snz)>>16;
+  xx2=xx2*dc->sym.snx>>15;
+  yy2=yy2*dc->sym.sny>>15;
+  zz2=zz2*dc->sym.snz>>15;
+  xx=x-xx2;
+  yy=y-yy2;
+  zz=z-zz2;
+  xx2=x+xx2;
+  yy2=y+yy2;
+  zz2=z+zz2;
   if (SqrI64(xx>>16 -dc->sym.sx<<16)+
       SqrI64(yy>>16 -dc->sym.sy<<16)+
       SqrI64(zz>>16 -dc->sym.sz<<16)<

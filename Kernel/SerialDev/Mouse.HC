@@ -116,7 +116,7 @@ U0 MsHardGetType()
     ms_hard.has_ext_bttns=TRUE;
 }
 
-Bool MsHardRst()
+public Bool MsHardRst()
 {
   U8 b,*_b;
   F64 timeout;
@@ -182,12 +182,12 @@ Bool MsHardRst()
   return res;
 }
 
-U0 DisableMouse()
+public U0 DisableMouse()
 {
   KbdCmdSend(KBD_CTRL,0xA7);
 }
 
-U0 EnableMouse()
+public U0 EnableMouse()
 {
   KbdCmdSend(KBD_CTRL,0xA8);
 }
@@ -241,16 +241,24 @@ U0 MsHardSetPost()
       }
 }
 
-U0 MsHardHndlr()
+public U0 MsHardHndlr(U8 *pkt=NULL)
 {
   I64 i,dx,dy,dz;
   U8 ms_buf[4];
   MsHardSetPre;
-  for (i=0; i<4; i++)
-    ms_buf[i]=0;
-  for (i=0; i<ms_hard.pkt_size; i++)
-    if (!FifoU8Rem(ms_hard.fifo2,&ms_buf[i]))
+  if (!pkt)
+  {
+    for (i=0; i<4; i++)
       ms_buf[i]=0;
+    for (i=0; i<ms_hard.pkt_size; i++)
+      if (!FifoU8Rem(ms_hard.fifo2,&ms_buf[i]))
+        ms_buf[i]=0;
+  }
+  else
+  {
+    for (i=0; i<4; i++)
+      ms_buf[i]=pkt[i];
+  }
   ms_hard.bttns[0] = ms_buf[0] & 1;
   ms_hard.bttns[1] = (ms_buf[0] & 2) >> 1;
   ms_hard.bttns[2] = (ms_buf[0] & 4) >> 2;

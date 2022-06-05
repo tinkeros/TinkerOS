@@ -266,6 +266,7 @@ extern Bool AHCIAtapiBlank(CBlkDev *bd, Bool minimal=TRUE);
 extern Bool DiscEject(U8 drv_let);
 extern Bool DiscLoad( U8 drv_let);
 extern Bool SwitchToAHCI();
+public extern U0 AHCIInit(I64 addr=NULL);
 
 #help_index "DolDoc/Clip"
 public extern CDoc *sys_clip_doc;
@@ -309,6 +310,7 @@ public extern Bool Copy(U8 *src_files_find_mask,U8 *dst_files_find_mask=".");
 public extern Bool Move(U8 *f1,U8 *f2);
 public extern I64 CopyTree(U8 *src_files_find_mask,U8 *dst_files_find_mask,Bool no_mask=TRUE);
 public extern I64 DelTree(U8 *files_find_mask,U8 *fu_flags=NULL);
+public extern Bool IsFile(U8 *filename);
 public extern U0 Touch(U8 *files_find_mask="*",U8 *attr="+?",U8 *fu_flags=NULL,CDate cdt=I64_MIN);
 public extern U8 *DirTreeSerialize(CDirEntry *tmpde,I64 *_size=NULL);
 public extern CDirEntry *DirTreeUnserialize(U8 *src);
@@ -422,8 +424,9 @@ extern Bool ATAPIStartStop(CBlkDev *bd,F64 timeout,Bool start);
 public extern I64 ATAProbe(I64 base0,I64 base1,I64 unit,Bool verbose=FALSE);
 extern U0 ATAReadBlks(CBlkDev *bd,U8 *buf, I64 blk, I64 cnt);
 extern U0 ATAWriteBlks(CBlkDev *bd,U8 *buf, I64 blk, I64 cnt);
-extern I64 BlkDevAdd(CBlkDev *bd,I64 prt_num=I64_MIN,
+public extern I64 BlkDevAdd(CBlkDev *bd,I64 prt_num=I64_MIN,
 	Bool whole_drv,Bool make_free);
+public extern Bool BlkDevInit(CBlkDev *bd);
 extern U0 DskCacheInit(I64 size_in_U8s);
 public extern U0 DskCacheInvalidate(CDrv *dv);
 public extern I64 MountIDEAuto(Bool ATAPIOnly=FALSE);
@@ -441,6 +444,8 @@ public _extern _GR_ROP_EQU_U8_NO_CLIPPING U0 GrRopEquU8NoClipping(I64 ch,
         U8 *dst,I64 width_internal);
 public _extern _IS_PIX_COVERED0 Bool IsPixCovered0(
         CTask *task,I64 x,I64 y);//No clipping
+public _extern _DC_BLOT_COLOR4 U0 DCBlotColor4(
+  U8 *dst,I64 *img,I64 *img_cache,I64 cnt);
 
 #help_index "Hash"
 #help_file "::/Doc/Hash"
@@ -561,15 +566,21 @@ extern CTask *sys_macro_task;
 #help_index "Keyboard Devices;Char/Input;StdIn"
 extern U8  *(*fp_getstr2)(I64 flags=0); //GetStr $LK,"Flags",A="MN:GSF_SHIFT_ESC_EXIT"$
 public extern Bool AreYouSure();
-extern U0	DisableMouse();
-extern U0	EnableMouse();
+public extern U0	DisableMouse();
+public extern U0	EnableMouse();
 public extern I64 GetChar(I64 *_scan_code=NULL,Bool echo=TRUE,
 	Bool raw_cursor=FALSE);
 public extern I64 GetKey(I64 *_scan_code=NULL,Bool echo=FALSE,
 	Bool raw_cursor=FALSE);
 public extern I64 GetS(U8 *buf,I64 size,Bool allow_ext=TRUE);
 public extern U8 *GetStr(U8 *msg=NULL,U8 *dft=NULL,I64 flags=0);
+public extern U0 KbdCmdSend(I64 port, U8 val);
+public extern I64 KbdCmdRead();
+public extern U0 KbdCmdFlush();
+public extern U0 MsHardHndlr(U8 *pkt=NULL);
+public extern Bool MsHardRst();
 extern U0	KbdInit();
+public extern U0 KbdMsCmdAck(...);
 public extern I64 KbdMsEvtTime();
 extern U0	KbdMsHndlr(Bool poll_kbd,Bool poll_ms);
 extern U0	KbdMsInit();
@@ -691,6 +702,14 @@ public extern U0 MPHalt();
 public extern CJob *JobQue(I64 (*fp_addr)(U8 *data),U8 *data=NULL,
 	I64 target_cpu=1,I64 flags=1<<JOBf_FREE_ON_COMPLETE,
 	I64 job_code=JOBT_CALL,U8 *aux_str=NULL,I64 aux1=0,I64 aux2=0);
+
+#help_index "PCIe"
+public extern U0 EnumPcie();
+public extern I64 GetPcieDevBar(I64 find_class, I64 find_subclass, I64 bar_index, I64 n=0);
+public extern I64 GetPcieDevBarIO(I64 find_class, I64 find_subclass, I64 bar_index, I64 n=0);
+public extern U8 *PcieFindDev(I64 vendor_id, I64 device_id);
+public extern U0 PcieCfgWrite(U8 *base, I64 reg_offset, I64 len, I64 value);
+public extern I64 PcieCfgRead(U8 *base, I64 reg_offset, I64 len);
 
 #help_index "PCI"
 public extern I64 PCIClassFind(I64 class_code,I64 n);
@@ -860,4 +879,17 @@ public extern U64 BitFieldGet(U8 *bit_field, U8 offset, U8 size);
 #help_index "Virtualization"
 public extern U8 *GetHypeInfo();
 
+#help_index "Serial Block Device"
+public extern Bool (*fp_serial_blkdev_init)();
+public extern Bool (*fp_serial_blkdev_deinit)();
+public extern Bool (*fp_serial_blkdev_read)(U8* buf, I64 blk, I64 cnt);
+public extern Bool (*fp_serial_blkdev_write)(U8* buf, I64 blk, I64 cnt);
+public extern I64 (*fp_serial_blkdev_get_max)();
+
+#help_index "Virtual Block Device"
+public extern Bool (*fp_virtual_blkdev_init)();
+public extern Bool (*fp_virtual_blkdev_deinit)();
+public extern Bool (*fp_virtual_blkdev_read)(U8* buf, I64 blk, I64 cnt);
+public extern Bool (*fp_virtual_blkdev_write)(U8* buf, I64 blk, I64 cnt);
+public extern I64 (*fp_virtual_blkdev_get_max)();
 

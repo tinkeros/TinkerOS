@@ -5,8 +5,8 @@ I64 mp_not_done_flags,grand_total;
 U0 MPRoutine(CDoc *doc)
 {
   I64 i,sum=0,
-	lo=NUM*Gs->num/mp_cnt,		//This is how to divide a job
-	hi=NUM*(Gs->num+1)/mp_cnt;
+        lo=NUM*Gs->num/mp_cnt,		//This is how to divide a job
+        hi=NUM*(Gs->num+1)/mp_cnt;
   for (i=lo;i<hi;i++)
     sum+=i;
   DocPrint(doc,"Core#%d:%d-%d:%d\n",Gs->num,lo,hi-1,sum);

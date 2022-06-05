@@ -36,7 +36,7 @@ U0 LogStructDel(LogStruct *tmplg)
 U0 PrsSingleLogFile(LogStruct *head,U8 *name,CDate *_dstart,CDate *_dend)
 {
   CDoc *doc=DocRead(name,
-	DOCF_PLAIN_TEXT_TABS|DOCF_DBL_DOLLARS|DOCF_NO_CURSOR);
+        DOCF_PLAIN_TEXT_TABS|DOCF_DBL_DOLLARS|DOCF_NO_CURSOR);
   CDocEntry *doc_e=doc->head.next;
   U8 *src,*src2,*mon_lst=Define("ST_MONTHS");
   LogStruct *tmplg;
@@ -47,48 +47,48 @@ U0 PrsSingleLogFile(LogStruct *head,U8 *name,CDate *_dstart,CDate *_dend)
     if (doc_e->type_u8==DOCT_TEXT) {
       tmplg=CAlloc(sizeof(LogStruct));
       try {
-	src=doc_e->tag;
-	tmplg->ip_num.u8[3]=Str2I64(src,10,&src);
-	if (*src++!='.') throw;
-	tmplg->ip_num.u8[2]=Str2I64(src,10,&src);
-	if (*src++!='.') throw;
-	tmplg->ip_num.u8[1]=Str2I64(src,10,&src);
-	if (*src++!='.') throw;
-	tmplg->ip_num.u8[0]=Str2I64(src,10,&src);
+        src=doc_e->tag;
+        tmplg->ip_num.u8[3]=Str2I64(src,10,&src);
+        if (*src++!='.') throw;
+        tmplg->ip_num.u8[2]=Str2I64(src,10,&src);
+        if (*src++!='.') throw;
+        tmplg->ip_num.u8[1]=Str2I64(src,10,&src);
+        if (*src++!='.') throw;
+        tmplg->ip_num.u8[0]=Str2I64(src,10,&src);
 
-	do if (!*src) throw;
-	while (*src++!='[');
-	MemSet(&ds,0,sizeof(CDateStruct));
-	ds.day_of_mon=Str2I64(src,10,&src);
-	if (*src++!='/') throw;
-	src2=src;
-	do if (!*src2) throw;
-	while (*src2++!='/');
-	* --src2=0;
-	ds.mon=1+LstMatch(src,mon_lst,LMF_IGNORE_CASE);
-	src=++src2;
-	ds.year=Str2I64(src,10,&src);
-	if (*src++!=':') throw;
-	ds.hour=Str2I64(src,10,&src);
-	if (*src++!=':') throw;
-	ds.min=Str2I64(src,10,&src);
-	if (*src++!=':') throw;
-	ds.sec=Str2I64(src,10,&src);
-	tmplg->datetime=Struct2Date(&ds);
-	if (*src++!=CH_SPACE) throw;
-	i=Str2I64(src,10,&src);
-	tmplg->datetime-=(i/100+i%100/60.0)*CDATE_FREQ*60*60;
-	if (!(Str2Date("1/1/2017")<=tmplg->datetime<Str2Date("1/1/2050")))
+        do if (!*src) throw;
+        while (*src++!='[');
+        MemSet(&ds,0,sizeof(CDateStruct));
+        ds.day_of_mon=Str2I64(src,10,&src);
+        if (*src++!='/') throw;
+        src2=src;
+        do if (!*src2) throw;
+        while (*src2++!='/');
+        * --src2=0;
+        ds.mon=1+LstMatch(src,mon_lst,LMF_IGNORE_CASE);
+        src=++src2;
+        ds.year=Str2I64(src,10,&src);
+        if (*src++!=':') throw;
+        ds.hour=Str2I64(src,10,&src);
+        if (*src++!=':') throw;
+        ds.min=Str2I64(src,10,&src);
+        if (*src++!=':') throw;
+        ds.sec=Str2I64(src,10,&src);
+        tmplg->datetime=Struct2Date(&ds);
+        if (*src++!=CH_SPACE) throw;
+        i=Str2I64(src,10,&src);
+        tmplg->datetime-=(i/100+i%100/60.0)*CDATE_FREQ*60*60;
+        if (!(Str2Date("1/1/2017")<=tmplg->datetime<Str2Date("1/1/2050")))
 	  throw;
-	if (tmplg->datetime<*_dstart) *_dstart=tmplg->datetime;
-	if (tmplg->datetime>*_dend)   *_dend  =tmplg->datetime;
+        if (tmplg->datetime<*_dstart) *_dstart=tmplg->datetime;
+        if (tmplg->datetime>*_dend)   *_dend  =tmplg->datetime;
 
-	do if (!*src) throw;
-	while (*src++!=']');
+        do if (!*src) throw;
+        while (*src++!=']');
 
-	if (*src++!=CH_SPACE) throw;
-	if (*src++!='\"') throw;
-	if (!StrNCmp(src,"GET ",4)) {
+        if (*src++!=CH_SPACE) throw;
+        if (*src++!='\"') throw;
+        if (!StrNCmp(src,"GET ",4)) {
 	  src2=src+=4;
 	  do if (!*src2) throw;
 	  while (*src2++!=CH_SPACE);
@@ -113,14 +113,14 @@ U0 PrsSingleLogFile(LogStruct *head,U8 *name,CDate *_dstart,CDate *_dend)
 	  src=++src2;
 
 	  QueIns(tmplg,head->last);
-	} else if (!StrNCmp(src,"HEAD ",5)) {
+        } else if (!StrNCmp(src,"HEAD ",5)) {
 	  LogStructDel(tmplg);
-	} else
+        } else
 	  throw;
       } catch {
-	Fs->catch_except=TRUE;
-	"%$$Q\n",doc_e->tag;
-	LogStructDel(tmplg);
+        Fs->catch_except=TRUE;
+        "%$$Q\n",doc_e->tag;
+        LogStructDel(tmplg);
       }
     }
     doc_e=doc_e->next;
@@ -203,7 +203,7 @@ U0 BlockIPNuip(LogStruct *head)
 Bool IsDownLoad(LogStruct *tmplg)
 {
   if (StrMatch(DOWNLOAD_FILE1,tmplg->file)&&tmplg->size>=
-	DOWNLOAD_FILE1_SIZE)
+        DOWNLOAD_FILE1_SIZE)
     return TRUE;
   else
     return FALSE;
@@ -220,13 +220,13 @@ Bool IsIndex(LogStruct *tmplg)
 Bool IsKeeper(LogStruct *tmplg,CDate dstart,CDate dend)
 {
   if (dstart<=tmplg->datetime<=dend && !StrOcc(tmplg->file,'?') &&
-    StrLen(tmplg->file)>2 && 'A'<=tmplg->file[1]<='Z' &&
-    tmplg->size && tmplg->file[StrLen(tmplg->file)-1]!='/' &&
-    (StrLen(tmplg->file)<3 || MemCmp(&tmplg->file[1],"Wb",2)) &&
-    (StrLen(tmplg->file)<7 || MemCmp(&tmplg->file[1],"Family",6))) {
+        StrLen(tmplg->file)>2 && 'A'<=tmplg->file[1]<='Z' &&
+        tmplg->size && tmplg->file[StrLen(tmplg->file)-1]!='/' &&
+        (StrLen(tmplg->file)<3 || MemCmp(&tmplg->file[1],"Wb",2)) &&
+        (StrLen(tmplg->file)<7 || MemCmp(&tmplg->file[1],"Family",6))) {
     return TRUE;
 
-}  else
+  }  else
     return FALSE;
 }
 
@@ -337,8 +337,8 @@ U0 FileTreeTraverse(LinkStruct *root)
 U0 DownLoadRep(LogStruct *head,CDate dstart,CDate dend)
 {
   I64 i,j,cnt,dups,
-	hours_start,hours_end,*hour_cnts,*dup_cnts,
-	days_start,days_end,*day_cnts,*day_dup_cnts;
+        hours_start,hours_end,*hour_cnts,*dup_cnts,
+        days_start,days_end,*day_cnts,*day_dup_cnts;
   LogStruct *tmplg=head->next,*dup_head=NULL;
   LinkStruct *link_root=NULL;
   CDateStruct ds;
@@ -361,9 +361,9 @@ U0 DownLoadRep(LogStruct *head,CDate dstart,CDate dend)
       day_cnts[(tmplg->datetime+local_time_offset)>>32-days_start]++;
       cnt++;
       if (IPNumTreeAdd(&dup_head,tmplg)) {
-	day_dup_cnts[(tmplg->datetime+local_time_offset)>>32-days_start]++;
-	dup_cnts[i.u32[1]-hours_start]++;
-	dups++;
+        day_dup_cnts[(tmplg->datetime+local_time_offset)>>32-days_start]++;
+        dup_cnts[i.u32[1]-hours_start]++;
+        dups++;
       }
       LinkTreeAdd(&link_root,tmplg);
     }
@@ -379,7 +379,7 @@ U0 DownLoadRep(LogStruct *head,CDate dstart,CDate dend)
 	  day_dup_cnts[(i+local_time_offset)>>32-days_start];
 
   "\n\nDownloads of /TOS_Distro.ISO\n"
-	"'-' is a dup.'+' is not a dup.\n";
+        "'-' is a dup.'+' is not a dup.\n";
   if (hours_end-hours_start>=HOURS_MAX)
     i=hours_end-HOURS_MAX+1;
   else
@@ -424,8 +424,8 @@ U0 FileRep(LogStruct *head,CDate dstart,CDate dend)
 U0 IndexRep(LogStruct *head,CDate dstart,CDate dend)
 {
   I64 i,j,cnt,dups,
-	hours_start,hours_end,*hour_cnts,*dup_cnts,
-	days_start,days_end,*day_cnts,*day_dup_cnts;
+        hours_start,hours_end,*hour_cnts,*dup_cnts,
+        days_start,days_end,*day_cnts,*day_dup_cnts;
   LogStruct *tmplg=head->next,*dup_head=NULL;
   LinkStruct *link_root=NULL;
   CDateStruct ds;
@@ -448,9 +448,9 @@ U0 IndexRep(LogStruct *head,CDate dstart,CDate dend)
       day_cnts[(tmplg->datetime+local_time_offset)>>32-days_start]++;
       cnt++;
       if (IPNumTreeAdd(&dup_head,tmplg)) {
-	day_dup_cnts[(tmplg->datetime+local_time_offset)>>32-days_start]++;
-	dup_cnts[i.u32[1]-hours_start]++;
-	dups++;
+        day_dup_cnts[(tmplg->datetime+local_time_offset)>>32-days_start]++;
+        dup_cnts[i.u32[1]-hours_start]++;
+        dups++;
       }
       LinkTreeAdd(&link_root,tmplg);
     }
@@ -458,7 +458,7 @@ U0 IndexRep(LogStruct *head,CDate dstart,CDate dend)
   }
 
   "\n\nHits on /index.html\n"
-	"'-' is a dup.'+' is not a dup.\n";
+        "'-' is a dup.'+' is not a dup.\n";
   for (i=dstart;i<=dend;i+=1<<32)
     "%DDups:%5dTotal:%5dUniques:%5d\n",i,
 	  day_dup_cnts[(i+local_time_offset)>>32-days_start],

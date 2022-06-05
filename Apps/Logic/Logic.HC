@@ -82,7 +82,7 @@ U0 GetGates()
   U8 *st;
 
   "\nEnter the available gate types in the order you prefer them to be used.\n"
-	"Your choices are:\n";
+        "Your choices are:\n";
   for (i=GT_FIRST_REAL_GATE;i<GT_ENTRIES_NUM;i++)
     "%z ",i,gate_type_lst;
   '\n';
@@ -139,10 +139,10 @@ U0 Init()
       "Too large\n";
     else {
       if (gate_type_table[i])
-	"Duplicate\n";
+        "Duplicate\n";
       else {
-	gate_type_table[i]=GT_INPUT;
-	input1_table[i]=num_inputs_entered++;
+        gate_type_table[i]=GT_INPUT;
+        input1_table[i]=num_inputs_entered++;
       }
     }
   }
@@ -161,13 +161,13 @@ U0 Init()
       "Too large\n";
     else {
       if (gate_type_table[i]==GT_INPUT)
-	"To produce this output, connect to input %C\n",
+        "To produce this output, connect to input %C\n",
 	      'A'+input1_table[i];
       else if (gate_type_table[i]==GT_OUTPUT)
-	"Duplicate\n";
+        "Duplicate\n";
       else {
-	gate_type_table[i]=GT_OUTPUT;
-	input1_table[i]=num_outputs_entered++;
+        gate_type_table[i]=GT_OUTPUT;
+        input1_table[i]=num_outputs_entered++;
       }
     }
   }
@@ -181,8 +181,8 @@ U0 Init()
 U0 DrawDesign(CDC *dc,I64 *_y,I64 output,I64 depth,I64 *_x_out,I64 *_y_out)
 {
   I64 y=*_y,type=gate_type_table[output],
-	xx=(passes-depth)*(GATE_WIDTH+CONNECT_WIDTH),yy=y,
-	x1,y1,x2,y2,x3,y3;
+        xx=(passes-depth)*(GATE_WIDTH+CONNECT_WIDTH),yy=y,
+        x1,y1,x2,y2,x3,y3;
   if (_x_out) *_x_out=xx;
   if (_y_out) *_y_out=yy;
   if (Bt(displayed_design,output) && type!=GT_INPUT) {
@@ -192,12 +192,12 @@ U0 DrawDesign(CDC *dc,I64 *_y,I64 output,I64 depth,I64 *_x_out,I64 *_y_out)
   } else
     switch (type) {
       case GT_INPUT:
-	dc->color=GREEN;
-	GrPrint(dc,xx-FONT_WIDTH-4,y-4,"%C",'A'+input1_table[output]);
-	y+=10;
-	break;
+        dc->color=GREEN;
+        GrPrint(dc,xx-FONT_WIDTH-4,y-4,"%C",'A'+input1_table[output]);
+        y+=10;
+        break;
       case GT_NOT:
-	if (!Bt(displayed_design,output)) {
+        if (!Bt(displayed_design,output)) {
 	  y+=16;
 	  DrawDesign(dc,&y,input1_table[output],depth+1,&x1,&y1);
 	  yy=y1;
@@ -208,14 +208,14 @@ U0 DrawDesign(CDC *dc,I64 *_y,I64 output,I64 depth,I64 *_x_out,I64 *_y_out)
 	  dc->color=RED;
 	  GrLine(dc,xx-GATE_WIDTH,yy,x1,y1);
 	  if (_y_out) *_y_out=yy;
-	}
-	break;
+        }
+        break;
       case GT_AND:
       case GT_OR:
       case GT_NAND:
       case GT_NOR:
       case GT_XOR:
-	if (!Bt(displayed_design,output)) {
+        if (!Bt(displayed_design,output)) {
 	  y+=24;
 	  DrawDesign(dc,&y,input1_table[output],depth+1,&x1,&y1);
 	  DrawDesign(dc,&y,input2_table[output],depth+1,&x2,&y2);
@@ -228,13 +228,13 @@ U0 DrawDesign(CDC *dc,I64 *_y,I64 output,I64 depth,I64 *_x_out,I64 *_y_out)
 	  GrLine(dc,xx-GATE_WIDTH,yy-4,x1,y1);
 	  GrLine(dc,xx-GATE_WIDTH,yy+4,x2,y2);
 	  if (_y_out) *_y_out=yy;
-	}
-	break;
+        }
+        break;
       case GT_AND3:
       case GT_OR3:
       case GT_NAND3:
       case GT_NOR3:
-	if (!Bt(displayed_design,output)) {
+        if (!Bt(displayed_design,output)) {
 	  y+=32;
 	  DrawDesign(dc,&y,input1_table[output],depth+1,&x1,&y1);
 	  DrawDesign(dc,&y,input2_table[output],depth+1,&x2,&y2);
@@ -249,8 +249,8 @@ U0 DrawDesign(CDC *dc,I64 *_y,I64 output,I64 depth,I64 *_x_out,I64 *_y_out)
 	  GrLine(dc,xx-GATE_WIDTH,yy  ,x2,y2);
 	  GrLine(dc,xx-GATE_WIDTH,yy+8,x3,y3);
 	  if (_y_out) *_y_out=yy;
-	}
-	break;
+        }
+        break;
     }
   dc->color=BLACK;
   GrPrint(dc,xx,yy+3,"%04X",output);
@@ -274,14 +274,14 @@ U0 FillNot(Bool *chged,I64 *num_outputs_found)
       j= (~i) & (table_size-1);
       old_type=gate_type_table[j];
       if (old_type<GT_INPUT) {
-	gate_type_table[j]=GT_NOT;
-	input1_table[j]=i;
-	Bts(added_this_pass,j);
-	*chged=TRUE;
-	if (old_type==GT_OUTPUT) {
+        gate_type_table[j]=GT_NOT;
+        input1_table[j]=i;
+        Bts(added_this_pass,j);
+        *chged=TRUE;
+        if (old_type==GT_OUTPUT) {
 	  if (output_found<0) output_found=j;
 	  *num_outputs_found=*num_outputs_found+1;
-	}
+        }
       }
     }
 }
@@ -292,7 +292,7 @@ U0 FillAnd(Bool *chged,I64 *num_outputs_found)
   for (i=0;i<table_size;i++)
     if (gate_type_table[i]>GT_OUTPUT && !Bt(added_this_pass,i))
       for (k=0;k<table_size;k++)
-	if (gate_type_table[k]>GT_OUTPUT && !Bt(added_this_pass,k)) {
+        if (gate_type_table[k]>GT_OUTPUT && !Bt(added_this_pass,k)) {
 	  progress1=i;
 	  j= (i & k) & (table_size-1);
 	  old_type=gate_type_table[j];
@@ -307,7 +307,7 @@ U0 FillAnd(Bool *chged,I64 *num_outputs_found)
 	      *num_outputs_found=*num_outputs_found+1;
 	    }
 	  }
-	}
+        }
 }
 
 U0 FillOr(Bool *chged,I64 *num_outputs_found)
@@ -316,7 +316,7 @@ U0 FillOr(Bool *chged,I64 *num_outputs_found)
   for (i=0;i<table_size;i++)
     if (gate_type_table[i]>GT_OUTPUT && !Bt(added_this_pass,i))
       for (k=0;k<table_size;k++)
-	if (gate_type_table[k]>GT_OUTPUT && !Bt(added_this_pass,k)) {
+        if (gate_type_table[k]>GT_OUTPUT && !Bt(added_this_pass,k)) {
 	  progress1=i;
 	  j= (i | k) & (table_size-1);
 	  old_type=gate_type_table[j];
@@ -331,7 +331,7 @@ U0 FillOr(Bool *chged,I64 *num_outputs_found)
 	      *num_outputs_found=*num_outputs_found+1;
 	    }
 	  }
-	}
+        }
 }
 
 U0 FillNAnd(Bool *chged,I64 *num_outputs_found)
@@ -340,7 +340,7 @@ U0 FillNAnd(Bool *chged,I64 *num_outputs_found)
   for (i=0;i<table_size;i++)
     if (gate_type_table[i]>GT_OUTPUT && !Bt(added_this_pass,i))
       for (k=0;k<table_size;k++)
-	if (gate_type_table[k]>GT_OUTPUT && !Bt(added_this_pass,k)) {
+        if (gate_type_table[k]>GT_OUTPUT && !Bt(added_this_pass,k)) {
 	  progress1=i;
 	  j= (~ (i & k)) & (table_size-1);
 	  old_type=gate_type_table[j];
@@ -355,7 +355,7 @@ U0 FillNAnd(Bool *chged,I64 *num_outputs_found)
 	      *num_outputs_found=*num_outputs_found+1;
 	    }
 	  }
-	}
+        }
 }
 
 U0 FillNOr(Bool *chged,I64 *num_outputs_found)
@@ -364,7 +364,7 @@ U0 FillNOr(Bool *chged,I64 *num_outputs_found)
   for (i=0;i<table_size;i++)
     if (gate_type_table[i]>GT_OUTPUT && !Bt(added_this_pass,i))
       for (k=0;k<table_size;k++)
-	if (gate_type_table[k]>GT_OUTPUT && !Bt(added_this_pass,k)) {
+        if (gate_type_table[k]>GT_OUTPUT && !Bt(added_this_pass,k)) {
 	  progress1=i;
 	  j= (~ (i | k)) & (table_size-1);
 	  old_type=gate_type_table[j];
@@ -379,7 +379,7 @@ U0 FillNOr(Bool *chged,I64 *num_outputs_found)
 	      *num_outputs_found=*num_outputs_found+1;
 	    }
 	  }
-	}
+        }
 }
 
 U0 FillXor(Bool *chged,I64 *num_outputs_found)
@@ -388,7 +388,7 @@ U0 FillXor(Bool *chged,I64 *num_outputs_found)
   for (i=0;i<table_size;i++)
     if (gate_type_table[i]>GT_OUTPUT && !Bt(added_this_pass,i))
       for (k=0;k<table_size;k++)
-	if (gate_type_table[k]>GT_OUTPUT && !Bt(added_this_pass,k)) {
+        if (gate_type_table[k]>GT_OUTPUT && !Bt(added_this_pass,k)) {
 	  progress1=i;
 	  j= (i ^ k) & (table_size-1);
 	  old_type=gate_type_table[j];
@@ -403,7 +403,7 @@ U0 FillXor(Bool *chged,I64 *num_outputs_found)
 	      *num_outputs_found=*num_outputs_found+1;
 	    }
 	  }
-	}
+        }
 }
 
 U0 FillAnd3(Bool *chged,I64 *num_outputs_found)
@@ -412,23 +412,23 @@ U0 FillAnd3(Bool *chged,I64 *num_outputs_found)
   for (i=0;i<table_size;i++)
     if (gate_type_table[i]>GT_OUTPUT && !Bt(added_this_pass,i))
       for (k=0;k<table_size;k++)
-	if (gate_type_table[k]>GT_OUTPUT && !Bt(added_this_pass,k))
+        if (gate_type_table[k]>GT_OUTPUT && !Bt(added_this_pass,k))
 	  for (l=0;l<table_size;l++)
 	    if (gate_type_table[l]>GT_OUTPUT && !Bt(added_this_pass,l)) {
 	      progress1=i;
 	      j= (i & k & l) & (table_size-1);
 	      old_type=gate_type_table[j];
 	      if (old_type<GT_INPUT) {
-		gate_type_table[j]=GT_AND3;
-		input1_table[j]=i;
-		input2_table[j]=k;
-		input3_table[j]=l;
-		Bts(added_this_pass,j);
-		*chged=TRUE;
-		if (old_type==GT_OUTPUT) {
+	        gate_type_table[j]=GT_AND3;
+	        input1_table[j]=i;
+	        input2_table[j]=k;
+	        input3_table[j]=l;
+	        Bts(added_this_pass,j);
+	        *chged=TRUE;
+	        if (old_type==GT_OUTPUT) {
 		  if (output_found<0) output_found=j;
 		  *num_outputs_found=*num_outputs_found+1;
-		}
+	        }
 	      }
 	    }
 }
@@ -439,23 +439,23 @@ U0 FillOr3(Bool *chged,I64 *num_outputs_found)
   for (i=0;i<table_size;i++)
     if (gate_type_table[i]>GT_OUTPUT && !Bt(added_this_pass,i))
       for (k=0;k<table_size;k++)
-	if (gate_type_table[k]>GT_OUTPUT && !Bt(added_this_pass,k))
+        if (gate_type_table[k]>GT_OUTPUT && !Bt(added_this_pass,k))
 	  for (l=0;l<table_size;l++)
 	    if (gate_type_table[l]>GT_OUTPUT && !Bt(added_this_pass,l)) {
 	      progress1=i;
 	      j= (i | k | l) & (table_size-1);
 	      old_type=gate_type_table[j];
 	      if (old_type<GT_INPUT) {
-		gate_type_table[j]=GT_OR3;
-		input1_table[j]=i;
-		input2_table[j]=k;
-		input3_table[j]=l;
-		Bts(added_this_pass,j);
-		*chged=TRUE;
-		if (old_type==GT_OUTPUT) {
+	        gate_type_table[j]=GT_OR3;
+	        input1_table[j]=i;
+	        input2_table[j]=k;
+	        input3_table[j]=l;
+	        Bts(added_this_pass,j);
+	        *chged=TRUE;
+	        if (old_type==GT_OUTPUT) {
 		  if (output_found<0) output_found=j;
 		  *num_outputs_found=*num_outputs_found+1;
-		}
+	        }
 	      }
 	    }
 }
@@ -466,23 +466,23 @@ U0 FillNAnd3(Bool *chged,I64 *num_outputs_found)
   for (i=0;i<table_size;i++)
     if (gate_type_table[i]>GT_OUTPUT && !Bt(added_this_pass,i))
       for (k=0;k<table_size;k++)
-	if (gate_type_table[k]>GT_OUTPUT && !Bt(added_this_pass,k))
+        if (gate_type_table[k]>GT_OUTPUT && !Bt(added_this_pass,k))
 	  for (l=0;l<table_size;l++)
 	    if (gate_type_table[l]>GT_OUTPUT && !Bt(added_this_pass,l)) {
 	      progress1=i;
 	      j= (~(i & k & l)) & (table_size-1);
 	      old_type=gate_type_table[j];
 	      if (old_type<GT_INPUT) {
-		gate_type_table[j]=GT_NAND3;
-		input1_table[j]=i;
-		input2_table[j]=k;
-		input3_table[j]=l;
-		Bts(added_this_pass,j);
-		*chged=TRUE;
-		if (old_type==GT_OUTPUT) {
+	        gate_type_table[j]=GT_NAND3;
+	        input1_table[j]=i;
+	        input2_table[j]=k;
+	        input3_table[j]=l;
+	        Bts(added_this_pass,j);
+	        *chged=TRUE;
+	        if (old_type==GT_OUTPUT) {
 		  if (output_found<0) output_found=j;
 		  *num_outputs_found=*num_outputs_found+1;
-		}
+	        }
 	      }
 	    }
 }
@@ -493,23 +493,23 @@ U0 FillNOr3(Bool *chged,I64 *num_outputs_found)
   for (i=0;i<table_size;i++)
     if (gate_type_table[i]>GT_OUTPUT && !Bt(added_this_pass,i))
       for (k=0;k<table_size;k++)
-	if (gate_type_table[k]>GT_OUTPUT && !Bt(added_this_pass,k))
+        if (gate_type_table[k]>GT_OUTPUT && !Bt(added_this_pass,k))
 	  for (l=0;l<table_size;l++)
 	    if (gate_type_table[l]>GT_OUTPUT && !Bt(added_this_pass,l)) {
 	      progress1=i;
 	      j= (~(i | k | l)) & (table_size-1);
 	      old_type=gate_type_table[j];
 	      if (old_type<GT_INPUT) {
-		gate_type_table[j]=GT_NOR3;
-		input1_table[j]=i;
-		input2_table[j]=k;
-		input3_table[j]=l;
-		Bts(added_this_pass,j);
-		*chged=TRUE;
-		if (old_type==GT_OUTPUT) {
+	        gate_type_table[j]=GT_NOR3;
+	        input1_table[j]=i;
+	        input2_table[j]=k;
+	        input3_table[j]=l;
+	        Bts(added_this_pass,j);
+	        *chged=TRUE;
+	        if (old_type==GT_OUTPUT) {
 		  if (output_found<0) output_found=j;
 		  *num_outputs_found=*num_outputs_found+1;
-		}
+	        }
 	      }
 	    }
 }
@@ -530,16 +530,16 @@ I64 FillGateTable()
     for (current_gate=0;current_gate<num_sel_gates &&
 	  num_outputs_found<num_outputs_entered;current_gate++) {
       switch (sel_gates[current_gate]) {
-	case GT_NOT:   FillNot	(&chged,&num_outputs_found); break;
-	case GT_AND:   FillAnd	(&chged,&num_outputs_found); break;
-	case GT_OR:    FillOr	(&chged,&num_outputs_found); break;
-	case GT_NAND:  FillNAnd (&chged,&num_outputs_found); break;
-	case GT_NOR:   FillNOr	(&chged,&num_outputs_found); break;
-	case GT_XOR:   FillXor	(&chged,&num_outputs_found); break;
-	case GT_AND3:  FillAnd3 (&chged,&num_outputs_found); break;
-	case GT_OR3:   FillOr3	(&chged,&num_outputs_found); break;
-	case GT_NAND3: FillNAnd3(&chged,&num_outputs_found); break;
-	case GT_NOR3:  FillNOr3 (&chged,&num_outputs_found); break;
+        case GT_NOT:   FillNot	(&chged,&num_outputs_found); break;
+        case GT_AND:   FillAnd	(&chged,&num_outputs_found); break;
+        case GT_OR:    FillOr	(&chged,&num_outputs_found); break;
+        case GT_NAND:  FillNAnd (&chged,&num_outputs_found); break;
+        case GT_NOR:   FillNOr	(&chged,&num_outputs_found); break;
+        case GT_XOR:   FillXor	(&chged,&num_outputs_found); break;
+        case GT_AND3:  FillAnd3 (&chged,&num_outputs_found); break;
+        case GT_OR3:   FillOr3	(&chged,&num_outputs_found); break;
+        case GT_NAND3: FillNAnd3(&chged,&num_outputs_found); break;
+        case GT_NOR3:  FillNOr3 (&chged,&num_outputs_found); break;
       }
     }
   }

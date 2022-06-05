@@ -55,6 +55,13 @@ Bool BlkRead(CDrv *dv,U8 *buf, I64 blk, I64 cnt)
       case BDT_RAM:
         MemCpy(buf,bd->RAM_dsk+blk<<BLK_SIZE_BITS,cnt<<BLK_SIZE_BITS);
         break;
+      case BDT_OTHER:
+      case BDT_SERIAL:
+      case BDT_VIRTUAL:
+        if (bd->read_func)
+          (*bd->read_func)(buf, blk, cnt);
+        else res=FALSE;
+        break;
       case BDT_ISO_FILE_READ:
       case BDT_ISO_FILE_WRITE:
         FBlkRead(bd->file_dsk,buf,blk,cnt);
@@ -104,6 +111,13 @@ Bool BlkWrite(CDrv *dv,U8 *buf, I64 blk, I64 cnt)
       {
       case BDT_RAM:
         MemCpy(bd->RAM_dsk+blk<<BLK_SIZE_BITS,buf,cnt<<BLK_SIZE_BITS);
+        break;
+      case BDT_OTHER:
+      case BDT_SERIAL:
+      case BDT_VIRTUAL:
+        if (bd->write_func)
+          (*bd->write_func)(buf, blk, cnt);
+        else res=FALSE;
         break;
       case BDT_ISO_FILE_READ:
       case BDT_ISO_FILE_WRITE:

@@ -45,7 +45,7 @@ U0 FormDemo()
   ClassRep(&fds);
   Free(fds.address1);
   Free(fds.address2);
-  //See also $LK,"ClassRepD",A="MN:ClassRepD"$().
+//See also $LK,"ClassRepD",A="MN:ClassRepD"$().
 }
 
 FormDemo;

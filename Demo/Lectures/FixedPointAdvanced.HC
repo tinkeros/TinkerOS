@@ -92,7 +92,7 @@ U0 Main()
   end=GetTSC;
   overhead_time=end-start;
   "$$RED$$Overhead Cycles:%10.5f$$FG$$\n",
-	ToF64(overhead_time)/SAMPLE_SIZE;
+        ToF64(overhead_time)/SAMPLE_SIZE;
 
   //Measure F64 arithmetic
   // (Some of this is due to crappy
@@ -106,7 +106,7 @@ U0 Main()
   test_time=end-start;
   "Float Sum:%X\n",ToI64(fsum);
   "$$RED$$Float Cycles:%10.5f$$FG$$\n",
-	ToF64(test_time)/SAMPLE_SIZE;
+        ToF64(test_time)/SAMPLE_SIZE;
 
   //Measure fixed point arithmetic
   d2=Sin(1.0)*0x100000000;
@@ -120,7 +120,7 @@ U0 Main()
   test_time=end-start;
   "Fixed-Point Sum:%X\n",sum;
   "$$RED$$Fixed-Point Cycles:%10.5f$$FG$$\n",
-	ToF64(test_time)/SAMPLE_SIZE;
+        ToF64(test_time)/SAMPLE_SIZE;
 
   //Measure fixed point arithmetic
   start=GetTSC;
@@ -129,7 +129,7 @@ U0 Main()
   test_time=end-start;
   "Asm Fixed-Point Sum:%X\n",sum;
   "$$RED$$Asm Fixed-Point Cycles:%10.5f$$FG$$\n",
-	ToF64(test_time)/SAMPLE_SIZE;
+        ToF64(test_time)/SAMPLE_SIZE;
 
   //Measure float arithmetic
   start=GetTSC;
@@ -138,7 +138,7 @@ U0 Main()
   test_time=end-start;
   "Asm Float Sum:%X\n",sum;
   "$$RED$$Asm Float Cycles:%10.5f$$FG$$\n",
-	ToF64(test_time)/SAMPLE_SIZE;
+        ToF64(test_time)/SAMPLE_SIZE;
 
 }
 

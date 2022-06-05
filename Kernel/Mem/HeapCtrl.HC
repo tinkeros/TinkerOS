@@ -15,13 +15,15 @@ CHeapCtrl *HeapCtrlInit(CHeapCtrl *hc=NULL,CTask *task=NULL,CBlkPool *bp)
 U0 HeapCtrlDel(CHeapCtrl *hc)
 {//Free all blks alloced to a HeapCtrl.
   CMemBlk *m,*m1;
-  if (hc) {
+  if (hc)
+  {
     PUSHFD
     CLI
     while (LBts(&hc->locked_flags,HClf_LOCKED))
       PAUSE
-    m=hc->next_mem_blk;
-    while (m!=&hc->next_mem_blk) {
+      m=hc->next_mem_blk;
+    while (m!=&hc->next_mem_blk)
+    {
       m1=m->next;
       MemPagTaskFree(m,hc);
       m=m1;

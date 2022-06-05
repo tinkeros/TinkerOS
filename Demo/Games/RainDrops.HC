@@ -12,7 +12,7 @@ CDC *cur_dc;
 U0 DrawFrame(CTask *task,CDC *dc)
 {
   I64 w=task->pix_width,h=task->pix_height,
-	cx=w>>1,cy=h>>1;
+        cx=w>>1,cy=h>>1;
 
   dc->color=LTRED;
   GrLine(dc,cx-20,cy-50,cx,cy-150);
@@ -59,7 +59,7 @@ U0 UpdateCurBase(CTask *task,CDC *dc)
   cur_dc->color=ROP_EQU;
   dc->flags|=DCF_NO_TRANSPARENTS;
   GrBlot(cur_dc,-task->pix_left-task->scroll_x,
-	-task->pix_top-task->scroll_y,dc);
+        -task->pix_top-task->scroll_y,dc);
   dc->flags&=~DCF_NO_TRANSPARENTS;
 }
 
@@ -80,11 +80,11 @@ U0 AnimateTask(I64)
     for (i=0;i<2;i++) {
       j=0;
       do {
-	if (++cur_drop>=DROPS_NUM)
+        if (++cur_drop>=DROPS_NUM)
 	  cur_drop=0;
-	if (drops[cur_drop].y<0)
+        if (drops[cur_drop].y<0)
 	  break;
-	j++;
+        j++;
       } while (j<=DROPS_NUM);
 
       drops[cur_drop].x=RandU32%w;
@@ -93,9 +93,9 @@ U0 AnimateTask(I64)
 
     for (i=0;i<DROPS_NUM;i++) {
       if (drops[i].y>=0) {
-	if (drops[i].y>=h-1)
+        if (drops[i].y>=h-1)
 	  drops[i].y=-I32_MAX;
-	else {
+        else {
 	  x0=x1=drops[i].x;
 	  y0=y1=drops[i].y;
 	  if (GrPeek(cur_dc,x0,y0+1)==WHITE)
@@ -111,13 +111,13 @@ U0 AnimateTask(I64)
 	      c1=GrPeek(cur_dc,x0+1,y0+1);
 	      c2=GrPeek(cur_dc,x0-1,y0+1);
 	      if (c1==WHITE && c2!=WHITE)
-		x1++;
+	        x1++;
 	      else if (c2==WHITE && c1!=WHITE)
-		x1--;
+	        x1--;
 	      else if (RandI16>=0)
-		x1++;
+	        x1++;
 	      else
-		x1--;
+	        x1--;
 	    }
 	    if (GrPeek(cur_dc,x1,y1+1)==WHITE)
 	      y1++;
@@ -130,7 +130,7 @@ U0 AnimateTask(I64)
 	  GrPlot(cur_dc,x1,y1);
 	  drops[i].x=x1;
 	  drops[i].y=y1;
-	}
+        }
       }
     }
     Sleep(10);
@@ -149,16 +149,16 @@ U0 RainDrops()
 {
   I64 ch,sc;
   MenuPush(
-	"File {"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Play {"
-	"  Restart(,'\n');"
-	"  OpenUpper(,'1');"
-	"  OpenLower(,'2');"
-	"}"
-	);
+        "File {"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Play {"
+        "  Restart(,'\n');"
+        "  OpenUpper(,'1');"
+        "  OpenLower(,'2');"
+        "}"
+        );
   SettingsPush; //See $LK,"SettingsPush",A="MN:SettingsPush"$
   AutoComplete;
   WinBorder;
@@ -174,7 +174,7 @@ U0 RainDrops()
   try {
     do
       switch (ch=GetKey(&sc)) {
-	case '\n':
+        case '\n':
 	  Init;
 	  break;
       }

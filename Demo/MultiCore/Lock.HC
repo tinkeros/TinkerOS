@@ -34,7 +34,7 @@ U0 MPLockedInc(I64)
   I64 i;
   for (i=0;i<CNT;i++)
     lock  //Can be used without {}
-	  glbl++;
+	    glbl++;
 }
 
 U0 LockedInc()

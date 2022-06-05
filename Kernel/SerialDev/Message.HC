@@ -7,24 +7,28 @@ U0 InputFilterTask()
   LBts(&Fs->task_flags,TASKf_INPUT_FILTER_TASK);
   old_filter=LBts(&Fs->last_input_filter_task->task_flags,TASKf_FILTER_INPUT);
   LBEqu(&Fs->task_flags,TASKf_FILTER_INPUT,old_filter);
-  while (TRUE) {
+  while (TRUE)
+  {
     CLI
     JobsHndlr(old_flags);
     tmpc1=&Fs->srv_ctrl.next_waiting;
     tmpc=tmpc1->next;
     if (tmpc==tmpc1)
       break;
-    else {
-      if (tmpc->job_code==JOBT_TEXT_INPUT) {
-	QueRem(tmpc);
-	SetRFlags(old_flags);
-	try
-		ExePrint("%s",tmpc->aux_str);
-	catch
-	  Fs->catch_except=TRUE;
-	JobDel(tmpc);
-      } else
-	break;
+    else
+    {
+      if (tmpc->job_code==JOBT_TEXT_INPUT)
+      {
+        QueRem(tmpc);
+        SetRFlags(old_flags);
+        try
+          ExePrint("%s",tmpc->aux_str);
+        catch
+          Fs->catch_except=TRUE;
+        JobDel(tmpc);
+      }
+      else
+        break;
     }
   }
   Fs->next_input_filter_task->last_input_filter_task=Fs->last_input_filter_task;
@@ -35,37 +39,41 @@ U0 InputFilterTask()
 }
 
 I64 ScanMsg(I64 *_arg1=NULL,I64 *_arg2=NULL,I64 mask=~1,CTask *task=NULL)
-{/*Check for a message of type specified by a one in the mask.
-Throw-out messages not in mask.
-If no message fit mask, return NULL immediately.
-Remove desired message, return $LK,"msg_code",A="MN:MSG_CMD"$.
-Note: This delivers messages from parent down to pop-up.
-*/
+{
+  /*Check for a message of type specified by a one in the mask.
+  Throw-out messages not in mask.
+  If no message fit mask, return NULL immediately.
+  Remove desired message, return $LK,"msg_code",A="MN:MSG_CMD"$.
+  Note: This delivers messages from parent down to pop-up.
+  */
   I64 res,old_flags;
   CJob *tmpc,*tmpc1;
   if (!task) task=Fs;
   old_flags=GetRFlags;
   tmpc1=&task->srv_ctrl.next_waiting;
-  while (TRUE) {
+  while (TRUE)
+  {
     CLI
     if (task==Fs)
       JobsHndlr(old_flags);
     tmpc=tmpc1->next;
     if (tmpc==tmpc1)
       break;
-    else {
-      if (tmpc->job_code==JOBT_MSG) {
-	QueRem(tmpc);
-	SetRFlags(old_flags);
-	res=tmpc->msg_code;
-	if (_arg1)
-	  *_arg1=tmpc->aux1;
-	if (_arg2)
-	  *_arg2=tmpc->aux2;
-	JobDel(tmpc);
-	if ((res!=MSG_KEY_DOWN || !(tmpc->aux2&SCF_KEY_DESC) ||
-	      !Bt(&task->win_inhibit,WIf_SELF_KEY_DESC)) && Bt(&mask,res))
-	  goto sm_done;
+    else
+    {
+      if (tmpc->job_code==JOBT_MSG)
+      {
+        QueRem(tmpc);
+        SetRFlags(old_flags);
+        res=tmpc->msg_code;
+        if (_arg1)
+          *_arg1=tmpc->aux1;
+        if (_arg2)
+          *_arg2=tmpc->aux2;
+        JobDel(tmpc);
+        if ((res!=MSG_KEY_DOWN || !(tmpc->aux2&SCF_KEY_DESC) ||
+             !Bt(&task->win_inhibit,WIf_SELF_KEY_DESC)) && Bt(&mask,res))
+          goto sm_done;
       }
     }
     SetRFlags(old_flags);
@@ -75,7 +83,8 @@ Note: This delivers messages from parent down to pop-up.
     *_arg1=0;
   if (_arg2)
     *_arg2=0;
-  if (task->parent_task&&task->parent_task->popup_task==task) {
+  if (task->parent_task&&task->parent_task->popup_task==task)
+  {
     SetRFlags(old_flags);
     return ScanMsg(_arg1,_arg2,mask,task->parent_task);
   }
@@ -99,7 +108,8 @@ I64 GetMsg(I64 *_arg1=NULL,I64 *_arg2=NULL,I64 mask=~1,CTask *task=NULL)
   I64 res;
   if (!task) task=Fs;
   LBtr(&task->task_flags,TASKf_IDLE);
-  while (!(res=ScanMsg(_arg1,_arg2,mask,task))) {
+  while (!(res=ScanMsg(_arg1,_arg2,mask,task)))
+  {
     LBts(&task->task_flags,TASKf_IDLE);
     Yield;
   }
@@ -126,13 +136,16 @@ Bool ScanKey(I64 *_ch=NULL,I64 *_scan_code=NULL,Bool echo=FALSE)
   //Removes key message and returns TRUE.
   //$LK,"ScanMsg",A="MN:ScanMsg"$() throws away other message types.
   I64 ch=0,sc=0;
-  if (ScanMsg(&ch,&sc,1<<MSG_KEY_DOWN)) {
+  if (ScanMsg(&ch,&sc,1<<MSG_KEY_DOWN))
+  {
     if (_ch) *_ch=ch;
     if (_scan_code) *_scan_code=sc;
     if (echo)
       PutKey(ch,sc);
     return TRUE;
-  } else {
+  }
+  else
+  {
     if (_ch) *_ch=0;
     if (_scan_code) *_scan_code=0;
     return FALSE;
@@ -145,18 +158,24 @@ I64 GetKey(I64 *_scan_code=NULL,Bool echo=FALSE,Bool raw_cursor=FALSE)
   //$LK,"ScanKey",A="MN:ScanKey"$() throws away other message types.
   I64 ch,sc;
   Bool cursor_on=FALSE;
-  while (!ScanKey(&ch,&sc,FALSE)) {
-    if (IsRaw && raw_cursor) {
-      if (!cursor_on && ToI64(GetTSC*5/cnts.time_stamp_freq)&1) {
-	'Û';
-	cursor_on=TRUE;
-      } else if (cursor_on && !(ToI64(GetTSC*5/cnts.time_stamp_freq)&1)) {
-	'' CH_BACKSPACE;
-	cursor_on=FALSE;
+  while (!ScanKey(&ch,&sc,FALSE))
+  {
+    if (IsRaw && raw_cursor)
+    {
+      if (!cursor_on && ToI64(GetTSC*5/cnts.time_stamp_freq)&1)
+      {
+        'Û';
+        cursor_on=TRUE;
+      }
+      else if (cursor_on && !(ToI64(GetTSC*5/cnts.time_stamp_freq)&1))
+      {
+        '' CH_BACKSPACE;
+        cursor_on=FALSE;
       }
     }
     LBts(&Fs->task_flags,TASKf_IDLE);
-    if (IsDbgMode) {
+    if (IsDbgMode)
+    {
 //We don't want interrupt-driven keyboard when in debugger
       //because that could have side-effects or crash, so we poll
       //keyboard when in debugger with interrupts off.
@@ -165,7 +184,9 @@ I64 GetKey(I64 *_scan_code=NULL,Bool echo=FALSE,Bool raw_cursor=FALSE)
       KbdMsHndlr(TRUE,FALSE);
       KbdMsgsQue;
       POPFD
-    } else {
+    }
+    else
+    {
       LBts(&Fs->task_flags,TASKf_AWAITING_MSG);
       Yield;
     }
@@ -196,7 +217,8 @@ U8 *GetStr(U8 *msg=NULL,U8 *dft=NULL,I64 flags=0)
   if (msg)
     "" msg,dft;
   st=(*fp_getstr2)(flags);
-  if (!*st) {
+  if (!*st)
+  {
     Free(st);
     if (dft)
       return StrNew(dft);
@@ -211,31 +233,46 @@ I64 GetS(U8 *buf,I64 size,Bool allow_ext=TRUE)
   U8 *st;
   I64 ch,i=0;
   if (!size || !buf) return 0;
-  if (allow_ext) {
+  if (allow_ext)
+  {
     st=GetStr;
-    if (StrLen(st)>size-1) {
+    if (StrLen(st)>size-1)
+    {
       MemCpy(buf,st,size-1);
       buf[size-1]=0;
-    } else
+    }
+    else
       StrCpy(buf,st);
     i=StrLen(buf);
     Free(st);
-  } else {
-    while (TRUE) {
+  }
+  else
+  {
+    while (TRUE)
+    {
       ch=GetChar(,FALSE,IsDbgMode);
-      if (ch=='\n') {
-	'' ch;
-	break;
-      } else if (ch==CH_BACKSPACE) {
-	if (i>0) {
-	  i--;
-	  '' ch;
-	}
-      } else {
-	if (i<size-1) {
-	  buf[i++]=ch;
-	  '' ch;
-	}
+      if (ch=='\n')
+      {
+        '' ch;
+        break;
+      }
+      else if (ch==CH_BACKSPACE)
+      {
+        if (i>0)
+        {
+          i--;
+          ''
+          ch;
+        }
+      }
+      else
+      {
+        if (i<size-1)
+        {
+          buf[i++]=ch;
+          ''
+          ch;
+        }
       }
     }
     buf[i]=0;

@@ -6,9 +6,9 @@
 public class CGodGlbls
 {
   U8	**words,
-	*word_file_mask;
+   *word_file_mask;
   I64	word_fuf_flags,
-	num_words;
+      num_words;
   CFifoU8 *fifo;
   CDC	*doodle_dc;
   I64	doodle_ch;

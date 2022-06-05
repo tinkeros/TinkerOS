@@ -4,31 +4,31 @@ I64 prime_range,my_mp_cnt,pending;
 U0 PrimesJob(I64 i)
 {
   I64 j,k,l=Sqrt(prime_range),
-	lo=i*prime_range/my_mp_cnt,
-	hi=(i+1)*prime_range/my_mp_cnt,
-	lo2=lo+sys_cache_line_width,
-	hi2=hi-sys_cache_line_width;
+        lo=i*prime_range/my_mp_cnt,
+        hi=(i+1)*prime_range/my_mp_cnt,
+        lo2=lo+sys_cache_line_width,
+        hi2=hi-sys_cache_line_width;
   if (lo2>hi2) lo2=hi2;
   for (j=2;j<=l;j++) {
     if (!Bt(master_bitmap,j)) {
       if (j>=lo)
-	k=j+j;
+        k=j+j;
       else {
-	k=lo-lo%j;
-	if (k<lo)
+        k=lo-lo%j;
+        if (k<lo)
 	  k+=j;
       }
       while (k<lo2) {
-	LBts(master_bitmap,k);
-	k+=j;
+        LBts(master_bitmap,k);
+        k+=j;
       }
       while (k<hi2) {
-	Bts(master_bitmap,k);
-	k+=j;
+        Bts(master_bitmap,k);
+        k+=j;
       }
       while (k<hi) {
-	LBts(master_bitmap,k);
-	k+=j;
+        LBts(master_bitmap,k);
+        k+=j;
       }
     }
   }
@@ -63,7 +63,7 @@ I64 Primes(I64 range,I64 _my_mp_cnt)
       "%d ",i;
 
   "\n$$RED$$CPUs:%d PrimeRange:%,d PrimeCnt:%,d Time:%9.7,f$$FG$$\n",
-	my_mp_cnt,prime_range,prime_cnt,tf-t0;
+        my_mp_cnt,prime_range,prime_cnt,tf-t0;
 
   Free(master_bitmap);
   return prime_cnt;

@@ -10,7 +10,7 @@ U0 PlotXY(I64 x,I64 y)
 U0 Main()
 {
   I64 i;
-  //This makes all 4 color planes active.
+//This makes all 4 color planes active.
   OutU8(VGAP_IDX,VGAR_MAP_MASK);
   OutU8(VGAP_DATA,WHITE);
   MemSet(text.vga_alias,0,GR_WIDTH*GR_HEIGHT/8);

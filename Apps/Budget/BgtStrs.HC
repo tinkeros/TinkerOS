@@ -11,14 +11,14 @@ public U8 **StrFileRead(U8 *name,I64 *_max_num=NULL,
   while (doc_e!=doc) {
     if (doc_e->type_u8==DOCT_TEXT) {
       if (no_nums)
-	i=++max_num;
+        i=++max_num;
       else {
-	i=Str2I64(doc_e->tag,,&ptr);
-	if (i>max_num) max_num=i;
-	if (*ptr==',') ptr++;
-	ptr=StrNew(ptr);
-	Free(doc_e->tag);
-	doc_e->tag=ptr;
+        i=Str2I64(doc_e->tag,,&ptr);
+        if (i>max_num) max_num=i;
+        if (*ptr==',') ptr++;
+        ptr=StrNew(ptr);
+        Free(doc_e->tag);
+        doc_e->tag=ptr;
       }
       doc_e->user_data=i;
     }
@@ -90,21 +90,21 @@ public U0 StrFileWrite(U8 *name,CHashTable *table,Bool no_nums=FALSE)
     for (i=0;i<=table->mask;i++) {
       tmph=table->body[i];
       while (tmph) {
-	a[j++]=tmph;
-	tmph=tmph->next;
+        a[j++]=tmph;
+        tmph=tmph->next;
       }
     }
     QSortI64(a,cnt,&StrEntriesCompare);
     for (i=0;i<cnt;i++) {
       tmph=a[i];
       if (tmph->user_data1&15!=color) {
-	DocPrint(doc,"$$FG,%d$$",tmph->user_data1&15);
-	color=tmph->user_data1&15;
+        DocPrint(doc,"$$FG,%d$$",tmph->user_data1&15);
+        color=tmph->user_data1&15;
       }
       if (no_nums)
-	DocPrint(doc,"%s\n",tmph->str);
+        DocPrint(doc,"%s\n",tmph->str);
       else
-	DocPrint(doc,"%d,%s\n",tmph->user_data0,tmph->str);
+        DocPrint(doc,"%d,%s\n",tmph->user_data0,tmph->str);
     }
     Free(a);
   }

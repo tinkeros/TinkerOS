@@ -8,42 +8,43 @@ I64 HashTypeNum(CHash *tmph)
 
 I64 HashVal(CHash *tmph)
 {//Returns most likely desired value.
-  switch [HashTypeNum(tmph)] {
-    case HTt_EXPORT_SYS_SYM:
-      return tmph(CHashExport *)->val;
-    case HTt_IMPORT_SYS_SYM:
-      return tmph(CHashImport *)->module_base;
-    case HTt_DEFINE_STR:
-    case HTt_CLASS:
-    case HTt_INTERNAL_TYPE:
-    case HTt_WORD:
-    case HTt_DICT_WORD:
-    case HTt_OPCODE:
-    case HTt_HELP_FILE:
+  switch [HashTypeNum(tmph)]
+  {
+  case HTt_EXPORT_SYS_SYM:
+    return tmph(CHashExport *)->val;
+  case HTt_IMPORT_SYS_SYM:
+    return tmph(CHashImport *)->module_base;
+  case HTt_DEFINE_STR:
+  case HTt_CLASS:
+  case HTt_INTERNAL_TYPE:
+  case HTt_WORD:
+  case HTt_DICT_WORD:
+  case HTt_OPCODE:
+  case HTt_HELP_FILE:
+    return tmph;
+  case HTt_GLBL_VAR:
+    if (tmph(CHashGlblVar *)->flags&GVF_EXTERN)
+      return &tmph(CHashGlblVar *)->data_addr;
+    else
+      return tmph(CHashGlblVar *)->data_addr;
+  case HTt_FUN:
+    if (Bt(&tmph(CHashFun *)->flags,Cf_EXTERN))
       return tmph;
-    case HTt_GLBL_VAR:
-      if (tmph(CHashGlblVar *)->flags&GVF_EXTERN)
-	return &tmph(CHashGlblVar *)->data_addr;
-      else
-	return tmph(CHashGlblVar *)->data_addr;
-    case HTt_FUN:
-      if (Bt(&tmph(CHashFun *)->flags,Cf_EXTERN))
-	return tmph;
-      else
-	return tmph(CHashFun *)->exe_addr;
-    case HTt_REG:
-      return tmph(CHashReg *)->reg_num|tmph(CHashReg *)->reg_type<<8;
-    case HTt_KEYWORD:
-    case HTt_ASM_KEYWORD:
-    case HTt_MODULE:
-    case HTt_FILE:
-    case HTt_FRAME_PTR:
-      return tmph(CHashGeneric *)->user_data0;
+    else
+      return tmph(CHashFun *)->exe_addr;
+  case HTt_REG:
+    return tmph(CHashReg *)->reg_num|tmph(CHashReg *)->reg_type<<8;
+  case HTt_KEYWORD:
+  case HTt_ASM_KEYWORD:
+  case HTt_MODULE:
+  case HTt_FILE:
+  case HTt_FRAME_PTR:
+    return tmph(CHashGeneric *)->user_data0;
 
-    case -1:		//nobound switch
-    case HTt_TYPES_NUM: //nobound switch
-    default:
-      return 0;
+  case -1:		//nobound switch
+  case HTt_TYPES_NUM: //nobound switch
+  default:
+    return 0;
   }
 }
 
@@ -61,7 +62,8 @@ U0 HashDel(CHashSrcSym *tmph)
   if (!tmph) return;
   if (!(tmph->type&HTT_DICT_WORD))
     Free(tmph->str);
-  if (tmph->type & HTG_SRC_SYM) {
+  if (tmph->type & HTG_SRC_SYM)
+  {
     Free(tmph->src_link);
     Free(tmph->idx);
     Free(tmph->import_name);
@@ -70,19 +72,21 @@ U0 HashDel(CHashSrcSym *tmph)
       Free(tmph->dbg_info);
     if (tmph->type & (HTT_FUN | HTT_CLASS))
 //Assumes code not on heap, so doesn't Free.
-    //$LK,"ClassMemberLstDel",A="MN:ClassMemberLstDel"$() is an import to the Kernel module
+      //$LK,"ClassMemberLstDel",A="MN:ClassMemberLstDel"$() is an import to the Kernel module
       ClassMemberLstDel(tmph);
     else if (tmph->type&HTT_DEFINE_STR)
       Free(tmph(CHashDefineStr *)->data);
-    else if (tmph->type & HTT_GLBL_VAR) {
+    else if (tmph->type & HTT_GLBL_VAR)
+    {
       if (!(tmph(CHashGlblVar *)->flags&GVF_ALIAS))
-	Free(tmph(CHashGlblVar *)->data_addr);
+        Free(tmph(CHashGlblVar *)->data_addr);
       LinkedLstDel(tmph(CHashGlblVar *)->dim.next);
       if (tmph(CHashGlblVar *)->fun_ptr)
-	HashDel(tmph(CHashGlblVar *)->fun_ptr
-	      -tmph(CHashGlblVar *)->fun_ptr->ptr_stars_cnt);
+        HashDel(tmph(CHashGlblVar *)->fun_ptr
+                -tmph(CHashGlblVar *)->fun_ptr->ptr_stars_cnt);
     }
-  } else if (tmph->type & HTT_FILE)
+  }
+  else if (tmph->type & HTT_FILE)
     Free(tmph(CHashGeneric *)->user_data0);
   Free(tmph);
 }
@@ -92,9 +96,11 @@ U0 HashTableDel(CHashTable *table)
   I64 i;
   CHashSrcSym *tmph,*tmph1;
   if (!table) return;
-  for (i=0;i<=table->mask;i++) {
+  for (i=0; i<=table->mask; i++)
+  {
     tmph=table->body[i];
-    while (tmph) {
+    while (tmph)
+    {
       tmph1=tmph->next;
       HashDel(tmph);
       tmph=tmph1;
@@ -111,24 +117,29 @@ I64 HashTablePurge(CHashTable *table)
   if (!table) return 0;
   PUSHFD
   CLI	 //Precaution
-  for (i=0;i<=table->mask;i++) {
+  for (i=0; i<=table->mask; i++)
+  {
     tmph=table->body[i];
-    while (tmph) {
+    while (tmph)
+    {
       tmph1=tmph->next; //We delete only older ones
-      if (tmph->type&(HTT_FUN|HTT_GLBL_VAR)) {
-	tmph2=tmph->next; //Older always later in chain
-	while (tmph2) {
-	  if ((tmph2->type&HTT_EXPORT_SYS_SYM ||
-		tmph2->type&HTG_TYPE_MASK==HTT_INVALID) &&
-		!StrCmp(tmph2->str,tmph->str)) {
-	    if (tmph2->type&HTG_TYPE_MASK==HTT_INVALID)
-	      tmph2->type=HTT_KEYWORD;//Won't delete HTT_INVALID
-	    HashRemDel(tmph2,table);
-	    res++;
-	    break;
-	  }
-	  tmph2=tmph2->next;
-	}
+      if (tmph->type&(HTT_FUN|HTT_GLBL_VAR))
+      {
+        tmph2=tmph->next; //Older always later in chain
+        while (tmph2)
+        {
+          if ((tmph2->type&HTT_EXPORT_SYS_SYM ||
+               tmph2->type&HTG_TYPE_MASK==HTT_INVALID) &&
+              !StrCmp(tmph2->str,tmph->str))
+          {
+            if (tmph2->type&HTG_TYPE_MASK==HTT_INVALID)
+              tmph2->type=HTT_KEYWORD;//Won't delete HTT_INVALID
+            HashRemDel(tmph2,table);
+            res++;
+            break;
+          }
+          tmph2=tmph2->next;
+        }
       }
       tmph=tmph1;
     }
@@ -138,7 +149,7 @@ I64 HashTablePurge(CHashTable *table)
 }
 
 CHashGeneric *HashGenericAdd(U8 *name,I64 type,
-	I64 u0=0,I64 u1=0,I64 u2=0,CTask *task=NULL)
+                             I64 u0=0,I64 u1=0,I64 u2=0,CTask *task=NULL)
 {//Add any type to task hash_table, 3 user_data values.
   if (!task) task=Fs;
   CHashGeneric *res=CAlloc(sizeof(CHashGeneric),task);
@@ -170,7 +181,8 @@ U0 HashSrcFileSet(CCmpCtrl *cc,CHashSrcSym *h,I64 line_num_offset=0)
 CHashGeneric *HashPublic(U8 *st,I64 mask,Bool val=TRUE)
 {//Mark a hash entry as public and $LK,"HashSrcFileSet",A="MN:HashSrcFileSet"$().
   CHashGeneric *res;
-  if (res=HashFind(st,Fs->hash_table,mask)) {
+  if (res=HashFind(st,Fs->hash_table,mask))
+  {
     if (val)
       res->type|=HTF_PUBLIC;
     else
@@ -178,7 +190,8 @@ CHashGeneric *HashPublic(U8 *st,I64 mask,Bool val=TRUE)
     if (res->type&HTG_SRC_SYM)
       HashSrcFileSet(Fs->last_cc,res);
     return res;
-  } else
+  }
+  else
     return NULL;
 }
 
@@ -186,12 +199,14 @@ I64 HashLstAdd(U8 *lst,I64 type,CHashTable *table)
 {//Add a list to a hash table.
   I64 i=0;
   CHashGeneric *tmph;
-  if (lst) {
-    while (*lst) {
+  if (lst)
+  {
+    while (*lst)
+    {
       if (*lst=='@')
-	lst++;
+        lst++;
       else
-	i++;
+        i++;
       tmph=CAlloc(sizeof(CHashGeneric));
       tmph->user_data0=i-1;
       tmph->str=StrNew(lst);
@@ -242,7 +257,8 @@ I64 FramePtrDel(U8 *name,CTask *task=NULL)
   CHashGeneric *tmph;
   I64 res=0;
   if (!task) task=Fs;
-  if (tmph=HashFind(name,task->hash_table,HTT_FRAME_PTR)) {
+  if (tmph=HashFind(name,task->hash_table,HTT_FRAME_PTR))
+  {
     res=tmph->user_data0;
     HashRemDel(tmph,task->hash_table);
   }

@@ -23,7 +23,7 @@ U0 TimeIns()
   end2=GetTSC;
   test_time=end2-start2;
   "Remainder Version #1 Cycles\t: %10.5f\n",
-	ToF64(test_time-overhead_time)/SAMPLE_SIZE;
+        ToF64(test_time-overhead_time)/SAMPLE_SIZE;
 
   //Measure remainder...
   start2=GetTSC;
@@ -32,7 +32,7 @@ U0 TimeIns()
   end2=GetTSC;
   test_time=end2-start2;
   "Remainder Version #2 Cycles\t: %10.5f\n",
-	ToF64(test_time-overhead_time)/SAMPLE_SIZE;
+        ToF64(test_time-overhead_time)/SAMPLE_SIZE;
 }
 
 TimeIns;

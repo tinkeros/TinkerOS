@@ -52,7 +52,7 @@ class Prime
 I64 *PrimesNew(I64 N,I64 *_sqrt_primes,I64 *_cbrt_primes)
 {
   I64 i,j,sqrt=Ceil(Sqrt(N)),cbrt=Ceil(N`(1/3.0)),sqrt_sqrt=Ceil(Sqrt(sqrt)),
-	sqrt_primes=0,cbrt_primes=0;
+        sqrt_primes=0,cbrt_primes=0;
   U8 *s=CAlloc((sqrt+1+7)/8);
   Prime *primes,*p;
 
@@ -60,8 +60,8 @@ I64 *PrimesNew(I64 N,I64 *_sqrt_primes,I64 *_cbrt_primes)
     if (!Bt(s,i)) {
       j=i*2;
       while (j<=sqrt) {
-	Bts(s,j);
-	j+=i;
+        Bts(s,j);
+        j+=i;
       }
     }
   }
@@ -69,7 +69,7 @@ I64 *PrimesNew(I64 N,I64 *_sqrt_primes,I64 *_cbrt_primes)
     if (!Bt(s,i)) {
       sqrt_primes++; //Count primes
       if (i<=cbrt)
-	cbrt_primes++;
+        cbrt_primes++;
     }
 
   p=primes=CAlloc(sqrt_primes*sizeof(Prime));
@@ -134,7 +134,7 @@ I64 SumFact(I64 n,I64 sqrt_primes,Prime *p)
       pp=p->pp+(k-1);
       sf*=pp->sumfact;
       if (n==1)
-	return sf;
+        return sf;
     }
     p++;
   }
@@ -157,11 +157,11 @@ Bool TestSumFact(I64 n,I64 target_sf,I64 sqrt_primes,I64 cbrt_primes,Prime *p)
     if (k) {
       pp=p->pp+(k-1);
       if (ModU64(&target_sf,pp->sumfact))
-	return FALSE;
+        return FALSE;
       if (n==1) {
-	if (target_sf==1)
+        if (target_sf==1)
 	  return TRUE;
-	else
+        else
 	  return FALSE;
       }
     }
@@ -177,19 +177,19 @@ Bool TestSumFact(I64 n,I64 target_sf,I64 sqrt_primes,I64 cbrt_primes,Prime *p)
     while (i++<sqrt_primes) {
       k=0;
       while (!(n%p->prime)) {
-	n/=p->prime;
-	k++;
+        n/=p->prime;
+        k++;
       }
       if (k) {
-	pp=p->pp+(k-1);
-	if (ModU64(&target_sf,pp->sumfact))
+        pp=p->pp+(k-1);
+        if (ModU64(&target_sf,pp->sumfact))
 	  return FALSE;
-	if (n==1) {
+        if (n==1) {
 	  if (target_sf==1)
 	    return TRUE;
 	  else
 	    return FALSE;
-	}
+        }
       }
       p++;
     }
@@ -245,7 +245,7 @@ U0 PutFactors(I64 n) //For debugging
     if (k) {
       "%d",i;
       if (k>1)
-	"^%d",k;
+        "^%d",k;
       '' CH_SPACE;
     }
   }
@@ -264,8 +264,8 @@ class RangeJob
 I64 TestCoreSubRange(RangeJob *r)
 {
   I64 i,j,m,n,n2,sf,res=0,range=r->hi-r->lo,
-	*sumfacts=MAlloc(range*sizeof(I64)),
-	*residue =MAlloc(range*sizeof(I64));
+        *sumfacts=MAlloc(range*sizeof(I64)),
+        *residue =MAlloc(range*sizeof(I64));
   U16 *pow_cnt =MAlloc(range*sizeof(U16));
   Prime *p=r->primes;
   PowPrime *pp;
@@ -279,15 +279,15 @@ I64 TestCoreSubRange(RangeJob *r)
       m*=p->prime;
       n=m-r->lo%m;
       while (n<range) {
-	pow_cnt[n]++;
-	n+=m;
+        pow_cnt[n]++;
+        n+=m;
       }
     }
     for (n=0;n<range;n++)
       if (i=pow_cnt[n]) {
-	pp=&p->pp[i-1];
-	sumfacts[n]*=pp->sumfact;
-	residue [n]/=pp->n;
+        pp=&p->pp[i-1];
+        sumfacts[n]*=pp->sumfact;
+        residue [n]/=pp->n;
       }
     p++;
   }
@@ -302,8 +302,8 @@ I64 TestCoreSubRange(RangeJob *r)
     if (n<n2<r->N) {
       if (r->lo<=n2<r->hi && sumfacts[n2-r->lo]-n2-1==n ||
 	    TestSumFact(n2,sf,r->sqrt_primes,r->cbrt_primes,r->primes)) {
-	DocPrint(r->doc,"%u:%u\n",n,sf-n-1);
-	res++;
+        DocPrint(r->doc,"%u:%u\n",n,sf-n-1);
+        res++;
       }
     }
   }
@@ -340,12 +340,12 @@ I64 MagicPairs(I64 N)
   F64 t0=tS;
   I64 res=0;
   I64 sqrt_primes,cbrt_primes,num_powprimes,
-	i,k,n=(N-1)/mp_cnt+1;
+        i,k,n=(N-1)/mp_cnt+1;
   Prime *primes=PrimesNew(N,&sqrt_primes,&cbrt_primes);
   PowPrime *powprimes=PowPrimesNew(N,sqrt_primes,primes,&num_powprimes);
 
   "N:%u SqrtPrimes:%u CbrtPrimes:%u PowersOfPrimes:%u\n",
-	N,sqrt_primes,cbrt_primes,num_powprimes;
+        N,sqrt_primes,cbrt_primes,num_powprimes;
   progress1=0;
   *progress1_desc=0;
   progress1_max=N;

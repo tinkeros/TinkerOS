@@ -89,7 +89,7 @@ U0 PsmMarkSel(I64 x1,I64 x2,Bool sel)
   while (tmpn!=&psm.head) {
     if (sel) {
       if (x1<=tmpn->x<=x2)
-	tmpn->flags|=PSMF_SEL;
+        tmpn->flags|=PSMF_SEL;
     } else
       tmpn->flags&=~PSMF_SEL;
     tmpn=tmpn->next;
@@ -118,9 +118,9 @@ U0 PsmSetOctave(I64 octave)
     StrPrint(buf,"Snd/Octave%d",i);
     if (tmpse=MenuEntryFind(Fs->cur_menu,buf)) {
       if (i==octave)
-	tmpse->checked=TRUE;
+        tmpse->checked=TRUE;
       else
-	tmpse->checked=FALSE;
+        tmpse->checked=FALSE;
     }
   }
 }
@@ -154,7 +154,7 @@ U0 PsmRecalcNoteXY()
       break;
     else {
       if (tmpn->type!=PSMT_METER) {
-	if (tmpn->ona) {
+        if (tmpn->ona) {
 	  ona=tmpn->ona;
 	  if (Bt(&tmpn->flags,PSMf_SHARP))
 	    ona--;
@@ -166,17 +166,17 @@ U0 PsmRecalcNoteXY()
 	  if (note<3)
 	    octave++;
 	  tmpn->y=(15+(psm_note_map[note]-7*(octave-4)))*4;
-	}
+        }
       }
       x+=tmpn->width;
       if (tmpn->type==PSMT_METER) {
-	measure_len=tmpn->meter_top*4.0/tmpn->meter_bottom;
-	measure_left=0;
+        measure_len=tmpn->meter_top*4.0/tmpn->meter_bottom;
+        measure_left=0;
       } else
-	measure_left-=psm_durations[tmpn->duration];
+        measure_left-=psm_durations[tmpn->duration];
       if (measure_left<0.001) {
-	x+=PSM_NOTE_SPACING;
-	measure_left=measure_len;
+        x+=PSM_NOTE_SPACING;
+        measure_left=measure_len;
       }
     }
     tmpn=tmpn->next;
@@ -187,7 +187,7 @@ U0 DrawIt(CTask *task,CDC *dc)
 {
   PsmNote *tmpn;
   I64 i,x,y,
-	w=task->pix_width;
+        w=task->pix_width;
   F64 measure_len=4,measure_left=measure_len;
 
   dc->color=BLACK;
@@ -217,33 +217,33 @@ U0 DrawIt(CTask *task,CDC *dc)
     }
     if (tmpn->type==PSMT_METER) {
       if (tmpn==psm.cur_note && PsmBlink)
-	dc->color=BROWN;
+        dc->color=BROWN;
       else
-	dc->color=BLACK;
+        dc->color=BLACK;
       DrawTimeSignature(dc,x,5*8,tmpn->meter_top,tmpn->meter_bottom);
       measure_len=tmpn->meter_top*4.0/tmpn->meter_bottom;
       measure_left=0;
     } else {
       if (tmpn==psm.cur_note && PsmBlink) {
-	dc->color=BROWN;
-	GrPrint(dc,x+8,y,"%s",tmpn->word);
+        dc->color=BROWN;
+        GrPrint(dc,x+8,y,"%s",tmpn->word);
       } else if (tmpn->flags&PSMF_SEL)
-	dc->color=RED;
+        dc->color=RED;
       else {
-	if (tmpn->ona)
+        if (tmpn->ona)
 	  dc->color=BLACK;
-	else
+        else
 	  dc->color=LTGRAY;
-	if (PsmHasWords(tmpn->word))
+        if (PsmHasWords(tmpn->word))
 	  dc->color=GREEN;
       }
       DrawNote(dc,x,y,tmpn->duration);
       if (PsmIsDotted(tmpn->duration))
-	x+=PSM_NOTE_SPACING/2;
+        x+=PSM_NOTE_SPACING/2;
       if (Bt(&tmpn->flags,PSMf_SHARP))
-	Sprite3(dc,x,y,0,$IB,"<13>",BI=13$);
+        Sprite3(dc,x,y,0,$IB,"<13>",BI=13$);
       else if (Bt(&tmpn->flags,PSMf_FLAT))
-	Sprite3(dc,x,y,0,$IB,"<14>",BI=14$);
+        Sprite3(dc,x,y,0,$IB,"<14>",BI=14$);
       measure_left-=psm_durations[tmpn->duration];
     }
     tmpn=tmpn->next;
@@ -277,7 +277,7 @@ I64 PsmGetPickNoteBoxDuration(I64 xx,I64 yy)
       PsmSetPickNoteBoxX(i,&x1);
       PsmSetPickNoteBoxX(i+1,&x2);
       if (x1<=xx+PSM_NOTE_SPACING/2<x2)
-	return i;
+        return i;
     }
   }
   return -1;
@@ -341,7 +341,7 @@ Bool PsmGetPickMeterBox(I64 xx,I64 yy,I64 *top,I64 *bottom)
 {
   I64 i;
   if (PSM_METER_X<=xx<PSM_METER_X+PSM_METER_W*PSM_METERS_NUM &&
-	PSM_METER_Y<=yy<PSM_METER_Y+2*FONT_HEIGHT) {
+        PSM_METER_Y<=yy<PSM_METER_Y+2*FONT_HEIGHT) {
     i=(xx-PSM_METER_X)/PSM_METER_W;
     *top=meter_tops[i];
     *bottom=meter_bottoms[i];
@@ -384,11 +384,11 @@ U0 PsmMenu(I64 psm_octave)
   DrawDC2;
 
   "$$LTGREEN$$<SPACE>$$FG$$\t\tRest\n"
-	"$$LTGREEN$$<BACKSPACE>$$FG$$\tDeletes Last Note\n"
-	"$$LTGREEN$$Left Mouse$$FG$$\tDrag note or shift word\n"
-	"$$LTGREEN$$Right Mouse$$FG$$\tChange duration or set word\n";
+        "$$LTGREEN$$<BACKSPACE>$$FG$$\tDeletes Last Note\n"
+        "$$LTGREEN$$Left Mouse$$FG$$\tDrag note or shift word\n"
+        "$$LTGREEN$$Right Mouse$$FG$$\tChange duration or set word\n";
   Sprite($IB,"<6>",BI=6$,"$$SP+LIS,\"\","
-	"LM=\"Msg(MSG_KEY_DOWN,0,SCF_CTRL|SC_CURSOR_LEFT);\",BI=%d$$");
+        "LM=\"Msg(MSG_KEY_DOWN,0,SCF_CTRL|SC_CURSOR_LEFT);\",BI=%d$$");
   "";
   if (psm.playing)
     Sprite($IB,"<9>",BI=9$,"$$SP,\"\",LM=\"x\",BI=%d$$");
@@ -402,7 +402,7 @@ U0 PsmMenu(I64 psm_octave)
     Sprite($IB,"<11>",BI=11$,"$$SP,\"\",LM=\"z\",BI=%d$$");
   "";
   Sprite($IB,"<7>",BI=7$,"$$SP+LIS,\"\","
-	"LM=\"Msg(MSG_KEY_DOWN,0,SCF_CTRL|SC_CURSOR_RIGHT);\",BI=%d$$");
+        "LM=\"Msg(MSG_KEY_DOWN,0,SCF_CTRL|SC_CURSOR_RIGHT);\",BI=%d$$");
   "$$CM+LX,0,6$$";
   PsmSetOctave(psm_octave);
   Refresh(2);

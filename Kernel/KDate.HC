@@ -1,9 +1,13 @@
 //See $LK,"::/Doc/TimeDate.DD"$
 
-U16 mon_start_days1[12]={
-0,31,59,90,120,151,181,212,243,273,304,334};
-U16 mon_start_days2[12]={
-0,31,60,91,121,152,182,213,244,274,305,335};
+U16 mon_start_days1[12]=
+{
+  0,31,59,90,120,151,181,212,243,273,304,334
+};
+U16 mon_start_days2[12]=
+{
+  0,31,60,91,121,152,182,213,244,274,305,335
+};
 
 I64 YearStartDate(I64 year)
 {//32-bit day since AD 0, given year number.
@@ -23,7 +27,7 @@ CDate Struct2Date(CDateStruct *_ds)
     i1+=mon_start_days2[_ds->mon-1];
   cdt.date=i1+_ds->day_of_mon-1;
   cdt.time=(_ds->sec10000+100*(_ds->sec100+100*(_ds->sec
-	+60*(_ds->min+60*_ds->hour))))<<21/(15*15*3*625);
+                               +60*(_ds->min+60*_ds->hour))))<<21/(15*15*3*625);
   return cdt;
 }
 
@@ -42,17 +46,21 @@ U0 Date2Struct(CDateStruct *_ds,CDate cdt)
   _ds->day_of_week=DayOfWeek(date);
   _ds->year=(date+1)*100000/CDATE_YEAR_DAYS_INT;
   i=YearStartDate(_ds->year);
-  while (i>date) {
+  while (i>date)
+  {
     _ds->year--;
     i=YearStartDate(_ds->year);
   }
   date-=i;
-  if (YearStartDate(_ds->year+1)-i==365) {
+  if (YearStartDate(_ds->year+1)-i==365)
+  {
     k=0;
     while (date>=mon_start_days1[k+1] && k<11)
       k++;
     date-=mon_start_days1[k];
-  } else {
+  }
+  else
+  {
     k=0;
     while (date>=mon_start_days2[k+1] && k<11)
       k++;
@@ -86,7 +94,8 @@ I64 LastDayOfMon(I64 i)
   cdt.date=i;
   Date2Struct(&ds,cdt);
   ds.mon++;
-  if (ds.mon==13) {
+  if (ds.mon==13)
+  {
     ds.mon=0;
     ds.year++;
   }
@@ -123,7 +132,8 @@ I64 LastDayOfYear(I64 i)
 I64 Bcd2Bin(U64 b)
 {
   I64 i,res=0;
-  for (i=0;i<16;i++) {
+  for (i=0; i<16; i++)
+  {
     res=res*10+b>>60;
     b<<=4;
   }
@@ -135,25 +145,22 @@ U0 NowDateTimeStruct(CDateStruct *_ds)
   I64 i;
   U8 *b=_ds;
   Bool is_bcd;
-
   MemSet(_ds,0,sizeof(CDateStruct));
   PUSHFD
   CLI
   while (LBts(&sys_semas[SEMA_SYS_DATE],0))
     PAUSE
-
-  OutU8(0x70,0x0A);
-  do {
+    OutU8(0x70,0x0A);
+  do
+  {
     while (InU8(0x71) & 0x80)
       PAUSE
-
-    OutU8(0x70,0);
+      OutU8(0x70,0);
     b[2]=InU8(0x71);
     OutU8(0x70,2);
     b[3]=InU8(0x71);
     OutU8(0x70,4);
     b[4]=InU8(0x71);
-
     OutU8(0x70,6);
     b[5]=InU8(0x71);
     OutU8(0x70,7);
@@ -162,22 +169,19 @@ U0 NowDateTimeStruct(CDateStruct *_ds)
     b[7]=InU8(0x71);
     OutU8(0x70,9);
     b[8]=InU8(0x71);
-
     OutU8(0x70,0x0A);
-  } while (InU8(0x71) & 0x80);
-
+  }
+  while (InU8(0x71) & 0x80);
   OutU8(0x70,0x0B);
   if (InU8(0x71) & 4)
     is_bcd=FALSE;
   else
     is_bcd=TRUE;
-
   LBtr(&sys_semas[SEMA_SYS_DATE],0);
   POPFD
   if (is_bcd)
-    for (i=2;i<9;i++)
+    for (i=2; i<9; i++)
       b[i]=Bcd2Bin(b[i]);
-
   if (_ds->year>255)	_ds->year=255;
   _ds->year+=2000;
   if (_ds->mon>12)	_ds->mon=12;

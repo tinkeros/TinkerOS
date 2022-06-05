@@ -73,14 +73,14 @@ Bool DamageDo(Unit *target,F64 damage)
       return TRUE;
     } else {
       if (target->armor) {
-	if (damage>0.6*target->life) {
+        if (damage>0.6*target->life) {
 	  target->movement=0;
 	  "$$RED$$Immobilized$$FG$$\n";
-	} else
+        } else
 	  "$$GREEN$$No Penetration$$FG$$\n";
       } else {
-	target->life-=damage;
-	"$$RED$$%6.2f Life$$FG$$\n",ToF64(target->life);
+        target->life-=damage;
+        "$$RED$$%6.2f Life$$FG$$\n",ToF64(target->life);
       }
       return FALSE;
     }
@@ -112,7 +112,7 @@ Bool BulletPlot(U0,I64 x,I64 y,I64)
 U0 UnitDirectFire(Unit *tmpu,Unit *target)
 {
   I64 r,c,facing,
-	t1=terrain[tmpu->row][tmpu->col],t2=terrain[target->row][target->col];
+        t1=terrain[tmpu->row][tmpu->col],t2=terrain[target->row][target->col];
   F64 x1,y1,x2,y2,d,a,range_factor;
   if (tmpu->life<=0 || target->life<=0 || tmpu->range<=0)
     return;
@@ -241,9 +241,9 @@ U0 IndirectResolveAll()
       Sleep(1000*animation_delay);
       i=RandU16%6;
       if (tmpi->row&1)
-	tmpi->col+=col_offsets_odd[i];
+        tmpi->col+=col_offsets_odd[i];
       else
-	tmpi->col+=col_offsets_even[i];
+        tmpi->col+=col_offsets_even[i];
       tmpi->row+=row_offsets[i];
       RowCol2XY(&x2,&y2,tmpi->row,tmpi->col);
     }
@@ -256,13 +256,13 @@ U0 IndirectResolveAll()
     indirect_explosion=TRUE;
     for (i=0;i<7;i++) {
       if (tmpi->row&1)
-	c=tmpi->col+col_offsets_odd[i];
+        c=tmpi->col+col_offsets_odd[i];
       else
-	c=tmpi->col+col_offsets_even[i];
+        c=tmpi->col+col_offsets_even[i];
       r=tmpi->row+row_offsets[i];
       if (0<=r<map_rows && 0<=c<map_cols && (target=UnitFind(r,c))) {
-	AttackHeader(tmpu,"IndirectFire",target);
-	DamageDo(target,HitDamage(tmpu,target));
+        AttackHeader(tmpu,"IndirectFire",target);
+        DamageDo(target,HitDamage(tmpu,target));
       }
     }
     Noise(2000*animation_delay,70,74);

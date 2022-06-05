@@ -306,6 +306,10 @@ CKCfg *KCfgNew()
   c->gr_scale=0;
   c->opts[CFG_TEXT_MODE]=0;
   c->opts[CFG_AHCI_MODE]=0;
+  if (HashFind("AHCIMode",adam_task->hash_table,HTT_GLBL_VAR))
+  {
+    c->opts[CFG_AHCI_MODE]=ExePrint("AHCIMode;\n")(I64);
+  }
   KCfgOptions(c);
   return c;
 }

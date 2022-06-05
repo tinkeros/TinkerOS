@@ -25,7 +25,7 @@ U8 *rev_bits_table, //Table with U8 bits revd
 *set_bits_table; //Table with count of set bits in a U8
 CDate local_time_offset;
 F64	*pow10_I64,
-    sys_os_version=5.060;
+    sys_os_version=5.070;
 
 CAutoCompleteDictGlbls acd;
 CAutoCompleteGlbls ac;
@@ -55,4 +55,18 @@ CUSB sys_usb_devs[USB_NUM];
 Bool BlkDevLtrOverride[26];
 Bool AHCIMode=FALSE;
 U32 hype_info[4];
+
+I64 MCFGTableAddr=NULL;
+
+Bool (*fp_serial_blkdev_init)()=NULL;
+Bool (*fp_serial_blkdev_deinit)()=NULL;
+Bool (*fp_serial_blkdev_read)(U8* buf, I64 blk, I64 cnt)=NULL;
+Bool (*fp_serial_blkdev_write)(U8* buf, I64 blk, I64 cnt)=NULL;
+I64 (*fp_serial_blkdev_get_max)()=NULL;
+
+Bool (*fp_virtual_blkdev_init)()=NULL;
+Bool (*fp_virtual_blkdev_deinit)()=NULL;
+Bool (*fp_virtual_blkdev_read)(U8* buf, I64 blk, I64 cnt)=NULL;
+Bool (*fp_virtual_blkdev_write)(U8* buf, I64 blk, I64 cnt)=NULL;
+I64 (*fp_virtual_blkdev_get_max)()=NULL;
 

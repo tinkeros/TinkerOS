@@ -43,6 +43,56 @@ Bool BlkDevInit(CBlkDev *bd)
     bd->flags|=BDF_INIT_IN_PROGRESS;
     switch (bd->type)
     {
+    case BDT_OTHER:
+      // Just call init if it already exists
+      if (bd->init_func)
+        (*bd->init_func)();
+      break;
+    case BDT_SERIAL:
+      if (fp_serial_blkdev_init)
+      {
+        bd->max_reads=128;
+        bd->max_writes=1;
+        bd->init_func = fp_serial_blkdev_init;
+        bd->deinit_func = fp_serial_blkdev_deinit;
+        bd->read_func = fp_serial_blkdev_read;
+        bd->write_func = fp_serial_blkdev_write;
+        bd->max_func = fp_serial_blkdev_get_max;
+        bd->base0 = 0x3f8; //TODO
+        bd->base1 = 4; //TODO
+        if (bd->init_func)
+          (*bd->init_func)();
+        bd->max_blk=(*bd->max_func)()-1;
+        dv->size=bd->max_blk+1;
+        dv->fs_type=FSt_FAT32;
+        res=TRUE;
+      }
+      else
+      {
+        "Init function fp_serial_blkdev_init NULL?\n";
+      }
+    case BDT_VIRTUAL:
+      if (fp_virtual_blkdev_init)
+      {
+        bd->max_reads=128;
+        bd->max_writes=1;
+        bd->init_func = fp_virtual_blkdev_init;
+        bd->deinit_func = fp_virtual_blkdev_deinit;
+        bd->read_func = fp_virtual_blkdev_read;
+        bd->write_func = fp_virtual_blkdev_write;
+        bd->max_func = fp_virtual_blkdev_get_max;
+        if (bd->init_func)
+          (*bd->init_func)();
+        bd->max_blk=(*bd->max_func)()-1;
+        dv->size=bd->max_blk+1;
+        dv->fs_type=FSt_FAT32;
+        res=TRUE;
+      }
+      else
+      {
+        "Init function fp_virtual_blkdev_init NULL?\n";
+      }
+      break;
     case BDT_RAM:
       if (!bd->RAM_dsk)
       {
@@ -195,6 +245,9 @@ CBlkDev *BlkDevNextFreeSlot(U8 first_drv_let,I64 type)
 
 U0 BlkDevDel(CBlkDev *bd)
 {//Delete BlkDev
+  if ( (bd->type == BDT_OTHER) || (bd->type == BDT_SERIAL) || (bd->type == BDT_VIRTUAL))
+    if (bd->deinit_func)
+      (*bd->deinit_func)();
   DrvBlkDevDel(bd);
   FClose(bd->file_dsk);
   Free(bd->file_dsk_name);

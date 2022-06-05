@@ -1,7 +1,153 @@
 
 #help_index "Graphics/Misc"
 asm
-{//************************************
+{
+//************************************
+_DC_BLOT_COLOR4::
+        PUSH    RBP
+        MOV     RBP,RSP
+        PUSH    RSI
+        PUSH    RDI
+        PUSH    R10
+
+        MOV     RDI,U64 SF_ARG1[RBP]
+        MOV     RSI,U64 SF_ARG2[RBP]
+        MOV     RBX,U64 SF_ARG3[RBP]
+        MOV     RCX,U64 SF_ARG4[RBP]
+
+        MOV     R8,RDI
+        ADD     R8,RCX
+        MOV     R9,R8
+        ADD     R9,RCX
+        MOV     R10,R9
+        ADD     R10,RCX
+
+@@5:    LODSQ
+        MOV     RDX,U64 [RBX]
+        CMP     RAX,RDX
+        JE      I32 @@10
+        MOV     U64 [RBX],RAX
+
+        XOR     RDX,RDX
+        BT      RAX,7*8+0
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,6*8+0
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,5*8+0
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,4*8+0
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,3*8+0
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,2*8+0
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,1*8+0
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,0*8+0
+        ADC     RDX,0
+        MOV     U8 [RDI],DL
+
+        XOR     RDX,RDX
+        BT      RAX,7*8+1
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,6*8+1
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,5*8+1
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,4*8+1
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,3*8+1
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,2*8+1
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,1*8+1
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,0*8+1
+        ADC     RDX,0
+        MOV     U8 [R8],DL
+
+        XOR     RDX,RDX
+        BT      RAX,7*8+2
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,6*8+2
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,5*8+2
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,4*8+2
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,3*8+2
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,2*8+2
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,1*8+2
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,0*8+2
+        ADC     RDX,0
+        MOV     U8 [R9],DL
+
+        XOR     RDX,RDX
+        BT      RAX,7*8+3
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,6*8+3
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,5*8+3
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,4*8+3
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,3*8+3
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,2*8+3
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,1*8+3
+        ADC     RDX,0
+        SHL1    RDX
+        BT      RAX,0*8+3
+        ADC     RDX,0
+        MOV     U8 [R10],DL
+
+@@10:   ADD     RBX,8
+
+        INC     RDI
+        INC     R8
+        INC     R9
+        INC     R10
+
+        DEC     RCX
+        JNZ     I32 @@5
+
+        POP     R10
+        POP     RDI
+        POP     RSI
+        POP     RBP
+        RET1    32
+//************************************
   _IS_PIX_COVERED0::
   PUSH	RBP
   MOV	RBP,RSP
@@ -11,7 +157,7 @@ asm
   MOV	RAX,U64 SF_ARG2[RBP]
   SAR	RAX,3
   MOV	RDX,U64 SF_ARG1[RBP]
-  IMUL2	RCX,80
+  IMUL2 RCX, U64 [&text.cols]
   MOV	RBX,U64 [&gr.win_z_buf]
   MOV	DX,U16 CTask.win_z_num[RDX]
   ADD	RCX,RAX
@@ -149,3 +295,5 @@ public _extern _GR_ROP_EQU_U8_NO_CLIPPING U0 GrRopEquU8NoClipping(I64 ch,
     U8 *dst,I64 width_internal);
 public _extern _IS_PIX_COVERED0 Bool IsPixCovered0(
 CTask *task,I64 x,I64 y);//No clipping
+public _extern _DC_BLOT_COLOR4 U0 DCBlotColor4(
+  U8 *dst,I64 *img,I64 *img_cache,I64 cnt);

@@ -30,10 +30,10 @@ U0 Digits()
   DocClear;
 //Set default background and foreground
   "$$WW,1$$$$BG,DKGRAY$$$$FD,WHITE$$"
-	"\nThis is a memory game."
-	"Try to remember the digits and enter them."
-	"They are colored based on electrical "
-	"engineering color codes.\n";
+        "\nThis is a memory game."
+        "Try to remember the digits and enter them."
+        "They are colored based on electrical "
+        "engineering color codes.\n";
   for (i=0;i<10;i++)
     "$$FG,%Z$$%d: %Z\n",i,"ST_RAINBOW_10",i,i,"ST_RAINBOW_10";
   "$$FG$$\n"; //set to default background
@@ -56,10 +56,10 @@ restart:
       "$$WW,1$$$$BG,DKGRAY$$$$FD,WHITE$$\n";
       "Guess\nLength:%d\n\n",num;
       for (i=0;i<num;i++) {
-	ch=GetChar(,FALSE);
-	if (ch==CH_ESC||ch==CH_SHIFT_ESC) goto dg_done;
-	PrintDigit(ch);
-	if (ch!=answer[i]) {
+        ch=GetChar(,FALSE);
+        if (ch==CH_ESC||ch==CH_SHIFT_ESC) goto dg_done;
+        PrintDigit(ch);
+        if (ch!=answer[i]) {
 	  "\nScore:%d\n",num;
 	  PrintPattern(answer);
 	  Beep; Beep;
@@ -68,7 +68,7 @@ restart:
 	    goto dg_done;
 	  else
 	    goto restart;
-	}
+        }
       }
     }
   }

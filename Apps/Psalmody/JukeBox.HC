@@ -51,7 +51,7 @@ Bool JBPutKey(CDoc *doc,U8 *,I64 ch,I64 sc)
   U8 *st;
   CDoc *doc2;
   if (!(sc&(SCF_ALT|SCF_CTRL|SCF_SHIFT))
-	&& doc_ce->type_u8==DOCT_MENU_VAL && doc_ce->left_exp>=0) {
+        && doc_ce->type_u8==DOCT_MENU_VAL && doc_ce->left_exp>=0) {
     tmpde=doc_ce->left_exp;
     if (sc.u8[0]==SC_DELETE ) {
       Beep;
@@ -60,21 +60,21 @@ Bool JBPutKey(CDoc *doc,U8 *,I64 ch,I64 sc)
       Silent(OFF);
     } else if ('0'<=ch<='9') {
       if (StrLen(doc_ce->tag)>1)
-	doc_ce->tag[0]=ch;
+        doc_ce->tag[0]=ch;
       doc2=DocRead(tmpde->full_name);
       DocGoToLine(doc2,1);
       doc_e=doc2->cur_entry;
       if (doc_e!=doc2 && doc_e->type_u8==DOCT_TEXT && StrLen(doc_e->tag)>=3) {
-	doc_e->tag[2]=ch;
-	DocWrite(doc2);
+        doc_e->tag[2]=ch;
+        DocWrite(doc2);
       }
       DocDel(doc2);
       return TRUE;
     } else if (ch=='r') {
       if (!DocTreeFFind(tmpde->full_name,"Reward1")) {
-	doc2=DocRead(tmpde->full_name);
-	DocGoToLine(doc2,2);
-	DocPrint(doc2,
+        doc2=DocRead(tmpde->full_name);
+        DocGoToLine(doc2,2);
+        DocPrint(doc2,
 	      "\n$$TR,\"Reward1\"$$\n"
 	      "$$ID,2$$CallExtStr(\"JukeReward\",\"\"\n"
 	      "$$TR,\"Reward2\"$$\n"
@@ -82,18 +82,18 @@ Bool JBPutKey(CDoc *doc,U8 *,I64 ch,I64 sc)
 	      "$$ID,-2$$\n"
 	      ");\n$$ID,-2$$\n"
 	      );
-	DocWrite(doc2);
-	DocDel(doc2);
+        DocWrite(doc2);
+        DocDel(doc2);
       }
       if (DocTreeFFind(tmpde->full_name,"Reward1/Reward2")) {
-	for (i=0;i<5;i++) {
+        for (i=0;i<5;i++) {
 	  st=MStrPrint("%s %s %s %s ",
-		GodWordStr,GodWordStr,GodWordStr,GodWordStr);
+	        GodWordStr,GodWordStr,GodWordStr,GodWordStr);
 	  DocTreeFAppend(tmpde->full_name,"Reward1/Reward2",
-		"\"%s\"\n",st);
+	        "\"%s\"\n",st);
 	  Free(st);
-	}
-	In("");
+        }
+        In("");
       }
       return TRUE;
     } else if (ch==CH_SPACE||ch==CH_ESC)
@@ -131,16 +131,16 @@ public U0 JukeBox(U8 *dirname="~/Psalmody",U8 **_filename=NULL)
 	  "'$$GREEN$$r$$FG$$'\tto get your reward from God.\n");
     while (tmpde) {
       if (!(i++%5))
-	DocPrint(doc,"\n");
+        DocPrint(doc,"\n");
       if (FileOcc("Play(",tmpde->full_name,"")) {
-	st=StrNew(tmpde->name);
-	FileExtRem(st);
-	s=DocRead(tmpde->full_name);
-	doc_e=s->head.next;
-	while (doc_e!=s && doc_e->type_u8!=DOCT_TEXT)
+        st=StrNew(tmpde->name);
+        FileExtRem(st);
+        s=DocRead(tmpde->full_name);
+        doc_e=s->head.next;
+        while (doc_e!=s && doc_e->type_u8!=DOCT_TEXT)
 	  doc_e=doc_e->next;
-	rating='0';
-	if (doc_e!=s && doc_e->type_u8==DOCT_TEXT) {
+        rating='0';
+        if (doc_e!=s && doc_e->type_u8==DOCT_TEXT) {
 	  if ('0'<=doc_e->tag[2]<='9')
 	    rating=doc_e->tag[2];
 	  if (StrMatch("incomplete",doc_e->tag))
@@ -163,25 +163,25 @@ public U0 JukeBox(U8 *dirname="~/Psalmody",U8 **_filename=NULL)
 	  }
 	  DocPrint(doc,"$$MU-UL,\"%c%-8ts\",LE=%d$$ ",rating,st,tmpde);
 	  tmpde->user_data=JB_RUN_LEVEL_NULL;
-	}
-	DocDel(s);
-	Free(st);
+        }
+        DocDel(s);
+        Free(st);
       }
       tmpde=tmpde->next;
     }
     DocPrint(doc,"\n$$CYAN$$$$MU-UL,\"DONE\",LE=%d$$\n",DOCM_CANCEL);
     while (TRUE) {
       if (_filename)
-	tmpde=PopUpMenu(doc,DOF_INTERCEPT_TASK_END);
+        tmpde=PopUpMenu(doc,DOF_INTERCEPT_TASK_END);
       else
-	tmpde=PopUpMenu(doc);
+        tmpde=PopUpMenu(doc);
       if (task)
-	Kill(task);
+        Kill(task);
       if (tmpde<=0) break;
       st2=StrNew(tmpde->name);
       if (_filename) {
-	Free(*_filename);
-	*_filename=StrNew(tmpde->full_name);
+        Free(*_filename);
+        *_filename=StrNew(tmpde->full_name);
       }
       if (tmpde->user_data==JB_RUN_LEVEL_ONE) break; //<ESC>
       tmpde->user_data=JB_RUN_LEVEL_NULL; //Rst from <SPACE>

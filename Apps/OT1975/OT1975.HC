@@ -39,11 +39,11 @@ U0 OT1975()
   if (TaskValidate(ac.task)) {
     old_ac=AutoComplete(0);
   }
-  LINE0:
+LINE0:
   "\nDO YOU NEED INSTRUCTIONS ";
   if (!YorN)
     goto LINE400;
-  // ***INSTRUCTIONS***
+// ***INSTRUCTIONS***
   "THIS PROGRAM SIMULATES A TRIP OVER THE OREGON TRAIL FROM\n";
   "INDEPENDENCE, MISSOURI TO OREGON CITY, OREGON IN 1847.\n";
   "YOUR FAMILY OF FIVE WILL COVER THE 2000 MILE OREGON TRAIL\n";
@@ -83,12 +83,12 @@ U0 OT1975()
   "\n";
   "GOOD LUCK!!!\n";
   "\n";
-  // ***INITIAL PURCHASES***
-LINE400:
+// ***INITIAL PURCHASES***
+  LINE400:
   X1 = -1;
   K8 = S4 = F1 = F2 = M = M9 = D3 = TF = 0;
 LINE410:
- ;
+  ;
 LINE415:
   "HOW MUCH DO YOU WANT TO SPEND ON YOUR OXEN TEAM";
   A=GetI64(": ",0,0,900);
@@ -145,52 +145,52 @@ LINE580:
 LINE700:
   if (M >= 2040 || D3 > 17)
     goto LINE4000;
-  // ***SETTING DATE***
+// ***SETTING DATE***
   D3 = D3 + 1;
   "\n";
   "MONDAY ";
   if (D3 > 10)
     goto LINE735;
   switch(D3)
-  {
-  case 1:
-    goto LINE740;
-  case 2:
-    goto LINE750;
-  case 3:
-    goto LINE760;
-  case 4:
-    goto LINE770;
-  case 5:
-    goto LINE780;
-  case 6:
-    goto LINE790;
-  case 7:
-    goto LINE800;
-  case 8:
-    goto LINE810;
-  case 9:
-    goto LINE820;
-  case 10:
-    goto LINE830;
+    {
+    case 1:
+      goto LINE740;
+    case 2:
+      goto LINE750;
+    case 3:
+      goto LINE760;
+    case 4:
+      goto LINE770;
+    case 5:
+      goto LINE780;
+    case 6:
+      goto LINE790;
+    case 7:
+      goto LINE800;
+    case 8:
+      goto LINE810;
+    case 9:
+      goto LINE820;
+    case 10:
+      goto LINE830;
   }
 LINE735:
   switch(D3 - 10)
-  {
-  case 1:
-    goto LINE840;
-  case 2:
-    goto LINE850;
-  case 3:
-    goto LINE860;
-  case 4:
-    goto LINE870;
-  case 5:
-    goto LINE880;
-  case 6:
-    goto LINE890;
-  case 7:
-    goto LINE900;
+    {
+    case 1:
+      goto LINE840;
+    case 2:
+      goto LINE850;
+    case 3:
+      goto LINE860;
+    case 4:
+      goto LINE870;
+    case 5:
+      goto LINE880;
+    case 6:
+      goto LINE890;
+    case 7:
+      goto LINE900;
   }
 LINE740:
   "APRIL 12 ";
@@ -245,8 +245,8 @@ LINE900:
 LINE910:
   "1847\n";
   "\n";
-  // ***BEGINNING EACH TURN***
-LINE1000:
+// ***BEGINNING EACH TURN***
+  LINE1000:
   if (FOOD >= 0)
     goto LINE1015;
   FOOD = 0;
@@ -333,16 +333,16 @@ LINE1395:
   X1 = X1 * -1;
 LINE1400:
   switch(X)
-  {
-  case 1:
-    goto LINE1500;
-  case 2:
-    goto LINE1700;
-  case 3:
-    goto LINE1800;
+    {
+    case 1:
+      goto LINE1500;
+    case 2:
+      goto LINE1700;
+    case 3:
+      goto LINE1800;
   }
-  // ***STOPPING AT FORT***
-LINE1500:
+// ***STOPPING AT FORT***
+  LINE1500:
   "ENTER WHAT YOU WISH TO SPEND ON THE FOLLOWING\n";
   "FOOD: ";
   FUNC1520;
@@ -360,8 +360,8 @@ LINE1555:
   M1 = M1 + 2 * P / 3;
   M = M - 45;
   goto LINE1800;
-  // ***HUNTING***
-LINE1700:
+// ***HUNTING***
+  LINE1700:
   if (AMMO > 39)
     goto LINE1715;
   "TOUGH---YOU NEED MORE BULLETS TO GO HUNTING\n\n";
@@ -388,8 +388,8 @@ LINE1800:
   if (FOOD >= 13)
     goto LINE1900;
   goto LINE3500;
-  // ***EATING***
-LINE1900:
+// ***EATING***
+  LINE1900:
   "DO YOU WANT TO EAT (1) POORLY (2) MODERATELY OR (3) WELL";
   EAT=GetI64(": ",1,1,3);
   "\n";
@@ -407,7 +407,7 @@ LINE1900:
 LINE2000:
   M = M + 200 + (A - 220) / 5 + 10 * Rand;
   L1 = C1 = 0;
-  // ***RIDERS ATTACK***
+// ***RIDERS ATTACK***
   if (Rand * 10 > (Pow(M / 100 - 4, 2) + 72) / (Pow(M / 100 - 4, 2) + 12) - 1)
     goto LINE2500;
   "RIDERS AHEAD.  THEY ";
@@ -508,8 +508,8 @@ LINE2410:
     goto LINE2500;
   "YOU RAN OUT OF BULLETS AND GOT MASSACRED BY THE RIDERS\n";
   goto LINE3600;
-  // ***SELECTION OF EVENTS***
-LINE2500:
+// ***SELECTION OF EVENTS***
+  LINE2500:
   D1 = 0;
   FifoU8Flush(data);
   for (i=0; i<15; i++)
@@ -527,43 +527,43 @@ LINE2515:
   if (D1 > 10)
     goto LINE2545;
   switch(D1)
-  {
-  case 1:
-    goto LINE2550;
-  case 2:
-    goto LINE2570;
-  case 3:
-    goto LINE2590;
-  case 4:
-    goto LINE2615;
-  case 5:
-    goto LINE2630;
-  case 6:
-    goto LINE2645;
-  case 7:
-    goto LINE2660;
-  case 8:
-    goto LINE2690;
-  case 9:
-    goto LINE2785;
-  case 10:
-    goto LINE2810;
+    {
+    case 1:
+      goto LINE2550;
+    case 2:
+      goto LINE2570;
+    case 3:
+      goto LINE2590;
+    case 4:
+      goto LINE2615;
+    case 5:
+      goto LINE2630;
+    case 6:
+      goto LINE2645;
+    case 7:
+      goto LINE2660;
+    case 8:
+      goto LINE2690;
+    case 9:
+      goto LINE2785;
+    case 10:
+      goto LINE2810;
   }
 LINE2545:
   switch(D1 - 10)
-  {
-  case 1:
-    goto LINE2825;
-  case 2:
-    goto LINE2860;
-  case 3:
-    goto LINE2885;
-  case 4:
-    goto LINE2970;
-  case 5:
-    goto LINE2990;
-  case 6:
-    goto LINE3020;
+    {
+    case 1:
+      goto LINE2825;
+    case 2:
+      goto LINE2860;
+    case 3:
+      goto LINE2885;
+    case 4:
+      goto LINE2970;
+    case 5:
+      goto LINE2990;
+    case 6:
+      goto LINE3020;
   };
 LINE2550:
   "WAGON BREAKS DOWN--LOSE TIME AND SUPPLIES FIXING IT\n";
@@ -727,13 +727,13 @@ LINE3015:
   goto LINE3100;
 LINE3020:
   if (M > 1500 && M < 1900 && FOOD < 100
-      && M1 < 100 && Rand > 0.6 && TF == 0)
+        && M1 < 100 && Rand > 0.6 && TF == 0)
     goto LINE3015; 
   "HELPFUL INDIANS SHOW YOU WHERE TO FIND MORE FOOD\n";
   FOOD = FOOD + 14;
   goto LINE3100;
-  // ***MOUNTAINS***
-LINE3100:
+// ***MOUNTAINS***
+  LINE3100:
   if (M <= 950)
     goto LINE700;
   if (Rand * 10 > 9 - (Pow(M / 100 - 15, 2) + 72) / (Pow(M / 100 - 15, 2) + 12))
@@ -785,8 +785,8 @@ LINE3300:
   if (C < 18 + 2 * Rand)
     goto LINE4700;
   goto LINE3215;
-  // ***DYING***
-LINE3500:
+// ***DYING***
+  LINE3500:
   "YOU RAN OUT OF FOOD AND STARVED TO DEATH\n";
   goto LINE3600;
 LINE3520:
@@ -821,7 +821,7 @@ LINE3600:
   }
   "WOULD YOU LIKE US TO INFORM YOUR NEXT OF KIN ";
   if (!YorN)
-  {
+    {
     "YOUR AUNT NELLIE IN ST. LOUIS IS ANXIOUS TO HEAR\n";
     "\n";
   }
@@ -841,8 +841,8 @@ LINE3600:
   }
   FifoU8Del(data);
   return;
-  // ***FINAL TURN***
-LINE4000:
+// ***FINAL TURN***
+  LINE4000:
   F9 = (2040 - M2) / (M - M2);
   FOOD = FOOD + (1 - F9) * (8 + 5 * EAT);
   "\n";
@@ -857,21 +857,21 @@ LINE4000:
   F9 = F9 - 7;
 LINE4055:
   switch(F9)
-  {
-  case 1:
-    goto LINE4060;
-  case 2:
-    goto LINE4070;
-  case 3:
-    goto LINE4080;
-  case 4:
-    goto LINE4090;
-  case 5:
-    goto LINE4100;
-  case 6:
-    goto LINE4110;
-  case 7:
-    goto LINE4120;
+    {
+    case 1:
+      goto LINE4060;
+    case 2:
+      goto LINE4070;
+    case 3:
+      goto LINE4080;
+    case 4:
+      goto LINE4090;
+    case 5:
+      goto LINE4100;
+    case 6:
+      goto LINE4110;
+    case 7:
+      goto LINE4120;
   };
 LINE4060:
   "MONDAY ";
@@ -919,7 +919,7 @@ LINE4185:
     goto LINE4205;
   D3 = D3 - 185;
   "OCTOBER %d", D3;
-   " 1847\n";
+  " 1847\n";
   goto LINE4215;
 LINE4205:
   D3 = D3 - 216;

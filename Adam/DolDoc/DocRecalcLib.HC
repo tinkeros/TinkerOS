@@ -9,12 +9,15 @@ I64 DocCharDist(CDoc *doc,I64 x,I64 y)
 U0 DocDelToNum(CDoc *doc,I64 num)
 {
   CDocEntry *doc_e=doc->head.next,*doc_e2;
-  while (num-->0 && doc_e!=doc) {
+  while (num-->0 && doc_e!=doc)
+  {
     doc_e2=doc_e->next;
-    if (!(doc_e->de_flags & (DOCEF_HOLD|DOCEF_FILTER_SKIP))) {
-      if (doc_e==doc->cur_entry) {
-	doc->cur_entry=doc_e2;
-	doc->cur_col=doc_e2->min_col;
+    if (!(doc_e->de_flags & (DOCEF_HOLD|DOCEF_FILTER_SKIP)))
+    {
+      if (doc_e==doc->cur_entry)
+      {
+        doc->cur_entry=doc_e2;
+        doc->cur_col=doc_e2->min_col;
       }
       DocEntryDel(doc,doc_e);
     }
@@ -25,12 +28,15 @@ U0 DocDelToNum(CDoc *doc,I64 num)
 U0 DocDelToEntry(CDoc *doc,CDocEntry *clear_entry,Bool clear_holds)
 {
   CDocEntry *doc_e=doc->head.next,*doc_e2;
-  while (doc_e!=doc) {
+  while (doc_e!=doc)
+  {
     doc_e2=doc_e->next;
-    if (!(doc_e->de_flags & (DOCEF_HOLD|DOCEF_FILTER_SKIP))||clear_holds) {
-      if (doc_e==doc->cur_entry) {
-	doc->cur_entry=doc_e2;
-	doc->cur_col=doc_e2->min_col;
+    if (!(doc_e->de_flags & (DOCEF_HOLD|DOCEF_FILTER_SKIP))||clear_holds)
+    {
+      if (doc_e==doc->cur_entry)
+      {
+        doc->cur_entry=doc_e2;
+        doc->cur_col=doc_e2->min_col;
       }
       DocEntryDel(doc,doc_e);
     }
@@ -47,7 +53,8 @@ U0 DocBorderLstDraw(CDoc *doc)
   U64 ch;
   CDoc *tmpl=doc;
   CD3I64 saved_scroll;
-  while (tmpl && tmpl->doc_signature==DOC_SIGNATURE_VAL) {
+  while (tmpl && tmpl->doc_signature==DOC_SIGNATURE_VAL)
+  {
     y+=(Bsr(tmpl->desc)+7)>>3+1; //StrLen+1
     tmpl=tmpl->parent_doc;
   }
@@ -55,12 +62,14 @@ U0 DocBorderLstDraw(CDoc *doc)
   if (y>win_task->win_height)
     y=win_task->win_height;
   WinScrollNull(win_task,&saved_scroll);
-  while (tmpl && tmpl->doc_signature==DOC_SIGNATURE_VAL) {
+  while (tmpl && tmpl->doc_signature==DOC_SIGNATURE_VAL)
+  {
     ch=tmpl->desc;
     i=(Bsr(ch)+7)>>3;	//StrLen
     ch=EndianI64(ch<<((8-i)<<3));
     attr=win_task->border_attr<<8;
-    while (i-- && y>0) {
+    while (i-- && y>0)
+    {
       TextChar(win_task,TRUE,-1,--y,attr+ch&0xFF);
       ch>>=8;
     }
@@ -82,7 +91,6 @@ public U0 DocTop(CDoc *doc=NULL)
   doc->y=0;
   doc->line_start_col=0;
   doc->top_line_num=0;
-
   DocFormFwd(doc);
   DocRecalc(doc);
   if (unlock)
@@ -162,7 +170,8 @@ public U0 DocCollapse(Bool collapse=TRUE,CDoc *doc=NULL)
     return;
   unlock=DocLock(doc);
   doc_e=doc->head.next;
-  while (doc_e!=doc) {
+  while (doc_e!=doc)
+  {
     if (doc_e->de_flags&DOCEF_TREE)
       BEqu(&doc_e->de_flags,DOCEf_CHECKED_COLLAPSED,collapse);
     doc_e=doc_e->next;
@@ -181,11 +190,13 @@ public I64 DocMax(I64 i=I64_MAX)
   //See $LK,"max_entries",A="FF:::/Adam/DolDoc/DocTerm.HC,max_entries"$.
   I64 res;
   CDoc *doc;
-  if (doc=DocPut) {
+  if (doc=DocPut)
+  {
     res=doc->max_entries;
     doc->max_entries=i;
     return res;
-  } else
+  }
+  else
     return 0;
 }
 
@@ -198,14 +209,16 @@ U0 DocUpdateTaskDocs(CTask *task)
     task->border_attr=DrvTextAttrGet(Drv2Let(task->cur_dv));
   if (task->title_src==TTS_TASK_NAME)
     StrCpy(task->task_title,task->task_name);
-  if ((doc=DocDisplay(task)) && !(doc->flags&DOCF_DONT_SHOW)) {
+  if ((doc=DocDisplay(task)) && !(doc->flags&DOCF_DONT_SHOW))
+  {
     if (task->border_src==BDS_ED_FILENAME_DRV)
       task->border_attr=DrvTextAttrGet(*doc->filename.name);
     if (task->title_src==TTS_ED_FILENAME)
       MemCpy(task->task_title,doc->filename.name,STR_LEN-1);
     DocRecalc(doc,RECALCt_TO_SCRN|RECALCF_HAS_CURSOR);
   }
-  if ((doc=DocBorder(task)) && !(doc->flags&DOCF_DONT_SHOW)) {
+  if ((doc=DocBorder(task)) && !(doc->flags&DOCF_DONT_SHOW))
+  {
     WinScrollNull(task,&saved_scroll);
     DocRecalc(doc,RECALCt_TO_SCRN);
     WinScrollRestore(task,&saved_scroll);

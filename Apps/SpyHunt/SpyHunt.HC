@@ -215,13 +215,13 @@ U0 ExplosionDraw(CDC *dc,Explosion *tmpe,I64 y)
   for (i=0;i<n1;i++) {
     if (i&2)
       switch (tmpe->type) {
-	case ET_MAN:
+        case ET_MAN:
 	  if (i&1)
 	    dc->color=WHITE;
 	  else
 	    dc->color=LTGRAY;
 	  break;
-	case ET_MISSILE:
+        case ET_MISSILE:
 	  if (i&1) {
 	    if (i&4)
 	      dc->color=RED;
@@ -230,7 +230,7 @@ U0 ExplosionDraw(CDC *dc,Explosion *tmpe,I64 y)
 	  } else
 	    dc->color=YELLOW;
 	  break;
-	case ET_TANK:
+        case ET_TANK:
 	  if (i&1) {
 	    if (i&4)
 	      dc->color=RED;
@@ -239,7 +239,7 @@ U0 ExplosionDraw(CDC *dc,Explosion *tmpe,I64 y)
 	  } else
 	    dc->color=LTRED;
 	  break;
-	case ET_BUILDING:
+        case ET_BUILDING:
 	  if (i&1) {
 	    if (i&4)
 	      dc->color=BLACK;
@@ -264,7 +264,7 @@ U0 MPMenDraw(CDC *dc2)
   CTask *task=dc2->win_task;
   CDC *dc=DCAlias(dc2,task);
   I64 i,r[16],lo=Gs->num*U_NUM/mp_cnt,hi=(Gs->num+1)*U_NUM/mp_cnt,
-	yy,phase,scroll_y=MAP_HEIGHT-100-100*(tS-t0);
+        yy,phase,scroll_y=MAP_HEIGHT-100-100*(tS-t0);
   Unit *tmpu;
   Explosion *tmpe;
   U8 *tmps,**_tmps;
@@ -276,7 +276,7 @@ U0 MPMenDraw(CDC *dc2)
     if (-32<=yy<=task->pix_bottom+32 && !tmpe->dead) {
       ExplosionDraw(dc,tmpe,yy);
       if (tS>tmpe->tf)
-	tmpe->dead=TRUE;
+        tmpe->dead=TRUE;
     }
   }
   for (i=lo;i<hi;i++) {
@@ -284,13 +284,13 @@ U0 MPMenDraw(CDC *dc2)
     yy=(tmpu->y-scroll_y)&(MAP_HEIGHT-1);
     if (-32<=yy<=task->pix_bottom+32) {
       if (!tmpu->dead) {
-	Mat4x4IdentEqu(r);
-	Mat4x4RotY(r,tmpu->é);
-	Mat4x4RotX(r,ã/6);
-	Mat4x4Scale(r,0.3);
-	if (tmpu->tank)
+        Mat4x4IdentEqu(r);
+        Mat4x4RotY(r,tmpu->é);
+        Mat4x4RotX(r,ã/6);
+        Mat4x4Scale(r,0.3);
+        if (tmpu->tank)
 	  Sprite3Mat4x4B(dc,tmpu->x,yy,GR_Z_ALL,$IB,"<17>",BI=17$,r);
-	else {
+        else {
 	  if (tmpu->best_dd<(2*HACK_DIST)*(2*HACK_DIST)) {//It's neat so times 2
 	    if (tmpu->friendly)
 	      _tmps=friendly_hacking_imgs;
@@ -300,9 +300,9 @@ U0 MPMenDraw(CDC *dc2)
 	  } else {
 	    if (tmpu->friendly) {
 	      if (tmpu->spy && Blink)
-		_tmps=spy_imgs;
+	        _tmps=spy_imgs;
 	      else
-		_tmps=friendly_imgs;
+	        _tmps=friendly_imgs;
 	    } else
 	      _tmps=enemy_imgs;
 	    tt=4*Wrap(tmpu->phase+5*ts,0)/(2*ã);
@@ -311,7 +311,7 @@ U0 MPMenDraw(CDC *dc2)
 	  tmps=SpriteInterpolate(tt,_tmps[phase&3],_tmps[(phase+1)&3]);
 	  Sprite3Mat4x4B(dc,tmpu->x,yy,GR_Z_ALL,tmps,r);
 	  Free(tmps);
-	}
+        }
       }
     }
   }
@@ -351,15 +351,15 @@ U0 DrawIt(CTask *task,CDC *dc)
   dc->thick=3;
   dc->color=BROWN;
   GrLine3(dc,0,  (finish_line-scroll_y)&(MAP_HEIGHT-1),0,
-	GR_WIDTH,(finish_line-scroll_y)&(MAP_HEIGHT-1),0);
+        GR_WIDTH,(finish_line-scroll_y)&(MAP_HEIGHT-1),0);
 
   dc->color=LTGRAY;
   for (i=0,tmpb=b;i<B_NUM;i++,tmpb++)
     if (!tmpb->dead) {
       if (tmpb->missile)
-	Sprite3ZB(dc,tmpb->x>>32,tmpb->y>>32,0,$IB,"<2>",BI=2$,ã/2+Arg(tmpb->dx,tmpb->dy));
+        Sprite3ZB(dc,tmpb->x>>32,tmpb->y>>32,0,$IB,"<2>",BI=2$,ã/2+Arg(tmpb->dx,tmpb->dy));
       else
-	GrLine(dc,tmpb->x>>32,tmpb->y>>32,
+        GrLine(dc,tmpb->x>>32,tmpb->y>>32,
 	      (tmpb->x+tmpb->dy*B_LEN)>>32,
 	      (tmpb->y+tmpb->dx*B_LEN)>>32);
     }
@@ -386,24 +386,24 @@ U0 DrawIt(CTask *task,CDC *dc)
     if (game_over && Blink) {
       if (spies_left)
         GrPrint(dc,task->pix_width/2-9*FONT_WIDTH/2,task->pix_height/2,
-	    "Game Over");
+	      "Game Over");
       else
         GrPrint(dc,task->pix_width/2-28*FONT_WIDTH/2,task->pix_height/2,
-	    "Game Over, all spies killed!");
-      }
+	      "Game Over, all spies killed!");
+    }
   } else {
     tt=ts;
     if (!enemy_left || !spies_left
-        || !friendly_left)
+	  || !friendly_left)
       game_over=TRUE;
     if (friendly_left > enemy_left)
       game_over=TRUE;
   }
   dc->color=BLACK;
   GrPrint(dc,0,0,"Enemy:%d Friends:%d Spies:%d Friendly Fire:%d Time:%6.2f Bullets:%d",
-	enemy_left,friendly_left,spies_left,friendly_fire,tt-t0,bullets_fired);
+        enemy_left,friendly_left,spies_left,friendly_fire,tt-t0,bullets_fired);
   GrPrint(dc,0,8,"Total Score:%,d High Score:%,d",
-	total_score,best_score);
+        total_score,best_score);
 }
 
 Explosion *ExplosionNew(I64 x,I64 y)
@@ -428,11 +428,11 @@ U0 ManDie(Unit *tmpu,Bool by_human)
     if (tmpe=ExplosionNew(tmpu->x,tmpu->y)) {
       tmpe->t0=tS;
       if (tmpu->tank) {
-	tmpe->type=ET_TANK;
-	tmpe->tf=tmpe->t0+0.40;
+        tmpe->type=ET_TANK;
+        tmpe->tf=tmpe->t0+0.40;
       } else {
-	tmpe->type=ET_MAN;
-	tmpe->tf=tmpe->t0+0.20;
+        tmpe->type=ET_MAN;
+        tmpe->tf=tmpe->t0+0.20;
       }
     }
   }
@@ -482,7 +482,7 @@ U0 ExplosionDo(I64 x,I64 y,I64 scroll_y)
       x2=tmpu->x;
       y2=(tmpu->y-scroll_y)&(MAP_HEIGHT-1);
       if (SqrI64(x-x2)+SqrI64(y-y2)<100*100)
-	ManDie(tmpu,TRUE);
+        ManDie(tmpu,TRUE);
     }
   }
   for (i=0;i<LS_APTS_NUM;i++) {
@@ -490,9 +490,9 @@ U0 ExplosionDo(I64 x,I64 y,I64 scroll_y)
     y2=(ls[i].y-scroll_y)&(MAP_HEIGHT-1);
     if (SqrI64(x-x2)+SqrI64(y-y2)<100*100) {
       if (tmpe=ExplosionNew(x2,y2+scroll_y)) {
-	tmpe->t0=tS;
-	tmpe->type=ET_BUILDING;
-	tmpe->tf=tmpe->t0+2.0;
+        tmpe->t0=tS;
+        tmpe->type=ET_BUILDING;
+        tmpe->tf=tmpe->t0+2.0;
       }
     }
   }
@@ -518,9 +518,9 @@ U0 CheckCollisions()
       x=tmpu->x;
       y=(tmpu->y-scroll_y)&(MAP_HEIGHT-1);
       if (0<=x<GR_WIDTH && 0<=y<GR_HEIGHT) {
-	dc2->collision_cnt=0;
-	GrRect(dc2,x-3,y-9,6,8);
-	if (dc2->collision_cnt)
+        dc2->collision_cnt=0;
+        GrRect(dc2,x-3,y-9,6,8);
+        if (dc2->collision_cnt)
 	  ManDie(tmpu,TRUE);
       }
     }
@@ -532,20 +532,20 @@ U0 CheckCollisions()
       x=tmpb->x>>32;
       y=tmpb->y>>32;
       for (i=0,tmpu=u;i<U_NUM;i++,tmpu++) {
-	if (tmpu->tank)
+        if (tmpu->tank)
 	  n1=16;
-	else
+        else
 	  n1=6;
-	if (!tmpu->dead && AbsI64(x-tmpu->x-n1)+
+        if (!tmpu->dead && AbsI64(x-tmpu->x-n1)+
 	      AbsI64(y-(tmpu->y-scroll_y)&(MAP_HEIGHT-1)+n1)<n1<<1) {
 	  tmpb->dead=TRUE;
 	  ExplosionDo(x,y,scroll_y);
-	}
+        }
       }
       if (!tmpb->dead)
-	for (i=0;i<LS_APTS_NUM;i++)
+        for (i=0;i<LS_APTS_NUM;i++)
 	  if (2*SqrI64(x-ls[i].x)+
-		3*SqrI64(y+35-(ls[i].y-scroll_y)&(MAP_HEIGHT-1))<2*60*60) {
+	        3*SqrI64(y+35-(ls[i].y-scroll_y)&(MAP_HEIGHT-1))<2*60*60) {
 	    tmpb->dead=TRUE;
 	    ExplosionDo(x,y,scroll_y);
 	  }
@@ -597,25 +597,25 @@ U0 Init()
     if (i<U_FRIENDLY_NUM) {
       tmpu->friendly=TRUE;
       if (!(i&7)) {
-	xx=(Fs->pix_width-200)*RandU32/U32_MAX;
-	yy=(MAP_HEIGHT-200)*RandU32/U32_MAX;
+        xx=(Fs->pix_width-200)*RandU32/U32_MAX;
+        yy=(MAP_HEIGHT-200)*RandU32/U32_MAX;
       }
       if (!(i&15)) {
-	tmpu->spy=TRUE;
+        tmpu->spy=TRUE;
         spies_left++;
         spies_total++;
         friendly_left--;
       }
       else
-	tmpu->spy=FALSE;
+        tmpu->spy=FALSE;
     } else {
       tmpu->friendly=FALSE;
       if (!(i&31)) {
-	xx=(Fs->pix_width-200)*RandU32/U32_MAX;
-	yy=(MAP_HEIGHT-200)*RandU32/U32_MAX;
+        xx=(Fs->pix_width-200)*RandU32/U32_MAX;
+        yy=(MAP_HEIGHT-200)*RandU32/U32_MAX;
       }
       if (!(i&15))
-	tmpu->tank=TRUE;
+        tmpu->tank=TRUE;
     }
     tmpu->dead=FALSE;
     tmpu->x=xx+64*RandI32/I32_MAX+100;
@@ -677,7 +677,7 @@ U0 FireMissile(I64 n)
   if (res) {
     for (i=0;i<B_NUM-1;i++)
       if (b[i].dead)
-	break;
+        break;
     tmpb=&b[i];
 
     MissilePos(m,é,&tmpb->x,&tmpb->y);
@@ -706,19 +706,19 @@ U0 MenMove(I64 phase_group)
       best=U_FRIENDLY_NUM;
       best_dd=I64_MAX;
       for (j=U_FRIENDLY_NUM;j<U_NUM;j++) {
-	if (!u[j].dead) {
+        if (!u[j].dead) {
 	  dd=SqrI64(u[i].x-u[j].x)+SqrI64(u[i].y-u[j].y);
 	  if (dd<best_dd) {
 	    best_dd=dd;
 	    best=j;
 	  }
-	}
+        }
       }
       u[i].best_dd=best_dd;
       if (best_dd!=I64_MAX) {
-	u[i].x+=4*SignI64(u[best].x-u[i].x);
-	u[i].y+=4*SignI64(u[best].y-u[i].y);
-	u[i].é=Arg(u[best].x-u[i].x,u[best].y-u[i].y);
+        u[i].x+=4*SignI64(u[best].x-u[i].x);
+        u[i].y+=4*SignI64(u[best].y-u[i].y);
+        u[i].é=Arg(u[best].x-u[i].x,u[best].y-u[i].y);
       }
     }
   }
@@ -727,19 +727,19 @@ U0 MenMove(I64 phase_group)
       best=0;
       best_dd=I64_MAX;
       for (j=0;j<U_FRIENDLY_NUM;j++) {
-	if (!u[j].dead) {
+        if (!u[j].dead) {
 	  dd=SqrI64(u[i].x-u[j].x)+SqrI64(u[i].y-u[j].y);
 	  if (dd<best_dd) {
 	    best_dd=dd;
 	    best=j;
 	  }
-	}
+        }
       }
       u[i].best_dd=best_dd;
       if (best_dd!=I64_MAX) {
-	u[i].x+=4*SignI64(u[best].x-u[i].x);
-	u[i].y+=4*SignI64(u[best].y-u[i].y);
-	u[i].é=Arg(u[best].x-u[i].x,u[best].y-u[i].y);
+        u[i].x+=4*SignI64(u[best].x-u[i].x);
+        u[i].y+=4*SignI64(u[best].y-u[i].y);
+        u[i].é=Arg(u[best].x-u[i].x,u[best].y-u[i].y);
       }
     }
   }
@@ -753,17 +753,17 @@ U0 MenFight(I64 phase_group)
       best=U_FRIENDLY_NUM;
       best_dd=I64_MAX;
       for (j=U_FRIENDLY_NUM;j<U_NUM;j++) {
-	if (!u[j].dead && u[i].y-u[j].y<8) {
+        if (!u[j].dead && u[i].y-u[j].y<8) {
 	  dd=SqrI64(u[i].x-u[j].x)+SqrI64(u[i].y-u[j].y);
 	  if (dd<best_dd) {
 	    best_dd=dd;
 	    best=j;
 	  }
-	}
+        }
       }
       u[i].best_dd=best_dd;
       if (best_dd<HACK_DIST*HACK_DIST && !(RandU16&1))
-	ManDie(&u[best],FALSE);
+        ManDie(&u[best],FALSE);
     }
   }
   for (i=U_FRIENDLY_NUM+phase_group;i<U_NUM;i+=PHASES_GROUPS) {
@@ -771,17 +771,17 @@ U0 MenFight(I64 phase_group)
       best=0;
       best_dd=I64_MAX;
       for (j=0;j<U_FRIENDLY_NUM;j++) {
-	if (!u[j].dead&& u[i].y-u[j].y<8) {
+        if (!u[j].dead&& u[i].y-u[j].y<8) {
 	  dd=SqrI64(u[i].x-u[j].x)+SqrI64(u[i].y-u[j].y);
 	  if (dd<best_dd) {
 	    best_dd=dd;
 	    best=j;
 	  }
-	}
+        }
       }
       u[i].best_dd=best_dd;
       if (best_dd<HACK_DIST*HACK_DIST && !(RandU16&1))
-	ManDie(&u[best],FALSE);
+        ManDie(&u[best],FALSE);
     }
   }
 }
@@ -795,19 +795,19 @@ U0 SpyHunt()
   SettingsPush; //See $LK,"SettingsPush",A="MN:SettingsPush"$
 
   MenuPush(
-	"File {"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Play {"
-	"  Restart(,'\n');"
-	"  Fire(,CH_SPACE);"
-	"  Left(,,SC_CURSOR_LEFT);"
-	"  Right(,,SC_CURSOR_RIGHT);"
-	"  LeftMissile(,,SC_CURSOR_LEFT|SCF_CTRL);"
-	"  RightMissile(,,SC_CURSOR_RIGHT|SCF_CTRL);"
-	"}"
-	);
+        "File {"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Play {"
+        "  Restart(,'\n');"
+        "  Fire(,CH_SPACE);"
+        "  Left(,,SC_CURSOR_LEFT);"
+        "  Right(,,SC_CURSOR_RIGHT);"
+        "  LeftMissile(,,SC_CURSOR_LEFT|SCF_CTRL);"
+        "  RightMissile(,,SC_CURSOR_RIGHT|SCF_CTRL);"
+        "}"
+        );
   AutoComplete;
   WinBorder;
   WinMax;
@@ -815,29 +815,29 @@ U0 SpyHunt()
   DocClear;
 
   "\nScoring:\n\n"
-	"\tEnemy Killed\t\t+10\n"
-	"\tSpy Killed\t\t+200\n"
-	"\tEnemy by Friendly\t+1\n"
-	"\tFriendly Fire\t\t-50\n"
-	"\tBullets Fired\t\t-1\n"
-	"\tGame Time\t\t-5 per second\n\n"
-  "\nEnd game scoring:\n\n"
+        "\tEnemy Killed\t\t+10\n"
+        "\tSpy Killed\t\t+200\n"
+        "\tEnemy by Friendly\t+1\n"
+        "\tFriendly Fire\t\t-50\n"
+        "\tBullets Fired\t\t-1\n"
+        "\tGame Time\t\t-5 per second\n\n"
+        "\nEnd game scoring:\n\n"
         "\tAll spies killed bonus\t+2000\n"
         "\tSpies left\t\t-200\n"
-	"\tSurviving Friendlies\t+200\n\n"
-  "\nGame end conditions:\n\n"
+        "\tSurviving Friendlies\t+200\n\n"
+        "\nGame end conditions:\n\n"
         "\t Friendly Left > Enemies Left\n"
         "\t Friendly, Enemies, or Spies left = 0\n\n"
-  "\nPlay:\n\n"
-	"\tSweep side-to-side while shooting, "
-	"holding down $$GREEN$$<SPACE>$$FG$$.\n"
+        "\nPlay:\n\n"
+        "\tSweep side-to-side while shooting, "
+        "holding down $$GREEN$$<SPACE>$$FG$$.\n"
         "\tEnemies are purple, spies change color. Spies can only be killed\n"
         "\tby you! Enemies know who they are and will not kill them!\n\n"
-  "\nHints:\n\n"
+        "\nHints:\n\n"
         "\tThe game ends if there are more friendlies than enemies (you may\n"
         "\tlose a spy bonus). Spies act like friendlies, they start clustered\n"
         "\twith them.  They blink since their cover has been blown. As the game\n"
-        "\tprogresses, they may be found to be fighting enemies to blend in.\n\n";
+        "\tprogresses, they may be found to be fighting enemies to blend in.\n\n";
   PressAKey;
 
   Init;
@@ -850,11 +850,11 @@ U0 SpyHunt()
     while (TRUE) {
       next_update_jiffy=cnts.jiffies+JIFFY_FREQ/100;
       while (msg_code=ScanMsg(&ch,&sc,1<<MSG_KEY_DOWN+1<<MSG_KEY_UP)) {
-	switch (msg_code) {
+        switch (msg_code) {
 	  case MSG_KEY_DOWN:
 	    switch (ch) {
 	      case 0:
-		switch (sc.u8[0]) {
+	        switch (sc.u8[0]) {
 		  case SC_CURSOR_RIGHT:
 		    if (sc&SCF_CTRL)
 		      FireMissile(1);
@@ -863,17 +863,17 @@ U0 SpyHunt()
 		    if (sc&SCF_CTRL)
 		      FireMissile(-1);
 		    break;
-		}
-		break;
+	        }
+	        break;
 	      case CH_SHIFT_ESC:
 	      case CH_ESC:
-		goto to_done;
+	        goto to_done;
 	      case '\n':
-		Init;
-		break;
+	        Init;
+	        break;
 	      case CH_SPACE:
-		gun_on=TRUE;
-		break;
+	        gun_on=TRUE;
+	        break;
 	    }
 	    break;
 	  case MSG_KEY_UP:
@@ -882,43 +882,43 @@ U0 SpyHunt()
 	    else if (sc.u8[0]==SC_CURSOR_RIGHT||sc.u8[0]==SC_CURSOR_LEFT)
 	      é=-ã/2;
 	    break;
-	}
+        }
       }
 
       for (i=0;i<B_NUM;i++) {
-	if (!b[i].dead) {
+        if (!b[i].dead) {
 	  b[i].x+=b[i].dx2;
 	  b[i].y+=b[i].dy2;
 	  if (b[i].y<0||b[i].x<0||
-		b[i].x>>32>=Fs->pix_width||
-		b[i].y>>32>=Fs->pix_height)
+	        b[i].x>>32>=Fs->pix_width||
+	        b[i].y>>32>=Fs->pix_height)
 	    b[i].dead=TRUE;
-	}
+        }
       }
 
       dx=0;
       if (!Bt(kbd.down_bitmap,SC_CTRL)) {
-	if (Bt(kbd.down_bitmap,SC_CURSOR_LEFT)) {
+        if (Bt(kbd.down_bitmap,SC_CURSOR_LEFT)) {
 	  é=-ã/2-15.0*ã/180.0;
 	  dx=-2;
-	} else if (Bt(kbd.down_bitmap,SC_CURSOR_RIGHT)) {
+        } else if (Bt(kbd.down_bitmap,SC_CURSOR_RIGHT)) {
 	  é=-ã/2+15.0*ã/180.0;
 	  dx=2;
-	}
+        }
       }
       x+=dx;
       while (x>=Fs->pix_width)
-	x-=Fs->pix_width;
+        x-=Fs->pix_width;
       while (x<0)
-	x+=Fs->pix_width;
+        x+=Fs->pix_width;
 
-	//It takes too much CPU do do all these all the time.
+        //It takes too much CPU do do all these all the time.
       switch [main_loop_pass&7] {
-	case 0:
+        case 0:
 	  switch [main_loop_pass>>3&7] {
 	    case 0:
 	      if (--y<20)
-		game_over=TRUE;
+	        game_over=TRUE;
 	    case 2:
 	    case 4:
 	    case 6:
@@ -931,53 +931,53 @@ U0 SpyHunt()
 	      MenMove (main_loop_pass>>4%PHASES_GROUPS);
 	      break;
 	  }
-	case 4:
+        case 4:
 	  break;
-	case 2:
-	case 6:
+        case 2:
+        case 6:
 	  if (gun_on)
 	    FireBullet;
 	  break;
-	case 1:
-	case 3:
-	case 5:
-	case 7:
+        case 1:
+        case 3:
+        case 5:
+        case 7:
 	  CheckCollisions;
 	  break;
       }
       main_loop_pass++;
 
       if (snd_timeout && tS>snd_timeout) {
-	snd_timeout=0;
-	Snd;
+        snd_timeout=0;
+        Snd;
       }
       SleepUntil(next_update_jiffy);
 
       total_score=10*enemy_by_human+enemy_by_friendly
-            +200*(spies_total-spies_left)
-	    -50*friendly_fire-5*(tS-t0)-bullets_fired;
+	    +200*(spies_total-spies_left)
+      -50*friendly_fire-5*(tS-t0)-bullets_fired;
       if (game_over) {
-	tf=tS;
-	Sleep(750);
-	FlushMsgs;
-	while (!ScanKey(&ch)&&friendly_left||tS-tf<1.5) {
+        tf=tS;
+        Sleep(750);
+        FlushMsgs;
+        while (!ScanKey(&ch)&&friendly_left||tS-tf<1.5) {
 	  total_score+=250;
 	  Snd(86); Sleep(150);
 	  Snd;	  Sleep(50);
 	  friendly_left--;
-	}
+        }
         if (!spies_left)
-          total_score+=2000;
+	  total_score+=2000;
         else
-          total_score-=spies_left*200;
-	total_score+=200*friendly_left;
-	if (total_score>best_score)
+	  total_score-=spies_left*200;
+        total_score+=200*friendly_left;
+        if (total_score>best_score)
 	  best_score=total_score;
-	if (!ch) ch=GetChar(,FALSE);
-	if (ch==CH_ESC||ch==CH_SHIFT_ESC)
+        if (!ch) ch=GetChar(,FALSE);
+        if (ch==CH_ESC||ch==CH_SHIFT_ESC)
 	  goto to_done;
-	gun_on=FALSE;
-	Init;
+        gun_on=FALSE;
+        Init;
       }
     }
 to_done:

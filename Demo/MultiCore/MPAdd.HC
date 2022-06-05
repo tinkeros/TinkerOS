@@ -3,8 +3,8 @@ I64 mp_n;
 I64 MPSum(I64 my_mp_cnt)
 {//We could use the formula n*(n+1)/2
   I64 lo=mp_n*Gs->num/my_mp_cnt,
-	hi=mp_n*(Gs->num+1)/my_mp_cnt,
-	res=0,i;
+        hi=mp_n*(Gs->num+1)/my_mp_cnt,
+        res=0,i;
   for (i=lo;i<hi;i++)
     res+=i;
   return res;
@@ -46,8 +46,8 @@ F64 Test(I64 n,I64 my_mp_cnt)
 U0 MPAdd()
 {
   I64 i,n,
-	h=Fs->pix_width,
-	v=Fs->pix_height;
+        h=Fs->pix_width,
+        v=Fs->pix_height;
   F64 t1,t2,ress[TESTS_NUM];
   CDC *dc=DCAlias;
 

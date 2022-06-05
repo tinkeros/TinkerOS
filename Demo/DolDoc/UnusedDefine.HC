@@ -24,12 +24,12 @@ U0 UnusedDefineScan()
     table=Fs->hash_table;
     while (table) {
       for (i=0;i<=table->mask;i++) {
-	tmph=table->body[i];
-	while (tmph) {
+        tmph=table->body[i];
+        while (tmph) {
 	  if (tmph->type&HTT_DEFINE_STR)
 	    cnt++;
 	  tmph=tmph->next;
-	}
+        }
       }
       table=table->next;
     }
@@ -41,8 +41,8 @@ U0 UnusedDefineScan()
     table=Fs->hash_table;
     while (table) {
       for (i=0;i<=table->mask;i++) {
-	tmph=table->body[i];
-	while (tmph) {
+        tmph=table->body[i];
+        while (tmph) {
 	  if (tmph->type&HTT_DEFINE_STR) {
 	    progress1++;
 	    if (FileOcc(tmph->str,"/*","+l-i+$$")==1) {
@@ -55,19 +55,19 @@ U0 UnusedDefineScan()
 	      Fs->display_doc=old_display_doc;
 	      doc_e=doc->head.next;
 	      while (doc_e!=doc) {
-		if (doc_e->type_u8==DOCT_LINK) {
+	        if (doc_e->type_u8==DOCT_LINK) {
 		  "%s",tmph->str;
 		  doc_e2=DocEntryCopy(doc,doc_e);
 		  DocInsEntry(old_put_doc,doc_e2);
 		  '\n';
-		}
-		doc_e=doc_e->next;
+	        }
+	        doc_e=doc_e->next;
 	      }
 	      DocDel(doc);
 	    }
 	  }
 	  tmph=tmph->next;
-	}
+        }
       }
       table=table->next;
     }

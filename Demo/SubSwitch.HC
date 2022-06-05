@@ -7,13 +7,13 @@ U0 SubSwitch()
       case 2: "Two ";	break;
       case 4: "Four ";	break;
       start:
-	"[";
-	case 1: "One";	break;
-	case 3: "Three";break;
-	case 5: "Five";	break;
+        "[";
+        case 1: "One";	break;
+        case 3: "Three";break;
+        case 5: "Five";	break;
       end:
-	"] ";
-	break;
+        "] ";
+        break;
     }
   '\n';
 }

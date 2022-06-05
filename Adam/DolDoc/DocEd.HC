@@ -72,7 +72,7 @@ U8 *EdDollarTypeCB(CDoc *,CDocEntry *doc_e,CTask *mem_task)
 {
   CDoc *doc=doc_e->user_data;
   U8 *src=DefineSub(doc->cur_entry->type_u8,"ST_DOC_CMDS"),
-	*st=CAlloc(8,mem_task);
+      *st=CAlloc(8,mem_task);
   if (doc->cur_entry==doc)
     src="EOF";
   else if (!src)
@@ -84,18 +84,17 @@ U8 *EdDollarTypeCB(CDoc *,CDocEntry *doc_e,CTask *mem_task)
 public Bool DocEd(CDoc *doc,I64 dof_flags=0)
 {//Live for user interaction. End on <ESC> or <SHIFT-ESC>.
   CDoc *old_put_doc	  =DocPut,
-	*old_display_doc=DocDisplay,
-	*old_border_doc =DocBorder,*bdoc;
+        *old_display_doc=DocDisplay,
+         *old_border_doc =DocBorder,*bdoc;
   CDocEntry *doc_e;
   I64 old_attr=Fs->text_attr,
-	old_top =Fs->win_top, old_bottom=Fs->win_bottom,
-	old_left=Fs->win_left,old_right =Fs->win_right,
-	old_title_src=Fs->title_src;
+      old_top =Fs->win_top, old_bottom=Fs->win_bottom,
+      old_left=Fs->win_left,old_right =Fs->win_right,
+      old_title_src=Fs->title_src;
   Bool res,unlock;
   U8 *old_task_title;
   if (dof_flags&DOF_WIN_MAX)
     WinMax;
-
   unlock=DocLock(doc);
   doc->win_task=Fs;
   bdoc=DocNew;
@@ -103,24 +102,23 @@ public Bool DocEd(CDoc *doc,I64 dof_flags=0)
   DocPrint(bdoc,"$$CM+TY+LX+NC,0,-1$$");
   DocPrint(bdoc,"$$TX+RX+BD,\"[X]\"$$");
   DocPrint(bdoc,"$$BK,1$$$$TX+LX+BD,\"MENU\"$$$$BK,0$$");
-
   old_task_title=StrNew(Fs->task_title);
-  if (Fs->title_src!=TTS_LOCKED_CONST) {
+  if (Fs->title_src!=TTS_LOCKED_CONST)
+  {
     Fs->title_src=TTS_ED_FILENAME;
     MemCpy(Fs->task_title,doc->filename.name,STR_LEN-1);
   }
   doc_e=DocPrint(bdoc,"$$DA-TRM-P+BD+RD+CX+IV,LEN=STR_LEN-1,"
-	"A=\"%%s...\",SCX=16$$");
+                 "A=\"%%s...\",SCX=16$$");
   doc_e->data=&Fs->task_title;
   DocDataFmt(bdoc,doc_e);
-
-  if (doc->flags & DOCF_ALLOW_UNDO) {
+  if (doc->flags & DOCF_ALLOW_UNDO)
+  {
     DocPrint(bdoc,"$$CM+BY+LX+NC,1,1$$");
     doc_e=DocPrint(bdoc,"$$DA+BD+RD-TRM,RT=U32,A=\"Undo:%%03d\"$$\n");
     doc_e->data=&doc->undo_cnt;
     DocDataFmt(bdoc,doc_e);
   }
-
   DocPrint(bdoc,"$$CM+BY+RX+NC,-31,1$$");
   doc_e=DocPrint(bdoc,"$$TX+BD+TC,\" \"$$");
   doc_e->user_data=doc;
@@ -146,7 +144,6 @@ public Bool DocEd(CDoc *doc,I64 dof_flags=0)
   doc_e=DocPrint(bdoc,"$$DA+BD+RD-TRM,A=\"Col:%%04d\"$$\n");
   doc_e->data=&doc->col;
   DocDataFmt(bdoc,doc_e);
-
   DocRecalc(bdoc);
   DocRecalc(doc);
   if (!(dof_flags&DOF_DONT_HOME))
@@ -157,27 +154,29 @@ public Bool DocEd(CDoc *doc,I64 dof_flags=0)
   Fs->put_doc=Fs->display_doc=doc;
   if (!(dof_flags&DOF_DONT_TEXT_ATTR))
     Fs->text_attr=DOC_ATTR_DFT_TEXT;
-  if (!(dof_flags&DOF_DONT_SHOW)) {
+  if (!(dof_flags&DOF_DONT_SHOW))
+  {
     LBts(&Fs->display_flags,DISPLAYf_SHOW);
     WinZBufUpdate;
   }
   if (dof_flags&DOF_SIZE_MIN)
     doc->flags|=DOCF_SIZE_MIN;
-
   DocUnlock(doc);
-  if (!(dof_flags&DOF_DONT_WINMGR_SYNC)) {
+  if (!(dof_flags&DOF_DONT_WINMGR_SYNC))
+  {
     Refresh(2,TRUE);
     if (doc->flags&DOCF_SIZE_MIN)
       Refresh(2,TRUE);
   }
   res=View;
-
   DocLock(doc);
-  if (res) {
+  if (res)
+  {
     doc_e=doc->head.next;
-    while (doc_e!=doc) {
+    while (doc_e!=doc)
+    {
       if (doc_e->type_u8==DOCT_DATA || doc_e->type_u8==DOCT_CHECK_BOX)
-	DocDataScan(doc,doc_e);
+        DocDataScan(doc,doc_e);
       doc_e=doc_e->next;
     }
   }
@@ -187,13 +186,15 @@ public Bool DocEd(CDoc *doc,I64 dof_flags=0)
   Fs->display_doc=old_display_doc;
   Fs->put_doc	 =old_put_doc;
   Fs->text_attr  =old_attr;
-  if (Fs->title_src!=TTS_LOCKED_CONST) {
+  if (Fs->title_src!=TTS_LOCKED_CONST)
+  {
     Fs->title_src  =old_title_src;
     StrCpy(Fs->task_title,old_task_title);
   }
   Free(old_task_title);
   DocDel(bdoc);
-  if (dof_flags&DOF_SIZE_MIN) {
+  if (dof_flags&DOF_SIZE_MIN)
+  {
     WinHorz(old_left,old_right);
     WinVert(old_top,old_bottom);
   }
@@ -207,39 +208,41 @@ public Bool Ed(U8 *link_st,I64 edf_dof_flags=0)
   I64 i,num;
   Bool cont,res=FALSE;
   CDoc *doc;
-
-  switch (i=EdLinkCvt(link_st,&filename,&needle_str,&num,edf_dof_flags)) {
-    case -1:
-      break;
-    case LK_DEF:
-      doc=DocNew;
-      doc->desc='DictDef';
-      ACDDefsPut(doc,filename,num);
-      goto ej_doc;
-    case LK_HELP_INDEX:
-      doc=DocNew;
-      doc->desc='HelpIndx';
-      DocHelpIdx(doc,filename);
+  switch (i=EdLinkCvt(link_st,&filename,&needle_str,&num,edf_dof_flags))
+  {
+  case -1:
+    break;
+  case LK_DEF:
+    doc=DocNew;
+    doc->desc='DictDef';
+    ACDDefsPut(doc,filename,num);
+    goto ej_doc;
+  case LK_HELP_INDEX:
+    doc=DocNew;
+    doc->desc='HelpIndx';
+    DocHelpIdx(doc,filename);
 ej_doc:
-      if (!(edf_dof_flags&EDF_BAIL)) {
-	DocEd(doc);
-	DocDel(doc);
-      }
-      if (!(edf_dof_flags&EDF_WAS_WRITE))
-	res=TRUE;
-      break;
-    default:
-      if (IsRaw)
-	res=EdLite(filename,num,edf_dof_flags);
-      else {
-	cont=TRUE;
-	if (!(edf_dof_flags&EDF_BAIL) && !(LK_DOC<=i<=LK_DOC_LINE) &&
-	      !FilesFindMatch(filename,FILEMASK_TXT) &&
-	      !PopUpCancelOk(ST_WARN_ST "Not Text File\n\n"))
-	  cont=FALSE;
-	if (cont)
-	  res=DocFileEd(i,filename,needle_str,&num,edf_dof_flags);
-      }
+    if (!(edf_dof_flags&EDF_BAIL))
+    {
+      DocEd(doc);
+      DocDel(doc);
+    }
+    if (!(edf_dof_flags&EDF_WAS_WRITE))
+      res=TRUE;
+    break;
+  default:
+    if (IsRaw)
+      res=EdLite(filename,num,edf_dof_flags);
+    else
+    {
+      cont=TRUE;
+      if (!(edf_dof_flags&EDF_BAIL) && !(LK_DOC<=i<=LK_DOC_LINE) &&
+          !FilesFindMatch(filename,FILEMASK_TXT) &&
+          !PopUpCancelOk(ST_WARN_ST "Not Text File\n\n"))
+        cont=FALSE;
+      if (cont)
+        res=DocFileEd(i,filename,needle_str,&num,edf_dof_flags);
+    }
   }
   Free(filename);
   Free(needle_str);

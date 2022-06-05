@@ -36,7 +36,7 @@ U0 PopUpJiffiesCallBack(I64 i)
 {
   CDoc *doc=DocNew;
   CDocEntry *doc_e=DocPrint(doc,
-	"Click %d more times\n\n\n$$BT+LC,\"Jiffies\"$$\n\n\n",i);
+        "Click %d more times\n\n\n$$BT+LC,\"Jiffies\"$$\n\n\n",i);
   doc_e->left_cb=&MyLeftCB2;
   "Current Jiffies:%d\n",PopUpMenu(doc);
   DocDel(doc);

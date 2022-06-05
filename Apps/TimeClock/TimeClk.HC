@@ -84,23 +84,23 @@ public Bool TimeRep(TimeEntry **_header=NULL)
     week=tmpt->datetime.date/7;  //TODO
     if (week!=cur_week) {
       if (!first) {
-	if (is_in)
+        if (is_in)
 	  week_total+=Now;
-	"Week Total:%T\n",week_total-local_time_offset;
+        "Week Total:%T\n",week_total-local_time_offset;
       } else
-	first=FALSE;
+        first=FALSE;
       cur_week=week;
       week_total=0;
     }
     if (tmpt->type==TET_PUNCH_IN) {
       "$$RED$$IN ";
       if (!is_in)
-	week_total-=tmpt->datetime;
+        week_total-=tmpt->datetime;
       is_in=TRUE;
     } else {
       "$$RED$$OUT";
       if (is_in)
-	week_total+=tmpt->datetime;
+        week_total+=tmpt->datetime;
       is_in=FALSE;
     }
     " %D %T:$$FG$$\n%s\n",tmpt->datetime,tmpt->datetime,tmpt->desc;

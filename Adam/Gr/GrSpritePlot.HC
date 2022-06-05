@@ -26,6 +26,9 @@ public U0 Sprite3(CDC *dc=gr.dc,I64 x,I64 y,I64 z,U8 *elems,
   CDC *img;
   CD3I32 *p,*p2;
   CGrSym old_sym;
+  Bool zero=TRUE;
+  if (x!=0||y!=0||z!=0)
+    zero=FALSE;
   MemCpy(&old_sym,&dc->sym,sizeof(CGrSym));
   if (dc->flags & DCF_LOCATE_NEAREST)
     dc->nearest_dist=I64_MAX;
@@ -175,13 +178,20 @@ public U0 Sprite3(CDC *dc=gr.dc,I64 x,I64 y,I64 z,U8 *elems,
       }
       break;
 start:
-      p2=p=MAlloc(tmpg->nu.num*sizeof(CD3I32));
-      MemCpy(p,&tmpg->nu.u,tmpg->nu.num*sizeof(CD3I32));
-      for (i=0; i<tmpg->nu.num; i++,p2++)
+      if (zero)
       {
-        p2->x+=x;
-        p2->y+=y;
-        p2->z+=z;
+        p=&tmpg->nu.u;
+      }
+      else
+      {
+        p2=p=MAlloc(tmpg->nu.num*sizeof(CD3I32));
+        MemCpy(p,&tmpg->nu.u,tmpg->nu.num*sizeof(CD3I32));
+        for (i=0; i<tmpg->nu.num; i++,p2++)
+        {
+          p2->x+=x;
+          p2->y+=y;
+          p2->z+=z;
+        }
       }
     case SPT_BSPLINE2:
       Gr2BSpline3(dc,p,tmpg->nu.num,FALSE);
@@ -196,20 +206,29 @@ start:
       Gr3BSpline3(dc,p,tmpg->nu.num,TRUE);
       break;
 end:
-      Free(p);
+      if (!zero)
+        Free(p);
       break;
     case SPT_MESH:
-      p2=p=MAlloc(tmpg->mu.vertex_cnt*sizeof(CD3I32));
-      MemCpy(p,&tmpg->mu.u,tmpg->mu.vertex_cnt*sizeof(CD3I32));
-      for (i=0; i<tmpg->mu.vertex_cnt; i++,p2++)
+      if (zero)
       {
-        p2->x+=x;
-        p2->y+=y;
-        p2->z+=z;
+        Gr3Mesh(dc,tmpg->mu.vertex_cnt,&tmpg->mu.u,tmpg->mu.tri_cnt,
+                (&tmpg->mu.u)(U8 *)+sizeof(CD3I32)*tmpg->mu.vertex_cnt);
       }
-      Gr3Mesh(dc,tmpg->mu.vertex_cnt,p,tmpg->mu.tri_cnt,
-              (&tmpg->mu.u)(U8 *)+sizeof(CD3I32)*tmpg->mu.vertex_cnt);
-      Free(p);
+      else
+      {
+        p2=p=MAlloc(tmpg->mu.vertex_cnt*sizeof(CD3I32));
+        MemCpy(p,&tmpg->mu.u,tmpg->mu.vertex_cnt*sizeof(CD3I32));
+        for (i=0; i<tmpg->mu.vertex_cnt; i++,p2++)
+        {
+          p2->x+=x;
+          p2->y+=y;
+          p2->z+=z;
+        }
+        Gr3Mesh(dc,tmpg->mu.vertex_cnt,p,tmpg->mu.tri_cnt,
+                (&tmpg->mu.u)(U8 *)+sizeof(CD3I32)*tmpg->mu.vertex_cnt);
+        Free(p);
+      }
       break;
     case SPT_SHIFTABLE_MESH:
       if (dc->flags&DCF_TRANSFORMATION)
@@ -227,8 +246,8 @@ end:
         y1=tmpg->pmu.y+y;
         z1=tmpg->pmu.z+z;
       }
-      p2=p=MAlloc(tmpg->pmu.vertex_cnt*sizeof(CD3I32));
-      MemCpy(p,&tmpg->pmu.u,tmpg->pmu.vertex_cnt*sizeof(CD3I32));
+      p2=p=MAlloc(tmpg->pmu.vertex_cnt*sizeof(CD3I32)+4);
+      MemCpy64(p,&tmpg->pmu.u,(tmpg->pmu.vertex_cnt*sizeof(CD3I32)+4)/8);
       for (i=0; i<tmpg->pmu.vertex_cnt; i++,p2++)
       {
         p2->x+=x1;

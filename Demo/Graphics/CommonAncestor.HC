@@ -25,9 +25,9 @@ U0 ShowTree(CDC *dc,Node *tmpn,I64 *_node_x,I64 *_tree_x,I64 y)
     }
     if (tmpn->n==n1 || tmpn->n==n2) {
       if (tmpn->n==common_ancestor)
-	dc->color=YELLOW;
+        dc->color=YELLOW;
       else
-	dc->color=RED;
+        dc->color=RED;
     } else if (tmpn->n==common_ancestor)
       dc->color=GREEN;
     else

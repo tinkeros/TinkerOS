@@ -28,11 +28,11 @@ U0 DrawBoard(I64 player)
   for (i=0;i<9;i++)
     switch (board[i]) {
       case 1:
-	DrawX(dc,board_x[i],board_y[i]);
-	break;
+        DrawX(dc,board_x[i],board_y[i]);
+        break;
       case 2:
-	DrawO(dc,board_x[i],board_y[i]);
-	break;
+        DrawO(dc,board_x[i],board_y[i]);
+        break;
 
     }
 //ms.pos.x,ms.pos.y are mouse x,y.
@@ -70,15 +70,15 @@ U0 TakeTurn(I64 player)
 Bool CheckWinner(I64 player)
 {
   if (	player==board[0]==board[1]==board[2] ||
-	player==board[3]==board[4]==board[5] ||
-	player==board[6]==board[7]==board[8] ||
+        player==board[3]==board[4]==board[5] ||
+        player==board[6]==board[7]==board[8] ||
 
-	player==board[0]==board[3]==board[6] ||
-	player==board[1]==board[4]==board[7] ||
-	player==board[2]==board[5]==board[8] ||
+        player==board[0]==board[3]==board[6] ||
+        player==board[1]==board[4]==board[7] ||
+        player==board[2]==board[5]==board[8] ||
 
-	player==board[0]==board[4]==board[8] ||
-	player==board[2]==board[4]==board[6]   )
+        player==board[0]==board[4]==board[8] ||
+        player==board[2]==board[4]==board[6]   )
     return TRUE;
   else
     return FALSE;

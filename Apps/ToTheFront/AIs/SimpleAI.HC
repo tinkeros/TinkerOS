@@ -12,12 +12,12 @@ Unit *UnitNearestFind(I64 row,I64 col,I64 player,Bool in_LOS,F64 range=-1)
   for (i=0;i<UNITS_NUM;i++)
     if (units[player][i].life>0) {
       if (!in_LOS || LOS(row,col,units[player][i].row,units[player][i].col)) {
-	RowCol2XY(&x2,&y2,units[player][i].row,units[player][i].col);
-	dd=Sqr(x2-x1)+Sqr(y2-y1);
-	if (dd<=range && dd<best_dd) {
+        RowCol2XY(&x2,&y2,units[player][i].row,units[player][i].col);
+        dd=Sqr(x2-x1)+Sqr(y2-y1);
+        if (dd<=range && dd<best_dd) {
 	  best=&units[player][i];
 	  best_dd=dd;
-	}
+        }
       }
     }
   return best;
@@ -49,11 +49,11 @@ U0 PlayerMove()
     if (tmpu->life>0) {
 //Cheats because it violates Line-of-Sight
       if (target=UnitNearestFind(tmpu->row,tmpu->col,enemy_player,FALSE)) {
-	RowCol2XY(&x,&y,target->row,target->col);
-	if (!UnitMove(tmpu,x,y)) {
+        RowCol2XY(&x,&y,target->row,target->col);
+        if (!UnitMove(tmpu,x,y)) {
 	  RowCol2XY(&x,&y,tmpu->row,tmpu->col);
 	  UnitMove(tmpu,x+RandI16,y+RandI16);
-	}
+        }
       }
     }
   }

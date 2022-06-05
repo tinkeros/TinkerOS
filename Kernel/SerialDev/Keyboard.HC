@@ -21,7 +21,7 @@ asm {
   DU8	0,0,0,0,0,0,0,0,0,0,'-',0,0,0,'+',0;
 }
 
-U0 KbdCmdSend(I64 port, U8 val)
+public U0 KbdCmdSend(I64 port, U8 val)
 {
   F64 timeout=tS+0.125;
   while (tS<timeout)
@@ -35,7 +35,7 @@ U0 KbdCmdSend(I64 port, U8 val)
   throw;
 }
 
-I64 KbdCmdRead()
+public I64 KbdCmdRead()
 {
   F64 timeout=tS+0.125;
   while (tS<timeout)
@@ -44,7 +44,7 @@ I64 KbdCmdRead()
   throw;
 }
 
-U0 KbdCmdFlush()
+public U0 KbdCmdFlush()
 {
   F64 timeout=tS+0.03;
   while (tS<timeout)
@@ -66,7 +66,7 @@ U0 KbdLEDsSet(I64 sc)
     Fs->catch_except=TRUE;
 }
 
-U0 KbdMsCmdAck(...)
+public U0 KbdMsCmdAck(...)
 {
   I64 i,ack,timeout;
   for (i=0; i<argc; i++)
@@ -374,6 +374,42 @@ U8 *ScanCode2KeyName(I64 sc)
       break;
     case SC_F12:
       CatPrint(buf,"F12");
+      break;
+    case SC_F13:
+      CatPrint(buf,"F13");
+      break;
+    case SC_F14:
+      CatPrint(buf,"F14");
+      break;
+    case SC_F15:
+      CatPrint(buf,"F15");
+      break;
+    case SC_F16:
+      CatPrint(buf,"F16");
+      break;
+    case SC_F17:
+      CatPrint(buf,"F17");
+      break;
+    case SC_F18:
+      CatPrint(buf,"F18");
+      break;
+    case SC_F19:
+      CatPrint(buf,"F19");
+      break;
+    case SC_F20:
+      CatPrint(buf,"F20");
+      break;
+    case SC_F21:
+      CatPrint(buf,"F21");
+      break;
+    case SC_F22:
+      CatPrint(buf,"F22");
+      break;
+    case SC_F23:
+      CatPrint(buf,"F23");
+      break;
+    case SC_F24:
+      CatPrint(buf,"F24");
       break;
     case SC_GUI:
       CatPrint(buf,"WINDOWS");

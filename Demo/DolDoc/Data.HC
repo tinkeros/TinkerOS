@@ -43,9 +43,9 @@ U0 DataDemo()
   Spawn(&UpdateGlblTask,NULL,"Update Glbl",,Fs);
 
   "Enter editor overstrike mode\n"
-	"and you can modify the val.\n"
-	"However, changes happen immediately,\n"
-	"so it's tricky.\n\n";
+        "and you can modify the val.\n"
+        "However, changes happen immediately,\n"
+        "so it's tricky.\n\n";
 //Use <CTRL-l> for the $$DA...$$ format.
   doc_e=DocPrint(doc,"$$DA-TRM+RD+UD,RT=I16,A=\"%%7d\"$$\n");
   doc_e->data=&i;

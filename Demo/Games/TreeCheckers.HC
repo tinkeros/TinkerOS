@@ -1,7 +1,7 @@
 U0 InitDefines()
 {
   I64 w=GR_WIDTH,h=GR_HEIGHT-FONT_HEIGHT,cols,rows,
-	size=PopUpRangeI64(1,9,,"Size\n"),rad=16-size;
+        size=PopUpRangeI64(1,9,,"Size\n"),rad=16-size;
   if (size<0) throw;
   DefinePrint("UNITS_NUM","%d",4096/SqrI64(rad)&~1);
   DefinePrint("CIRCLE_RAD","%d",rad);
@@ -78,9 +78,9 @@ U0 DrawIt(CTask *task,CDC *dc)
       dc->color=BLACK;
       GrLine(dc,u[i].x,u[i].y,u[u[i].link].x,u[u[i].link].y);
       if (Blink) {
-	dc->color=BLUE;
-	dc->thick=6;
-	GrPlot3(dc,(u[i].x+u[u[i].link].x)>>1,(u[i].y+u[u[i].link].y)>>1,0);
+        dc->color=BLUE;
+        dc->thick=6;
+        GrPlot3(dc,(u[i].x+u[u[i].link].x)>>1,(u[i].y+u[u[i].link].y)>>1,0);
       }
     }
   if (show_start) {
@@ -104,8 +104,8 @@ Unit *UnitFind(I64 x,I64 y,I64 player)
     if (u[i].player==player && u[i].alive) {
       dd=SqrI64(u[i].x-x)+SqrI64(u[i].y-y);
       if (dd<best_dd) {
-	best_dd=dd;
-	res=&u[i];
+        best_dd=dd;
+        res=&u[i];
       }
     }
   }
@@ -122,10 +122,10 @@ U0 KillsChk(I64 x1,I64 y1,I64 player)
       y2=(u[i].y+u[u[i].link].y)>>1;
       dd=SqrI64(x2-x1)+SqrI64(y2-y1);
       if (dd<=(CIRCLE_RAD+2)*(CIRCLE_RAD+2)) {
-	u[i].alive=FALSE;
-	Snd(62);Sleep(100);Snd;Sleep(25);
-	num_alive[u[i].player]--;
-	do {
+        u[i].alive=FALSE;
+        Snd(62);Sleep(100);Snd;Sleep(25);
+        num_alive[u[i].player]--;
+        do {
 	  found=FALSE;
 	  for (j=0;j<UNITS_NUM;j++)
 	    if (u[j].alive && u[j].player!=player && !u[j].king &&
@@ -135,7 +135,7 @@ U0 KillsChk(I64 x1,I64 y1,I64 player)
 	      Snd(62);Sleep(100);Snd;Sleep(25);
 	      num_alive[u[j].player]--;
 	    }
-	} while (found);
+        } while (found);
       }
     }
   }
@@ -157,9 +157,9 @@ Bool UnitMove(Unit *tmpu,I64 x2,I64 y2)
     }
     if (r2!=r) {
       if (r&1) {
-	if (c<c2) c++;
+        if (c<c2) c++;
       } else {
-	if (c>c2) c--;
+        if (c>c2) c--;
       }
     }
     if (r2>r) {
@@ -212,7 +212,7 @@ U0 Init()
     u[i].num=i;
     u[i+UNITS_NUM/2].num=i+UNITS_NUM/2;
 
-ti_restart:
+    ti_restart:
     u[i].y=FloorI64(RandU32%h,CIRCLE_RAD*2)+CIRCLE_RAD;
     u[i+UNITS_NUM/2].y=h-1-u[i].y;
     j1=u[i].y/(CIRCLE_RAD*2);
@@ -223,7 +223,7 @@ ti_restart:
     if (!i) {
       u[i].x=CIRCLE_RAD;
       if (j1&1)
-	goto ti_restart;
+        goto ti_restart;
     } else
       u[i].x=FloorI64(RandU32%((w-CIRCLE_RAD*2*2)/2),CIRCLE_RAD*2)+CIRCLE_RAD;
     u[i+UNITS_NUM/2].x=w-1-u[i].x;
@@ -260,13 +260,13 @@ ti_restart:
     if (!u[i].king) {
       best_dd=I64_MAX;
       for (j=0;j<UNITS_NUM/2;j++) {
-	if (i!=j) {
+        if (i!=j) {
 	  dd=SqrI64(u[i].x-u[j].x)+SqrI64(u[i].y-u[j].y);
 	  if ((u[j].x<u[i].x || u[j].king) && dd<best_dd ) {
 	    best_dd=dd;
 	    best=j;
 	  }
-	}
+        }
       }
       u[i].link=best;
       u[i+UNITS_NUM/2].link=best+UNITS_NUM/2;
@@ -288,14 +288,14 @@ U0 TreeCheckers()
 
   SettingsPush; //See $LK,"SettingsPush",A="MN:SettingsPush"$
   MenuPush(
-	"File {"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Play {"
-	"  Restart(,'\n');"
-	"}"
-	);
+        "File {"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Play {"
+        "  Restart(,'\n');"
+        "}"
+        );
   AutoComplete;
   WinBorder;
   WinMax;
@@ -303,7 +303,7 @@ U0 TreeCheckers()
   DocClear;
   PopUpOk("Step on the link mid points.\n");
   Fs->win_inhibit=WIG_TASK_DFT-WIF_SELF_FOCUS
-	-WIF_SELF_BORDER-WIF_FOCUS_TASK_MENU;
+        -WIF_SELF_BORDER-WIF_FOCUS_TASK_MENU;
   try {
 cn_start:
     Init;
@@ -314,7 +314,7 @@ cn_start:
       msg_code=GetMsg(&arg1,&arg2,
 	    1<<MSG_KEY_DOWN+1<<MSG_MS_L_DOWN+1<<MSG_MS_L_UP+1<<MSG_MS_MOVE);
       switch (msg_code) {
-	case MSG_KEY_DOWN:
+        case MSG_KEY_DOWN:
 	  switch (arg1) {
 	    case '\n':
 	      CleanUp;
@@ -324,7 +324,7 @@ cn_start:
 	      goto cn_done;
 	  }
 	  break;
-	case MSG_MS_L_DOWN:
+        case MSG_MS_L_DOWN:
 	  if (num_alive[0]>1 && num_alive[1]>1) {
 	    tmpu=UnitFind(arg1,arg2,cur_player);
 	    end_x=start_x=tmpu->x;
@@ -332,11 +332,11 @@ cn_start:
 	    show_start=TRUE;
 	  }
 	  break;
-	case MSG_MS_MOVE:
+        case MSG_MS_MOVE:
 	  if (tmpu)
 	    UnitMove(tmpu,arg1,arg2);
 	  break;
-	case MSG_MS_L_UP:
+        case MSG_MS_L_UP:
 	  UnitMove(tmpu,arg1,arg2);
 	  KillsChk(tmpu->x,tmpu->y,cur_player);
 	  show_start=FALSE;

@@ -20,7 +20,7 @@ I64 HexMoveOneCost(Unit *tmpu,I64 r,I64 c,I64 facing)
     else {
       res+=movement_costs[terrain[r][c]];
       if (rivers[r][c])
-	res=tmpu->movement;
+        res=tmpu->movement;
     }
   }
   return res;
@@ -98,28 +98,28 @@ Bool UnitMove(Unit *tmpu,I64 x,I64 y)
     else {
       i=HexMoveOneCost(tmpu,r,c,facing);
       if (i>tmpu->movement)
-	i=tmpu->movement;
+        i=tmpu->movement;
       if (!tmpu->fired && tmpu->remaining_movement>=i &&
 	    tmpu->remaining_movement>=tmpu->movement>>1 &&
 	    (target=UnitFind(r,c)) && target->player!=tmpu->player &&
 	    tmpu->infantry!=target->infantry) {
-	if (!HexOccupy(ToBool(target->infantry),tmpu,target)) {
+        if (!HexOccupy(ToBool(target->infantry),tmpu,target)) {
 	  tmpu=NULL;
 	  break;
-	}
-	i=tmpu->remaining_movement;
+        }
+        i=tmpu->remaining_movement;
       }
       if (tmpu->remaining_movement>=i && !UnitFind(r,c)) {
-	UnitMoveAnimation(tmpu,r,c,facing);
-	tmpu->facing=facing;
-	tmpu->remaining_movement-=i;
-	tmpu->row=r;
-	tmpu->col=c;
-	VisRecalc(VR_UPDATE_FRIENDLY_UNIT,tmpu);
-	LBEqu(&tmpu->vis[enemy_player],0,
+        UnitMoveAnimation(tmpu,r,c,facing);
+        tmpu->facing=facing;
+        tmpu->remaining_movement-=i;
+        tmpu->row=r;
+        tmpu->col=c;
+        VisRecalc(VR_UPDATE_FRIENDLY_UNIT,tmpu);
+        LBEqu(&tmpu->vis[enemy_player],0,
 	      VisRecalc(VR_ONE_ENEMY_UNIT,tmpu));
       } else
-	break;
+        break;
     }
   }
   if (!tmpu || tmpu->row!=r0 || tmpu->col!=c0)

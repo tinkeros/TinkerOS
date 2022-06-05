@@ -898,22 +898,46 @@ U0 AHCIHbaReset()
   Bts(&blkdev.ahci_hba->ghc, AHCI_GHCf_AHCI_ENABLE);
 }
 
-U0 AHCIInit()
+U0 AHCIInit(I64 addr=NULL)
 {
-  CAHCIHba	*hba;
+  CAHCIHba	*hba = NULL;
   CAHCIPort	*port;
   I64			 i, bdf;
   if (blkdev.ahci_hba)
     return;
   "컴컴컴컴컴컴컴컴컴컴컴\n";
-  bdf = PCIClassFind(PCIC_STORAGE << 16 | PCISC_AHCI << 8 + 1, 0); //0x010601, last byte prog_if, AHCI version 1.0
-  if (bdf == -1)
+  if (!addr)
   {
-    "AHCI: No AHCI controller found.\n";
-    return;
+    bdf = PCIClassFind(PCIC_STORAGE << 16 | PCISC_AHCI << 8 + 1, 0); //0x010601, last byte prog_if, AHCI version 1.0
+    if (bdf == -1)
+    {
+      "AHCI: No AHCI controller found on PCI bus!\n";
+    }
+    else
+    {
+      "AHCI: PCI controller found\n";
+      hba = dev.uncached_alias + PCIReadU32(bdf.u8[2], bdf.u8[1], bdf.u8[0], PCIR_BASE5) & ~0x1F; //Last 4 bits not part of address.
+    }
+    if (hba == NULL)
+    {
+      bdf = GetPcieDevBar(PCIC_STORAGE, PCISC_AHCI, 5);
+      if (bdf == -1)
+      {
+        "AHCI: No AHCI controller found on PCIe bus! (but detection support is limited)\n";  //TODO
+      }
+      else
+      {
+        "AHCI: PCIE controller found\n";
+        hba = dev.uncached_alias + bdf;
+      }
+    }
+    if (hba == NULL)
+      return;
   }
-  "AHCI: Controller found\n";
-  hba = dev.uncached_alias + PCIReadU32(bdf.u8[2], bdf.u8[1], bdf.u8[0], PCIR_BASE5) & ~0x1F; //Last 4 bits not part of address.
+  else
+  {
+    hba = dev.uncached_alias + addr;
+  }
   blkdev.ahci_hba = hba;
   Bts(&blkdev.ahci_hba->ghc, AHCI_GHCf_AHCI_ENABLE);
   //"AHCI: GHC.AE set\n";

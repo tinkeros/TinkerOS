@@ -7,17 +7,17 @@ U0 TOSDbgDistro1()
   CBinFile *bfh=mem_boot_base-sizeof(CBinFile);
   bfh(I64)+=bfh->file_size-1;
   DefinePrint("TOS_DBG_DISTRO","0x%X",
-	CeilI64(SYS_KERNEL_END+SLOP,BLK_SIZE));
+        CeilI64(SYS_KERNEL_END+SLOP,BLK_SIZE));
   DefinePrint("TOS_DBG_DISTRO_END",  "0x%X",FloorI64(
-	(BOOT_RAM_LIMIT-(BOOT_STK_SIZE+DVD_BOOT_LOADER_SIZE))>>4<<4-
-	(bfh(I64)-SYS_KERNEL_END)-SLOP,BLK_SIZE));
+        (BOOT_RAM_LIMIT-(BOOT_STK_SIZE+DVD_BOOT_LOADER_SIZE))>>4<<4-
+        (bfh(I64)-SYS_KERNEL_END)-SLOP,BLK_SIZE));
   DefinePrint("CFG_DBG_DISTRO_FILE","\"/Tmp/DbgDistro.BIN.Z\"");
 } TOSDbgDistro1;
 
 U0 TOSDbgDistro2()
 {
   DefinePrint("CFG_DBG_DISTRO","\"a0x%X\n0x%X\n\"",TOS_DBG_DISTRO,
-	(TOS_DBG_DISTRO_END-TOS_DBG_DISTRO)/BLK_SIZE);
+        (TOS_DBG_DISTRO_END-TOS_DBG_DISTRO)/BLK_SIZE);
   DefinePrint("CFG_DBG_DISTRO_START","\"0x%X\"",TOS_DBG_DISTRO);
 } TOSDbgDistro2;
 

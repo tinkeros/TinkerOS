@@ -39,18 +39,18 @@ U0 MyGame()
   DocClear;
 
   MenuPush(
-	"File {"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Play {"
-	"  Restart(,'\n');"
-	"  Up(,,SC_CURSOR_UP);"
-	"  Down(,,SC_CURSOR_DOWN);"
-	"  Left(,,SC_CURSOR_LEFT);"
-	"  Right(,,SC_CURSOR_RIGHT);"
-	"}"
-	);
+        "File {"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Play {"
+        "  Restart(,'\n');"
+        "  Up(,,SC_CURSOR_UP);"
+        "  Down(,,SC_CURSOR_DOWN);"
+        "  Left(,,SC_CURSOR_LEFT);"
+        "  Right(,,SC_CURSOR_RIGHT);"
+        "}"
+        );
 
   Init;
   Fs->animate_task=Spawn(&AnimateTask,NULL,"Animate",,Fs);
@@ -59,7 +59,7 @@ U0 MyGame()
   try {
     while (TRUE)
       switch (GetKey(&sc)) {
-	case 0:
+        case 0:
 	  switch (sc.u8[0]) {
 	    case SC_CURSOR_LEFT:
 	      break;
@@ -71,12 +71,12 @@ U0 MyGame()
 	      break;
 	  }
 	  break;
-	case '\n':
+        case '\n':
 	  CleanUp;
 	  Init;
 	  break;
-	case CH_SHIFT_ESC:
-	case CH_ESC:
+        case CH_SHIFT_ESC:
+        case CH_ESC:
 	  goto mg_done;
       }
 mg_done: //Don't goto out of try

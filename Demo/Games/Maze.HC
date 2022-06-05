@@ -5,7 +5,7 @@
 U32 text[TEXT_ROWS][TEXT_COLS];
 
 U0 DrawIt(CTask *task,CDC *)
-{ //$LK,"gr.text_base",A="MN:CGrGlbls"$ gets clear 30fps, so we must use our own permanent text array.
+{ //$LK,"gr.text_base",A="MN:CGrGlbls"$gets clear 30fps, so we must use our own permanent text array.
   MemCpy(gr.text_base+TEXT_COLS,text,(TEXT_ROWS-1)*TEXT_COLS*sizeof(U32));
 
   // You can copy it this way, if you like:
@@ -56,10 +56,10 @@ U0 SolveMaze(I64 x,I64 y)
       x-=dir_x[dir];
       y-=dir_y[dir];
       if (++dir==4) {
-	if (--stk_ptr<0) return;
-	x=stk_x[stk_ptr];
-	y=stk_y[stk_ptr];
-	dir=stk_dir[stk_ptr];
+        if (--stk_ptr<0) return;
+        x=stk_x[stk_ptr];
+        y=stk_y[stk_ptr];
+        dir=stk_dir[stk_ptr];
       }
     } else {
       dir=0;
@@ -69,7 +69,7 @@ U0 SolveMaze(I64 x,I64 y)
       if (stk_ptr==STK_SIZE) return;
       Sleep(100);
       if (ScanChar)
-	throw;
+        throw;
     }
   }
 }
@@ -91,17 +91,17 @@ U0 Maze()
     do {
       MemSet(text,0,sizeof(text));
       while (!(ch=ScanChar)) {
-	x=ms.pos_text.x-Fs->win_left-Fs->scroll_x/FONT_WIDTH;
-	y=ms.pos_text.y-Fs->win_top-Fs->scroll_y/FONT_HEIGHT;
-	if (ms.lb&&!winmgr.grab_scroll)
+        x=ms.pos_text.x-Fs->win_left-Fs->scroll_x/FONT_WIDTH;
+        y=ms.pos_text.y-Fs->win_top-Fs->scroll_y/FONT_HEIGHT;
+        if (ms.lb&&!winmgr.grab_scroll)
 	  text[y][x]=CH_SPACE+ATTRF_INVERT+ATTR;
-	if (ms.rb&&!winmgr.grab_scroll) {
+        if (ms.rb&&!winmgr.grab_scroll) {
 	  text[y][x]='*'+ATTR;
 	  SolveMaze(x,y);
 	  ch=GetChar;
 	  break;
-	}
-	Refresh;
+        }
+        Refresh;
       }
     } while (ch!=CH_SHIFT_ESC && ch!=CH_ESC);
   catch

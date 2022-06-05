@@ -20,7 +20,7 @@ it in your start-up scripts.
 class CComm
 {
   I64	base,
-	flags;
+        flags;
   CFifoU8 *RX_fifo;
   CFifoU8 *TX_fifo;
 } comm_ports[5];
@@ -35,9 +35,9 @@ U0 CommHndlr(I64 port)
       FifoU8Ins(c->RX_fifo,InU8(c->base+UART_RDR));
     if (stat & 2) {	//TX
       if (FifoU8Rem(c->TX_fifo,&b))
-	OutU8(c->base+UART_THR,b);
+        OutU8(c->base+UART_THR,b);
       else
-	OutU8(c->base+UART_IER,1); //RX but no THR empty
+        OutU8(c->base+UART_IER,1); //RX but no THR empty
     }
   }
 }

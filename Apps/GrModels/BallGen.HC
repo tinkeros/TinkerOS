@@ -59,9 +59,9 @@ U8 *Ball2CSprite()
 {
 //See $LK,"::/Adam/Gr/GrSpritePlot.HC",A="FL:::/Adam/Gr/GrSpritePlot.HC,1"$ for how CSprite are stored.
   U8 *res=MAlloc(sizeof(CSpriteMeshU8s)+
-	b->vertex_cnt*sizeof(CD3I32)+b->tri_cnt*sizeof(CMeshTri)
+        b->vertex_cnt*sizeof(CD3I32)+b->tri_cnt*sizeof(CMeshTri)
   +sprite_elem_base_sizes[SPT_END]),
-	*dst=res;
+        *dst=res;
   *dst++ =SPT_MESH;
   *dst(I32 *)++ =b->vertex_cnt;
   *dst(I32 *)++ =b->tri_cnt;
@@ -103,12 +103,12 @@ public U8 *BallGen()
       z1=r*Sin( j   *d_a1);
       z2=r*Sin((j+1)*d_a1);
       for (i=0;i<m;i++) {
-	p1=AddVertex(&bd2,r1*Cos((2*i  +j)*d_a2),r1*Sin((2*i  +j)*d_a2),z1);
-	p2=AddVertex(&bd2,r1*Cos((2*i+2+j)*d_a2),r1*Sin((2*i+2+j)*d_a2),z1);
-	p3=AddVertex(&bd2,r2*Cos((2*i+1+j)*d_a2),r2*Sin((2*i+1+j)*d_a2),z2);
-	p4=AddVertex(&bd2,r2*Cos((2*i+3+j)*d_a2),r2*Sin((2*i+3+j)*d_a2),z2);
-	AddTri(&bd2,c,p1,p2,p3);
-	AddTri(&bd2,c,p3,p2,p4);
+        p1=AddVertex(&bd2,r1*Cos((2*i  +j)*d_a2),r1*Sin((2*i  +j)*d_a2),z1);
+        p2=AddVertex(&bd2,r1*Cos((2*i+2+j)*d_a2),r1*Sin((2*i+2+j)*d_a2),z1);
+        p3=AddVertex(&bd2,r2*Cos((2*i+1+j)*d_a2),r2*Sin((2*i+1+j)*d_a2),z2);
+        p4=AddVertex(&bd2,r2*Cos((2*i+3+j)*d_a2),r2*Sin((2*i+3+j)*d_a2),z2);
+        AddTri(&bd2,c,p1,p2,p3);
+        AddTri(&bd2,c,p3,p2,p4);
       }
     }
 

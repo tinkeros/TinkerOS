@@ -187,6 +187,15 @@ I64 Dir(U8 *files_find_mask="*",Bool full=FALSE)
   return res;
 }
 
+
+Bool IsFile(U8* filename)
+{
+  I64 old_silent=Silent, res=Dir(filename);
+  Silent(old_silent);
+  return res>0;
+}
+
+
 Bool Cdd(U8 *dirname=NULL,Bool make_dirs=FALSE)
 {//Change directory and list contents
   if(Cd(dirname,make_dirs))

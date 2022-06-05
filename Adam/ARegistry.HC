@@ -1,18 +1,20 @@
 #help_index "Registry"
 #define REGISTRY_FILENAME "~/Registry.HC.Z"
 CDoc *sys_registry_doc=NULL;
-I64 sys_msg_flags[1]={0};
+I64 sys_msg_flags[1]= {0};
 F64 registry_version;
 
 Bool RegCache()
 {
   Bool old_silent;
-  if (!sys_registry_doc) {
+  if (!sys_registry_doc)
+  {
     old_silent=Silent;
     sys_registry_doc=DocRead(REGISTRY_FILENAME);
     Silent(old_silent);
     return FALSE;
-  } else
+  }
+  else
     return TRUE;
 }
 
@@ -21,19 +23,22 @@ public Bool RegDft(U8 *path,U8 *val,Bool is_adam_entry=FALSE)
   Bool res,unlock_doc;
   RegCache;
   unlock_doc=DocLock(sys_registry_doc);
-  if (!DocTreeFind(sys_registry_doc,path)) {
+  if (!DocTreeFind(sys_registry_doc,path))
+  {
     DocTreeMake(sys_registry_doc,path);
     DocPrint(sys_registry_doc,"%s",val);
-    if (is_adam_entry) {
+    if (is_adam_entry)
+    {
       if (Fs==adam_task)
-	ExePrint("%s",val);
+        ExePrint("%s",val);
       else
-	Adam("%s",val);
+        Adam("%s",val);
     }
     if (DrvIsWritable(*sys_registry_doc->filename.name))
       DocWrite(sys_registry_doc);
     res=FALSE;
-  } else
+  }
+  else
     res=TRUE;
   if (unlock_doc)
     DocUnlock(sys_registry_doc);
@@ -60,9 +65,11 @@ public I64 RegCnt(U8 *path)
   CDocEntry *tree_branch,*start_indent,*end_indent;
   Bool unlock_doc=DocLock(sys_registry_doc);
   if (DocTreeFind(sys_registry_doc,path,
-	&tree_branch,&start_indent,&end_indent)) {
+                  &tree_branch,&start_indent,&end_indent))
+  {
     end_indent=end_indent->next;
-    while (start_indent!=end_indent) {
+    while (start_indent!=end_indent)
+    {
       res++;
       start_indent=start_indent->next;
     }
@@ -79,17 +86,19 @@ public Bool RegAppend(U8 *path,U8 *fmt,...)
   res=DocTreeAppendJoin(sys_registry_doc,path,TRUE,fmt,argc,argv);
   return res;
 }
- 
+
 public Bool OneTimePopUp(U8 *_flags,I64 flag_num,U8 *msg)
 {//See $LK,"::/Apps/X-Caliber/X-Caliber.HC"$.
   Bool res=FALSE;
   CDoc *doc=DocNew;
   CDocEntry *doc_e;
-  if (!Bt(_flags,flag_num)) {
+  if (!Bt(_flags,flag_num))
+  {
     if (msg) DocPrint(doc,"%s",msg);
     doc_e=DocPrint(doc,"\n$$CB,\"Do not show this msg again.\",LE=1$$");
     DocPrint(doc,"$$CM+CX,0,4$$$$BT,\"OKAY\",LE=1$$\n");
-    if (PopUpMenu(doc)==1 && doc_e->de_flags&DOCEF_CHECKED_COLLAPSED) {
+    if (PopUpMenu(doc)==1 && doc_e->de_flags&DOCEF_CHECKED_COLLAPSED)
+    {
       LBts(_flags,flag_num);
       res=TRUE;
     }
@@ -102,7 +111,7 @@ U0 RegOneTimePopUp(I64 flag_num,U8 *msg)
 {//You're not supposed to make system pop-up flags, only me.
   if (OneTimePopUp(sys_msg_flags,flag_num,msg))
     RegWrite("Adam/SysMsgFlags","sys_msg_flags[0]=0x%X;\n",
-	  sys_msg_flags[0]);
+             sys_msg_flags[0]);
 }
 
 U0 RegInit()
@@ -113,7 +122,8 @@ U0 RegInit()
   StrPrint(buf,"registry_version=%4.3f;\n",sys_os_version);
   version_present=RegDft("Adam/SysRegVer",buf,TRUE);
   RegExe("Adam");
-  if (registry_version!=sys_os_version) {
+  if (registry_version!=sys_os_version)
+  {
     RegWrite("Adam/SysRegVer",buf);
     RegExe("Adam");
   }
@@ -178,23 +188,25 @@ public U0 OnceDrv(U8 drv_let=0,U8 *fmt,...)
 
 public U0 OnceExe()
 {//Execute Once code. Call goes in $LK,"~/Once.HC"$.
-  try {
-
+  try
+  {
     RegDft("Once/Adam","");
-    if (RegCnt("Once/Adam")>2) {
+    if (RegCnt("Once/Adam")>2)
+    {
       Adam("RegExe(\"Once/Adam\");");
       AOnceFlush;
     }
     LBts(&sys_run_level,RLf_ONCE_ADAM);
-
     RegDft("Once/User","");
-    if (RegCnt("Once/User")>2) {
+    if (RegCnt("Once/User")>2)
+    {
       RegExe("Once/User");
       OnceFlush;
     }
     LBts(&sys_run_level,RLf_ONCE_USER);
-
-  } catch {
+  }
+  catch
+  {
     AOnceFlush;
     LBts(&sys_run_level,RLf_ONCE_ADAM);
     OnceFlush;

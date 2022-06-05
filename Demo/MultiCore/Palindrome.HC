@@ -7,7 +7,7 @@ CDoc *doc;
 U0 PDNormalize()
 {
   U8 *r=MAlloc(size+2*BORDER_CHARS),
-	*src=buf,*dst=r;
+        *src=buf,*dst=r;
   I64 ch;
   *dst++='['; //Border
   while (size--) {
@@ -38,9 +38,9 @@ U0 MPPalindrome(I64 dummy=0)
 {
   no_warn dummy;
   U8 *src=buf+BORDER_CHARS+size*Gs->num/mp_cnt,
-	*f,*b;
+        *f,*b;
   I64 len,best=0,
-	my_size=(size+mp_cnt-1)/mp_cnt;
+        my_size=(size+mp_cnt-1)/mp_cnt;
   while (my_size--) {
 
     //Odd

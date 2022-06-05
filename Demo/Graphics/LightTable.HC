@@ -62,11 +62,11 @@ U0 DrawIt(CTask *,CDC *dc)
   GrBlot(dc,0,0,map);
   dc->color=WHITE;
   GrPrint(dc,0,0,"Mem:0x%X %,dMeg Scale:%0.3f (%d,%d)-->(%d,%d)",
-	bmp_mem,bmp_mem/1024/1024,bmp_scale,
-	map->width,map->height,bmp_width,bmp_height);
+        bmp_mem,bmp_mem/1024/1024,bmp_scale,
+        map->width,map->height,bmp_width,bmp_height);
   GrPrint(dc,0,FONT_HEIGHT,
-	"PhotonCnt:%d MirrorCnt:%d SnellCnt:%d SnellInhibit:%d ZeroNormal:%d",
-	photon_cnt,mirror_cnt,snell_cnt,normal_inhibit,zero_normal);
+        "PhotonCnt:%d MirrorCnt:%d SnellCnt:%d SnellInhibit:%d ZeroNormal:%d",
+        photon_cnt,mirror_cnt,snell_cnt,normal_inhibit,zero_normal);
   for (i=0;i<mp_cnt;i++) {
     while (LBts(&p_root_locks,i))
       Yield;
@@ -76,8 +76,8 @@ U0 DrawIt(CTask *,CDC *dc)
       GrLine(dc,tmpp->p.x-VECTOR*tmpp->v.x,tmpp->p.y-VECTOR*tmpp->v.y,
 	    tmpp->p.x,tmpp->p.y);
       if (show_normals) {
-	dc->color=LTGREEN;
-	GrLine(dc,tmpp->p.x,tmpp->p.y,
+        dc->color=LTGREEN;
+        GrLine(dc,tmpp->p.x,tmpp->p.y,
 	      tmpp->p.x+VECTOR*tmpp->n.x,tmpp->p.y+VECTOR*tmpp->n.y);
       }
       tmpp=tmpp->next;
@@ -94,7 +94,7 @@ U0 RayBurst(I64 x1,I64 y1,I64 x2,I64 y2)
   I64 i;
   Photon *tmpp;
   if ((x1!=x2 || y1!=y2) && BORDER+WING<x2<map->width-BORDER-WING &&
-	BORDER+WING<y2<map->height-BORDER-WING) {
+        BORDER+WING<y2<map->height-BORDER-WING) {
     D3Equ(&p,x2,y2);
     D3Equ(&v,x2-x1,y2-y1);
     D3Unit(&v);
@@ -126,7 +126,7 @@ U0 RandomBurst()
   for (i=0;i<256;i++) {
     tmpp=PhotonNew;
     D3Equ(&tmpp->p,(Fs->pix_width-BORDER*2)*Rand+BORDER,
-		(Fs->pix_height-BORDER*2)*Rand+BORDER);
+	  (Fs->pix_height-BORDER*2)*Rand+BORDER);
     é=2*ã*Rand;
     D3Equ(&tmpp->v,Cos(é),Sin(é));
   }
@@ -149,7 +149,7 @@ U0 FindNormal(U8 *bmp,Photon *tmpp)
   D3Mul(&p,bmp_scale,&tmpp->p);
   D3Copy(&p1,&p);
   while (BmpPeek(bmp,p1.x,p1.y)==BLACK &&
-	D3DistSqr(&p,&p1)<find_normal_dist_sqr)
+        D3DistSqr(&p,&p1)<find_normal_dist_sqr)
     D3AddEqu(&p1,&tmpp->v);
   D3Copy(&p,&p1);
   D3Div(&tmpp->p,&p,bmp_scale);
@@ -160,17 +160,17 @@ U0 FindNormal(U8 *bmp,Photon *tmpp)
       x=p.x+bmp_norm_radius*Cos(é+ã-ã/4-è);
       y=p.y+bmp_norm_radius*Sin(é+ã-ã/4-è);
       if (state=BmpPeek(bmp,x,y))
-	goto fn_p1;
+        goto fn_p1;
       x=p.x+bmp_norm_radius*Cos(é+ã-ã/4+è);
       y=p.y+bmp_norm_radius*Sin(é+ã-ã/4+è);
       if (state=BmpPeek(bmp,x,y))
-	goto fn_p1;
+        goto fn_p1;
     }
     for (;è<=3*ã/4;è+=step*ã/bmp_norm_radius) {
       x=p.x+bmp_norm_radius*Cos(é+ã-ã/4-è);
       y=p.y+bmp_norm_radius*Sin(é+ã-ã/4-è);
       if (state=BmpPeek(bmp,x,y))
-	goto fn_p1;
+        goto fn_p1;
     }
   }
 fn_p1:
@@ -185,17 +185,17 @@ fn_p1:
       x=p.x+bmp_norm_radius*Cos(é+ã+ã/4+è);
       y=p.y+bmp_norm_radius*Sin(é+ã+ã/4+è);
       if (state=BmpPeek(bmp,x,y))
-	goto fn_p2;
+        goto fn_p2;
       x=p.x+bmp_norm_radius*Cos(é+ã+ã/4-è);
       y=p.y+bmp_norm_radius*Sin(é+ã+ã/4-è);
       if (state=BmpPeek(bmp,x,y))
-	goto fn_p2;
+        goto fn_p2;
     }
     for (;è<=3*ã/4;è+=step*ã/bmp_norm_radius) {
       x=p.x+bmp_norm_radius*Cos(é+ã+ã/4+è);
       y=p.y+bmp_norm_radius*Sin(é+ã+ã/4+è);
       if (state=BmpPeek(bmp,x,y))
-	goto fn_p2;
+        goto fn_p2;
     }
   }
 fn_p2:
@@ -242,7 +242,7 @@ U0 Mirror(Photon *tmpp)
 U0 SnellsLaw(Photon *tmpp,I64 last,I64 next)
 {
 //n1 and n2 are refraction index.
-//n1 Sin(é1) == n2 Sin(é2)
+  //n1 Sin(é1) == n2 Sin(é2)
   F64 é=Arg(tmpp->v.x,tmpp->v.y),é$SY,3$n$SY,0$,n1,n2,é1,é2;
   if (last==LENS_COLOR)
     n1=1.5;
@@ -282,8 +282,8 @@ U0 AnimateTask(I64)
 U0 MPAnimateTask(I64)
 {
   I64	i,last_master_jiffy=0,
-	timeout_jiffy=master_sleep_jiffy+ANIMATE_JIFFIES,
-	last,next;
+        timeout_jiffy=master_sleep_jiffy+ANIMATE_JIFFIES,
+        last,next;
   Bool	inhibit;
   CD3	step;
   Photon *tmpp,*root=&p_root[Gs->num];
@@ -293,35 +293,35 @@ U0 MPAnimateTask(I64)
     tmpp=root->next;
     while (tmpp!=root) {
       for (i=0;i<BABY_STEPS;i++) {
-	last=GrPeek(map,tmpp->p.x,tmpp->p.y);
-	D3Div(&step,&tmpp->v,BABY_STEPS);
-	D3AddEqu(&tmpp->p,&step);
-	if (tmpp->p.x<BORDER) {
+        last=GrPeek(map,tmpp->p.x,tmpp->p.y);
+        D3Div(&step,&tmpp->v,BABY_STEPS);
+        D3AddEqu(&tmpp->p,&step);
+        if (tmpp->p.x<BORDER) {
 	  tmpp->p.x=2*BORDER-tmpp->p.x;
 	  tmpp->v.x=-tmpp->v.x;
-	}
-	if (tmpp->p.x>=map->width-BORDER) {
+        }
+        if (tmpp->p.x>=map->width-BORDER) {
 	  tmpp->p.x-=tmpp->p.x-map->width+BORDER;
 	  tmpp->v.x=-tmpp->v.x;
-	}
-	if (tmpp->p.y<BORDER) {
+        }
+        if (tmpp->p.y<BORDER) {
 	  tmpp->p.y=2*BORDER-tmpp->p.y;
 	  tmpp->v.y=-tmpp->v.y;
-	}
-	if (tmpp->p.y>=map->height-BORDER) {
+        }
+        if (tmpp->p.y>=map->height-BORDER) {
 	  tmpp->p.y-=tmpp->p.y-map->height+BORDER;
 	  tmpp->v.y=-tmpp->v.y;
-	}
-	next=GrPeek(map,tmpp->p.x,tmpp->p.y);
+        }
+        next=GrPeek(map,tmpp->p.x,tmpp->p.y);
 
-	if (D3DistSqr(&tmpp->p_normal_inhibit,&tmpp->p)<4.0)
+        if (D3DistSqr(&tmpp->p_normal_inhibit,&tmpp->p)<4.0)
 	  inhibit=TRUE;
-	else
+        else
 	  inhibit=FALSE;
 
-	if (last!=next) {
+        if (last!=next) {
 	  if ((last==BLACK && next==LENS_COLOR) ||
-		(last==LENS_COLOR && next==BLACK)) {
+	        (last==LENS_COLOR && next==BLACK)) {
 	    if (inhibit)
 	      lock {normal_inhibit++;}
 	    else
@@ -333,13 +333,13 @@ U0 MPAnimateTask(I64)
 	      Mirror(tmpp);
 	  } else if (!inhibit)
 	    D3Zero(&tmpp->p_normal_inhibit);
-	} else if (!inhibit)
+        } else if (!inhibit)
 	  D3Zero(&tmpp->p_normal_inhibit);
       }
 
       tmpp=tmpp->next;
       if (cnts.jiffies>=timeout_jiffy)
-	break;
+        break;
     }
     LBtr(&p_root_locks,Gs->num);
     if (cnts.jiffies>=timeout_jiffy) {
@@ -348,7 +348,7 @@ U0 MPAnimateTask(I64)
     }
     if (!full_speed) {
       while (master_sleep_jiffy==last_master_jiffy)
-	Sleep(1);
+        Sleep(1);
       last_master_jiffy=master_sleep_jiffy;
       SleepUntil(master_sleep_jiffy);
       timeout_jiffy=master_sleep_jiffy+ANIMATE_JIFFIES;
@@ -457,39 +457,39 @@ U0 LightTable()
 
   p_root_locks=0;
   MenuPush(
-	"File {"
-	"  Restart(,'\n');"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Mode {"
-	"  ReflectLine(,'0');"
-	"  ReflectSpline(,'1');"
-	"  RefractLine(,'2');"
-	"  RefractSpline(,'3');"
-	"  RefractFloodFill(,'4');"
-	"  TestRay(,'5');"
-	"}"
-	"Play {"
-	"  RandomBurst(,'r');"
-	"  ElapseTime(,'e');"
-	"}"
-	"View {"
-	"  ToggleNormals(,'n');"
-	"}"
-	);
+        "File {"
+        "  Restart(,'\n');"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Mode {"
+        "  ReflectLine(,'0');"
+        "  ReflectSpline(,'1');"
+        "  RefractLine(,'2');"
+        "  RefractSpline(,'3');"
+        "  RefractFloodFill(,'4');"
+        "  TestRay(,'5');"
+        "}"
+        "Play {"
+        "  RandomBurst(,'r');"
+        "  ElapseTime(,'e');"
+        "}"
+        "View {"
+        "  ToggleNormals(,'n');"
+        "}"
+        );
   LTMenuSet(mode);
 
   bmp_mem=GetI64("\n\n\nHow much memory for the high resolution\n"
-	"shadow bitmap that helps improve the\n"
-	"accuracy of the normal vector estimate?\n"
-	"You can choose up to the largest\n"
-	"contiguous chunk of physical memory.\n\n"
-	"Mem (0x%0X):",1024*1024*16);
+        "shadow bitmap that helps improve the\n"
+        "accuracy of the normal vector estimate?\n"
+        "You can choose up to the largest\n"
+        "contiguous chunk of physical memory.\n\n"
+        "Mem (0x%0X):",1024*1024*16);
 
   SettingsPush; //See $LK,"SettingsPush",A="MN:SettingsPush"$
   Fs->win_inhibit=WIG_TASK_DFT-WIF_SELF_FOCUS-
-	WIF_SELF_BORDER-WIF_FOCUS_TASK_MENU;
+        WIF_SELF_BORDER-WIF_FOCUS_TASK_MENU;
   Fs->text_attr=BLACK<<4+WHITE;	//Current $LK,"CTask",A="MN:CTask"$ is Fs segment register.
   AutoComplete;
   WinBorder;
@@ -507,7 +507,7 @@ U0 LightTable()
 	    1<<MSG_KEY_DOWN+1<<MSG_MS_L_DOWN+1<<MSG_MS_L_UP+1<<MSG_MS_R_UP);
 lt_restart:
       switch (msg_code) {
-	case MSG_MS_L_UP:
+        case MSG_MS_L_UP:
 	  Sweep(100,90,100);
 	  x2=arg1; y2=arg2;
 	  switch (mode) {
@@ -522,86 +522,86 @@ lt_restart:
 	      break;
 	  }
 	  break;
-	case MSG_MS_L_DOWN:
+        case MSG_MS_L_DOWN:
 	  x1=arg1; y1=arg2;
 	  switch (mode) {
 	    case LTM_REFLECT_LINE:
 	    case LTM_REFRACT_LINE:
 	      if (mode==LTM_REFLECT_LINE)
-		map->color=ROP_XOR+MIRROR_COLOR;
+	        map->color=ROP_XOR+MIRROR_COLOR;
 	      else
-		map->color=ROP_XOR+LENS_COLOR;
+	        map->color=ROP_XOR+LENS_COLOR;
 	      while (TRUE) {
-		x2=arg1; y2=arg2;
-		GrLine(map,x1,y1,x2,y2);
-		msg_code=GetMsg(&arg1,&arg2,
+	        x2=arg1; y2=arg2;
+	        GrLine(map,x1,y1,x2,y2);
+	        msg_code=GetMsg(&arg1,&arg2,
 		      1<<MSG_KEY_DOWN+1<<MSG_MS_L_UP+1<<MSG_MS_MOVE);
-		GrLine(map,x1,y1,x2,y2);
-		if (msg_code==MSG_KEY_DOWN)
+	        GrLine(map,x1,y1,x2,y2);
+	        if (msg_code==MSG_KEY_DOWN)
 		  goto lt_restart;
-		else if (msg_code==MSG_MS_L_UP) {
+	        else if (msg_code==MSG_MS_L_UP) {
 		  Sweep(100,90,100);
 		  x2=arg1; y2=arg2;
 		  break;
-		}
+	        }
 	      }
 	      if (mode==LTM_REFLECT_LINE)
-		map->color=MIRROR_COLOR;
+	        map->color=MIRROR_COLOR;
 	      else
-		map->color=LENS_COLOR;
+	        map->color=LENS_COLOR;
 	      GrLine(map,x1,y1,x2,y2);
 	      if (mode==LTM_REFLECT_LINE)
-		BmpLine(bmp_reflect,x1,y1,x2,y2);
+	        BmpLine(bmp_reflect,x1,y1,x2,y2);
 	      else
-		BmpLine(bmp_refract,x1,y1,x2,y2);
+	        BmpLine(bmp_refract,x1,y1,x2,y2);
 	      break;
 	    case LTM_REFLECT_SPLINE:
 	    case LTM_REFRACT_SPLINE:
 	      cnt=0;
 	      if (mode==LTM_REFLECT_SPLINE)
-		map->color=ROP_XOR+MIRROR_COLOR;
+	        map->color=ROP_XOR+MIRROR_COLOR;
 	      else
-		map->color=ROP_XOR+LENS_COLOR;
+	        map->color=ROP_XOR+LENS_COLOR;
 	      do {
-		c[cnt].x=arg1; c[cnt].y=arg2; c[cnt].z=0;
-		Gr2BSpline(map,c,cnt+1);
-		msg_code=GetMsg(&arg1,&arg2,1<<MSG_KEY_DOWN+1<<MSG_MS_L_UP+
+	        c[cnt].x=arg1; c[cnt].y=arg2; c[cnt].z=0;
+	        Gr2BSpline(map,c,cnt+1);
+	        msg_code=GetMsg(&arg1,&arg2,1<<MSG_KEY_DOWN+1<<MSG_MS_L_UP+
 		      1<<MSG_MS_MOVE+1<<MSG_MS_R_UP);
-		Gr2BSpline(map,c,cnt+1);
-		if (msg_code==MSG_KEY_DOWN)
+	        Gr2BSpline(map,c,cnt+1);
+	        if (msg_code==MSG_KEY_DOWN)
 		  goto lt_restart;
-		else if (msg_code==MSG_MS_L_UP) {
+	        else if (msg_code==MSG_MS_L_UP) {
 		  Sweep(100,90,100);
 		  cnt++;
-		}
+	        }
 	      } while (cnt<PTS_NUM-1 && msg_code!=MSG_MS_R_UP);
 	      if (mode==LTM_REFLECT_SPLINE)
-		map->color=MIRROR_COLOR;
+	        map->color=MIRROR_COLOR;
 	      else
-		map->color=LENS_COLOR;
+	        map->color=LENS_COLOR;
 	      Gr2BSpline3(map,c,cnt);
 	      for (i=0;i<cnt;i++) {
-		c[i].x*=bmp_scale;
-		c[i].y*=bmp_scale;
+	        c[i].x*=bmp_scale;
+	        c[i].y*=bmp_scale;
 	      }
 	      if (mode==LTM_REFLECT_SPLINE)
-		BSpline2(bmp_reflect,c,cnt,&BmpPlot);
+	        BSpline2(bmp_reflect,c,cnt,&BmpPlot);
 	      else
-		BSpline2(bmp_refract,c,cnt,&BmpPlot);
+	        BSpline2(bmp_refract,c,cnt,&BmpPlot);
 	      mode=LTM_REFLECT_LINE;
 	      LTMenuSet(mode);
 	      break;
 	  }
 	  break;
-	case MSG_MS_R_UP:
+        case MSG_MS_R_UP:
 	  i=PopUpPickLst("Reflect Line\0Reflect Spline\0Refract Line\0"
-		"Refract Spline\0Refract Flood Fill\0TestRay\0");
+	        "Refract Spline\0Refract Flood Fill\0TestRay\0");
 	  if (i>=0) {
 	    mode=i;
 	    LTMenuSet(mode);
 	  }
 	  break;
-	case MSG_KEY_DOWN:
+        case MSG_KEY_DOWN:
 	  switch (arg1) {
 	    case '\n':
 	      CleanUp;

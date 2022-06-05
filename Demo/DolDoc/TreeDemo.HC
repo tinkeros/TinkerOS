@@ -8,9 +8,9 @@ U0 TreeSub(CDoc *doc,CDirEntry *tmpde)
       DocPrint(doc,"$$MA,T=\"%s\",LM=\"Cd(\\\"%s\\\");Dir;\n\"$$\n",
 	    tmpde->name,tmpde->full_name);
       if (tmpde->sub) {
-	DocPrint(doc,"$$ID,+2$$");
-	TreeSub(doc,tmpde->sub);
-	DocPrint(doc,"$$ID,-2$$");
+        DocPrint(doc,"$$ID,+2$$");
+        TreeSub(doc,tmpde->sub);
+        DocPrint(doc,"$$ID,-2$$");
       }
     } else
       DocPrint(doc,"$$LK,\"%s\",A=\"FI:%s\"$$\n",

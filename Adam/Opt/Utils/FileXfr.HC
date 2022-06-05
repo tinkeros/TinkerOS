@@ -1,8 +1,8 @@
 #include "::/Adam/Net/SnailLite"
 
-I64 Fget(U8 *filename)
+I64 Fget(U8 *filename, U8 *local_name=NULL)
 {//Gets file from another PC over serial
-  U8* data;
+  U8 *data, *basename, *zfile;
   I64 len,lenlen;
   SocketInit;
   CommPutChar(SNAIL_COM, CMD_FILE_SEND);
@@ -27,20 +27,50 @@ I64 Fget(U8 *filename)
   {
     CommPutChar(SNAIL_COM, lenlen);
     ReadBlock(data,len);
-    FileWrite(FileBaseName(filename),data,len);
+    "Got file: %s\n"
+    , filename;
+    if (local_name)
+    {
+      zfile=MStrPrint("%s.Z",local_name);
+      if (IsFile(zfile))
+      {
+        FileWrite(zfile,data,len);
+      }
+      else
+      {
+        FileWrite(local_name,data,len);
+      }
+      Free(zfile);
+    }
+    else
+    {
+      basename = FileBaseName(filename);
+      zfile=MStrPrint("%s.Z",local_name);
+      if (IsFile(zfile))
+      {
+        FileWrite(zfile,data,len);
+      }
+      else
+      {
+        FileWrite(basename,data,len);
+      }
+      Free(basename);
+      Free(zfile);
+    }
     Free(data);
     return len;
   }
   else
-  {
+    
+    {
     "Failed to malloc space for file %s!\n",filename;
     CommPutChar(SNAIL_COM, 0);
     return 0;
+    }
   }
-}
 
 
-I64 Fput(U8 *filename)
+I64 Fput(U8 *filename, U8* remote_name=NULL)
 {//Transfers file using to another PC over serial
   U8 *data, *len_str;
   I64 len,lenlen;
@@ -64,9 +94,18 @@ I64 Fput(U8 *filename)
   CommPutChar(SNAIL_COM, lenlen);
   CommPutS(SNAIL_COM,len_str);
   Free(len_str);
-  lenlen = StrLen(filename);
-  CommPutChar(SNAIL_COM, lenlen);
-  CommPutS(SNAIL_COM,filename);
+  if (remote_name)
+  {
+    lenlen = StrLen(remote_name);
+    CommPutChar(SNAIL_COM, lenlen);
+    CommPutS(SNAIL_COM,remote_name);
+  }
+  else
+  {
+    lenlen = StrLen(filename);
+    CommPutChar(SNAIL_COM, lenlen);
+    CommPutS(SNAIL_COM,filename);
+  }
   CommPutBlk(SNAIL_COM,data,len);
   if (lenlen == ReadI8)
   {
@@ -75,6 +114,7 @@ I64 Fput(U8 *filename)
   }
   else
     "File %s was not transferred! An unknown error occurred in transfer!\n",filename;
+  Free(data);
   return 0;
 }
 

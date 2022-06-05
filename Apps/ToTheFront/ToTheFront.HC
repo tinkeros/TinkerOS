@@ -135,24 +135,24 @@ U0 ToTheFront()
   Fs->win_inhibit|=WIF_SELF_MS_L|WIF_SELF_MS_R|WIG_DBL_CLICK;
 
   MenuPush(
-	"File {"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Play {"
-	"  EndPhase(,CH_SPACE);"
-	"  Restart(,'\n');"
-	"}"
-	"View {"
-	"  Player1(,'1');"
-	"  Player2(,'2');"
-	"  OddsCalculations(,'c');"
-	"  LOS(,0,SCF_SHIFT);"
-	"}"
-	"Settings {"
-	"  AnimationDelay(,'d');"
-	"}"
-	);
+        "File {"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Play {"
+        "  EndPhase(,CH_SPACE);"
+        "  Restart(,'\n');"
+        "}"
+        "View {"
+        "  Player1(,'1');"
+        "  Player2(,'2');"
+        "  OddsCalculations(,'c');"
+        "  LOS(,0,SCF_SHIFT);"
+        "}"
+        "Settings {"
+        "  AnimationDelay(,'d');"
+        "}"
+        );
 
   AutoComplete;
   WinBorder;
@@ -164,21 +164,21 @@ U0 ToTheFront()
   PlayerPick("AIs",1);
 
   PopUpOk("$$PURPLE$$$$TX+CX,\"ToTheFront\"$$$$FG$$\n\n"
-	"$$GREEN$${Left-click}$$FG$$ to move or fire units.\n"
-	"$$GREEN$$<SPACE>$$FG$$\tor $$GREEN$${Right-click}$$FG$$ to end phase.\n"
-	"$$GREEN$$<SHIFT>$$FG$$\tto show line-of-sight.\n"
-	"$$GREEN$$<ENTER>$$FG$$\tto start new game.\n"
-	"$$GREEN$$1$$FG$$\tPlayer 1 view.\n"
-	"$$GREEN$$2$$FG$$\tPlayer 2 view.\n"
-	"$$GREEN$$c$$FG$$\tView odds calculations.\n"
-	"$$GREEN$$d$$FG$$\tSet animation delay.");
+        "$$GREEN$${Left-click}$$FG$$ to move or fire units.\n"
+        "$$GREEN$$<SPACE>$$FG$$\tor $$GREEN$${Right-click}$$FG$$ to end phase.\n"
+        "$$GREEN$$<SHIFT>$$FG$$\tto show line-of-sight.\n"
+        "$$GREEN$$<ENTER>$$FG$$\tto start new game.\n"
+        "$$GREEN$$1$$FG$$\tPlayer 1 view.\n"
+        "$$GREEN$$2$$FG$$\tPlayer 2 view.\n"
+        "$$GREEN$$c$$FG$$\tView odds calculations.\n"
+        "$$GREEN$$d$$FG$$\tSet animation delay.");
   Fs->task_end_cb=&TaskEndCB; //<CTRL-ALT-x>
   Fs->draw_it=&DrawIt;
   try {
     do {
       res=PhaseDo;
       if (res=='GameOver') {
-	while (TRUE) {
+        while (TRUE) {
 	  msg_off_timeout=0;
 	  StrCpy(msg_buf,"Game Over");
 	  Snd;
@@ -196,10 +196,10 @@ U0 ToTheFront()
 	    ViewPlayerSet(1);
 	  else if (ch=='d')
 	    AnimationDelaySet;
-	}
+        }
       } else if (res=='NewGame') {
-	CleanUp;
-	Init;
+        CleanUp;
+        Init;
       }
     } while (res!='ExitGame');
   } catch

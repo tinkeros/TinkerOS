@@ -47,11 +47,11 @@ U0 Search(I64 dx,I64 dy)
       GetWord(buf,x,y,dx,dy);
       n=StrLen(buf);
       for (i=n;i>2;i--) {
-	buf[i]=0;
-	if ((ptr=ACDWordPtAt(buf)) && *ptr++==ACD_WORD_CHAR &&
+        buf[i]=0;
+        if ((ptr=ACDWordPtAt(buf)) && *ptr++==ACD_WORD_CHAR &&
 	      !StrICmp(ptr,buf)) {
 	  "%s ",buf;
-	}
+        }
       }
     }
 }
@@ -105,22 +105,22 @@ U0 DisplayWords(I64 n)
       w1=word_ptrs[i];
       w2=dict+1;
       while (*w2 && *w1==ToUpper(*w2)) {
-	w1++;
-	w2++;
+        w1++;
+        w2++;
       }
       if (ToUpper(*w2)>*w1)
-	break;
+        break;
       if (!*w2) {
-	if (StrLen(dict+1)>2) {
+        if (StrLen(dict+1)>2) {
 	  k=i;
 	  while (k<n && !StrNICmp(word_ptrs[k++],dict+1,StrLen(dict+1)))
 	    "%s ",dict+1;
-	}
-	w2=dict+1;
-	while (!StrICmp(w2,dict+1))
+        }
+        w2=dict+1;
+        while (!StrICmp(w2,dict+1))
 	  dict+=StrLen(dict+1)+4;
       } else
-	dict+=StrLen(dict+1)+4;
+        dict+=StrLen(dict+1)+4;
     }
 }
 

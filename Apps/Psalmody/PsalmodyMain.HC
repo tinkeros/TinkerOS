@@ -11,12 +11,12 @@ F64 PopUpDuration()
   I64 i;
   CDoc *doc=DocNew;
   DocPrint(doc,"$$GREEN$$$$MU,\"Set Word\",LE=PSMR_SET_WORD$$\n"
-	"$$MU,\"Toggle Sharp\",LE=PSMR_SHARP$$\n"
-	"$$MU,\"Toggle Flat\",LE=PSMR_FLAT$$\n"
-	"$$MU,\"Toggle Tie\",LE=PSMR_TIE$$\n"
-	"$$MU,\"Make Rest\",LE=PSMR_REST$$\n"
-	"$$MU,\"Insert Note\",LE=PSMR_INS_NOTE$$\n"
-	"$$MU,\"Delete Note\",LE=PSMR_DELETE_NOTE$$\n\n");
+        "$$MU,\"Toggle Sharp\",LE=PSMR_SHARP$$\n"
+        "$$MU,\"Toggle Flat\",LE=PSMR_FLAT$$\n"
+        "$$MU,\"Toggle Tie\",LE=PSMR_TIE$$\n"
+        "$$MU,\"Make Rest\",LE=PSMR_REST$$\n"
+        "$$MU,\"Insert Note\",LE=PSMR_INS_NOTE$$\n"
+        "$$MU,\"Delete Note\",LE=PSMR_DELETE_NOTE$$\n\n");
   for (i=0;i<PSM_DURATIONS_NUM;i++)
     DocPrint(doc,"$$MU,\"%7.5f\",LE=%d$$\n",psm_durations[i],i);
   DocPrint(doc,"\n$$MU,\"CANCEL\",LE=DOCM_CANCEL$$\n");
@@ -37,14 +37,14 @@ U0 PsmRightClick(I64 x,I64 y)
     i=PopUpDuration;
     if (0<=i<PSM_DURATIONS_NUM) {
       if (tmpn->type==PSMT_NOTE)
-	tmpn->duration=i;
+        tmpn->duration=i;
     } else {
       switch (i) {
-	case PSMR_REST:
+        case PSMR_REST:
 	  if (tmpn->type==PSMT_NOTE)
 	    tmpn->ona=0;
 	  break;
-	case PSMR_SHARP:
+        case PSMR_SHARP:
 	  if (tmpn->type==PSMT_NOTE && tmpn->ona) {
 	    if (Btr(&tmpn->flags,PSMf_FLAT))
 	      tmpn->ona++;
@@ -54,7 +54,7 @@ U0 PsmRightClick(I64 x,I64 y)
 	      tmpn->ona++;
 	  }
 	  break;
-	case PSMR_FLAT:
+        case PSMR_FLAT:
 	  if (tmpn->type==PSMT_NOTE && tmpn->ona) {
 	    if (Btr(&tmpn->flags,PSMf_SHARP))
 	      tmpn->ona--;
@@ -64,11 +64,11 @@ U0 PsmRightClick(I64 x,I64 y)
 	      tmpn->ona--;
 	  }
 	  break;
-	case PSMR_TIE:
+        case PSMR_TIE:
 	  if (tmpn->type==PSMT_NOTE)
 	    Btc(&tmpn->flags,PSMf_TIE);
 	  break;
-	case PSMR_SET_WORD:
+        case PSMR_SET_WORD:
 	  if (tmpn->type==PSMT_NOTE) {
 	    if (DocPut) DocPut->flags&=~DOCF_FORM;
 	    if (PsmHasWords(tmpn->word))
@@ -88,11 +88,11 @@ U0 PsmRightClick(I64 x,I64 y)
 		    ~DOCF_FORM|old_doc_flags&DOCF_FORM;
 	  }
 	  break;
-	case PSMR_INS_NOTE:
+        case PSMR_INS_NOTE:
 	  tmpn1=PsmNoteCopy(tmpn);
 	  QueIns(tmpn1,tmpn);
 	  break;
-	case PSMR_DELETE_NOTE:
+        case PSMR_DELETE_NOTE:
 	  psm.cur_note=tmpn->next;
 	  QueRem(tmpn);
 	  PsmNoteDel(tmpn);
@@ -183,8 +183,8 @@ U0 PsmLeftClickStaffPtr(I64 x,I64 y)
       o_original=Ona2Octave(tmpn->ona);
       n_original=Ona2Note  (tmpn->ona);
       do {
-	msg_code=GetMsg(&arg1,&arg2,1<<MSG_MS_L_UP|1<<MSG_MS_MOVE);
-	if (msg_code==MSG_MS_L_UP) {
+        msg_code=GetMsg(&arg1,&arg2,1<<MSG_MS_L_UP|1<<MSG_MS_MOVE);
+        if (msg_code==MSG_MS_L_UP) {
 	  tmpn1=PsmFindNote(arg1,arg2);
 	  if (tmpn1==&psm.head || tmpn1==tmpn)
 	    goto move_note;
@@ -194,7 +194,7 @@ U0 PsmLeftClickStaffPtr(I64 x,I64 y)
 	    tmpn->word=NULL;
 	    tmpn->ona=Note2Ona(n_original,o_original);
 	  }
-	} else {
+        } else {
 move_note:
 	  arg2=arg2/4-15;
 	  n=arg2%7;
@@ -207,7 +207,7 @@ move_note:
 	  if (n<3)
 	    o--;
 	  tmpn->ona=Note2Ona(n,o);
-	}
+        }
       } while (msg_code!=MSG_MS_L_UP);
       PsmSetWidth(tmpn);
     }
@@ -307,8 +307,8 @@ U0 PsmDownKey(I64 x,I64 y)
     for (i=0;i<PSM_KEYS_NUM;i++) {
       o=&psm_kbd[i];
       if (o->x<=x<o->x+o->w && y<o->h) {
-	Msg(MSG_KEY_DOWN,o->ascii,0);
-	return;
+        Msg(MSG_KEY_DOWN,o->ascii,0);
+        return;
       }
     }
   }
@@ -324,8 +324,8 @@ U0 PsmUpKey(I64 x,I64 y)
     for (i=0;i<PSM_KEYS_NUM;i++) {
       o=&psm_kbd[i];
       if (o->x<=x<o->x+o->w && y<o->h) {
-	Msg(MSG_KEY_UP,o->ascii,0);
-	return;
+        Msg(MSG_KEY_UP,o->ascii,0);
+        return;
       }
     }
   }
@@ -334,7 +334,7 @@ U0 PsmUpKey(I64 x,I64 y)
 U0 PsmPushMode(I64 psm_octave)
 {
   Fs->win_inhibit=WIG_TASK_DFT-WIF_SELF_FOCUS
-	-WIF_SELF_BORDER-WIF_FOCUS_TASK_MENU-WIF_SELF_CTRLS;
+        -WIF_SELF_BORDER-WIF_FOCUS_TASK_MENU-WIF_SELF_CTRLS;
   PsmMenu(psm_octave);
 }
 
@@ -351,7 +351,7 @@ U0 Psalmody(U8 *dirname="~/Psalmody")
 {
   Bool was_playing,is_null=TRUE,was_null=TRUE;
   I64 arg1,arg2,msg_code=0,col,ona=0,last_ona=0,
-	psm_octave=4,timeout_val,timeout_val2,old_doc_flags;
+        psm_octave=4,timeout_val,timeout_val2,old_doc_flags;
   U8 *filename=NULL,*st,*st2;
   PsmNote *tmpn;
   F64 psm_duration=1.0,d,evt_time=tS,note_down_time=tS;
@@ -374,46 +374,46 @@ U0 Psalmody(U8 *dirname="~/Psalmody")
   psm.dc2=DCAlias;
 
   MenuPush(
-	"File {"
-	"  New(,'.');"
-	"  ChgDir(MSG_CMD,PSMF_CD);"
-	"  Open(,CH_CTRLO);"
-	"  SaveAs(,CH_CTRLA);"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Edit {"
-	"  Cut(,CH_CTRLX);"
-	"  Copy(,CH_CTRLC);"
-	"  Paste(,CH_CTRLV);"
-	"  RightMenu(,'\n');"
-	"  BackSpace(,CH_BACKSPACE);"
-	"  DeleteNote(,,SC_DELETE);"
-	"  ClearSong(,'.');"
-	"  Left(,,SC_CURSOR_LEFT);"
-	"  Right(,,SC_CURSOR_RIGHT);"
-	"  GoBegin(,,0x4CB0000044B);"
-	"  GoEnd(,,0x4CD0000044D);"
-	"}"
-	"Song {"
-	"  Play(,'x');"
-	"  Record(,'z');"
-	"  Random(,',');"
-	"  MarkIncomplete(MSG_CMD,PSMF_INCOMPLETE);"
-	"}"
-	"Snd {"
-	"  Octave1(,'1');"
-	"  Octave2(,'2');"
-	"  Octave3(,'3');"
-	"  Octave4(,'4');"
-	"  Octave5(,'5');"
-	"  Octave6(,'6');"
-	"  Octave7(,'7');"
-	"}"
-	"Help {"
-	"  Help(,,SC_F1);"
-	"}"
-	);
+        "File {"
+        "  New(,'.');"
+        "  ChgDir(MSG_CMD,PSMF_CD);"
+        "  Open(,CH_CTRLO);"
+        "  SaveAs(,CH_CTRLA);"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Edit {"
+        "  Cut(,CH_CTRLX);"
+        "  Copy(,CH_CTRLC);"
+        "  Paste(,CH_CTRLV);"
+        "  RightMenu(,'\n');"
+        "  BackSpace(,CH_BACKSPACE);"
+        "  DeleteNote(,,SC_DELETE);"
+        "  ClearSong(,'.');"
+        "  Left(,,SC_CURSOR_LEFT);"
+        "  Right(,,SC_CURSOR_RIGHT);"
+        "  GoBegin(,,0x4CB0000044B);"
+        "  GoEnd(,,0x4CD0000044D);"
+        "}"
+        "Song {"
+        "  Play(,'x');"
+        "  Record(,'z');"
+        "  Random(,',');"
+        "  MarkIncomplete(MSG_CMD,PSMF_INCOMPLETE);"
+        "}"
+        "Snd {"
+        "  Octave1(,'1');"
+        "  Octave2(,'2');"
+        "  Octave3(,'3');"
+        "  Octave4(,'4');"
+        "  Octave5(,'5');"
+        "  Octave6(,'6');"
+        "  Octave7(,'7');"
+        "}"
+        "Help {"
+        "  Help(,,SC_F1);"
+        "}"
+        );
   psm.incomplete_entry=MenuEntryFind(Fs->cur_menu,"Song/MarkIncomplete");
   psm.record_entry=MenuEntryFind(Fs->cur_menu,"Song/Record");
 
@@ -431,43 +431,43 @@ U0 Psalmody(U8 *dirname="~/Psalmody")
       was_playing=FALSE;
 mo_start:
       if (ms.pos_text.y-Fs->win_top<18)
-	msg_code=GetMsg(&arg1,&arg2,1<<MSG_KEY_DOWN|1<<MSG_KEY_UP|
+        msg_code=GetMsg(&arg1,&arg2,1<<MSG_KEY_DOWN|1<<MSG_KEY_UP|
 	      1<<MSG_MS_L_DOWN|1<<MSG_MS_L_UP|1<<MSG_MS_R_UP|
 	      1<<MSG_MS_MOVE|1<<MSG_CMD);
       else
-	msg_code=GetMsg(&arg1,&arg2,1<<MSG_KEY_DOWN|1<<MSG_KEY_UP|
+        msg_code=GetMsg(&arg1,&arg2,1<<MSG_KEY_DOWN|1<<MSG_KEY_UP|
 	      1<<MSG_MS_MOVE|1<<MSG_CMD);
 mo_got_msg:
       if (msg_code==MSG_KEY_DOWN && arg1==CH_SPACE && !arg2) {
 //The Window Mgr sets the Doc cur_entry to a bttn
-	//and generates a <SPACE> when the Doc Bttns are clicked.
-	//This is so that kbd and mouse are the same for Doc's.
-	//We must now pass the <SPACE> onto the Doc hndlr.
-	PutKey(arg1,arg2);
-	goto mo_start;
+        //and generates a <SPACE> when the Doc Bttns are clicked.
+        //This is so that kbd and mouse are the same for Doc's.
+        //We must now pass the <SPACE> onto the Doc hndlr.
+        PutKey(arg1,arg2);
+        goto mo_start;
       }
       if (msg_code!=MSG_MS_MOVE) {
-	DocBottom;
-	if (was_playing || DocPut->cur_entry->y>=Fs->win_height-2) {
+        DocBottom;
+        if (was_playing || DocPut->cur_entry->y>=Fs->win_height-2) {
 	  PsmMenu(psm_octave);
 	  col=0;
-	}
+        }
       }
 
       ona=Note2Ona(3,psm_octave+1); //C
       is_null=TRUE;
       switch (msg_code) {
-	case MSG_CMD:
+        case MSG_CMD:
 	  PsmPopMode;
 	  switch (arg1) {
 	    case PSMF_CD:
 	      st2=dirname;
 	      if (dirname=PopUpPickDir) {
-		Free(st2);
-		Free(filename);
-		filename=NULL;
+	        Free(st2);
+	        Free(filename);
+	        filename=NULL;
 	      } else
-		dirname=st2;
+	        dirname=st2;
 	      break;
 	    case PSMF_INCOMPLETE:
 	      psm.incomplete_entry->checked=!psm.incomplete_entry->checked;
@@ -476,7 +476,7 @@ mo_got_msg:
 	  PsmPushMode(psm_octave);
 	  col=0;
 	  break;
-	case MSG_KEY_DOWN:
+        case MSG_KEY_DOWN:
 	  evt_time=tS;
 	  if ('0'<=arg1<='9') {
 	    psm_octave=arg1-'0';
@@ -485,43 +485,43 @@ mo_got_msg:
 	  } else {
 	    switch (arg1) {
 	      start:
-		case 'a':	ona-=8;		break;
-		case 's':	ona-=7;		break;
-		case 'e':	ona-=6;		break;
-		case 'd':	ona-=5;		break;
-		case 'r':	ona-=4;		break;
-		case 'f':	ona-=3;		break;
-		case 't':	ona-=2;		break;
-		case 'g':	ona--;		break;
-		case 'h':			break;
-		case 'u':	ona++;		break;
-		case 'j':	ona+=2;		break;
-		case 'i':	ona+=3;		break;
-		case 'k':	ona+=4;		break;
-		case 'l':	ona+=5;		break;
-		case 'p':	ona+=6;		break;
-		case ';':	ona+=7;		break;
-		case '[':	ona+=8;		break;
-		case '\'':	ona+=9;		break;
-		case ']':	ona+=10;	break;
-		case CH_SPACE:	ona=0;		break;
+	        case 'a':	ona-=8;		break;
+	        case 's':	ona-=7;		break;
+	        case 'e':	ona-=6;		break;
+	        case 'd':	ona-=5;		break;
+	        case 'r':	ona-=4;		break;
+	        case 'f':	ona-=3;		break;
+	        case 't':	ona-=2;		break;
+	        case 'g':	ona--;		break;
+	        case 'h':			break;
+	        case 'u':	ona++;		break;
+	        case 'j':	ona+=2;		break;
+	        case 'i':	ona+=3;		break;
+	        case 'k':	ona+=4;		break;
+	        case 'l':	ona+=5;		break;
+	        case 'p':	ona+=6;		break;
+	        case ';':	ona+=7;		break;
+	        case '[':	ona+=8;		break;
+	        case '\'':	ona+=9;		break;
+	        case ']':	ona+=10;	break;
+	        case CH_SPACE:	ona=0;		break;
 	      end:
-		is_null=FALSE;
-		break;
+	        is_null=FALSE;
+	        break;
 
 	      case 0:
-		switch (arg2.u8[0]) {
+	        switch (arg2.u8[0]) {
 		  case SC_CURSOR_LEFT:
 		    if (arg2&SCF_CTRL) {
 		      while (psm.cur_note->last!=&psm.head) {
-			psm.cur_note=psm.cur_note->last;
-			if (psm.cur_note!=&psm.head)
+		        psm.cur_note=psm.cur_note->last;
+		        if (psm.cur_note!=&psm.head)
 			  LBEqu(&psm.cur_note->flags,PSMf_SEL,arg2&SCF_SHIFT);
 		      }
 		    } else {
 		      if (psm.cur_note->last!=&psm.head) {
-			psm.cur_note=psm.cur_note->last;
-			if (psm.cur_note!=&psm.head)
+		        psm.cur_note=psm.cur_note->last;
+		        if (psm.cur_note!=&psm.head)
 			  LBEqu(&psm.cur_note->flags,PSMf_SEL,arg2&SCF_SHIFT);
 		      }
 		    }
@@ -529,15 +529,15 @@ mo_got_msg:
 		  case SC_CURSOR_RIGHT:
 		    if (arg2&SCF_CTRL) {
 		      while (psm.cur_note!=&psm.head) {
-			if (psm.cur_note!=&psm.head)
+		        if (psm.cur_note!=&psm.head)
 			  LBEqu(&psm.cur_note->flags,PSMf_SEL,arg2&SCF_SHIFT);
-			psm.cur_note=psm.cur_note->next;
+		        psm.cur_note=psm.cur_note->next;
 		      }
 		    } else {
 		      if (psm.cur_note!=&psm.head) {
-			if (psm.cur_note!=&psm.head)
+		        if (psm.cur_note!=&psm.head)
 			  LBEqu(&psm.cur_note->flags,PSMf_SEL,arg2&SCF_SHIFT);
-			psm.cur_note=psm.cur_note->next;
+		        psm.cur_note=psm.cur_note->next;
 		      }
 		    }
 		    break;
@@ -548,8 +548,8 @@ mo_got_msg:
 		      tmpn=psm.cur_note;
 		      psm.cur_note=tmpn->next;
 		      if (tmpn!=&psm.head) {
-			QueRem(tmpn);
-			PsmNoteDel(tmpn);
+		        QueRem(tmpn);
+		        PsmNoteDel(tmpn);
 		      }
 		    }
 		    break;
@@ -565,32 +565,32 @@ mo_got_msg:
 		    PsmPushMode(psm_octave);
 		    col=0;
 		    break;
-		}
-		break;
+	        }
+	        break;
 	      case ',':
-		Free(filename);
-		filename=NULL;
-		PsmPopMode;
-		music.octave=psm_octave;
-		if (st2=GodSongStr) {
+	        Free(filename);
+	        filename=NULL;
+	        PsmPopMode;
+	        music.octave=psm_octave;
+	        if (st2=GodSongStr) {
 		  PsmLoadSongStr(st2,&psm_octave,&psm_duration);
 		  Free(st2);
-		}
-		PsmPushMode(psm_octave);
-		col=0;
-		break;
+	        }
+	        PsmPushMode(psm_octave);
+	        col=0;
+	        break;
 	      case CH_CTRLO:
-		PsmPopMode;
-		RegOneTimePopUp(ARf_PSALMODY_JUKEBOX,
+	        PsmPopMode;
+	        RegOneTimePopUp(ARf_PSALMODY_JUKEBOX,
 		      "Sel a song and preview it.\n"
 		      "$$GREEN$$<SHIFT-ESC>$$FG$$ to load it into Psalmody.\n\n"
 		      ST_WARN_ST " Graphics and other embelishments\n"
 		      "will be lost because Psalmody can't\n"
 		      "parse HolyC programs completely.\n");
-		Free(filename);
-		filename=NULL;
-		JukeBox(dirname,&filename);
-		if (filename) {
+	        Free(filename);
+	        filename=NULL;
+	        JukeBox(dirname,&filename);
+	        if (filename) {
 		  psm.scrn_x=0;
 		  psm_duration=1.0;
 		  psm_octave=4;
@@ -599,47 +599,47 @@ mo_got_msg:
 		  PsmLoadSong(filename,&psm_octave,&psm_duration);
 		  psm.record_entry->checked=FALSE;
 		  psm.cur_note=psm.head.next;
-		}
-		PsmPushMode(psm_octave);
-		col=0;
-		break;
+	        }
+	        PsmPushMode(psm_octave);
+	        col=0;
+	        break;
 	      case CH_CTRLA:
-		PsmPopMode;
-		filename=PsmSaveSong(dirname,filename);
-		PsmPushMode(psm_octave);
-		break;
+	        PsmPopMode;
+	        filename=PsmSaveSong(dirname,filename);
+	        PsmPushMode(psm_octave);
+	        break;
 	      case CH_CTRLC:
-		PsmCopyToClip;
-		break;
+	        PsmCopyToClip;
+	        break;
 	      case CH_CTRLV:
-		PsmPasteClip;
-		break;
+	        PsmPasteClip;
+	        break;
 	      case CH_CTRLX:
-		PsmCutToClip;
-		break;
+	        PsmCutToClip;
+	        break;
 	      case '.':
-		PsmMenu(psm_octave);
-		col=0;
-		Free(filename);
-		filename=NULL;
-		psm_duration=1.0;
-		psm_octave=4;
-		PsmSongDel(&psm.head);
-		psm.cur_note=&psm.head;
-		psm.scrn_x=0;
-		break;
+	        PsmMenu(psm_octave);
+	        col=0;
+	        Free(filename);
+	        filename=NULL;
+	        psm_duration=1.0;
+	        psm_octave=4;
+	        PsmSongDel(&psm.head);
+	        psm.cur_note=&psm.head;
+	        psm.scrn_x=0;
+	        break;
 	      case '\n':
-		if (psm.cur_note!=&psm.head)
+	        if (psm.cur_note!=&psm.head)
 		  PsmRightClick(psm.cur_note->x,psm.cur_note->y);
-		break;
+	        break;
 	      case 'x':
-		if (was_playing)
+	        if (was_playing)
 		  break;
-		col=0;
-		psm.playing=TRUE;
-		PsmMenu(psm_octave);
-		tmpn=psm.cur_note;
-		while (tmpn!=&psm.head) {
+	        col=0;
+	        psm.playing=TRUE;
+	        PsmMenu(psm_octave);
+	        tmpn=psm.cur_note;
+	        while (tmpn!=&psm.head) {
 		  if (tmpn->type!=PSMT_METER) {
 		    timeout_val=cnts.jiffies;
 		    if (ms.pos_text.y-Fs->win_top<18)
@@ -654,9 +654,9 @@ mo_got_msg:
 		      was_playing=TRUE;
 		      if (ms.pos_text.y-Fs->win_top>=18 &&
 			    msg_code==MSG_MS_L_DOWN)
-			goto mo_start;
+		        goto mo_start;
 		      else
-			goto mo_got_msg;
+		        goto mo_got_msg;
 		    }
 		    psm.cur_note=tmpn;
 		    psm.scrn_x+=tmpn->x-0.33*GR_WIDTH;
@@ -681,78 +681,78 @@ mo_got_msg:
 		    SleepUntil(timeout_val2);
 		  }
 		  tmpn=tmpn->next;
-		}
-		psm.cur_note=&psm.head;
-		psm.scrn_x+=psm.cur_note->x-GR_WIDTH/2;
-		psm.playing=FALSE;
-		PsmMenu(psm_octave);
-		col=0;
-		Snd;
-		break;
+	        }
+	        psm.cur_note=&psm.head;
+	        psm.scrn_x+=psm.cur_note->x-GR_WIDTH/2;
+	        psm.playing=FALSE;
+	        PsmMenu(psm_octave);
+	        col=0;
+	        Snd;
+	        break;
 	      case CH_BACKSPACE:
-		tmpn=psm.cur_note->last;
-		if (tmpn!=&psm.head) {
+	        tmpn=psm.cur_note->last;
+	        if (tmpn!=&psm.head) {
 		  QueRem(tmpn);
 		  PsmNoteDel(tmpn);
-		}
-		if (col) {
+	        }
+	        if (col) {
 		  '' CH_BACKSPACE;
 		  col--;
-		}
-		break;
+	        }
+	        break;
 	      case 'z':
-		if (psm.record_entry->checked)
+	        if (psm.record_entry->checked)
 		  psm.record_entry->checked=FALSE;
-		else {
+	        else {
 		  psm.record_entry->checked=TRUE;
 		  psm_duration=1.0;
 		  psm_octave=4;
 		  psm.scrn_x=0;
-		}
-		PsmMenu(psm_octave);
-		col=0;
-		break;
+	        }
+	        PsmMenu(psm_octave);
+	        col=0;
+	        break;
 	      case CH_ESC:
-		PsmPopMode;
-		filename=PsmSaveSong(dirname,filename);
-		PsmPushMode(psm_octave);
+	        PsmPopMode;
+	        filename=PsmSaveSong(dirname,filename);
+	        PsmPushMode(psm_octave);
 	      case CH_SHIFT_ESC:
-		goto mo_done;
+	        goto mo_done;
 	    }
 	  }
 	  break;
-	case MSG_KEY_UP:
+        case MSG_KEY_UP:
 	  evt_time=tS;
 	  break;
-	case MSG_MS_MOVE:
+        case MSG_MS_MOVE:
 	  if (arg2>18*FONT_HEIGHT)
 	    Fs->win_inhibit=WIG_USER_TASK_DFT;
 	  else
 	    Fs->win_inhibit=WIG_TASK_DFT-WIF_SELF_FOCUS-WIF_SELF_BORDER
 		  -WIF_FOCUS_TASK_MENU-WIF_SELF_CTRLS;
 	  break;
-	case MSG_MS_L_DOWN:
+        case MSG_MS_L_DOWN:
 	  PsmDownKey(arg1,arg2);
 	  PsmLeftClick(arg1,arg2);
 	  break;
-	case MSG_MS_L_UP:
+        case MSG_MS_L_UP:
 	  PsmUpKey(arg1,arg2);
 	  break;
-	default:
+        default:
 	  PsmRightClick(arg1,arg2);
       }
       if (is_null)
-	ona=0;
+        ona=0;
       if (ona!=last_ona || is_null!=was_null) {
-	if (!ona) {
+        if (!ona) {
 	  if (is_null)
 	    st="";
 	  else
 	    st="R";
-	} else
+        } else
 	  st=LstSub(Ona2Note(ona),psm_note_lst);
-	Snd(ona);
-	if (psm.record_entry->checked) {
+        Snd(ona);
+        if (psm.record_entry->checked) {
 	  if (!was_null) {
 	    music.tempo=4.4*tempo_state.tempo/TEMPO_RANGE+0.5;
 	    music.stacatto_factor=0.88*tempo_state.stacatto/TEMPO_RANGE+0.12;
@@ -769,15 +769,15 @@ mo_got_msg:
 	    if (st[1]=='#')
 	      Bts(&tmpn->flags,PSMf_SHARP);
 	  }
-	}
-	last_ona=ona;
-	was_null=is_null;
-	"%s",st;
-	col+=StrLen(st);
-	if (col>=Fs->win_width-1) {
+        }
+        last_ona=ona;
+        was_null=is_null;
+        "%s",st;
+        col+=StrLen(st);
+        if (col>=Fs->win_width-1) {
 	  '\n';
 	  col=0;
-	}
+        }
       }
     }
 mo_done:

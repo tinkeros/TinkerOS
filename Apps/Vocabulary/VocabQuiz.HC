@@ -38,18 +38,18 @@ U0 VocabQuiz()
       ch=GetKey(,TRUE);
       DocBottom;
       if ('1'<=ch<='4') {
-	'\n';
-	if (ch-'1'==num) {
+        '\n';
+        if (ch-'1'==num) {
 	  "$$LTGREEN$$Correct\n$$FG$$";
 	  Snd(74);
-	} else {
+        } else {
 	  "$$LTRED$$Incorrect\n$$FG$$";
 	  Snd(46);
-	}
-	Sleep(500);
-	Snd;
-	ACDPopUpDef(right_word);
-	break;
+        }
+        Sleep(500);
+        Snd;
+        ACDPopUpDef(right_word);
+        break;
       }
     } while (ch!=CH_SHIFT_ESC && ch!=CH_ESC);
     "$$LM,0$$\n";

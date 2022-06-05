@@ -13,7 +13,7 @@ U8 *SuggestMatchForm(U8 *src)
       if (ch=='C') ch='K';
       if (ch=='Z') ch='S';
       if (ch!=ch1) //double chars to single
-	*dst++=ch;
+        *dst++=ch;
     }
     ch1=ch;
   }
@@ -30,20 +30,20 @@ U8 *SuggestMatchForm(U8 *src)
 Bool SuggestSpelling(U8 *word)
 {
   U8 *dict=acd.word_lst,
-	*pf=SuggestMatchForm(word),
-	*wf;
+        *pf=SuggestMatchForm(word),
+        *wf;
   I64 len=StrLen(pf),
-	num_cols=Fs->win_width/16,
-	col=0;
+        num_cols=Fs->win_width/16,
+        col=0;
   if (len)
     while (*dict) {
       wf=SuggestMatchForm(dict+1);
       if (!StrNCmp(pf,wf,len)) {
-	"%16s",dict+1;
-	if (++col>=num_cols) {
+        "%16s",dict+1;
+        if (++col>=num_cols) {
 	  col=0;
 	  '\n';
-	}
+        }
       }
       Free(wf);
       dict+=StrLen(dict+1)+4;

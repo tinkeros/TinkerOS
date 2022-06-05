@@ -16,15 +16,15 @@ U0 Tmp()
 	    "the live CD without installing.\n\n"
 	    "Install onto hard drive ";
       if (YorN) {
-	DocBottom;
-	if (RunFile("::/Misc/OSInstall",,FALSE)) {
+        DocBottom;
+        if (RunFile("::/Misc/OSInstall",,FALSE)) {
 	  Del("C:/Home/DoDistro.HC.Z");
 	  Del("D:/Home/DoDistro.HC.Z");
 	  OnceDrv('C',"\"\n\nRun TOSStaffIns;\n\n\n\";");
 	  OnceDrv('D',""); //This command uses cached Registry file.
 	  if (PressAKey!=CH_SHIFT_ESC)
 	    Reboot; //Too dangerous for amateurs until reboot.
-	}
+        }
       }
       break;
   }

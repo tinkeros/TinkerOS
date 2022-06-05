@@ -80,18 +80,18 @@ U0 Halogen()
   SettingsPush; //See $LK,"SettingsPush",A="MN:SettingsPush"$
   Fs->text_attr=BLACK<<4+WHITE;
   MenuPush(
-	"File {"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Play {"
-	"  Restart(,'\n');"
-	"  Accelerate(,,SC_CURSOR_UP);"
-	"  Deccellerate(,,SC_CURSOR_DOWN);"
-	"  Left(,,SC_CURSOR_LEFT);"
-	"  Right(,,SC_CURSOR_RIGHT);"
-	"}"
-	);
+        "File {"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Play {"
+        "  Restart(,'\n');"
+        "  Accelerate(,,SC_CURSOR_UP);"
+        "  Deccellerate(,,SC_CURSOR_DOWN);"
+        "  Left(,,SC_CURSOR_LEFT);"
+        "  Right(,,SC_CURSOR_RIGHT);"
+        "}"
+        );
   AutoComplete;
   WinBorder;
   WinMax;
@@ -101,7 +101,7 @@ U0 Halogen()
   try {
     while (TRUE) {
       switch (ScanMsg(&arg1,&arg2,1<<MSG_KEY_DOWN|1<<MSG_KEY_UP)) {
-	case MSG_KEY_DOWN:
+        case MSG_KEY_DOWN:
 	  ch=arg1;sc=arg2;
 	  switch (ch) {
 	    case '\n':
@@ -112,7 +112,7 @@ U0 Halogen()
 	      goto ha_done;
 	  }
 	  break;
-	case MSG_KEY_UP:
+        case MSG_KEY_UP:
 	  ch=arg1;sc=arg2;
 	  if (!ch)
 	    switch (sc.u8[0]) {
@@ -120,33 +120,33 @@ U0 Halogen()
 	      case SC_CURSOR_LEFT:
 	      case SC_CURSOR_UP:
 	      case SC_CURSOR_DOWN:
-		sc=0;
-		break;
+	        sc=0;
+	        break;
 	    }
 	  break;
       }
       switch (sc.u8[0]) {
-	case SC_CURSOR_RIGHT:
+        case SC_CURSOR_RIGHT:
 	  car_x++;
 	  break;
-	case SC_CURSOR_LEFT:
+        case SC_CURSOR_LEFT:
 	  car_x--;
 	  break;
-	case SC_CURSOR_UP:
+        case SC_CURSOR_UP:
 	  if (++speed>200) speed=200;
 	  break;
-	case SC_CURSOR_DOWN:
+        case SC_CURSOR_DOWN:
 	  if (--speed<0) speed=0;
 	  break;
       }
       if (crash)
-	Snd;
+        Snd;
       else {
-	if (speed)
+        if (speed)
 	  Snd(Freq2Ona(speed+10));
-	else
+        else
 	  Snd;
-	UpdateRoad;
+        UpdateRoad;
       }
       Sleep(10);
     }

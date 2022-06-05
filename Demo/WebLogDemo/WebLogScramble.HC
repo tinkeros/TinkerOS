@@ -26,8 +26,8 @@ U0 LogScrambleFile(U8 *name)
       StrFirstRem(doc_e->tag," ",st);
 
       for (i=3;i>=0;i--) {
-	StrFirstRem(st,".",st2);
-	num.u8[i]=key[i][Str2I64(st2)&255];
+        StrFirstRem(st,".",st2);
+        num.u8[i]=key[i][Str2I64(st2)&255];
       }
 
       Free(st);
@@ -46,7 +46,7 @@ U0 LogScrambleFile(U8 *name)
 U0 WebLogScramble(U8 *files_find_mask)
 {
   CDirEntry *tmpde=FilesFind(files_find_mask,FUF_RECURSE|FUF_JUST_FILES),
-	*tmpde1=tmpde;
+        *tmpde1=tmpde;
   InitKey;
   while (tmpde) {
     LogScrambleFile(tmpde->full_name);

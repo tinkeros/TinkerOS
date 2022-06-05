@@ -63,11 +63,11 @@ Bool MPVisRecalc(MPCtrl1 *job)
     case VR_UPDATE_FRIENDLY_UNIT:
     case VR_ONE_FRIENDLY_UNIT:
       if (job->mode==VR_UPDATE_FRIENDLY_UNIT)
-	range=F64_MAX;
+        range=F64_MAX;
       RowCol2XY(&x1,&y1,row,col);
       for (i=job->lo;i<job->hi;i++,ut1++) {
-	seen=FALSE;
-	if (ut1->life>0 &&
+        seen=FALSE;
+        if (ut1->life>0 &&
 	      LOS(row,col,ut1->row,ut1->col)) {
 	  RowCol2XY(&x2,&y2,ut1->row,ut1->col);
 	  dd=Sqr(x2-x1)+Sqr(y2-y1);
@@ -75,28 +75,28 @@ Bool MPVisRecalc(MPCtrl1 *job)
 	    seen=TRUE;
 	    LBts(&ut1->vis[cur_player],0);
 	  }
-	}
-	if (job->mode==VR_UPDATE_FRIENDLY_UNIT)
+        }
+        if (job->mode==VR_UPDATE_FRIENDLY_UNIT)
 	  LBEqu(&vis_unit_bitmap[cur_player],
-		i+job->tmpu->num*((UNITS_NUM+7)&~7),seen);
+	        i+job->tmpu->num*((UNITS_NUM+7)&~7),seen);
       }
       break;
     case VR_ONE_ENEMY_UNIT:
       RowCol2XY(&x1,&y1,row,col);
       for (i=job->lo;i<job->hi;i++,ut1++)
-	if (ut1->life>0 &&
+        if (ut1->life>0 &&
 	      LOS(row,col,ut1->row,ut1->col)) {
 	  LBts(&vis_unit_bitmap[enemy_player],
-		job->tmpu->num+i*((UNITS_NUM+7)&~7));
+	        job->tmpu->num+i*((UNITS_NUM+7)&~7));
 	  res=TRUE;
-	} else
+        } else
 	  LBtr(&vis_unit_bitmap[enemy_player],
-		job->tmpu->num+i*((UNITS_NUM+7)&~7));
+	        job->tmpu->num+i*((UNITS_NUM+7)&~7));
       break;
     case VR_ALL_UNITS:
       ut0=&units[cur_player][0];
       for (i=0;i<UNITS_NUM;i++,ut0++)
-	if (ut0->life>0) {
+        if (ut0->life>0) {
 	  RowCol2XY(&x1,&y1,ut0->row,ut0->col);
 	  ut1=&units[enemy_player][job->lo];
 	  for (j=job->lo;j<job->hi;j++,ut1++) {
@@ -107,12 +107,12 @@ Bool MPVisRecalc(MPCtrl1 *job)
 	    } else
 	      LBtr(&vis_unit_bitmap[cur_player],j+i*((UNITS_NUM+7)&~7));
 	  }
-	} else
+        } else
 	  for (j=job->lo;j<job->hi;j++)
 	    LBtr(&vis_unit_bitmap[cur_player],j+i*((UNITS_NUM+7)&~7));
       ut0=&units[enemy_player][0];
       for (i=0;i<UNITS_NUM;i++,ut0++)
-	if (ut0->life>0) {
+        if (ut0->life>0) {
 	  RowCol2XY(&x1,&y1,ut0->row,ut0->col);
 	  ut1=&units[cur_player][job->lo];
 	  for (j=job->lo;j<job->hi;j++,ut1++) {
@@ -123,7 +123,7 @@ Bool MPVisRecalc(MPCtrl1 *job)
 	    } else
 	      LBtr(&vis_unit_bitmap[enemy_player],j+i*((UNITS_NUM+7)&~7));
 	  }
-	} else
+        } else
 	  for (j=job->lo;j<job->hi;j++)
 	    LBtr(&vis_unit_bitmap[enemy_player],j+i*((UNITS_NUM+7)&~7));
       break;
@@ -158,7 +158,7 @@ $LK,"MAlloc",A="MN:MAlloc"$() would probably be the better choice.
   if (mode==VR_ONE_ENEMY_UNIT) {
     for (hi--;hi>=0;hi--)
       if (units[enemy_player][hi].life>0)
-	break;
+        break;
     hi++;
   }
   k=hi;
@@ -191,9 +191,9 @@ U0 MPVisRecalcMap(MPCtrl2 *job)
   for (j=job->lo;j<job->hi;j++)
     for (i=0;i<map_cols;i++)
       if (LOS(job->row,job->col,j,i))
-	vis_map[j][i]=TRUE;
+        vis_map[j][i]=TRUE;
       else
-	vis_map[j][i]=FALSE;
+        vis_map[j][i]=FALSE;
 }
 
 U0 VisRecalcMap(I64 row,I64 col)

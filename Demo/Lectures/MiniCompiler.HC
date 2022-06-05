@@ -37,46 +37,46 @@ I64 Lex(U8 **_src,I64 *num)
     switch (*src) {
       case 0:
       case ';':
-	*_src=src;
-	return TK_EOF;
+        *_src=src;
+        return TK_EOF;
       case CH_SPACE:
       case '\r':
       case '\n':
-	src++;
-	break;
+        src++;
+        break;
       case '0'...'9':
-	i=0;
-	do {
+        i=0;
+        do {
 	  i=i*10+*src-'0';
 	  src++;
-	} while ('0'<=*src<='9');
-	*num=i;
-	*_src=src;
-	return TK_NUM;
+        } while ('0'<=*src<='9');
+        *num=i;
+        *_src=src;
+        return TK_NUM;
       case '*':
-	*num=OP_MUL;
-	*_src=src+1;
-	return TK_OP;
+        *num=OP_MUL;
+        *_src=src+1;
+        return TK_OP;
       case '/':
-	*num=OP_DIV;
-	*_src=src+1;
-	return TK_OP;
+        *num=OP_DIV;
+        *_src=src+1;
+        return TK_OP;
       case '+':
-	*num=OP_ADD;
-	*_src=src+1;
-	return TK_OP;
+        *num=OP_ADD;
+        *_src=src+1;
+        return TK_OP;
       case '-':
-	*num=OP_SUB;
-	*_src=src+1;
-	return TK_OP;
+        *num=OP_SUB;
+        *_src=src+1;
+        return TK_OP;
       case '(':
-	*_src=src+1;
-	return TK_LEFT;
+        *_src=src+1;
+        return TK_LEFT;
       case ')':
-	*_src=src+1;
-	return TK_RIGHT;
+        *_src=src+1;
+        return TK_RIGHT;
       default:
-	throw;
+        throw;
     }
   }
 }
@@ -101,10 +101,10 @@ U0 PrsTerm(U8 **_src,U8 **_dst,I64 prec)
 //This is inefficient.The main compiler doesn't back-up like this.
       i=Parse(&src2,&dst2);
       if (PREC_MUL<=i<prec) {
-	*_src=src2;
-	*_dst=dst2;
+        *_src=src2;
+        *_dst=dst2;
       } else
-	break;
+        break;
     }
   } else
     throw;
@@ -132,13 +132,13 @@ I64 Parse(U8 **_src,U8 **_dst)
     case TK_LEFT:
       PrsTerm(_src,_dst,PREC_PAREN);
       if (Parse(_src,_dst)!=PREC_PAREN)
-	throw;
+        throw;
       return PREC_TERM;
     case TK_RIGHT:
       return PREC_PAREN;
     case TK_OP:
       switch (i) {
-	case OP_MUL:
+        case OP_MUL:
 	  PrsTerm(_src,&dst,PREC_MUL);
 	  *dst++=0x5A; //POP RDX
 	  *dst++=0x58; //POP RAX
@@ -151,7 +151,7 @@ I64 Parse(U8 **_src,U8 **_dst)
 	  *dst++=0x50; //PUSH RAX
 	  *_dst=dst;
 	  return PREC_MUL;
-	case OP_DIV:
+        case OP_DIV:
 	  PrsTerm(_src,&dst,PREC_MUL);
 	  *dst++=0x5B; //POP RBX
 	  *dst++=0x58; //POP RAX
@@ -166,7 +166,7 @@ I64 Parse(U8 **_src,U8 **_dst)
 	  *dst++=0x50; //PUSH RAX
 	  *_dst=dst;
 	  return PREC_MUL;
-	case OP_ADD:
+        case OP_ADD:
 	  PrsTerm(_src,&dst,PREC_ADD);
 	  *dst++=0x5A; //POP RDX
 	  *dst++=0x58; //POP RAX
@@ -178,7 +178,7 @@ I64 Parse(U8 **_src,U8 **_dst)
 	  *dst++=0x50; //PUSH RAX
 	  *_dst=dst;
 	  return PREC_ADD;
-	case OP_SUB:
+        case OP_SUB:
 	  PrsTerm(_src,&dst,PREC_ADD);
 	  *dst++=0x5A; //POP RDX
 	  *dst++=0x58; //POP RAX
@@ -211,17 +211,17 @@ U0 Main()
       src2=src;
       dst=code;
       try {
-	PrsTerm(&src2,&dst,PREC_PAREN);
-	if (Parse(&src2,&dst)!=PREC_EOF)
+        PrsTerm(&src2,&dst,PREC_PAREN);
+        if (Parse(&src2,&dst)!=PREC_EOF)
 	  throw;
-	"$$RED$$This code is not efficient, but the compiler is simple.$$FG$$\n";
-	Un(code,dst-code); //Unassemble the code we created.
+        "$$RED$$This code is not efficient, but the compiler is simple.$$FG$$\n";
+        Un(code,dst-code); //Unassemble the code we created.
 //$LK,"Call",A="MN:Call"$() is a function.See $LK,"_CALL",A="FF:::/Kernel/KUtils.HC,_CALL"$::
-	//See also $LK,"CallInd",A="MN:CallInd"$().See $LK,"_CALL_IND",A="FF:::/Kernel/KUtils.HC,_CALL_IND"$::
-	"$$LTBLUE$$Answer:%d$$FG$$\n",Call(code);
+        //See also $LK,"CallInd",A="MN:CallInd"$().See $LK,"_CALL_IND",A="FF:::/Kernel/KUtils.HC,_CALL_IND"$::
+        "$$LTBLUE$$Answer:%d$$FG$$\n",Call(code);
       } catch {
-	"$$RED$$Error$$FG$$\n";
-	PutExcept;
+        "$$RED$$Error$$FG$$\n";
+        PutExcept;
       }
       Free(src);
     } else {

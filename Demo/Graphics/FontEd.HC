@@ -31,12 +31,12 @@ U0 DrawIt(CTask *task,CDC *dc)
   for (i=0;i<16;i++)
     for (j=0;j<16;j++) {
       if (k==cur_ch) {
-	if (Blink)
+        if (Blink)
 	  c=(BLUE<<4+YELLOW)<<8 + k++;
-	else
+        else
 	  c=(YELLOW<<4+BLUE)<<8 + k++;
       } else
-	c=(BLUE<<4+WHITE)<<8 + k++;
+        c=(BLUE<<4+WHITE)<<8 + k++;
       TextChar(task,,j,i+2,c);
     }
 
@@ -44,9 +44,9 @@ U0 DrawIt(CTask *task,CDC *dc)
   for (i=0;i<FONT_HEIGHT;i++)
     for (j=0;j<FONT_WIDTH;j++) {
       if (Bt(&text.font[cur_ch],k++))
-	dc->color=YELLOW;
+        dc->color=YELLOW;
       else
-	dc->color=BLUE;
+        dc->color=BLUE;
       GrRect(dc,BLOW_UP_CHAR_X+j*FONT_WIDTH,
 	    BLOW_UP_CHAR_Y+i*FONT_HEIGHT,
 	    FONT_WIDTH,FONT_HEIGHT);
@@ -77,11 +77,11 @@ U0 FontEd()
   I64 msg_code,arg1,arg2,k;
   SettingsPush; //See $LK,"SettingsPush",A="MN:SettingsPush"$
   MenuPush(
-	"File {"
-	"  SaveAs(,CH_CTRLA);"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}");
+        "File {"
+        "  SaveAs(,CH_CTRLA);"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}");
   AutoComplete;
   DocCursor;
   DocClear;
@@ -92,20 +92,20 @@ U0 FontEd()
     while (TRUE) {
       switch (msg_code=GetMsg(&arg1,&arg2,
 	    1<<MSG_KEY_DOWN|1<<MSG_MS_L_DOWN|1<<MSG_MS_R_DOWN|1<<MSG_MS_MOVE)) {
-	case MSG_KEY_DOWN:
+        case MSG_KEY_DOWN:
 	  switch (arg1) {
 	    case 0:
 	      switch (arg2.u8[0]) {
-		case SC_CURSOR_LEFT:
+	        case SC_CURSOR_LEFT:
 		  cur_ch--;
 		  break;
-		case SC_CURSOR_RIGHT:
+	        case SC_CURSOR_RIGHT:
 		  cur_ch++;
 		  break;
-		case SC_CURSOR_UP:
+	        case SC_CURSOR_UP:
 		  cur_ch-=16;
 		  break;
-		case SC_CURSOR_DOWN:
+	        case SC_CURSOR_DOWN:
 		  cur_ch+=16;
 		  break;
 
@@ -123,15 +123,15 @@ U0 FontEd()
 	      cur_ch=arg1;
 	  }
 	  break;
-	case MSG_MS_L_DOWN:
-	case MSG_MS_R_DOWN:
+        case MSG_MS_L_DOWN:
+        case MSG_MS_R_DOWN:
 	  if (0<=arg1<FONT_WIDTH*16 && 0<=arg2-2*FONT_HEIGHT<FONT_HEIGHT*16) {
 	    cur_ch=(arg2/FONT_HEIGHT-2)*16+arg1/FONT_WIDTH;
 	    break;
 	  } //fall through
-	case MSG_MS_MOVE:
+        case MSG_MS_MOVE:
 	  k=((arg2-BLOW_UP_CHAR_Y)/FONT_HEIGHT)*FONT_WIDTH+
-		(arg1-BLOW_UP_CHAR_X)/FONT_WIDTH;
+	        (arg1-BLOW_UP_CHAR_X)/FONT_WIDTH;
 	  if (0<=k<FONT_WIDTH*FONT_HEIGHT) {
 	    if (ms.lb||msg_code==MSG_MS_L_DOWN)
 	      Bts(&text.font[cur_ch],k);

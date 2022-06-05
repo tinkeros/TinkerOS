@@ -47,7 +47,7 @@ F64 MPDraw(CTask *task)
 {
   Complex xx;
   I64 x,y,w=task->pix_width,h=task->pix_height,cx=w/2,cy=h/2,
-	lo=Gs->num*h/mp_cnt,hi=(Gs->num+1)*h/mp_cnt;
+        lo=Gs->num*h/mp_cnt,hi=(Gs->num+1)*h/mp_cnt;
   F64 yy,y_total=0;
   CDC *dc=DCAlias(,task);
   for (y=lo;y<hi;y++) {
@@ -98,9 +98,9 @@ U0 PoleZeros()
   Complex *tmpc=NULL;
 
   PopUpOk(
-	"Drag the poles and zeros with left mouse.\n"
-	"Hold right mouse for phase plot.\n"
-	);
+        "Drag the poles and zeros with left mouse.\n"
+        "Hold right mouse for phase plot.\n"
+        );
 
   SettingsPush; //See $LK,"SettingsPush",A="MN:SettingsPush"$
   Fs->win_inhibit=WIG_TASK_DFT-WIF_SELF_FOCUS-WIF_SELF_BORDER;
@@ -123,10 +123,10 @@ pz_msg:
       cx=Fs->pix_width/2;
       cy=Fs->pix_height/2;
       switch (msg_code) {
-	case MSG_MS_L_DOWN:
+        case MSG_MS_L_DOWN:
 	  tmpc=PoleZeroFind(arg1-cx,cy-arg2);
 	  break;
-	case MSG_MS_MOVE:
+        case MSG_MS_MOVE:
 	  if (tmpc) {
 	    p11=arg1;p22=arg2;
 //get to last mouse move
@@ -135,16 +135,16 @@ pz_msg:
 		  1<<MSG_MS_L_UP+1<<MSG_MS_R_DOWN+
 		  1<<MSG_MS_R_UP+1<<MSG_MS_MOVE))
 	      if (msg_code==MSG_MS_MOVE) {
-		p11=arg1;p22=arg2;
+	        p11=arg1;p22=arg2;
 	      } else
-		goto pz_msg;
+	        goto pz_msg;
 
 	    tmpc->x=p11-cx;
 	    tmpc->y=cy-p22;
 	    Draw;
 	  }
 	  break;
-	case MSG_MS_L_UP:
+        case MSG_MS_L_UP:
 	  if (tmpc) {
 	    tmpc->x=arg1-cx;
 	    tmpc->y=cy-arg2;
@@ -152,11 +152,11 @@ pz_msg:
 	    Draw;
 	  }
 	  break;
-	case MSG_MS_R_DOWN:
-	case MSG_MS_R_UP:
+        case MSG_MS_R_DOWN:
+        case MSG_MS_R_UP:
 	  Draw;
 	  break;
-	case MSG_KEY_DOWN:
+        case MSG_KEY_DOWN:
 	  if (arg1==CH_SHIFT_ESC||arg1==CH_ESC)
 	    goto pz_done;
       }

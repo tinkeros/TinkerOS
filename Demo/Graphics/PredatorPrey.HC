@@ -10,7 +10,7 @@ I64 mp_not_done_flags;
 class State
 {
   F64 wabbits,hawks,
-	d_wabbits,d_hawks; //Technically, these are not part of the state.
+        d_wabbits,d_hawks; //Technically, these are not part of the state.
 };
 
 U0 Steps(State *s)
@@ -51,8 +51,8 @@ U0 PredatorPrey()
   CDC *dc=DCAlias;
 
   PopUpOk("This will plot multiple predator-prey\n"
-	"trajectories.It restarts many times\n"
-	"with different, random, initial populations.\n");
+        "trajectories.It restarts many times\n"
+        "with different, random, initial populations.\n");
   SettingsPush; //See $LK,"SettingsPush",A="MN:SettingsPush"$
   try {
     AutoComplete;
@@ -67,7 +67,7 @@ U0 PredatorPrey()
     while (!ScanChar) {
       mp_not_done_flags=1<<mp_cnt-1;
       for (i=0;i<mp_cnt;i++)
-	JobQue(&PlotTrajectory,Fs,i);
+        JobQue(&PlotTrajectory,Fs,i);
       do Yield;
       while (mp_not_done_flags);
     }

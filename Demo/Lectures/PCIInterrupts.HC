@@ -11,25 +11,25 @@
 interrupt U0 IntMy40()
 {
   lock {progress1++;}
-*(dev.uncached_alias+LAPIC_EOI)(U32 *)=0;
+  *(dev.uncached_alias+LAPIC_EOI)(U32 *)=0;
 }
 
 interrupt U0 IntMy41()
 {
   lock {progress2++;}
-*(dev.uncached_alias+LAPIC_EOI)(U32 *)=0;
+  *(dev.uncached_alias+LAPIC_EOI)(U32 *)=0;
 }
 
 interrupt U0 IntMy42()
 {
   lock {progress3++;}
-*(dev.uncached_alias+LAPIC_EOI)(U32 *)=0;
+  *(dev.uncached_alias+LAPIC_EOI)(U32 *)=0;
 }
 
 interrupt U0 IntMy43()
 {
   lock {progress4++;}
-*(dev.uncached_alias+LAPIC_EOI)(U32 *)=0;
+  *(dev.uncached_alias+LAPIC_EOI)(U32 *)=0;
 }
 
 I64 vect[4]={&IntMy40,&IntMy41,&IntMy42,&IntMy43};
@@ -55,10 +55,10 @@ U0 Main()
 
   Sleep(1000);
   "The keyboard and timer seem to be active.\n"
-	"IntA:%d IntB:%d IntC:%d IntD:%d\n\n"
-	"IntB is my keybaord and regs a single KEY-UP.\n"
-	"Rerun and press a few keys.\n",
-	progress1,progress2,progress3,progress4;
+        "IntA:%d IntB:%d IntC:%d IntD:%d\n\n"
+        "IntB is my keybaord and regs a single KEY-UP.\n"
+        "Rerun and press a few keys.\n",
+        progress1,progress2,progress3,progress4;
 
   //Disable vects
   for (i=IOREDTAB;i<IOREDTAB+4*2;i+=2) {

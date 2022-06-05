@@ -130,12 +130,12 @@ U0 DrawIt(CTask *task,CDC *dc)
   for (i=0;i<TREES_NUM;i++) {
     if (trees[i].y<=h/2) {//Draw trees behind house
       if (trees[i].fire_frame_idx) {
-	if (trees[i].fire_frame_idx++&1)
+        if (trees[i].fire_frame_idx++&1)
 	  img=$IB,"<8>",BI=8$;
-	else
+        else
 	  img=$IB,"<9>",BI=9$;
       } else
-	img=$IB,"<7>",BI=7$;
+        img=$IB,"<7>",BI=7$;
       Sprite3(dc,trees[i].x,trees[i].y,0,img);
     }
   }
@@ -147,12 +147,12 @@ U0 DrawIt(CTask *task,CDC *dc)
   for (i=0;i<TREES_NUM;i++) {
     if (trees[i].y>h/2) {//Draw trees in front of house
       if (trees[i].fire_frame_idx) {
-	if (trees[i].fire_frame_idx++&1)
+        if (trees[i].fire_frame_idx++&1)
 	  img=$IB,"<8>",BI=8$;
-	else
+        else
 	  img=$IB,"<9>",BI=9$;
       } else
-	img=$IB,"<7>",BI=7$;
+        img=$IB,"<7>",BI=7$;
       Sprite3(dc,trees[i].x,trees[i].y,0,img);
     }
   }
@@ -218,7 +218,7 @@ U0 DrawIt(CTask *task,CDC *dc)
   }
   dc->color=LTBLUE;
   GrPrint(dc,0,0,"Freezing Peasants:%d Time:%3.2f Best:%3.2f",
-	not_stopped_cnt,tt-t0,best_score);
+        not_stopped_cnt,tt-t0,best_score);
 }
 
 U0 StepNew(CTask *task,I64 x,I64 y,F64 é,Bool left_right,Bool king)
@@ -261,7 +261,7 @@ U0 StepNew(CTask *task,I64 x,I64 y,F64 é,Bool left_right,Bool king)
 U0 Init()
 {
   I64 i,min_x,max_x,min_y,max_y,
-	w=Fs->pix_width,h=Fs->pix_height;
+        w=Fs->pix_width,h=Fs->pix_height;
   Peasant *tmpp;
 
   snow_x=snow_y=0;
@@ -319,8 +319,8 @@ U0 Follow(CTask *,Peasant *tmpp)
 	  d<15*15) {
       d+=1000*Sqr(tS-tmps->t0);
       if (d<best_d) {
-	best_d=d;
-	tmpp->é=Arg(tmps->x-tmpp->x,tmps->y-tmpp->y);
+        best_d=d;
+        tmpp->é=Arg(tmps->x-tmpp->x,tmps->y-tmpp->y);
       }
     }
     tmps=tmps->next;
@@ -340,8 +340,8 @@ U0 AnimateTask(I64)
     while (tmps!=&step_head) {
       tmps1=tmps->next;
       if (tS-tmps->t0>5.0) {
-	QueRem(tmps);
-	Free(tmps);
+        QueRem(tmps);
+        Free(tmps);
       }
       tmps=tmps1;
     }
@@ -350,8 +350,8 @@ U0 AnimateTask(I64)
     while (tmps!=&king_step_head) {
       tmps1=tmps->next;
       if (tS-tmps->t0>3.0) {
-	QueRem(tmps);
-	Free(tmps);
+        QueRem(tmps);
+        Free(tmps);
       }
       tmps=tmps1;
     }
@@ -360,27 +360,27 @@ U0 AnimateTask(I64)
     tmpp=peasant_head.next;
     while (tmpp!=&peasant_head) {
       if (tmpp->stopped) {
-	if (tmpp->door_opened_t0 && tS>tmpp->door_opened_t0+1.0) {
+        if (tmpp->door_opened_t0 && tS>tmpp->door_opened_t0+1.0) {
 	  tmpp->door_opened_t0=0;
 	  tmpp->y=tmpp->x=-9999;
-	}
+        }
       } else {
-	if (Sqr(tmpp->x-w/2)+Sqr(tmpp->y-h/2)<20*20) {
+        if (Sqr(tmpp->x-w/2)+Sqr(tmpp->y-h/2)<20*20) {
 	  tmpp->stopped=TRUE;
 	  tmpp->door_opened_t0=door_open_t0=tS;
-	}
-	for (i=0;i<TREES_NUM;i++) //Hang-out by fire
+        }
+        for (i=0;i<TREES_NUM;i++) //Hang-out by fire
 	  if (trees[i].fire_frame_idx &&
-		Sqr(tmpp->x-trees[i].x)+Sqr(tmpp->y-trees[i].y)<20*20) {
+	        Sqr(tmpp->x-trees[i].x)+Sqr(tmpp->y-trees[i].y)<20*20) {
 	    tmpp->stopped=TRUE;
 	    break;
 	  }
-	if (!tmpp->stopped) {
+        if (!tmpp->stopped) {
 	  Follow(Fs->parent_task,tmpp);
 	  tmpp->x+=Cos(tmpp->é)/100;
 	  tmpp->y+=Sin(tmpp->é)/100;
 	  if (!(BORDER/2<=tmpp->x<w-BORDER/2) ||
-		!(BORDER/2<=tmpp->y<h-BORDER/2)) {
+	        !(BORDER/2<=tmpp->y<h-BORDER/2)) {
 	    tmpp->é+=ã;
 	    tmpp->x+=3*Cos(tmpp->é)/100;
 	    tmpp->y+=3*Sin(tmpp->é)/100;
@@ -389,7 +389,7 @@ U0 AnimateTask(I64)
 	    StepNew(Fs->parent_task,tmpp->x,tmpp->y,tmpp->é,
 		  animate_phase&2,FALSE);
 	  not_stopped_cnt++;
-	}
+        }
       }
       tmpp=tmpp->next;
     }
@@ -398,8 +398,8 @@ U0 AnimateTask(I64)
       music.mute=TRUE;
       Snd(86);Sleep(200);Snd;Sleep(100);
       if (tf-t0<best_score) {
-	best_score=tf-t0;
-	Snd(86);Sleep(200);Snd;Sleep(100);
+        best_score=tf-t0;
+        Snd(86);Sleep(200);Snd;Sleep(100);
       }
       music.mute=FALSE;
     }
@@ -419,8 +419,8 @@ U0 AnimateTask(I64)
     }
     if (tS<king_timeout) {
       if (king_mS++>=250) {
-	king_mS=0;
-	king_phase|=1;
+        king_mS=0;
+        king_phase|=1;
       }
     }
   }
@@ -452,19 +452,19 @@ U0 Wenceslas()
   I64 sc;
 
   MenuPush(
-	"File {"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Play {"
-	"  Restart(,'\n');"
-	"  BurnTree(,CH_SPACE);"
-	"  Up(,,SC_CURSOR_UP);"
-	"  Down(,,SC_CURSOR_DOWN);"
-	"  Left(,,SC_CURSOR_LEFT);"
-	"  Right(,,SC_CURSOR_RIGHT);"
-	"}"
-	);
+        "File {"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Play {"
+        "  Restart(,'\n');"
+        "  BurnTree(,CH_SPACE);"
+        "  Up(,,SC_CURSOR_UP);"
+        "  Down(,,SC_CURSOR_DOWN);"
+        "  Left(,,SC_CURSOR_LEFT);"
+        "  Right(,,SC_CURSOR_RIGHT);"
+        "}"
+        );
 
   SettingsPush; //See $LK,"SettingsPush",A="MN:SettingsPush"$
   AutoComplete;
@@ -538,39 +538,39 @@ Lead peasants to fires.
   try {
     while (TRUE) {
       switch (GetKey(&sc)) {
-	case '\n':
+        case '\n':
 	  CleanUp;
 	  Init;
 	  break;
-	case CH_ESC:
-	case CH_SHIFT_ESC:
+        case CH_ESC:
+        case CH_SHIFT_ESC:
 	  goto ws_done;
-	case CH_SPACE:
+        case CH_SPACE:
 	  BurnTrees;
 	  break;
-	case 0:
+        case 0:
 	  switch (sc.u8[0]) {
 	    start:
 	      case SC_CURSOR_RIGHT:
-		if (king_x+KING_STEP<Fs->pix_width-BORDER)
+	        if (king_x+KING_STEP<Fs->pix_width-BORDER)
 		  king_x+=KING_STEP;
-		king_é=0;
-		break;
+	        king_é=0;
+	        break;
 	      case SC_CURSOR_LEFT:
-		if (king_x-KING_STEP>=BORDER)
+	        if (king_x-KING_STEP>=BORDER)
 		  king_x-=KING_STEP;
-		king_é=ã;
-		break;
+	        king_é=ã;
+	        break;
 	      case SC_CURSOR_DOWN:
-		if (king_y+KING_STEP<Fs->pix_height-BORDER)
+	        if (king_y+KING_STEP<Fs->pix_height-BORDER)
 		  king_y+=KING_STEP;
-		king_é=-ã/2;
-		break;
+	        king_é=-ã/2;
+	        break;
 	      case SC_CURSOR_UP:
-		if (king_y-KING_STEP>=BORDER)
+	        if (king_y-KING_STEP>=BORDER)
 		  king_y-=KING_STEP;
-		king_é=ã/2;
-		break;
+	        king_é=ã/2;
+	        break;
 	    end:
 	      king_mS=0;
 	      king_phase=(king_phase+2)&2;

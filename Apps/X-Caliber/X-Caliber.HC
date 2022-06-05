@@ -124,8 +124,8 @@ Bool CheckOverlap()
     tmpm1=ode->next_mass;
     while (tmpm1!=&ode->next_mass) {
       if (tmpm!=tmpm1 && !tmpm->no_overlap && !tmpm1->no_overlap) {
-	D3Sub(&p,&tmpm->x,&tmpm1->x);
-	if (D3NormSqr(&p)<=Sqr(tmpm->radius+tmpm1->radius))
+        D3Sub(&p,&tmpm->x,&tmpm1->x);
+        if (D3NormSqr(&p)<=Sqr(tmpm->radius+tmpm1->radius))
 	  return TRUE;
       }
       tmpm1=tmpm1->next;
@@ -143,8 +143,8 @@ U0 MissileNew(Ship *tmpsp,I64 n)
   MemSet(tmpmi,0,sizeof(Missile));
 
   D3Equ(&tmpmi->p_front.x,
-	(tmpsp->p[n+1].x+tmpsp->p[n+3].x)/2,
-	(tmpsp->p[n+1].y+tmpsp->p[n+3].y)/2,0);
+        (tmpsp->p[n+1].x+tmpsp->p[n+3].x)/2,
+        (tmpsp->p[n+1].y+tmpsp->p[n+3].y)/2,0);
   D3Copy(&tmpmi->p_back.x,&tmpmi->p_front.x);
 
   if (n&1)
@@ -181,7 +181,7 @@ U0 MissileNew(Ship *tmpsp,I64 n)
   tmpmi->s[3].end2=&tmpsp->p[n+3];
   tmpmi->s[4].end1=&tmpmi->p_back;
   tmpmi->s[4].end2=&tmpsp->p[n+3];
- 
+
   for (i=0;i<5;i++) {
     tmpmi->s[i].const=10000;
     tmpmi->s[i].strength  =20000;
@@ -215,14 +215,14 @@ Ship *ShipNew(I64 x,I64 y,I64 type)
       tmpsp->p[4].y=y+20;
 
       for (i=0;i<tmpsp->masses;i++) {
-	tmpsp->p[i].mass=1;
-	tmpsp->p[i].type=MT_HUMAN_SHIP;
-	if (i<3)
+        tmpsp->p[i].mass=1;
+        tmpsp->p[i].type=MT_HUMAN_SHIP;
+        if (i<3)
 	  tmpsp->p[i].radius=2.5;
-	else
+        else
 	  tmpsp->p[i].radius=4;
-	tmpsp->p[i].drag_profile_factor=3;
-	QueIns(&tmpsp->p[i],ode->last_mass);
+        tmpsp->p[i].drag_profile_factor=3;
+        QueIns(&tmpsp->p[i],ode->last_mass);
       }
       tmpsp->p[3].mass/=10.0;
       tmpsp->p[4].mass/=10.0;
@@ -244,15 +244,15 @@ Ship *ShipNew(I64 x,I64 y,I64 type)
       tmpsp->s[6].end2=&tmpsp->p[4];
 
       for (i=0;i<tmpsp->springs;i++) {
-	tmpsp->s[i].rest_len=
+        tmpsp->s[i].rest_len=
 	      D3Dist(&tmpsp->s[i].end1->x,&tmpsp->s[i].end2->x);
-	tmpsp->s[i].const=10000;
-	tmpsp->s[i].strength  =30000;
-	if (i<=2)
+        tmpsp->s[i].const=10000;
+        tmpsp->s[i].strength  =30000;
+        if (i<=2)
 	  tmpsp->s[i].color=LTCYAN;
-	else
+        else
 	  tmpsp->s[i].color=LTGRAY;
-	QueIns(&tmpsp->s[i],ode->last_spring);
+        QueIns(&tmpsp->s[i],ode->last_spring);
       }
       MissileNew(tmpsp,0);
       MissileNew(tmpsp,1);
@@ -270,11 +270,11 @@ Ship *ShipNew(I64 x,I64 y,I64 type)
       tmpsp->p[2].y=y+15;
 
       for (i=0;i<tmpsp->masses;i++) {
-	tmpsp->p[i].mass=1;
-	tmpsp->p[i].type=MT_ENEMY_SHIP;
-	tmpsp->p[i].radius=7;
-	tmpsp->p[i].drag_profile_factor=3;
-	QueIns(&tmpsp->p[i],ode->last_mass);
+        tmpsp->p[i].mass=1;
+        tmpsp->p[i].type=MT_ENEMY_SHIP;
+        tmpsp->p[i].radius=7;
+        tmpsp->p[i].drag_profile_factor=3;
+        QueIns(&tmpsp->p[i],ode->last_mass);
       }
 
       tmpsp->springs=3;
@@ -286,12 +286,12 @@ Ship *ShipNew(I64 x,I64 y,I64 type)
       tmpsp->s[2].end2=&tmpsp->p[0];
 
       for (i=0;i<tmpsp->springs;i++) {
-	tmpsp->s[i].rest_len=
+        tmpsp->s[i].rest_len=
 	      D3Dist(&tmpsp->s[i].end1->x,&tmpsp->s[i].end2->x);
-	tmpsp->s[i].const=10000;
-	tmpsp->s[i].strength  =20000;
-	tmpsp->s[i].color=BLACK;
-	QueIns(&tmpsp->s[i],ode->last_spring);
+        tmpsp->s[i].const=10000;
+        tmpsp->s[i].strength  =20000;
+        tmpsp->s[i].color=BLACK;
+        QueIns(&tmpsp->s[i],ode->last_spring);
       }
       remaining++;
       break;
@@ -310,11 +310,11 @@ Ship *ShipNew(I64 x,I64 y,I64 type)
       tmpsp->p[4].y=y+20;
 
       for (i=0;i<tmpsp->masses;i++) {
-	tmpsp->p[i].mass=1;
-	tmpsp->p[i].type=MT_ENEMY_SHIP;
-	tmpsp->p[i].radius=6;
-	tmpsp->p[i].drag_profile_factor=5;
-	QueIns(&tmpsp->p[i],ode->last_mass);
+        tmpsp->p[i].mass=1;
+        tmpsp->p[i].type=MT_ENEMY_SHIP;
+        tmpsp->p[i].radius=6;
+        tmpsp->p[i].drag_profile_factor=5;
+        QueIns(&tmpsp->p[i],ode->last_mass);
       }
 
       tmpsp->springs=7;
@@ -334,15 +334,15 @@ Ship *ShipNew(I64 x,I64 y,I64 type)
       tmpsp->s[6].end2=&tmpsp->p[4];
 
       for (i=0;i<tmpsp->springs;i++) {
-	tmpsp->s[i].rest_len=
+        tmpsp->s[i].rest_len=
 	      D3Dist(&tmpsp->s[i].end1->x,&tmpsp->s[i].end2->x);
-	tmpsp->s[i].const= 40000;
-	tmpsp->s[i].strength  =75000;
-	if (i>=3)
+        tmpsp->s[i].const= 40000;
+        tmpsp->s[i].strength  =75000;
+        if (i>=3)
 	  tmpsp->s[i].color=LTPURPLE;
-	else
+        else
 	  tmpsp->s[i].color=BLACK;
-	QueIns(&tmpsp->s[i],ode->last_spring);
+        QueIns(&tmpsp->s[i],ode->last_spring);
       }
       remaining++;
       break;
@@ -500,17 +500,17 @@ U0 DrawIt(CTask *task,CDC *dc)
   while (tmpmi!=&missile_head) {
     if (tmpmi->active) {
       if (tmpmi->launched && tmpmi->exploding) {
-	d=(tS-tmpmi->fuse_time)/(tmpmi->die_timeout-tmpmi->fuse_time);
-	d=70*Sin(ã*d)*tmpmi->tons+1;
-	for (i=1;i<d;i++) {
+        d=(tS-tmpmi->fuse_time)/(tmpmi->die_timeout-tmpmi->fuse_time);
+        d=70*Sin(ã*d)*tmpmi->tons+1;
+        for (i=1;i<d;i++) {
 	  if (i&1)
 	    dc->color=YELLOW;
 	  else
 	    dc->color=LTRED;
 	  GrCircle(dc,tmpmi->p_front.x,tmpmi->p_front.y,i);
-	}
+        }
       } else
-	Sprite3ZB(dc,(tmpmi->p_front.x+tmpmi->p_back.x)/2,
+        Sprite3ZB(dc,(tmpmi->p_front.x+tmpmi->p_back.x)/2,
 	      (tmpmi->p_front.y+tmpmi->p_back.y)/2,0,tmpmi->img,
 	      Arg(tmpmi->p_front.x-tmpmi->p_back.x,
 	      tmpmi->p_front.y-tmpmi->p_back.y));
@@ -522,7 +522,7 @@ U0 DrawIt(CTask *task,CDC *dc)
   while (tmpsp!=&ship_head) {
     if (!tmpsp->exploding) {
       switch (tmpsp->type) {
-	case ST_HUMAN1:
+        case ST_HUMAN1:
 	  if (tmpsp->spacewalk_side) {
 	    t_left=0;
 	    t_right=0;
@@ -574,22 +574,22 @@ U0 DrawIt(CTask *task,CDC *dc)
 	  switch (level) {
 	    case 3:
 	      if (!(tmpsp->s[3].flags&SSF_INACTIVE))
-		Sprite3ZB(dc,tmpsp->p[3].x,tmpsp->p[3].y,0,img,arg);
+	        Sprite3ZB(dc,tmpsp->p[3].x,tmpsp->p[3].y,0,img,arg);
 	      if (!(tmpsp->s[5].flags&SSF_INACTIVE))
-		Sprite3ZB(dc,tmpsp->p[4].x,tmpsp->p[4].y,0,img,arg);
+	        Sprite3ZB(dc,tmpsp->p[4].x,tmpsp->p[4].y,0,img,arg);
 	    case 2:
 	      if (!(tmpsp->s[1].flags&SSF_INACTIVE))
-		Sprite3ZB(dc,tmpsp->p[1].x,tmpsp->p[1].y,0,img,arg);
+	        Sprite3ZB(dc,tmpsp->p[1].x,tmpsp->p[1].y,0,img,arg);
 	      if (!(tmpsp->s[2].flags&SSF_INACTIVE))
-		Sprite3ZB(dc,tmpsp->p[2].x,tmpsp->p[2].y,0,img,arg);
+	        Sprite3ZB(dc,tmpsp->p[2].x,tmpsp->p[2].y,0,img,arg);
 	    case 1:
 	      Sprite3ZB(dc,tmpsp->p[0].x,tmpsp->p[0].y,0,img,arg);
 	      break;
 	    default:
 	      Sprite3ZB(dc,tmpsp->p[0].x,tmpsp->p[0].y,0,$IB,"<Laser>",BI=6$,arg);
 	      if (tmpsp->lasering && !tmpsp->laser_overheat) {
-		draw_laser_line=TRUE;
-		Snd(74);
+	        draw_laser_line=TRUE;
+	        Snd(74);
 	      }
 	  }
 
@@ -602,16 +602,16 @@ U0 DrawIt(CTask *task,CDC *dc)
 	      ctrl_panel.spacewalk=FALSE;
 	    } else {
 	      if (d<0.5) {
-		d=d*2;
-		x=tmpsp->p[0].x*(1.0-d)+
+	        d=d*2;
+	        x=tmpsp->p[0].x*(1.0-d)+
 		      tmpsp->p[tmpsp->spacewalk_side].x*(d);
-		y=tmpsp->p[0].y*(1.0-d)+
+	        y=tmpsp->p[0].y*(1.0-d)+
 		      tmpsp->p[tmpsp->spacewalk_side].y*(d);
 	      } else {
-		d=(d-0.5)*2;
-		x=tmpsp->p[tmpsp->spacewalk_side].x*(1.0-d)+
+	        d=(d-0.5)*2;
+	        x=tmpsp->p[tmpsp->spacewalk_side].x*(1.0-d)+
 		      tmpsp->p[0].x*(d);
-		y=tmpsp->p[tmpsp->spacewalk_side].y*(1.0-d)+
+	        y=tmpsp->p[tmpsp->spacewalk_side].y*(1.0-d)+
 		      tmpsp->p[0].y*(d);
 	      }
 	      Sprite3ZB(dc,x,y,0,$IB,"<spacewalk>",BI=4$,arg+0.75*Sin(tS*2));
@@ -619,13 +619,13 @@ U0 DrawIt(CTask *task,CDC *dc)
 	  } else {
 	    if (ctrl_panel.spacewalk) {
 	      if (tmpsp->spacewalk_side=Tweaked)
-		tmpsp->spacewalk_timeout=tS+SPACEWALK_TIME;
+	        tmpsp->spacewalk_timeout=tS+SPACEWALK_TIME;
 	      else
-		ctrl_panel.spacewalk=FALSE;
+	        ctrl_panel.spacewalk=FALSE;
 	    }
 	  }
 	  break;
-	case ST_ENEMY2:
+        case ST_ENEMY2:
 	  for (i=3;i<tmpsp->masses;i++) {
 	    dc->color=PURPLE;
 	    GrCircle(dc,tmpsp->p[i].x,tmpsp->p[i].y,tmpsp->p[i].radius);
@@ -633,7 +633,7 @@ U0 DrawIt(CTask *task,CDC *dc)
 	    dc->color=WHITE;
 	    GrCircle(dc,tmpsp->p[i].x,tmpsp->p[i].y,tmpsp->p[i].radius);
 	  }
-	case ST_ENEMY1:
+        case ST_ENEMY1:
 	  D3DivEqu(D3Sub(&p1,&tmpsp->p[1].x,&tmpsp->p[0].x),2.0);
 	  D3DivEqu(D3Sub(&p2,&tmpsp->p[2].x,&tmpsp->p[0].x),2.0);
 	  D3Unit(D3Add(&p,&p1,&p2));
@@ -645,30 +645,30 @@ U0 DrawIt(CTask *task,CDC *dc)
 	  Sprite3ZB(dc,tmpsp->p[0].x,tmpsp->p[0].y,0,img,arg);
 	  arg=Arg(p1.x,p1.y);
 	  Sprite3ZB(dc,tmpsp->p[0].x+p1.x,tmpsp->p[0].y+p1.y,0,
-		$IB,"<EnemySide>",BI=5$,arg);
+	        $IB,"<EnemySide>",BI=5$,arg);
 	  arg=Arg(p2.x,p2.y);
 	  Sprite3ZB(dc,tmpsp->p[0].x+p2.x,tmpsp->p[0].y+p2.y,0,
-		$IB,"<EnemySide>",BI=5$,arg);
+	        $IB,"<EnemySide>",BI=5$,arg);
 	  break;
       }
       for (i=0;i<tmpsp->masses;i++) {
-	dc->color=YELLOW;
-	if (tmpsp->p[i].temperature>=1.0)
+        dc->color=YELLOW;
+        if (tmpsp->p[i].temperature>=1.0)
 	  GrCircle(dc,tmpsp->p[i].x,tmpsp->p[i].y,
-		tmpsp->p[i].temperature);
+	        tmpsp->p[i].temperature);
       }
     }
     else if (tmpsp->die_time<=tS<=tmpsp->die_timeout)
       for (j=0;j<tmpsp->masses;j++) {
-	d=(tS-tmpsp->die_time)/(tmpsp->die_timeout-tmpsp->die_time);
-	d=7*Sin(ã*d)*(6+j)+1;
-	for (i=1;i<d;i++) {
+        d=(tS-tmpsp->die_time)/(tmpsp->die_timeout-tmpsp->die_time);
+        d=7*Sin(ã*d)*(6+j)+1;
+        for (i=1;i<d;i++) {
 	  if (i&1)
 	    dc->color=YELLOW;
 	  else
 	    dc->color=LTRED;
 	  GrCircle(dc,tmpsp->p[j].x,tmpsp->p[j].y,i);
-	}
+        }
       }
     tmpsp=tmpsp->next;
   }
@@ -682,7 +682,7 @@ U0 DrawIt(CTask *task,CDC *dc)
       dc->color=YELLOW;
       GrCircle(dc,tmps->p.x,tmps->p.y,tmps->radius);
       if (tmps->radius>=2.0)
-	GrFloodFill(dc,tmps->p.x,tmps->p.y,TRUE);
+        GrFloodFill(dc,tmps->p.x,tmps->p.y,TRUE);
       dc->color=LTGREEN;
       GrCircle(dc,tmps->p.x,tmps->p.y,tmps->radius);
     }
@@ -721,13 +721,13 @@ U0 Explosion(MyMass *tmpm1,MyMass *tmpm2,F64 tons)
       D3Sub(&p1,&tmpm->state->x,&tmpm1->state->x);
       d=D3NormSqr(&p1)-tmpm->radius*tmpm->radius;
       if (d<100.0*100.0) {
-	if (d<1)
+        if (d<1)
 	  d=1;
-	else
+        else
 	  d=Sqrt(d);
-	d=250000*tons/d`2;
-	D3MulEqu(&p1,d);
-	D3AddEqu(&tmpm->DstateDt->DxDt,&p1);
+        d=250000*tons/d`2;
+        D3MulEqu(&p1,d);
+        D3AddEqu(&tmpm->DstateDt->DxDt,&p1);
       }
     }
     tmpm=tmpm->next;
@@ -745,16 +745,16 @@ Ship TargetGet(Missile *tmpmi)
   while (tmpsp!=&ship_head) {
     if (!tmpsp->exploding && tmpsp!=tmpmi->owner)
       for (i=0;i<tmpsp->masses;i++) {
-	D3Sub(&p1,&tmpsp->p[i].state->x,&tmpmi->p_front.state->x);
-	D3Unit(D3Copy(&p2,&p1));
-	D3Cross(&p1,&p,&p2);
-	if (D3Dot(&p,&p2)>0 && D3Norm(&p1)<=ã/16) {
+        D3Sub(&p1,&tmpsp->p[i].state->x,&tmpmi->p_front.state->x);
+        D3Unit(D3Copy(&p2,&p1));
+        D3Cross(&p1,&p,&p2);
+        if (D3Dot(&p,&p2)>0 && D3Norm(&p1)<=ã/16) {
 	  dd=D3NormSqr(&p1);
 	  if (dd<best_dd) {
 	    best_dd=dd;
 	    res=tmpsp;
 	  }
-	}
+        }
       }
     tmpsp=tmpsp->next;
   }
@@ -776,26 +776,26 @@ U0 MyDerivative(CMathODE *ode,F64,COrder2D3 *,COrder2D3 *)
     if (tmpm->type!=MT_SOLAR_FLARE && tmpm->type!=MT_ION) {
       d=tmpm->state->x;
       if (d-tmpm->radius<0)
-	tmpm->DstateDt->DxDt+=Sqr(Sqr(Sqr(d-tmpm->radius)));
+        tmpm->DstateDt->DxDt+=Sqr(Sqr(Sqr(d-tmpm->radius)));
       if (d+tmpm->radius>task->pix_width)
-	tmpm->DstateDt->DxDt-=Sqr(Sqr(Sqr((d+tmpm->radius)-task->pix_width)));
+        tmpm->DstateDt->DxDt-=Sqr(Sqr(Sqr((d+tmpm->radius)-task->pix_width)));
       d=tmpm->state->y;
       if (d-tmpm->radius<0)
-	tmpm->DstateDt->DyDt+=Sqr(Sqr(Sqr(d-tmpm->radius)));
+        tmpm->DstateDt->DyDt+=Sqr(Sqr(Sqr(d-tmpm->radius)));
       if (d+tmpm->radius>task->pix_height)
-	tmpm->DstateDt->DyDt-=Sqr(Sqr(Sqr((d+tmpm->radius)-task->pix_height)));
+        tmpm->DstateDt->DyDt-=Sqr(Sqr(Sqr((d+tmpm->radius)-task->pix_height)));
     }
     if (tmpm->type!=MT_ION && tmpm->type!=MT_ANTIMATTER_SPLAT) {
       tmpm1=ode->next_mass;
       while (tmpm1!=&ode->next_mass) {
-	if (tmpm!=tmpm1) {
+        if (tmpm!=tmpm1) {
 	  if (tmpm1->type==MT_ANTIMATTER_SPLAT) {
 	    if (tmpm->type==MT_HUMAN_SHIP || tmpm->type==MT_ENEMY_SHIP) {
 	      D3Sub(&p,&tmpm->state->x,&tmpm1->state->x);
 	      dd=D3NormSqr(&p)+1;
 	      if (dd<100000) {
-		D3MulEqu(&p,100000/dd);
-		D3AddEqu(&tmpm1->DstateDt->DxDt,&p);
+	        D3MulEqu(&p,100000/dd);
+	        D3AddEqu(&tmpm1->DstateDt->DxDt,&p);
 	      }
 	    }
 	  } else if (tmpm1->type!=MT_ION) {
@@ -809,8 +809,8 @@ U0 MyDerivative(CMathODE *ode,F64,COrder2D3 *,COrder2D3 *)
 	      D3SubEqu(&tmpm1->DstateDt->DxDt,&p);
 	    }
 	  }
-	}
-	tmpm1=tmpm1->next;
+        }
+        tmpm1=tmpm1->next;
       }
     }
     tmpm=tmpm->next;
@@ -820,10 +820,10 @@ U0 MyDerivative(CMathODE *ode,F64,COrder2D3 *,COrder2D3 *)
   while (tmpsp!=&ship_head) {
     if (tmpsp->exploding && tmpsp->die_time<=tS<=tmpsp->die_timeout)
       for (i=0;i<tmpsp->masses;i++)
-	Explosion(&tmpsp->p[i],NULL,tmpsp->p[i].radius/250.0);
+        Explosion(&tmpsp->p[i],NULL,tmpsp->p[i].radius/250.0);
     switch (tmpsp->type) {
       case ST_HUMAN1:
-	if (!tmpsp->exploding) {
+        if (!tmpsp->exploding) {
 	  if (tmpsp->spacewalk_side) {
 	    t_left=0;
 	    t_right=0;
@@ -831,15 +831,15 @@ U0 MyDerivative(CMathODE *ode,F64,COrder2D3 *,COrder2D3 *)
 	    if (0.485<d<0.515) {
 	      D3Unit(D3Sub(&p,&tmpsp->p[2].state->x,&tmpsp->p[1].state->x));
 	      if (tmpsp->spacewalk_side==3) {
-		tmpsp->p[3].DstateDt->DxDt-=10*THRUST_MAX*p.x;
-		tmpsp->p[3].DstateDt->DyDt-=10*THRUST_MAX*p.y;
-		tmpsp->p[1].DstateDt->DxDt+=10*THRUST_MAX*p.x;
-		tmpsp->p[1].DstateDt->DyDt+=10*THRUST_MAX*p.y;
+	        tmpsp->p[3].DstateDt->DxDt-=10*THRUST_MAX*p.x;
+	        tmpsp->p[3].DstateDt->DyDt-=10*THRUST_MAX*p.y;
+	        tmpsp->p[1].DstateDt->DxDt+=10*THRUST_MAX*p.x;
+	        tmpsp->p[1].DstateDt->DyDt+=10*THRUST_MAX*p.y;
 	      } else {
-		tmpsp->p[4].DstateDt->DxDt+=10*THRUST_MAX*p.x;
-		tmpsp->p[4].DstateDt->DyDt+=10*THRUST_MAX*p.y;
-		tmpsp->p[2].DstateDt->DxDt-=10*THRUST_MAX*p.x;
-		tmpsp->p[2].DstateDt->DyDt-=10*THRUST_MAX*p.y;
+	        tmpsp->p[4].DstateDt->DxDt+=10*THRUST_MAX*p.x;
+	        tmpsp->p[4].DstateDt->DyDt+=10*THRUST_MAX*p.y;
+	        tmpsp->p[2].DstateDt->DxDt-=10*THRUST_MAX*p.x;
+	        tmpsp->p[2].DstateDt->DyDt-=10*THRUST_MAX*p.y;
 	      }
 	    }
 	  } else {
@@ -875,8 +875,8 @@ U0 MyDerivative(CMathODE *ode,F64,COrder2D3 *,COrder2D3 *)
 	      D3AddEqu(&tmpsp->p[4].DstateDt->DxDt,&p2);
 	    }
 	  }
-	}
-	break;
+        }
+        break;
     }
     tmpsp=tmpsp->next;
   }
@@ -885,9 +885,9 @@ U0 MyDerivative(CMathODE *ode,F64,COrder2D3 *,COrder2D3 *)
   while (tmpmi!=&missile_head) {
     if (tmpmi->active) {
       if (tmpmi->launched) {
-	if (tmpmi->exploding)
+        if (tmpmi->exploding)
 	  Explosion(&tmpmi->p_front,&tmpmi->p_back,tmpmi->tons);
-	else {
+        else {
 //Guide missile
 	  if (tmpsp=tmpmi->target) {
 	    D3Unit(D3Sub(&p,&tmpmi->p_front.state->x,
@@ -907,9 +907,9 @@ U0 MyDerivative(CMathODE *ode,F64,COrder2D3 *,COrder2D3 *)
 	    p2.z=0;
 	    D3AddEqu(&tmpmi->p_back.DstateDt->DxDt,D3MulEqu(&p2,THRUST_MAX));
 	  }
-	}
+        }
       } else
-	tmpmi->target=TargetGet(tmpmi);
+        tmpmi->target=TargetGet(tmpmi);
     } else
       tmpmi->target=NULL;
     tmpmi=tmpmi->next;
@@ -937,25 +937,25 @@ U0 CheckDamage()
   while (tmpm!=&ode->next_mass) {
     if (tmpm->type==MT_ION) {
       if (facing_sun) {
-	tmpm1=ode->next_mass;
-	while (tmpm1!=&ode->next_mass) {
+        tmpm1=ode->next_mass;
+        while (tmpm1!=&ode->next_mass) {
 	  if (tmpm1->type==MT_HUMAN_SHIP) {
 	    D3Sub(&p,&tmpm1->x,&tmpm->x);
 	    if (D3NormSqr(&p)<Sqr(tmpm1->radius))
 	      tmpm1->temperature+=3.0;
 	  }
 	  tmpm1=tmpm1->next;
-	}
+        }
       }
     } else if (tmpm->type==MT_ANTIMATTER_SPLAT) {
       tmpm1=ode->next_mass;
       while (tmpm1!=&ode->next_mass) {
-	if (tmpm1->type!=MT_ION && tmpm1->type!=MT_ANTIMATTER_SPLAT) {
+        if (tmpm1->type!=MT_ION && tmpm1->type!=MT_ANTIMATTER_SPLAT) {
 	  D3Sub(&p,&tmpm1->x,&tmpm->x);
 	  if (D3NormSqr(&p)<Sqr(tmpm1->radius))
 	    tmpm1->temperature+=0.4;
-	}
-	tmpm1=tmpm1->next;
+        }
+        tmpm1=tmpm1->next;
       }
     } else
       tmpm->temperature*=0.9;
@@ -967,27 +967,27 @@ U0 CheckDamage()
 
     if (human->laser_overheat) {
       if (human->laser_temperature<LASER_THRESHOLD_TEMP)
-	human->laser_overheat=FALSE;
+        human->laser_overheat=FALSE;
     }
     if (!human->laser_overheat && human->lasering) {
       if (human->laser_temperature>=LASER_TEMP_MAX) {
-	human->laser_overheat=TRUE;
-	Snd;
+        human->laser_overheat=TRUE;
+        Snd;
       } else {
-	human->laser_temperature+=1.0;
-	D3Sub(&p1,&human->p[0].x,&human->p[1].x);
-	D3Sub(&p2,&human->p[0].x,&human->p[2].x);
-	D3Unit(D3Add(&p,&p1,&p2));
-	p2.x=p.y;
-	p2.y=-p.x;
-	p2.z=0;
-	best_mass=NULL;
-	best_distance=F64_MAX;
-	tmpm=ode->next_mass;
-	while (tmpm!=&ode->next_mass) {
+        human->laser_temperature+=1.0;
+        D3Sub(&p1,&human->p[0].x,&human->p[1].x);
+        D3Sub(&p2,&human->p[0].x,&human->p[2].x);
+        D3Unit(D3Add(&p,&p1,&p2));
+        p2.x=p.y;
+        p2.y=-p.x;
+        p2.z=0;
+        best_mass=NULL;
+        best_distance=F64_MAX;
+        tmpm=ode->next_mass;
+        while (tmpm!=&ode->next_mass) {
 	  D3Sub(&p1,&human->p[0].x,&tmpm->x);
 	  if (Abs(D3Dot(&p1,&p2))<tmpm->radius &&
-		D3Dot(&p1,&p)<0.0) {
+	        D3Dot(&p1,&p)<0.0) {
 	    d=D3NormSqr(&p1);
 	    if (d<best_distance) {
 	      best_distance=d;
@@ -995,8 +995,8 @@ U0 CheckDamage()
 	    }
 	  }
 	  tmpm=tmpm->next;
-	}
-	if (best_mass)
+        }
+        if (best_mass)
 	  best_mass->temperature+=1.0;
       }
     }
@@ -1008,33 +1008,33 @@ U0 CheckDamage()
     death_score=0;
     switch (tmpsp->type) {
       case ST_HUMAN1:
-	if (tmpsp->exploding) {
+        if (tmpsp->exploding) {
 	  if (tS>tmpsp->die_timeout)  {
 	    ShipDel(tmpsp);
 	    human=NULL;
 	  }
-	} else
+        } else
 	  for (i=0;i<tmpsp->springs;i++) {
 	    if (Abs(tmpsp->s[i].f)>tmpsp->s[i].strength) {
 	      tmpsp->s[i].flags|=SSF_INACTIVE;
 	      if (i==4)
-		MissileDel(&tmpsp->missiles[0]);
+	        MissileDel(&tmpsp->missiles[0]);
 	      else if (i==5)
-		MissileDel(&tmpsp->missiles[1]);
+	        MissileDel(&tmpsp->missiles[1]);
 	    }
 	    if (tmpsp->s[i].flags&SSF_INACTIVE && i<3)
 	      death_score++;
 	  }
-	break;
+        break;
       default:
-	if (tmpsp->exploding) {
+        if (tmpsp->exploding) {
 	  if (tS>tmpsp->die_timeout) {
 	    ShipDel(tmpsp);
 	    score+=level;
 	    if (score>best_score)
 	      best_score=score;
 	  }
-	} else {
+        } else {
 	  j=0;
 	  for (i=0;i<tmpsp->springs;i++) {
 	    if (tmpsp->s[i].flags&SSF_INACTIVE)
@@ -1046,18 +1046,18 @@ U0 CheckDamage()
 	  }
 	  if (j>1)
 	    death_score++;
-	}
+        }
     }
     if (!tmpsp->exploding) {
       for (i=0;i<tmpsp->masses;i++)
-	if (tmpsp->p[i].temperature>MASS_TEMP_MAX)
+        if (tmpsp->p[i].temperature>MASS_TEMP_MAX)
 	  death_score++;
       if (death_score) {
-	tmpsp->exploding=TRUE;
-	tmpsp->die_time=tS;
-	tmpsp->die_timeout=tS+0.75;
-	Noise(750,74,93);
-	if (tmpsp->type==ST_HUMAN1)
+        tmpsp->exploding=TRUE;
+        tmpsp->die_time=tS;
+        tmpsp->die_timeout=tS+0.75;
+        Noise(750,74,93);
+        if (tmpsp->type==ST_HUMAN1)
 	  game_over=TRUE;
       }
     }
@@ -1095,9 +1095,9 @@ U0 SolarFlares()
   if (t_solar_storm<tS) {  //If solar storm has arrived
     if (tS<t_solar_storm+5.0) { //If solar storm not over
       if (Rand<.1) {
-	D3Equ(&p,-300,Rand*task->pix_height,0);
-	D3Equ(&v,200.0,0,0);
-	ShotNew(MT_SOLAR_FLARE,&p,&v,25,0.1);
+        D3Equ(&p,-300,Rand*task->pix_height,0);
+        D3Equ(&v,200.0,0,0);
+        ShotNew(MT_SOLAR_FLARE,&p,&v,25,0.1);
       }
     } else {
       t_solar_storm=tS+25*Rand;  //Schedule next solar storm
@@ -1142,21 +1142,21 @@ U0 FireOneMissile(Ship *tmpsp,I64 n)
 U0 HumanFireGunBegin()
 {
   F64 r=3.0*ctrl_panel.shot_radius/CTRL_PANEL_RANGE+0.5,
-	fuse_time=ToF64(ctrl_panel.fuse_time+1)/CTRL_PANEL_RANGE;
+        fuse_time=ToF64(ctrl_panel.fuse_time+1)/CTRL_PANEL_RANGE;
   if (human) {
     if (!human->exploding && !human->spacewalk_side && tS>human->reload_timeout)
       switch (level) {
-	case 3:
+        case 3:
 	  if (!(human->s[3].flags&SSF_INACTIVE))
 	    FireOneGun(human,3,r,fuse_time);
 	  if (!(human->s[5].flags&SSF_INACTIVE))
 	    FireOneGun(human,4,r,fuse_time);
-	case 2:
+        case 2:
 	  if (!(human->s[1].flags&SSF_INACTIVE))
 	    FireOneGun(human,1,r,fuse_time);
 	  if (!(human->s[2].flags&SSF_INACTIVE))
 	    FireOneGun(human,2,r,fuse_time);
-	case 1:
+        case 1:
 	  FireOneGun(human,0,r,fuse_time);
 	  break;
       }
@@ -1166,14 +1166,14 @@ U0 HumanFireGunBegin()
 U0 HumanFireMissileBegin(I64 n)
 {
   if (human && !human->exploding &&
-	!human->spacewalk_side && tS>human->reload_timeout)
+        !human->spacewalk_side && tS>human->reload_timeout)
     FireOneMissile(human,n);
 }
 
 U0 HumanFireLaserBegin()
 {
   if (human && !human->exploding &&
-	!human->spacewalk_side && tS>human->reload_timeout)
+        !human->spacewalk_side && tS>human->reload_timeout)
     human->lasering=TRUE;
 }
 U0 HumanFireLaserEnd()
@@ -1215,9 +1215,9 @@ U0 ExpireShots()
     tmps1=tmps->next;
     if (tS>tmps->fuse_time) {
       if (tmps->p.type==MT_SOLAR_FLARE)
-	SplatNew(tmps,1.0,3*ã/8,5*ã/8);
+        SplatNew(tmps,1.0,3*ã/8,5*ã/8);
       else
-	SplatNew(tmps,.2,0,2*ã);
+        SplatNew(tmps,.2,0,2*ã);
       QueRem(tmps);
       QueRem(&tmps->p);
       Free(tmps);
@@ -1251,18 +1251,18 @@ U0 ExpireMissiles()
     if (tmpmi->launched) {
       best_dd=F64_MAX;
       if (tmpmi->target)
-	for (i=0;i<tmpmi->target->masses;i++) {
+        for (i=0;i<tmpmi->target->masses;i++) {
 	  dd=D3DistSqr(&tmpmi->p_front.x,&tmpmi->target->p[i].x);
 	  if (dd<best_dd)
 	    best_dd=dd;
-	}
+        }
       if (!tmpmi->exploding && (best_dd<30*30 || tS>tmpmi->fuse_time)) {
-	tmpmi->p_front.mass=10.0; //They go flying, if too light.
-	tmpmi->p_back.mass =10.0;
-	tmpmi->exploding=TRUE;
-	Noise(50,93,105);
+        tmpmi->p_front.mass=10.0; //They go flying, if too light.
+        tmpmi->p_back.mass =10.0;
+        tmpmi->exploding=TRUE;
+        Noise(50,93,105);
       } else if (tS>tmpmi->die_timeout)
-	MissileDel(tmpmi);
+        MissileDel(tmpmi);
     }
     tmpmi=tmpm1;
   }
@@ -1282,7 +1282,7 @@ U0 AI()
       D3Sub(&p1,&human->p[0].x,&tmpsp->p[0].x);
       if (D3Dot(D3Unit(&p),D3Unit(&p1))>0.995 &&
 	    tS>tmpsp->reload_timeout) {
-	FireOneGun(tmpsp,0,1.5+.5,.4);
+        FireOneGun(tmpsp,0,1.5+.5,.4);
       }
       tmpsp=tmpsp->next;
     }
@@ -1352,37 +1352,37 @@ U0 XCaliber()
   SettingsPush; //See $LK,"SettingsPush",A="MN:SettingsPush"$
   Fs->text_attr=BLACK<<4+WHITE;
   MenuPush(
-	"File {"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Game {"
-	"  Restart(,'\n');"
-	"  LevelUp(,'+');"
-	"  LevelDown(,'-');"
-	"}"
-	"Play {"
-	"  Fire(,CH_SPACE);"
-	"  Thrust(,,SC_CURSOR_UP);"
-	"  StopSpin(,,SC_CURSOR_DOWN);"
-	"  Left(,,SC_CURSOR_LEFT);"
-	"  Right(,,SC_CURSOR_RIGHT);"
-	"  LeftMissile(,,SC_CURSOR_LEFT|SCF_CTRL);"
-	"  RightMissile(,,SC_CURSOR_RIGHT|SCF_CTRL);"
-	"  Spackwalk(,'w');"
-	"  LongerFuse(,,SC_CURSOR_RIGHT|SCF_SHIFT);"
-	"  ShorterFuse(,,SC_CURSOR_LEFT|SCF_SHIFT);"
-	"  LargerShot(,,SC_CURSOR_UP|SCF_SHIFT);"
-	"  SmallerShot(,,SC_CURSOR_DOWN|SCF_SHIFT);"
-	"}"
-	);
+        "File {"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Game {"
+        "  Restart(,'\n');"
+        "  LevelUp(,'+');"
+        "  LevelDown(,'-');"
+        "}"
+        "Play {"
+        "  Fire(,CH_SPACE);"
+        "  Thrust(,,SC_CURSOR_UP);"
+        "  StopSpin(,,SC_CURSOR_DOWN);"
+        "  Left(,,SC_CURSOR_LEFT);"
+        "  Right(,,SC_CURSOR_RIGHT);"
+        "  LeftMissile(,,SC_CURSOR_LEFT|SCF_CTRL);"
+        "  RightMissile(,,SC_CURSOR_RIGHT|SCF_CTRL);"
+        "  Spackwalk(,'w');"
+        "  LongerFuse(,,SC_CURSOR_RIGHT|SCF_SHIFT);"
+        "  ShorterFuse(,,SC_CURSOR_LEFT|SCF_SHIFT);"
+        "  LargerShot(,,SC_CURSOR_UP|SCF_SHIFT);"
+        "  SmallerShot(,,SC_CURSOR_DOWN|SCF_SHIFT);"
+        "}"
+        );
   AutoComplete;
   WinBorder;
   WinMax;
   DocCursor;
   DocClear;
   Fs->win_inhibit=WIG_TASK_DFT-WIF_SELF_FOCUS
-	-WIF_SELF_BORDER-WIF_FOCUS_TASK_MENU-WIF_SELF_CTRLS;
+        -WIF_SELF_BORDER-WIF_FOCUS_TASK_MENU-WIF_SELF_CTRLS;
   Fs->draw_it=&DrawIt;
   do {
     ode=ODENew(0,0.01,ODEF_HAS_MASSES);
@@ -1395,12 +1395,12 @@ U0 XCaliber()
     do {
       while (!game_over && !show_level_msg &&
 	    (msg_code=ScanMsg(&arg1,&arg2,1<<MSG_KEY_DOWN|1<<MSG_KEY_UP))) {
-	switch (msg_code) {
+        switch (msg_code) {
 	  case MSG_KEY_DOWN:
 	    ch=arg1; sc=arg2;
 	    switch (ch) {
 	      case 0:
-		switch (sc.u8[0]) {
+	        switch (sc.u8[0]) {
 		  case SC_CURSOR_RIGHT:
 		    if (sc&SCF_CTRL)
 		      HumanFireMissileBegin(0);
@@ -1431,30 +1431,30 @@ U0 XCaliber()
 		    else
 		      human_antispin=ANTISPIN_MAX;
 		    break;
-		}
-		break;
+	        }
+	        break;
 	      case CH_SPACE:
-		if (level<4)
+	        if (level<4)
 		  HumanFireGunBegin;
-		else
+	        else
 		  HumanFireLaserBegin;
-		break;
+	        break;
 	      case 'w':
-		ctrl_panel.spacewalk=TRUE;
-		break;
+	        ctrl_panel.spacewalk=TRUE;
+	        break;
 	      case '+':
-		level++;
-		break;
+	        level++;
+	        break;
 	      case '-':
-		level--;
-		break;
+	        level--;
+	        break;
 	    }
 	    break;
 	  case MSG_KEY_UP:
 	    ch=arg1; sc=arg2;
 	    switch (ch) {
 	      case 0:
-		switch (sc.u8[0]) {
+	        switch (sc.u8[0]) {
 		  case SC_CURSOR_RIGHT:
 		    human_t_right=0;
 		    break;
@@ -1468,18 +1468,18 @@ U0 XCaliber()
 		  case SC_CURSOR_DOWN:
 		    human_antispin=0;
 		    break;
-		}
-		break;
+	        }
+	        break;
 	      case '\n':
-		ch=0;
-		break;
+	        ch=0;
+	        break;
 	      case CH_SPACE:
-		if (level>=4)
+	        if (level>=4)
 		  HumanFireLaserEnd;
-		break;
+	        break;
 	    }
 	    break;
-	}
+        }
       }
       AI;
       SolarFlares;
@@ -1489,20 +1489,20 @@ U0 XCaliber()
       CheckDamage;
       Refresh; //msgs are only qued by winmgr
       if (show_level_msg) {
-	ch=GetKey(&sc);
-	if (ch=='\n')
+        ch=GetKey(&sc);
+        if (ch=='\n')
 	  ch=0;
-	ODEPause(ode,OFF);
-	show_level_msg=FALSE;
+        ODEPause(ode,OFF);
+        show_level_msg=FALSE;
       } else if (game_over) {
-	ch=ScanChar;
+        ch=ScanChar;
       } else {
-	if (!remaining) {
+        if (!remaining) {
 	  level++;
 	  ShipDel(human);
 	  human=NULL;
 	  InitLevel;
-	}
+        }
       }
     } while (ch!=CH_ESC && ch!='\n' && ch!=CH_SHIFT_ESC);
     AllDel(ode);
@@ -1511,8 +1511,8 @@ U0 XCaliber()
   CtrlPanelDel(cp);
   MenuPop;
   RegWrite("TempleOS/XCaliber",
-	"I64 best_score=%d;\n"
-	"I64 msg_flags=%d;\n",best_score,msg_flags);
+        "I64 best_score=%d;\n"
+        "I64 msg_flags=%d;\n",best_score,msg_flags);
 }
         ž      
     ÿÿÿÿ   ÿÿÿÿ

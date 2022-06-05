@@ -59,24 +59,24 @@ CBgtEntry *BgtEntryPmt(CBgtEntry *dft=NULL)
   while (TRUE)
     if (PopUpForm(&b)) {
       if (!*b.credit) {
-	st=BgtPopUpAcct("Credit Acct\n\n");
-	if (st!=DOCM_CANCEL)
+        st=BgtPopUpAcct("Credit Acct\n\n");
+        if (st!=DOCM_CANCEL)
 	  StrCpy(b.credit,st);
       } else if (!*b.debit) {
-	st=BgtPopUpAcct("Debit Acct\n\n");
-	if (st!=DOCM_CANCEL)
+        st=BgtPopUpAcct("Debit Acct\n\n");
+        if (st!=DOCM_CANCEL)
 	  StrCpy(b.debit,st);
       } else {
-	tmpb=CAlloc(sizeof(CBgtEntry));
-	tmpb->date  =Str2Date(b.date);
-	tmpb->amount=b.amount;
-	tmpb->credit=StrNew(b.credit);
-	tmpb->debit =StrNew(b.debit);
-	tmpb->desc  =StrNew(b.desc);
-	tmpb->type  =BE_NORMAL;
-	StrFileAdd(tmpb->credit,&accts_table_strs,accts_table);
-	StrFileAdd(tmpb->debit,&accts_table_strs,accts_table);
-	return tmpb;
+        tmpb=CAlloc(sizeof(CBgtEntry));
+        tmpb->date  =Str2Date(b.date);
+        tmpb->amount=b.amount;
+        tmpb->credit=StrNew(b.credit);
+        tmpb->debit =StrNew(b.debit);
+        tmpb->desc  =StrNew(b.desc);
+        tmpb->type  =BE_NORMAL;
+        StrFileAdd(tmpb->credit,&accts_table_strs,accts_table);
+        StrFileAdd(tmpb->debit,&accts_table_strs,accts_table);
+        return tmpb;
       }
     } else
       return NULL;

@@ -44,11 +44,11 @@ U0 MyDerivative(CMathODE *ode,F64,COrder2D3 *,COrder2D3 *)
       D3Sub(&p,&tmpm2->state->x,&tmpm1->state->x);
       dd=D3NormSqr(&p);
       if (dd<=Sqr(tmpm1->radius+tmpm2->radius)) {
-	d=Sqrt(dd)+0.0001;
-	dd=10.0*Sqr(Sqr(Sqr(tmpm1->radius+tmpm2->radius)-dd));
-	D3MulEqu(&p,dd/d);
-	D3AddEqu(&tmpm2->DstateDt->DxDt,&p);
-	D3SubEqu(&tmpm1->DstateDt->DxDt,&p);
+        d=Sqrt(dd)+0.0001;
+        dd=10.0*Sqr(Sqr(Sqr(tmpm1->radius+tmpm2->radius)-dd));
+        D3MulEqu(&p,dd/d);
+        D3AddEqu(&tmpm2->DstateDt->DxDt,&p);
+        D3SubEqu(&tmpm1->DstateDt->DxDt,&p);
       }
       tmpm2=tmpm2->next;
     }
@@ -102,9 +102,9 @@ U0 MassSpringDemo()
   MyMass *tmpm1=NULL,*tmpm2=NULL;
 
   PopUpOk("Left-Click to place mas\n"
-	"Right-Click and drag to\n"
-	"connect with spring.\n\n"
-	"Springs are 100 pixs long.\n");
+        "Right-Click and drag to\n"
+        "connect with spring.\n\n"
+        "Springs are 100 pixs long.\n");
   SettingsPush; //See $LK,"SettingsPush",A="MN:SettingsPush"$
   AutoComplete;
   WinBorder;
@@ -115,14 +115,14 @@ U0 MassSpringDemo()
   Fs->win_inhibit|=WIG_DBL_CLICK;
 
   MenuPush(
-	"File {"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Play {"
-	"  Restart(,'\n');"
-	"}"
-	);
+        "File {"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Play {"
+        "  Restart(,'\n');"
+        "}"
+        );
 
   Init;
   Fs->draw_it=&DrawIt;
@@ -132,19 +132,19 @@ U0 MassSpringDemo()
       msg_code=GetMsg(&arg1,&arg2,
 	    1<<MSG_MS_L_DOWN|1<<MSG_MS_R_DOWN|1<<MSG_MS_R_UP|1<<MSG_KEY_DOWN);
       switch (msg_code) {
-	case MSG_MS_L_DOWN:
+        case MSG_MS_L_DOWN:
 	  PlaceMass(arg1,arg2);
 	  break;
-	case MSG_MS_R_DOWN:
+        case MSG_MS_R_DOWN:
 	  tmpm1=MassFind(ode,arg1,arg2);
 	  tmpm2=NULL;
 	  break;
-	case MSG_MS_R_UP:
+        case MSG_MS_R_UP:
 	  if (tmpm1 && (tmpm2=MassFind(ode,arg1,arg2)) && tmpm1!=tmpm2)
 	    PlaceSpring(tmpm1,tmpm2);
 	  tmpm1=tmpm2=NULL;
 	  break;
-	case MSG_KEY_DOWN:
+        case MSG_KEY_DOWN:
 	  switch (arg1) {
 	    case '\n':
 	      CleanUp;

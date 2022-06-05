@@ -48,11 +48,11 @@ U0 Spy()
 	    "\n\n\t$$BT,\"CallerRep\",LM=\"2\n\"$$\n\n\n";
       i=GetI64("",0);
       if (i==1)
-	SpyStkRep(task);
+        SpyStkRep(task);
       else if (i==2)
-	SpyCallerRep(task);
+        SpyCallerRep(task);
       else
-	break;
+        break;
     } else
       break;
   }

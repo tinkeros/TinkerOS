@@ -36,29 +36,29 @@ U0 PutStat()
   CUSB *u;
   WinMax;
   "$$FG,GREEN$$Dev Stat Bits\n$$FG$$"
-  "  0:IRQ\n"
-  "  1:IRQ err\n"
-  "  2:Resume\n"
-  "  3:Host Sys Err\n"
-  "  4:Host Process Err\n"
-  "  5:Halted\n"
-  "$$FG,GREEN$$Port Stat Bits\n$$FG$$"
-  "  0:Connection Stat\n"
-  "  1:Connection Stat Change\n"
-  "  2:Port Enabled\n"
-  "  3:Port Enabled Change\n"
-  "4-5:Line Stat\n"
-  "  6:Resume Detect\n"
-  "  8:Low Speed\n"
-  "  9:Port Rst\n"
-  " 10:Overcurrent Active\n"
-  " 11:Overcurrent Indicator\n"
-  " 12:Suspend\n\n";
+        "  0:IRQ\n"
+        "  1:IRQ err\n"
+        "  2:Resume\n"
+        "  3:Host Sys Err\n"
+        "  4:Host Process Err\n"
+        "  5:Halted\n"
+        "$$FG,GREEN$$Port Stat Bits\n$$FG$$"
+        "  0:Connection Stat\n"
+        "  1:Connection Stat Change\n"
+        "  2:Port Enabled\n"
+        "  3:Port Enabled Change\n"
+        "4-5:Line Stat\n"
+        "  6:Resume Detect\n"
+        "  8:Low Speed\n"
+        "  9:Port Rst\n"
+        " 10:Overcurrent Active\n"
+        " 11:Overcurrent Indicator\n"
+        " 12:Suspend\n\n";
   for (i=0; i<sys_num_usb; i++)
-  {
+    {
     u=&sys_usb_devs[i];
     "$$FG,LTRED$$Dev%d:%X:"
-    ,i,u->ports;
+	  ,i,u->ports;
     doc_e=DocPrint(DocPut,"$$TX+TC,\" \"$$");
     doc_e->user_data=&sys_usb_devs[i];
     doc_e->tag_cb=&StatCB;
@@ -78,13 +78,13 @@ U0 PutTD(U32 t)
 {
   "TD:$$FG,GREEN$$%08X$$FG$$\n",t;
   "%08X\n"
-  ,*P(t);
+        ,*P(t);
   DocDm(t+4,8);
   if (*P(t+12))
     DocDm(*P(t+12),16);
 //    DocDm(*P(t+12),*P(t+4)>>21&0x7FF);
   if (!(*P(t)&1))
-  {
+    {
     if (*P(t)&2)
       PutQH(*P(t));
     else
@@ -96,18 +96,18 @@ U0 PutQH(U32 h)
 {
   "QH:$$FG,RED$$%08X$$FG$$\n",h;
   "%08X\n"
-  ,*P(h);
+        ,*P(h);
   "%08X\n"
-  ,*P(h+4);
+        ,*P(h+4);
   if (!(*P(h)&1))
-  {
+    {
     if (*P(h)&2)
       PutQH(*P(h));
     else
       PutTD(*P(h));
   }
   if (!(*P(h+4)&1))
-  {
+    {
     if (*P(h+4)&2)
       PutQH(*P(h+4));
     else
@@ -125,13 +125,13 @@ U0 PutFrames()
   I64 i,d,f,w1,w2;
   CUSB *u;
   for (i=0; i<sys_num_usb; i++)
-  {
+    {
     u=&sys_usb_devs[i];
     d=u->ports;
     w1=InU16(d+USBP_PORTSC0);
     w2=InU16(d+USBP_PORTSC1);
     if (w1&1 || w2&1)
-    {
+      {
       f=InU32(d+USBP_FRBASEADD);
       PutFrame(f);
     }
@@ -164,8 +164,8 @@ U0 SetUpTD()
   CUSB *u=&sys_usb_devs[PORT];
   I64 i,d=u->ports;
   U32 *frm=CAllocAligned(0x1000,0x1000,Fs->code_heap),
-	*tds=CAllocAligned(256,16,Fs->code_heap),
-	*buf=CAlloc(128,Fs->code_heap);
+        *tds=CAllocAligned(256,16,Fs->code_heap),
+        *buf=CAlloc(128,Fs->code_heap);
   DocD(buf,128);
 
   "<0>\n"; Sleep(100);

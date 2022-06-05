@@ -65,14 +65,14 @@ Unit *UnitFind(I64 row,I64 col)
       if (units[j][i].life>0 &&
 	    units[j][i].row==row &&
 	    units[j][i].col==col)
-	return &units[j][i];
+        return &units[j][i];
   return NULL;
 }
 
 Bool CursorInWin(CTask *task,I64 x,I64 y)
 {
   if (0<=x+task->scroll_x<task->pix_width &&
-	0<=y+task->scroll_y<task->pix_height)
+        0<=y+task->scroll_y<task->pix_height)
     return TRUE;
   else
     return FALSE;
@@ -94,14 +94,14 @@ Bool LOSPlot(LOSCtrl *l,I64 x,I64 y,I64 z)
   I64 row,col;
   XY2RowCol(&row,&col,x,y);
   if ((row!=l->r1 || col!=l->c1) &&
-	(row!=l->r2 || col!=l->c2) &&
-	terrain[row][col]!=PLAINS) {
+        (row!=l->r2 || col!=l->c2) &&
+        terrain[row][col]!=PLAINS) {
     if (terrain[l->r1][l->c1]==MOUNTAINS) {
       if (terrain[row][col]==MOUNTAINS || z>l->distance>>1)
-	return FALSE;
+        return FALSE;
     } else if (terrain[l->r2][l->c2]==MOUNTAINS) {
       if (terrain[row][col]==MOUNTAINS || z<=l->distance>>1)
-	return FALSE;
+        return FALSE;
     } else
       return FALSE;
   }

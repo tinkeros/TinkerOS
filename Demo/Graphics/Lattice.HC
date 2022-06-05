@@ -28,7 +28,7 @@ U0 TurtlePlot(CDC *dc,Turtle *t,CColorROPU16 edge,CColorROPU16 middle)
   if (w<0) w=0;
   dc->color=middle;
   GrLine3(dc,t->x+w*Cos(t->é+ã/2),t->y+w*Sin(t->é+ã/2),t->z,
-	t->x+w*Cos(t->é-ã/2),t->y+w*Sin(t->é-ã/2),t->z);
+        t->x+w*Cos(t->é-ã/2),t->y+w*Sin(t->é-ã/2),t->z);
   w=t->w/2.0;
   dc->color=edge;
   GrPlot3(dc,t->x+w*Cos(t->é+ã/2),t->y+w*Sin(t->é+ã/2),t->z);
@@ -55,10 +55,10 @@ U0 TurtleEnd(CDC *dc,Turtle *t,CColorROPU16 edge,CColorROPU16 middle,F64 é)
       x+=1/r;
       y2=r*r-4*x*x;
       if (y2>=0) {
-	t->w=Sqrt(y2);
-	TurtlePlot(dc,t,edge,middle);
+        t->w=Sqrt(y2);
+        TurtlePlot(dc,t,edge,middle);
       } else
-	break;
+        break;
     }
     MemCpy(t,&t2,sizeof(Turtle));
   }
@@ -98,16 +98,16 @@ U0 DrawIt(CTask *,CDC *dc)
   Turtle t2;
   MemCpy(&t2,&tt,sizeof(Turtle));
   GrPrint(dc,0,0,"Layer:%f Speed:%f é:%5.1f dé:%5.1f Width:%f",
-	tt.z,tt.speed,tt.é*180/ã,angles[tt.dé_idx]*180/ã,tt.w);
+        tt.z,tt.speed,tt.é*180/ã,angles[tt.dé_idx]*180/ã,tt.w);
 
   TurtleMove(dc,&t2,RED,LTRED);
   dc->color=LTRED;
   GrLine(dc,t2.x+TURTLE_SIZE*Cos(t2.é+ã/2),t2.y+TURTLE_SIZE*Sin(t2.é+ã/2),
-	t2.x+TURTLE_SIZE*Cos(t2.é-ã/2),t2.y+TURTLE_SIZE*Sin(t2.é-ã/2));
+        t2.x+TURTLE_SIZE*Cos(t2.é-ã/2),t2.y+TURTLE_SIZE*Sin(t2.é-ã/2));
   GrLine(dc,t2.x+TURTLE_SIZE*Cos(t2.é+ã/2),t2.y+TURTLE_SIZE*Sin(t2.é+ã/2),
-	t2.x+TURTLE_SIZE*Cos(t2.é),    t2.y+TURTLE_SIZE*Sin(t2.é));
+        t2.x+TURTLE_SIZE*Cos(t2.é),    t2.y+TURTLE_SIZE*Sin(t2.é));
   GrLine(dc,t2.x+TURTLE_SIZE*Cos(t2.é-ã/2),t2.y+TURTLE_SIZE*Sin(t2.é-ã/2),
-	t2.x+TURTLE_SIZE*Cos(t2.é),    t2.y+TURTLE_SIZE*Sin(t2.é));
+        t2.x+TURTLE_SIZE*Cos(t2.é),    t2.y+TURTLE_SIZE*Sin(t2.é));
 }
 
 U0 SetMenu()
@@ -119,9 +119,9 @@ U0 SetMenu()
     StrPrint(buf,"Settings/Layer%d",i);
     if (tmpse=MenuEntryFind(Fs->cur_menu,buf)) {
       if (i==tt.z)
-	tmpse->checked=TRUE;
+        tmpse->checked=TRUE;
       else
-	tmpse->checked=FALSE;
+        tmpse->checked=FALSE;
     }
   }
   if (tmpse=MenuEntryFind(Fs->cur_menu,"Settings/Ends")) {
@@ -139,35 +139,35 @@ U0 Lattice()
   CDC  *dc=DCAlias;
   DCDepthBufAlloc(dc);
   MenuPush(
-	"File {"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Play {"
-	"  Restart(,'\n');"
-	"  Step(,CH_SPACE);"
-	"  Accelerator(,,SC_CURSOR_UP);"
-	"  Break(,,SC_CURSOR_DOWN);"
-	"  Left(,,SC_CURSOR_LEFT);"
-	"  Right(,,SC_CURSOR_RIGHT);"
-	"}"
-	"Settings {"
-	"  Color(,'c');"
-	"  Wider(,'+');"
-	"  Narrower(,'-');"
-	"  Ends(,'e');"
-	"  Layer0(,'0');"
-	"  Layer1(,'1');"
-	"  Layer2(,'2');"
-	"  Layer3(,'3');"
-	"  Layer4(,'4');"
-	"  Layer5(,'5');"
-	"  Layer6(,'6');"
-	"  Layer7(,'7');"
-	"  Layer8(,'8');"
-	"  Layer9(,'9');"
-	"}"
-	);
+        "File {"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Play {"
+        "  Restart(,'\n');"
+        "  Step(,CH_SPACE);"
+        "  Accelerator(,,SC_CURSOR_UP);"
+        "  Break(,,SC_CURSOR_DOWN);"
+        "  Left(,,SC_CURSOR_LEFT);"
+        "  Right(,,SC_CURSOR_RIGHT);"
+        "}"
+        "Settings {"
+        "  Color(,'c');"
+        "  Wider(,'+');"
+        "  Narrower(,'-');"
+        "  Ends(,'e');"
+        "  Layer0(,'0');"
+        "  Layer1(,'1');"
+        "  Layer2(,'2');"
+        "  Layer3(,'3');"
+        "  Layer4(,'4');"
+        "  Layer5(,'5');"
+        "  Layer6(,'6');"
+        "  Layer7(,'7');"
+        "  Layer8(,'8');"
+        "  Layer9(,'9');"
+        "}"
+        );
   SettingsPush; //See $LK,"SettingsPush",A="MN:SettingsPush"$
   AutoComplete;
   WinBorder;
@@ -177,45 +177,45 @@ U0 Lattice()
   TurtleInit(&tt);
   SetMenu;
   Fs->win_inhibit=WIG_TASK_DFT-WIF_FOCUS_TASK_MENU
-	-WIF_SELF_FOCUS-WIF_SELF_GRAB_SCROLL;
+        -WIF_SELF_FOCUS-WIF_SELF_GRAB_SCROLL;
   Fs->draw_it=&DrawIt;
   try {
     while (TRUE) {
       switch (GetMsg(&arg1,&arg2,1<<MSG_KEY_DOWN|1<<MSG_MS_L_DOWN|
 	    1<<MSG_MS_R_DOWN|1<<MSG_MS_R_UP|1<<MSG_MS_MOVE)) {
-	case MSG_MS_L_DOWN:
+        case MSG_MS_L_DOWN:
 	  tt.first=TRUE;
 	  tt.x=arg1;
 	  tt.y=arg2;
 	  break;
-	case MSG_MS_R_DOWN:
+        case MSG_MS_R_DOWN:
 	  aim=TRUE;
 	  tt.é=Arg(arg1-tt.x,arg2-tt.y);
 	  break;
-	case MSG_MS_MOVE:
+        case MSG_MS_MOVE:
 	  if (aim)
 	    tt.é=Arg(arg1-tt.x,arg2-tt.y);
 	  break;
-	case MSG_MS_R_UP:
+        case MSG_MS_R_UP:
 	  tt.é=Arg(arg1-tt.x,arg2-tt.y);
 	  aim=FALSE;
 	  break;
-	case MSG_KEY_DOWN:
+        case MSG_KEY_DOWN:
 	  switch (arg1) {
 	    case 0:
 	      switch (arg2.u8[0]) {
-		case SC_CURSOR_LEFT:
+	        case SC_CURSOR_LEFT:
 		  if (tt.dé_idx)
 		    tt.dé_idx--;
 		  break;
-		case SC_CURSOR_RIGHT:
+	        case SC_CURSOR_RIGHT:
 		  if (tt.dé_idx<ANGLES-1)
 		    tt.dé_idx++;
 		  break;
-		case SC_CURSOR_UP:
+	        case SC_CURSOR_UP:
 		  tt.speed+=TURTLE_SPEED_STEP;
 		  break;
-		case SC_CURSOR_DOWN:
+	        case SC_CURSOR_DOWN:
 		  if (tt.speed>=TURTLE_SPEED_STEP)
 		    tt.speed-=TURTLE_SPEED_STEP;
 		  break;
@@ -237,7 +237,7 @@ U0 Lattice()
 	      break;
 	    case '-':
 	      if (tt.w)
-		tt.w--;
+	        tt.w--;
 	      break;
 	    case '\n':
 	      DCFill(dc);

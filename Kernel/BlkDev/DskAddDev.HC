@@ -65,6 +65,9 @@ I64 BlkDevAdd(CBlkDev *bd,I64 prt_num=I64_MIN,
     else
       dv->dv_signature=0;
     break;
+  case BDT_OTHER:
+  case BDT_SERIAL:
+  case BDT_VIRTUAL:
   case BDT_ATA:
   case BDT_AHCI_SATA:
     dv->dv_signature=DRV_SIGNATURE_VAL; //Temporarily validate
@@ -82,19 +85,30 @@ I64 BlkDevAdd(CBlkDev *bd,I64 prt_num=I64_MIN,
         dv->size=bd->max_blk+1-bd->drv_offset;
 //The following read is a test read.
         //if it hangs, the drive is not supported.
-        ATAReadBlks(bd,&mbr,0,1);
+        if (bd->type < BDT_OTHER)
+          ATAReadBlks(bd,&mbr,0,1);
+        else if (bd->read_func)
+          (*bd->read_func)(&mbr,0,1);
         break;
       }
       offset=0;
       ext_base=INVALID_CLUS;
       while (prt_num<0 || num<=prt_num)
       {
-        ATAReadBlks(bd,&mbr,offset,1);
+        if (bd->type < BDT_OTHER)
+          ATAReadBlks(bd,&mbr,offset,1);
+        else if (bd->read_func)
+          (*bd->read_func)(&mbr,offset,1);
         if (mbr.signature!=0xAA55)
           break;
         j=-1;
         for (i=0; i<4 && (prt_num<0 || num<=prt_num); i++)
         {
+          if (bd->type >= BDT_OTHER && prt_num > 0)
+          {
+            "\nOnly one parition/drive is supported for serial/other/virtual block devices!\n";
+            break;
+          }
           if (mbr.p[i].type)
           {
             if (make_free)
@@ -119,7 +133,10 @@ I64 BlkDevAdd(CBlkDev *bd,I64 prt_num=I64_MIN,
             case MBR_PT_FAT32d:
             case MBR_PT_FAT32e:
             case MBR_PT_FAT32f:
-              ATAReadBlks(bd,&br,dv->drv_offset,1);
+              if (bd->type < BDT_OTHER)
+                ATAReadBlks(bd,&br,dv->drv_offset,1);
+              else if (bd->read_func)
+                (*bd->read_func)(&br,dv->drv_offset,1);
               dv->dv_signature=DRV_SIGNATURE_VAL;
               dv->prt_num=num;
               res++;
@@ -156,6 +173,8 @@ I64 BlkDevAdd(CBlkDev *bd,I64 prt_num=I64_MIN,
         if (Let2BlkDevType(bd->first_drv_let+res)!=bd->type)
           break;
         if (j<0)
+          break;
+        if (bd->type >= BDT_OTHER)
           break;
         if (!mbr.p[j].offset)
           break;

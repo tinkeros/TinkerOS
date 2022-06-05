@@ -1,5 +1,6 @@
 Cd(__DIR__);;
 #include "/Kernel/KCfg.HH"
+#include "BootRAM"
 #include "AExts"
 #include "AMath"
 #include "AMathODE"
@@ -31,6 +32,8 @@ LBts(&sys_run_level,RLf_DOC);
 #include "AMouse"
 #include "Host"
 #include "Device/Comm"
+//#include "Device/SerialMouse"
+//#include "Net/MakeNet"
 Cd("..");;
 if (mp_cnt>1)
   EnableSethGfx;

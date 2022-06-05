@@ -16,10 +16,10 @@ U0 PlayerIndirect()
 	  1<<MSG_MS_R_UP);
     switch (msg_code) {
       case MSG_KEY_DOWN:
-	CharDo(arg1);
-	break;
+        CharDo(arg1);
+        break;
       case MSG_MS_L_DOWN:
-	if (CursorInWin(Fs,arg1,arg2)) {
+        if (CursorInWin(Fs,arg1,arg2)) {
 	  arg1-=x0; arg2-=y0;
 	  CursorUpdate(Fs,arg1,arg2);
 	  if (tmpu=UnitFind(cursor_row,cursor_col)) {
@@ -31,10 +31,10 @@ U0 PlayerIndirect()
 	      fire_radius=tmpu->range*2*HEX_RADIUS;
 	    }
 	  }
-	}
-	break;
+        }
+        break;
       case MSG_MS_L_UP:
-	if (CursorInWin(Fs,arg1,arg2)) {
+        if (CursorInWin(Fs,arg1,arg2)) {
 	  arg1-=x0; arg2-=y0;
 	  CursorUpdate(Fs,arg1,arg2);
 	  RowCol2XY(&target_x,&target_y,cursor_row,cursor_col);
@@ -49,14 +49,14 @@ U0 PlayerIndirect()
 	      remaining--;
 	    }
 	  }
-	}
-	tmpu=NULL;
-	fire_radius=0;
-	break;
+        }
+        tmpu=NULL;
+        fire_radius=0;
+        break;
       case MSG_MS_R_UP:
-	if (CursorInWin(Fs,arg1,arg2))
+        if (CursorInWin(Fs,arg1,arg2))
 	  throw('PhaseOvr',TRUE);
-	break;
+        break;
     }
   }
   throw('PhaseOvr',TRUE);
@@ -74,20 +74,20 @@ U0 PlayerMove()
 	  1<<MSG_MS_R_UP);
     switch (msg_code) {
       case MSG_KEY_DOWN:
-	CharDo(arg1);
-	break;
+        CharDo(arg1);
+        break;
       case MSG_MS_L_DOWN:
-	if (CursorInWin(Fs,arg1,arg2)) {
+        if (CursorInWin(Fs,arg1,arg2)) {
 	  arg1-=x0; arg2-=y0;
 	  CursorUpdate(Fs,arg1,arg2);
 	  if (tmpu=UnitFind(cursor_row,cursor_col)) {
 	    if (tmpu->player==enemy_player || !tmpu->remaining_movement)
 	      tmpu=NULL;
 	  }
-	}
-	break;
+        }
+        break;
       case MSG_MS_L_UP:
-	if (CursorInWin(Fs,arg1,arg2)) {
+        if (CursorInWin(Fs,arg1,arg2)) {
 	  arg1-=x0; arg2-=y0;
 	  CursorUpdate(Fs,arg1,arg2);
 	  if (!tmpu)
@@ -96,13 +96,13 @@ U0 PlayerMove()
 	    UnitMove(tmpu,arg1,arg2);
 	    break;
 	  }
-	}
-	tmpu=NULL;
-	break;
+        }
+        tmpu=NULL;
+        break;
       case MSG_MS_R_UP:
-	if (CursorInWin(Fs,arg1,arg2))
+        if (CursorInWin(Fs,arg1,arg2))
 	  throw('PhaseOvr',TRUE);
-	break;
+        break;
     }
   }
 }
@@ -119,10 +119,10 @@ U0 PlayerDirect()
 	  1<<MSG_MS_R_UP);
     switch (msg_code) {
       case MSG_KEY_DOWN:
-	CharDo(arg1);
-	break;
+        CharDo(arg1);
+        break;
       case MSG_MS_L_DOWN:
-	if (CursorInWin(Fs,arg1,arg2)) {
+        if (CursorInWin(Fs,arg1,arg2)) {
 	  arg1-=x0; arg2-=y0;
 	  CursorUpdate(Fs,arg1,arg2);
 	  if (tmpu=UnitFind(cursor_row,cursor_col)) {
@@ -136,10 +136,10 @@ U0 PlayerDirect()
 	      VisRecalc(VR_ONE_FRIENDLY_UNIT,tmpu);
 	    }
 	  }
-	}
-	break;
+        }
+        break;
       case MSG_MS_L_UP:
-	if (CursorInWin(Fs,arg1,arg2)) {
+        if (CursorInWin(Fs,arg1,arg2)) {
 	  arg1-=x0; arg2-=y0;
 	  CursorUpdate(Fs,arg1,arg2);
 	  target=UnitFind(cursor_row,cursor_col);
@@ -153,14 +153,14 @@ U0 PlayerDirect()
 	      UnitDirectFire(tmpu,target);
 	    VisRecalc(VR_UPDATE_FRIENDLY_UNIT,tmpu);
 	  }
-	}
-	tmpu=NULL;
-	fire_radius=0;
-	break;
+        }
+        tmpu=NULL;
+        fire_radius=0;
+        break;
       case MSG_MS_R_UP:
-	if (CursorInWin(Fs,arg1,arg2))
+        if (CursorInWin(Fs,arg1,arg2))
 	  throw('PhaseOvr',TRUE);
-	break;
+        break;
     }
   }
 }

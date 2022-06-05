@@ -67,12 +67,12 @@ U0 AdjustLoads(CMathODE *ode)
   while (tmpm!=&ode->next_mass) {
     if (tmpm->load_t) {
       if (tt) {
-	d=Abs(Sin(tmpm->load_t*ã+tt)); //0.0<=d<=1.0
-	tmpm->mass=100.0*Sqr(Sqr(d+1.0));
-	tmpm->radius=7.0*d+2.0;
+        d=Abs(Sin(tmpm->load_t*ã+tt)); //0.0<=d<=1.0
+        tmpm->mass=100.0*Sqr(Sqr(d+1.0));
+        tmpm->radius=7.0*d+2.0;
       } else {
-	tmpm->mass=MASS_MASS;
-	tmpm->radius=MASS_RADIUS;
+        tmpm->mass=MASS_MASS;
+        tmpm->radius=MASS_RADIUS;
       }
     }
     tmpm=tmpm->next;

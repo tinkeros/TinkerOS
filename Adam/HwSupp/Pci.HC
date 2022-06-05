@@ -111,31 +111,19 @@ U0 PciGetDevInfo(CPciDevInfo* info_out, I64 bus, I64 dev, I64 fun)
   info_out->interrupt_line =  PCIReadU8(bus, dev, fun, PCI_REG_INTERRUPT_LINE);
 }
 
-#if mp_cnt>1
-#define INT_DEST_CPU 1
-#else
-#define INT_DEST_CPU 0
-#endif
+//TODO fix me
+#define INT_DEST_CPU 2
 
 U0 PciRerouteInterrupts(I64 base)
 {
   I64 i;
   U8* da = dev.uncached_alias + IOAPIC_REG;
   U32* _d = dev.uncached_alias + IOAPIC_DATA;
-  for (i=IOREDTAB; i<IOREDTAB+4*2; i+=2)
+  for (i = 0; i < 4; i++)
   {
-    *da=i+1;
-    *_d=dev.mp_apic_ids[INT_DEST_CPU]<<24;
-    *da=i;
-    *_d=0x4000+base+(i-IOREDTAB)/2;
+    *da = IOREDTAB + i * 2 + 1;
+    *_d = dev.mp_apic_ids[INT_DEST_CPU] << 24;
+    *da = IOREDTAB + i * 2;
+    *_d = 0x4000 + base + i;
   }
-  /*
-
-    for (i = 0; i < 4; i++) {
-      *da = IOREDTAB + i * 2 + 1;
-      *_d = dev.mp_apic_ids[INT_DEST_CPU] << 24;
-      *da = IOREDTAB + i * 2;
-      *_d = 0x4000 + base + i;
-    }
-  */
 }

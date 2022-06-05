@@ -1980,9 +1980,9 @@ public I64 GrHLine(CDC *dc=gr.dc,I64 x1,I64 x2,I64 y,I64 z1=0,I64 z2=0)
   //Uses $LK,"fixed-point",A="FI:::/Demo/Lectures/FixedPoint.HC"$.
   I64 dist,dx,dz,z,res=0,i,j,d;
   U8 *dst;
-  CColorROPU32 c,c2,color=dc->color,bkcolor=dc->bkcolor,dither_colors;
+  CColorROPU32 c,color=dc->color,bkcolor=dc->bkcolor,dither_colors;
   I32 *db;
-  Bool plot=TRUE,char_clear,dither,probability_dither;
+  Bool char_clear,dither,probability_dither;
   CTask *win_task;
   if (!dc->depth_buf)
   {
@@ -2042,15 +2042,12 @@ public I64 GrHLine(CDC *dc=gr.dc,I64 x1,I64 x2,I64 y,I64 z1=0,I64 z2=0)
     goto gr_done;
   dx=x2+j-(x1-i);
   d=dc->width_internal*y+x1;
-  if (db=dc->depth_buf)
-  {
-    db+=d;
-    if (dx)
-      dz=(z2-z1)<<32/dx;
-    else
-      dz=0;
-    z=z1<<32;
-  }
+  db=dc->depth_buf+d;
+  if (dx)
+    dz=(z2-z1)<<32/dx;
+  else
+    dz=0;
+  z=z1<<32;
   if (i)
     z+=i*dz;
   if (x2>=dc->width)
@@ -2102,33 +2099,23 @@ public I64 GrHLine(CDC *dc=gr.dc,I64 x1,I64 x2,I64 y,I64 z1=0,I64 z2=0)
   {
     if (char_clear)
     {
-      if (db)
+      if (0<=z.i32[1]<=*db)
       {
-        if (0<=z.i32[1]<=*db)
-        {
-          *db=z.i32[1];
-          plot=TRUE;
-        }
-        else
-          plot=FALSE;
-      }
-      if (plot)
-      {
+        *db=z.i32[1];
         dst=dc->body+d;
-        c=color.c0.color;
         switch [color.c0.rop]
         {
         case ROPB_EQU:
         case ROPB_MONO:
-          *dst=c;
+          *dst=color.c0.color;
           break;
         case ROPB_COLLISION:
-          c2=*dst;
-          if (c2!=TRANSPARENT && c2!=bkcolor.c0.color)
+          c=*dst;
+          if (c!=TRANSPARENT && c!=bkcolor.c0.color)
             dc->collision_cnt++;
           break;
         case ROPB_XOR:
-          *dst^=c;
+          *dst^=color.c0.color;
           break;
         }
         res++;
@@ -2148,8 +2135,7 @@ public I64 GrHLine(CDC *dc=gr.dc,I64 x1,I64 x2,I64 y,I64 z1=0,I64 z2=0)
     }
     d++;
     x1++;
-    if (db)
-      db++;
+    db++;
     z+=dz;
     if (!(x1&(FONT_WIDTH-1)) && x1<=x2)
     {
@@ -2171,9 +2157,9 @@ public I64 GrVLine(CDC *dc=gr.dc,I64 x,I64 y1,I64 y2,I64 z1=0,I64 z2=0)
   //Uses $LK,"fixed-point",A="FI:::/Demo/Lectures/FixedPoint.HC"$.
   I64 dist,dy,dz,z,res=0,i,j,d;
   U8 *dst;
-  CColorROPU32 c,c2,color=dc->color,bkcolor=dc->bkcolor,dither_colors;
+  CColorROPU32 c,color=dc->color,bkcolor=dc->bkcolor,dither_colors;
   I32 *db;
-  Bool plot=TRUE,char_clear,dither,probability_dither;
+  Bool char_clear,dither,probability_dither;
   CTask *win_task;
   if (!dc->depth_buf)
   {
@@ -2233,15 +2219,12 @@ public I64 GrVLine(CDC *dc=gr.dc,I64 x,I64 y1,I64 y2,I64 z1=0,I64 z2=0)
     goto gr_done;
   dy=y2+j-(y1-i);
   d=dc->width_internal*y1+x;
-  if (db=dc->depth_buf)
-  {
-    db+=d;
-    if (dy)
-      dz=(z2-z1)<<32/dy;
-    else
-      dz=0;
-    z=z1<<32;
-  }
+  db=dc->depth_buf+d;
+  if (dy)
+    dz=(z2-z1)<<32/dy;
+  else
+    dz=0;
+  z=z1<<32;
   if (i)
     z+=i*dz;
   if (y2>=dc->height)
@@ -2293,33 +2276,23 @@ public I64 GrVLine(CDC *dc=gr.dc,I64 x,I64 y1,I64 y2,I64 z1=0,I64 z2=0)
   {
     if (char_clear)
     {
-      if (db)
+      if (0<=z.i32[1]<=*db)
       {
-        if (0<=z.i32[1]<=*db)
-        {
-          *db=z.i32[1];
-          plot=TRUE;
-        }
-        else
-          plot=FALSE;
-      }
-      if (plot)
-      {
+        *db=z.i32[1];
         dst=dc->body+d;
-        c=color.c0.color;
         switch [color.c0.rop]
         {
         case ROPB_EQU:
         case ROPB_MONO:
-          *dst=c;
+          *dst=color.c0.color;
           break;
         case ROPB_COLLISION:
-          c2=*dst;
-          if (c2!=TRANSPARENT && c2!=bkcolor.c0.color)
+          c=*dst;
+          if (c!=TRANSPARENT && c!=bkcolor.c0.color)
             dc->collision_cnt++;
           break;
         case ROPB_XOR:
-          *dst^=c;
+          *dst^=color.c0.color;
           break;
         }
         res++;
@@ -2339,8 +2312,7 @@ public I64 GrVLine(CDC *dc=gr.dc,I64 x,I64 y1,I64 y2,I64 z1=0,I64 z2=0)
     }
     d+=dc->width_internal;
     y1++;
-    if (db)
-      db+=dc->width_internal;
+    db+=dc->width_internal;
     z+=dz;
     if (!(y1&(FONT_HEIGHT-1)) && y1<=y2)
     {

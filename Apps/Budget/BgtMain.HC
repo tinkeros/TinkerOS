@@ -11,8 +11,8 @@ Bool BgtPutKey(CDoc *doc,U8 *,I64 ch,I64 sc)
     case '\n':
       if ((doc_ce=doc->cur_entry) && doc_ce!=doc &&
 	    doc_ce->type_u8==DOCT_MENU_VAL) {
-	tmpb=doc_ce->user_data;
-	if (tmpt=tmpb->template) {
+        tmpb=doc_ce->user_data;
+        if (tmpt=tmpb->template) {
 	  if (tmpt1=BgtTemplatePmt(tmpt)) {
 	    QueRem(tmpt);
 	    BgtTemplatePurge(tmpt);
@@ -22,28 +22,28 @@ Bool BgtPutKey(CDoc *doc,U8 *,I64 ch,I64 sc)
 	    BgtTemplateExpand(tmpt1);
 	    BgtRegen;
 	  }
-	} else {
+        } else {
 	  if (tmpb1=BgtEntryPmt(tmpb)) {
 	    QueRem(tmpb);
 	    BgtEntryDel(tmpb);
 	    BgtIns(tmpb1);
 	    BgtRegen;
 	  }
-	}
+        }
       }
       return TRUE;
     case CH_CTRLY:
       if ((doc_ce=doc->cur_entry) && doc_ce!=doc &&
 	    doc_ce->type_u8==DOCT_MENU_VAL) {
-	tmpb=doc_ce->user_data;
-	if (tmpt=tmpb->template) {
+        tmpb=doc_ce->user_data;
+        if (tmpt=tmpb->template) {
 	  QueRem(tmpt);
 	  BgtTemplateDel(tmpt);
-	} else {
+        } else {
 	  QueRem(tmpb);
 	  BgtEntryDel(tmpb);
-	}
-	BgtRegen;
+        }
+        BgtRegen;
       }
       return TRUE;
     case 'a':
@@ -51,49 +51,49 @@ Bool BgtPutKey(CDoc *doc,U8 *,I64 ch,I64 sc)
 	    "To delete accounts, manually edit\n"
 	    "$$GREEN$$~/Budget/Accts.DD.Z$$FG$$.");
       if (PopUpEd(bgt_accts_file,Fs)) {
-	BgtAcctsRead;
-	BgtRegen;
+        BgtAcctsRead;
+        BgtRegen;
       }
       return TRUE;
     case 'v':
       if ((st=BgtPopUpAcct("View Acct\n\n",view_acct))>=0) {
-	StrCpy(view_acct,st);
-	BgtRegen;
+        StrCpy(view_acct,st);
+        BgtRegen;
       }
       return TRUE;
     case 'n':
       if (tmpb1=BgtEntryPmt) {
-	BgtIns(tmpb1);
-	BgtRegen;
+        BgtIns(tmpb1);
+        BgtRegen;
       }
       return TRUE;
     case 't':
       if (tmpt1=BgtTemplatePmt) {
-	QueIns(tmpt1,t_head.last);
-	BgtTemplateExpand(tmpt1);
-	BgtRegen;
+        QueIns(tmpt1,t_head.last);
+        BgtTemplateExpand(tmpt1);
+        BgtRegen;
       }
       return TRUE;
     case 'c':
       if ((doc_ce=doc->cur_entry) && doc_ce!=doc &&
 	    doc_ce->type_u8==DOCT_MENU_VAL)
-	tmpb=doc_ce->user_data;
+        tmpb=doc_ce->user_data;
       else
-	tmpb=NULL;
+        tmpb=NULL;
       if (tmpb1=BgtEntryPmt(tmpb)) {
-	BgtIns(tmpb1);
-	BgtRegen;
+        BgtIns(tmpb1);
+        BgtRegen;
       }
       return TRUE;
     case 'p':
       if ((doc_ce=doc->cur_entry) && doc_ce!=doc &&
 	    doc_ce->type_u8==DOCT_MENU_VAL) {
-	tmpb=doc_ce->user_data;
-	if (tmpt1=BgtTemplatePmt(,tmpb)) {
+        tmpb=doc_ce->user_data;
+        if (tmpt1=BgtTemplatePmt(,tmpb)) {
 	  BgtTemplateExpand(tmpt1,TRUE);
 	  BgtTemplateDel(tmpt1);
 	  BgtRegen;
-	}
+        }
       }
       return TRUE;
   }
@@ -140,18 +140,18 @@ U0 BgtRegen()
     timeout_jiffy=cnts.jiffies+JIFFY_FREQ; //Max one second.
     while (doc_ce!=pdoc && cnts.jiffies<timeout_jiffy) {
       while (doc_ce->type_u8!=DOCT_MENU_VAL || !(tmpb_ce=doc_ce->user_data)) {
-	doc_ce=doc_ce->next;
-	if (doc_ce==pdoc) goto br_cont;
+        doc_ce=doc_ce->next;
+        if (doc_ce==pdoc) goto br_cont;
       }
       tmpb=b_head.next;
       while (tmpb!=&b_head) {
-	if (tmpb==tmpb_ce) {
+        if (tmpb==tmpb_ce) {
 	  doc->cur_entry=tmpb->doc_e;
 	  doc->cur_col=0;
 	  DocCenter(doc);
 	  goto br_cont;
-	}
-	tmpb=tmpb->next;
+        }
+        tmpb=tmpb->next;
       }
       doc_ce=doc_ce->next;
     }
@@ -184,23 +184,23 @@ U0 Budget(U8 *dirname="~/Budget")
   WinBorder;
   WinMax;
   MenuPush(
-	"File {"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Edit {"
-	"  NewEntry(,'n');"
-	"  CopyEntry(,'c');"
-	"  PeriodicEntry(,'p');"
-	"  EditEntry(,'\n');"
-	"  DeleteEntry(,CH_CTRLY);"
-	"  NewTemplate(,'t');"
-	"  AcctsFile(,'a');"
-	"}"
-	"View {"
-	"  ViewAcct(,'v');"
-	"}"
-	);
+        "File {"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Edit {"
+        "  NewEntry(,'n');"
+        "  CopyEntry(,'c');"
+        "  PeriodicEntry(,'p');"
+        "  EditEntry(,'\n');"
+        "  DeleteEntry(,CH_CTRLY);"
+        "  NewTemplate(,'t');"
+        "  AcctsFile(,'a');"
+        "}"
+        "View {"
+        "  ViewAcct(,'v');"
+        "}"
+        );
   StrCpy(view_acct,"BANK");
   DocMax;
   old_put	 =Fs->put_doc;

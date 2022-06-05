@@ -50,14 +50,14 @@ I64 AsmAndC1()
 
     IMPORT	Snd; //Import an not use & or don't import and use &Snd.
     MOV		RCX,&i[RBP] //You can clobber RAX,RBX,RCX,RDX.
-		//You better preserve the rest.
-@@05:	PUSH	RCX
+//You better preserve the rest.
+    @@05:	PUSH	RCX
 
-		//U0 $LK,"Snd",A="MN:Snd"$(I8 ona);
+    //U0 $LK,"Snd",A="MN:Snd"$(I8 ona);
     MOV		RAX,RCX	//ona=loop*10+50
     IMUL2	RAX,10 //TempleOS uses nonstandard opcodes
-		//to avoid multiple form of the same one.
-		//See $LK,"::/Compiler/OpCodes.DD"$.
+//to avoid multiple form of the same one.
+    //See $LK,"::/Compiler/OpCodes.DD"$.
     ADD		RAX,40
     PUSH	RAX
     CALL	Snd

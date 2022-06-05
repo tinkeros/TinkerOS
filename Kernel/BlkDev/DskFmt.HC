@@ -10,11 +10,19 @@ Bool DrvTypeSet(U8 drv_let,I64 type=FSt_REDSEA)
   {
   case BDT_ATA:
   case BDT_AHCI_SATA:
+  case BDT_OTHER:
+  case BDT_SERIAL:
+  case BDT_VIRTUAL:
     offset=0;
     ext_base=INVALID_CLUS;
     while (TRUE)
     {
-      if (BDT_ATA==bd->type)
+      if ( bd->type>=BDT_OTHER)
+      {
+        if (bd->read_func)
+          (*bd->read_func)(&mbr, offset, 1);
+      }
+      else if (BDT_ATA==bd->type)
         ATAReadBlks(bd,&mbr,offset,1);
       else
         AHCIAtaBlksRead(bd, &mbr, offset, 1);
@@ -42,7 +50,12 @@ Bool DrvTypeSet(U8 drv_let,I64 type=FSt_REDSEA)
                 throw('Drv');
               }
               mbr.p[i].active=0x80;
-              if (BDT_ATA==bd->type)
+              if ( bd->type>=BDT_OTHER)
+              {
+                if (bd->write_func)
+                  (*bd->write_func)(&mbr, offset, 1);
+              }
+              else if (BDT_ATA==bd->type)
                 ATAWriteBlks(bd,&mbr,offset,1);
               else
                 AHCIAtaBlksWrite(bd, &mbr, offset, 1);

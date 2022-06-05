@@ -87,7 +87,7 @@ U0 NullSpring(MySpring *tmps,F64 scale)
   F64 d=D3Dist(&tmps->end1->x,&tmps->end2->x);
   tmps->rest_len=d*scale;
   tmps->compression_strength=
-	tmps->base_compression_strength/(tmps->rest_len+1.0);
+        tmps->base_compression_strength/(tmps->rest_len+1.0);
   tmps->tensile_strength=tmps->base_tensile_strength/(tmps->rest_len+1.0);
   tmps->const=tmps->base_const/(tmps->rest_len+1.0);
   tmps->cost=tmps->base_cost*tmps->rest_len;
@@ -104,9 +104,9 @@ U0 MoveMass(MyMass *tmpm,I64 x, I64 y)
   while (tmps!=&ode->next_spring) {
     if (tmps->end1==tmpm || tmps->end2==tmpm) {
       if (tmps->flags&SSF_NO_COMPRESSION)
-	NullSpring(tmps,WIRE_PERCENT);
+        NullSpring(tmps,WIRE_PERCENT);
       else
-	NullSpring(tmps,1.0);
+        NullSpring(tmps,1.0);
     }
     tmps=tmps->next;
   }
@@ -203,22 +203,22 @@ U0 AnimateTask(SpanAnimateStruct *a)
 	    !(tmps->flags&SSF_NO_COMPRESSION)||
 	    f<0 && -f>tmps->tensile_strength &&
 	    !(tmps->flags&SSF_NO_TENSION))
-	tmps->flags|=SSF_INACTIVE;
+        tmps->flags|=SSF_INACTIVE;
       tmps=tmps1;
     }
     AdjustLoads(ode);
     Refresh; //CMathODE updated once per refresh.
     if (old_run!=run_bttn.state) {
       if (run_bttn.state) {
-	if (!a->elapsed_t || !a->saved_ode) {
+        if (!a->elapsed_t || !a->saved_ode) {
 	  Free(a->saved_ode);
 	  a->saved_ode=SpanSave(ode);
-	}
-	a->start_wall_t=tS;
-	ODEPause(ode,OFF);
+        }
+        a->start_wall_t=tS;
+        ODEPause(ode,OFF);
       } else {
-	ODEPause(ode);
-	a->elapsed_t+=tS-a->start_wall_t;
+        ODEPause(ode);
+        a->elapsed_t+=tS-a->start_wall_t;
       }
       old_run=run_bttn.state;
     }
@@ -273,32 +273,32 @@ U0 Span()
   Fs->song_task=Spawn(&SongTask,NULL,"Song",,Fs);
 
   bt_run =CtrlBttnNew(0,0,		  80,,
-	2,"Stopped\0Running\0",run_colors,&run_bttn);
+        2,"Stopped\0Running\0",run_colors,&run_bttn);
   bt_mode=CtrlBttnNew(0,3.0*FONT_HEIGHT,80,,
-	MD_MODES_NUM,Define("ST_SPAN_MODES"),mode_colors,&mode_bttn);
+        MD_MODES_NUM,Define("ST_SPAN_MODES"),mode_colors,&mode_bttn);
   a.saved_ode=NULL;
 
   Fs->win_inhibit|=WIG_DBL_CLICK;
 
   MenuPush(
-	"File {"
-	"  New(,CH_CTRLN);"
-	"  Open(,CH_CTRLO);"
-	"  SaveAs(,CH_CTRLA);"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Play {"
-	"  Restart(,'\n');"
-	"  RunStop(,CH_SPACE);"
-	"  Mass(,'m');"
-	"  Concrete(,'c');"
-	"  Steel(,'s');"
-	"  Wire(,'w');"
-	"  Move(,'v');"
-	"  Delete(,'d');"
-	"}"
-	);
+        "File {"
+        "  New(,CH_CTRLN);"
+        "  Open(,CH_CTRLO);"
+        "  SaveAs(,CH_CTRLA);"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Play {"
+        "  Restart(,'\n');"
+        "  RunStop(,CH_SPACE);"
+        "  Mass(,'m');"
+        "  Concrete(,'c');"
+        "  Steel(,'s');"
+        "  Wire(,'w');"
+        "  Move(,'v');"
+        "  Delete(,'d');"
+        "}"
+        );
 
   ode=NULL;
   Init(&a);
@@ -306,20 +306,20 @@ U0 Span()
   Fs->draw_it=&DrawIt;
 
   PopUpOk(
-	"Build a bridge to hold-up the\n"
-	"red masses.Test your design\n"
-	"by pressing run/stop.\n\n"
-	"The lowest cost bridge that\n"
-	"stays standing wins.\n\n"
-	"For a variation, try without\n"
-	"using the center base point.\n"
-	"\n"
-	"Use\n"
-	"\t$$GREEN$$'m'$$FG$$ass\n"
-	"\t$$GREEN$$'c'$$FG$$oncrete\n"
-	"\t$$GREEN$$'s'$$FG$$teel\n"
-	"\t$$GREEN$$'w'$$FG$$ire\n"
-	"\nto sel materials.\n");
+        "Build a bridge to hold-up the\n"
+        "red masses.Test your design\n"
+        "by pressing run/stop.\n\n"
+        "The lowest cost bridge that\n"
+        "stays standing wins.\n\n"
+        "For a variation, try without\n"
+        "using the center base point.\n"
+        "\n"
+        "Use\n"
+        "\t$$GREEN$$'m'$$FG$$ass\n"
+        "\t$$GREEN$$'c'$$FG$$oncrete\n"
+        "\t$$GREEN$$'s'$$FG$$teel\n"
+        "\t$$GREEN$$'w'$$FG$$ire\n"
+        "\nto sel materials.\n");
 
   try {
     while (TRUE) {
@@ -327,7 +327,7 @@ U0 Span()
 	    1<<MSG_MS_L_UP|1<<MSG_KEY_DOWN|1<<MSG_MS_MOVE);
       DCFill(dc);
       switch (msg_code) {
-	case MSG_MS_L_DOWN:
+        case MSG_MS_L_DOWN:
 	  cursor_mass=tmpm1=tmpm2=NULL;
 	  switch (mode_bttn.state) {
 	    case MD_MASS:
@@ -340,62 +340,62 @@ U0 Span()
 	      break;
 	    case MD_MOVE:
 	      if (run_bttn.state)
-		cursor_mass=MassFind(ode,arg1,arg2);
+	        cursor_mass=MassFind(ode,arg1,arg2);
 	      else
-		if (tmpm1=MassFind(ode,arg1,arg2))
+	        if (tmpm1=MassFind(ode,arg1,arg2))
 		  MoveMass(tmpm1,arg1,arg2);
 	      break;
 	    case MD_DELETE:
 	      MassOrSpringFind(ode,&tmpm1,&tmps,arg1,arg2);
 	      if (tmpm1)
-		DelMass(tmpm1);
+	        DelMass(tmpm1);
 	      if (tmps)
-		DelSpring(tmps);
+	        DelSpring(tmps);
 	      break;
 	  }
 	  break;
-	case MSG_MS_L_UP:
+        case MSG_MS_L_UP:
 	  switch (mode_bttn.state) {
 	    case MD_CONCRETE:
 	    case MD_STEEL:
 	    case MD_WIRE:
 	      if (tmpm1 && (tmpm2=MassFind(ode,arg1,arg2)) && tmpm1!=tmpm2)
-		PlaceSpring(tmpm1,tmpm2);
+	        PlaceSpring(tmpm1,tmpm2);
 	      break;
 	    case MD_MOVE:
 	      if (!run_bttn.state && tmpm1)
-		MoveMass(tmpm1,arg1,arg2);
+	        MoveMass(tmpm1,arg1,arg2);
 	      break;
 	  }
 	  cursor_mass=tmpm1=tmpm2=NULL;
 	  break;
-	case MSG_MS_MOVE:
+        case MSG_MS_MOVE:
 	  switch (mode_bttn.state) {
 	    case MD_MOVE:
 	      if (!run_bttn.state && tmpm1)
-		MoveMass(tmpm1,arg1,arg2);
+	        MoveMass(tmpm1,arg1,arg2);
 	      break;
 	    case MD_CONCRETE:
 	    case MD_STEEL:
 	    case MD_WIRE:
 	      if (tmpm1) {
-		DrawSpring(dc,tmpm1,arg1,arg2);
+	        DrawSpring(dc,tmpm1,arg1,arg2);
 	      }
 	      break;
 	  }
 	  break;
-	case MSG_MS_R_DOWN:
+        case MSG_MS_R_DOWN:
 	  mode_bttn.state++;
 	  if (mode_bttn.state>=MD_MODES_NUM)
 	    mode_bttn.state=0;
 	  cursor_mass=tmpm1=tmpm2=NULL;
 	  break;
-	case MSG_KEY_DOWN:
+        case MSG_KEY_DOWN:
 	  switch (arg1) {
 	    case '\n':
 	      if (!SpanTime || !a.saved_ode) {
-		Free(a.saved_ode);
-		a.saved_ode=SpanSave(ode);
+	        Free(a.saved_ode);
+	        a.saved_ode=SpanSave(ode);
 	      }
 	      Init(&a);
 	      break;
@@ -406,15 +406,15 @@ U0 Span()
 	      break;
 	    case CH_CTRLO:
 	      if (src=SpanRead) {
-		Free(a.saved_ode);
-		a.saved_ode=src;
-		Init(&a);
+	        Free(a.saved_ode);
+	        a.saved_ode=src;
+	        Init(&a);
 	      }
 	      break;
 	    case CH_CTRLA:
 	      if (!SpanTime || !a.saved_ode) {
-		Free(a.saved_ode);
-		a.saved_ode=SpanSave(ode);
+	        Free(a.saved_ode);
+	        a.saved_ode=SpanSave(ode);
 	      }
 	      Init(&a);
 	      SpanWrite(ode);
@@ -442,8 +442,8 @@ U0 Span()
 	      break;
 	    case CH_ESC:
 	      if (!SpanTime || !a.saved_ode) {
-		Free(a.saved_ode);
-		a.saved_ode=SpanSave(ode);
+	        Free(a.saved_ode);
+	        a.saved_ode=SpanSave(ode);
 	      }
 	      Init(&a);
 	      SpanWrite(ode);

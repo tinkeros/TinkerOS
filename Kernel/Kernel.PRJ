@@ -54,6 +54,8 @@
 #include "KeyDev"
 #include "KExcept"
 #include "PCIBIOS"
+#include "PCI"
+#include "PCIEACPI"
 #include "SerialDev/MakeSerialDev"
 #include "QSort"
 #include "KTask"

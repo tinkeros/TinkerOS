@@ -132,7 +132,6 @@ U8 Mount2(U8 boot_drv_let,CDoc *_doc,Bool _caller_is_prtdsk, Bool just_ide=FALSE
                drv_let,type,unit);
       if (AHCIMode && port != -1 && *port_str)
       {
-        DocPrint(doc, "\"AHCIPortInit(bd, &blkdev.ahci_hba->ports[%d], %d);\n\";\n", port, port);
         DocPrint(doc, "AHCIPortInit(bd, &blkdev.ahci_hba->ports[%d], %d);\n", port, port);
       }
       switch (type)

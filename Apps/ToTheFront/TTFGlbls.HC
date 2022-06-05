@@ -54,9 +54,9 @@ class Unit
 {
   U8	*img;
   I64	num,row,col,
-	armored_attack,unarmored_attack,armor;
+        armored_attack,unarmored_attack,armor;
   I8	type,player,facing,movement,life,
-	range,remaining_movement,accuracy;
+        range,remaining_movement,accuracy;
   Bool	vis[2],fired,infantry,indirect_fire,pad[3];
 };
 

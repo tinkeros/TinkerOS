@@ -45,7 +45,7 @@ U0 DocHiddenDel(CDoc *doc=NULL)
     while (doc_e!=doc) {
       doc_e1=doc_e->next;
       if (doc_e->de_flags&(DOCEF_FILTER_SKIP|DOCEF_SKIP))
-	DocEntryDel(doc,doc_e);
+        DocEntryDel(doc,doc_e);
       doc_e=doc_e1;
     }
     DocRecalc(doc);
@@ -73,132 +73,132 @@ Bool MyPutKey(I64 ch,I64 sc)
   if (sc&SCF_ALT && !(sc&SCF_CTRL)) {
     switch (ch) {
       case 0:
-	switch (sc.u8[0]) {
+        switch (sc.u8[0]) {
 	  case SC_F1:
 	    if (sc&SCF_SHIFT) {
 	      if (sc&SCF_KEY_DESC)
-		KeyDescSet("Dol/LTPURPLE");
+	        KeyDescSet("Dol/LTPURPLE");
 	      else
-		"$$LTPURPLE$$";
+	        "$$LTPURPLE$$";
 	    } else {
 	      if (sc&SCF_KEY_DESC)
-		KeyDescSet("Dol/PURPLE");
+	        KeyDescSet("Dol/PURPLE");
 	      else
-		"$$PURPLE$$";
+	        "$$PURPLE$$";
 	    }
 	    return TRUE;
 	  case SC_F2:
 	    if (sc&SCF_SHIFT) {
 	      if (sc&SCF_KEY_DESC)
-		KeyDescSet("Dol/LTRED");
+	        KeyDescSet("Dol/LTRED");
 	      else
-		"$$LTRED$$";
+	        "$$LTRED$$";
 	    } else {
 	      if (sc&SCF_KEY_DESC)
-		KeyDescSet("Dol/RED");
+	        KeyDescSet("Dol/RED");
 	      else
-		"$$RED$$";
+	        "$$RED$$";
 	    }
 	    return TRUE;
 	  case SC_F3:
 	    if (sc&SCF_SHIFT) {
 	      if (sc&SCF_KEY_DESC)
-		KeyDescSet("Dol/LTGREEN");
+	        KeyDescSet("Dol/LTGREEN");
 	      else
-		"$$LTGREEN$$";
+	        "$$LTGREEN$$";
 	    } else {
 	      if (sc&SCF_KEY_DESC)
-		KeyDescSet("Dol/GREEN");
+	        KeyDescSet("Dol/GREEN");
 	      else
-		"$$GREEN$$";
+	        "$$GREEN$$";
 	    }
 	    return TRUE;
 	  case SC_F4:
 	    if (sc&SCF_SHIFT) {
 	      if (sc&SCF_KEY_DESC)
-		KeyDescSet("Dol/Default Color");
+	        KeyDescSet("Dol/Default Color");
 	      else
-		"$$FG$$";
+	        "$$FG$$";
 	    } else {
 	      if (sc&SCF_KEY_DESC)
-		KeyDescSet("Dol/BLUE");
+	        KeyDescSet("Dol/BLUE");
 	      else
-		"$$BLUE$$";
+	        "$$BLUE$$";
 	    }
 	    return TRUE;
 	  case SC_F8:
 	    if (sc&SCF_SHIFT) {
 	      if (sc&SCF_KEY_DESC)
-		KeyDescSet("Cmd/DirLinksIns");
+	        KeyDescSet("Cmd/DirLinksIns");
 	      else
-		DirLinksIns;
+	        DirLinksIns;
 	    } else {
 	      if (sc&SCF_KEY_DESC)
-		KeyDescSet("Cmd/FileLinkIns");
+	        KeyDescSet("Cmd/FileLinkIns");
 	      else
-		FileLinkIns;
+	        FileLinkIns;
 	    }
 	    return TRUE;
-	}
-	break;
+        }
+        break;
       case 'a':
-	if (sc&SCF_KEY_DESC)
+        if (sc&SCF_KEY_DESC)
 	  KeyDescSet("Cmd/AutoComplete On");
-	else
+        else
 	  AutoComplete(ON);
-	return TRUE;
+        return TRUE;
       case 'A':
-	if (sc&SCF_KEY_DESC)
+        if (sc&SCF_KEY_DESC)
 	  KeyDescSet("Cmd/AutoComplete Off");
-	else
+        else
 	  AutoComplete;
-	return TRUE;
+        return TRUE;
       case 'f': //With sync
-	if (sc&SCF_KEY_DESC)
+        if (sc&SCF_KEY_DESC)
 	  KeyDescSet("Cmd/FrameGrabber Sync");
-	else if (fg_on)
+        else if (fg_on)
 	  FrameGrabberToggle(FALSE,FALSE);
-	else
+        else
 	  FrameGrabberToggle(TRUE,FALSE);
-	return TRUE;
+        return TRUE;
       case 'F': //With sync and intro TOS theme
-	if (sc&SCF_KEY_DESC)
+        if (sc&SCF_KEY_DESC)
 	  KeyDescSet("Cmd/FrameGrabber Intro");
-	else if (fg_on)
+        else if (fg_on)
 	  FrameGrabberToggle(FALSE,FALSE);
-	else
+        else
 	  FrameGrabberToggle(TRUE,TRUE);
-	return TRUE;
+        return TRUE;
       case 'h':
-	if (sc&SCF_KEY_DESC)
+        if (sc&SCF_KEY_DESC)
 	  KeyDescSet("Cmd/WinTileHorz");
-	else
+        else
 	  WinTileHorz;
-	return TRUE;
+        return TRUE;
       case 'H':
-	if (sc&SCF_KEY_DESC)
+        if (sc&SCF_KEY_DESC)
 	  KeyDescSet("Edit/Del Hidden Doc Entries");
-	else
+        else
 	  DocHiddenDel;
-	return TRUE;
+        return TRUE;
       case 'm':
-	if (sc&SCF_KEY_DESC)
+        if (sc&SCF_KEY_DESC)
 	  KeyDescSet("Cmd/WinMax");
-	else {
+        else {
 	  WinBorder;
 	  WinMax;
-	}
-	return TRUE;
+        }
+        return TRUE;
       case 'v':
-	if (sc&SCF_KEY_DESC)
+        if (sc&SCF_KEY_DESC)
 	  KeyDescSet("Cmd/WinTileVert");
-	else
+        else
 	  WinTileVert;
-	return TRUE;
+        return TRUE;
       case 'l':
-	if (sc&SCF_KEY_DESC)
+        if (sc&SCF_KEY_DESC)
 	  KeyDescSet("Edit/Put Link to Cur Pos on Clip");
-	else {
+        else {
 	  ClipDel;
 	  st1=FileNameAbs(BIBLE_FILENAME);
 	  st2=FileNameAbs(DocPut->filename.name);
@@ -211,71 +211,71 @@ Bool MyPutKey(I64 ch,I64 sc)
 		  st2,DocPut->cur_entry->y+1);
 	  Free(st1);
 	  Free(st2);
-	}
-	return TRUE;
+        }
+        return TRUE;
       case 'L':
-	if (sc&SCF_KEY_DESC)
+        if (sc&SCF_KEY_DESC)
 	  KeyDescSet("Edit/Place Anchor, Put Link to Clip");
-	else {
+        else {
 	  i=RandU32;
 	  ClipDel;
 	  DocPrint(sys_clip_doc,"$$LK,\"<TODO>\",A=\"FA:%s,ANC%d\"$$",
-		DocPut->filename.name,i);
+	        DocPut->filename.name,i);
 	  "$$AN,\"<TODO>\",A=\"ANC%d\"$$",i;
-	}
-	return TRUE;
+        }
+        return TRUE;
       case 'p':
-	if (sc&SCF_KEY_DESC)
+        if (sc&SCF_KEY_DESC)
 	  KeyDescSet("Cmd/JukeBox");
-	else
+        else
 	  PopUp("#include \"::/Apps/Psalmody/Load\";"
-		"JukeBox(\"::/Home/Sup3/Sup3Hymns\");");
-	return TRUE;
+	        "JukeBox(\"::/Home/Sup3/Sup3Hymns\");");
+        return TRUE;
       case 'P':
-	if (sc&SCF_KEY_DESC)
+        if (sc&SCF_KEY_DESC)
 	  KeyDescSet("Cmd /Psalmody");
-	else
+        else
 	  PopUp("#include \"::/Apps/Psalmody/Load\";"
-		"Psalmody(\"~/Sup3/Sup3Hymns\");");
-	return TRUE;
+	        "Psalmody(\"~/Sup3/Sup3Hymns\");");
+        return TRUE;
 
-	//Ins your own ALT-key plug-ins
+        //Ins your own ALT-key plug-ins
       case '1':
-	if (sc&SCF_KEY_DESC)
+        if (sc&SCF_KEY_DESC)
 	  KeyDescSet("Dol/ã");
-	else
+        else
 	  'ã';
-	return TRUE;
+        return TRUE;
       case '2':
-	if (sc&SCF_KEY_DESC)
+        if (sc&SCF_KEY_DESC)
 	  KeyDescSet("Dol/é");
-	else
+        else
 	  'é';
-	return TRUE;
+        return TRUE;
       case '3':
-	if (sc&SCF_KEY_DESC)
+        if (sc&SCF_KEY_DESC)
 	  KeyDescSet("Dol/è");
-	else
+        else
 	  'è';
-	return TRUE;
+        return TRUE;
       case '4':
-	if (sc&SCF_KEY_DESC)
+        if (sc&SCF_KEY_DESC)
 	  KeyDescSet("Dol/ê");
-	else
+        else
 	  'ê';
-	return TRUE;
+        return TRUE;
       case '9':
-	if (sc&SCF_KEY_DESC)
+        if (sc&SCF_KEY_DESC)
 	  KeyDescSet("Dol/Indent 5");
-	else
+        else
 	  "$$ID,5$$";
-	return TRUE;
+        return TRUE;
       case '0':
-	if (sc&SCF_KEY_DESC)
+        if (sc&SCF_KEY_DESC)
 	  KeyDescSet("Dol/Unindent 5");
-	else
+        else
 	  "$$ID,-5$$";
-	return TRUE;
+        return TRUE;
     }
   }
   return FALSE;

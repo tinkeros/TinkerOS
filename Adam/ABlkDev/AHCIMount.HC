@@ -2,9 +2,8 @@
 
 public I64 SATARep(I64 bd_type=BDT_NULL)
 {// Report ATA and ATAPI drives implemented by SATA controller.
-  I64			 bdf, i, j, num = 0;
+  I64			 i, j, i_max=0, num = 0;
   CAHCIPort	*port;
-  CPCIDev		*pci;
   CBlkDev		*temp_blkdev;
   U16			*st, *model, *serial;
   Bool		 show_atapi = FALSE, show_ata = FALSE;
@@ -26,34 +25,6 @@ public I64 SATARep(I64 bd_type=BDT_NULL)
   else
     "\nAHCI version %X.%1X%1X\n\n",
     blkdev.ahci_hba->version >> 16, (blkdev.ahci_hba->version & 0xFF00) >> 8, blkdev.ahci_hba->version & 0xFF;
-  if (dev.pci_head)
-  {
-    pci = PCIDevFind(PCIC_STORAGE, PCISC_AHCI);
-    if (!IsRaw)
-    {
-      "$$RED$$$$HL,1$$Bus: 0x%02X, Dev: 0x%02X, Fun: 0x%02X$$HL,0$$$$FG$$\n\n", pci->bus, pci->dev, pci->fun;
-      "$$RED$$Vendor$$FG$$: $$LTBLUE$$%s$$FG$$\n"
-      , pci->vendor_str;
-      "$$RED$$Device$$FG$$: $$LTBLUE$$%s$$FG$$\n"
-      , pci->dev_id_str;
-    }
-    else
-    {
-      "Bus: 0x%02X, Dev: 0x%02X, Fun: 0x%02X\n\n", pci->bus, pci->dev, pci->fun;
-      "Vendor: %s\n"
-      , pci->vendor_str;
-      "Device: %s\n"
-      , pci->dev_id_str;
-    }
-  }
-  else
-  {
-    bdf = PCIClassFind(PCIC_STORAGE << 16 | PCISC_AHCI << 8 + 1, 0);
-    "Bus:%02X, Dev:%02X, Fun:%02X\n"
-    , bdf.u8[2], bdf.u8[1], bdf.u8[0];
-    "HBA Base Address: 0x%X"
-    , PCIReadU32(bdf.u8[2], bdf.u8[1], bdf.u8[0], PCIR_BASE5) & ~0x1F;
-  }
   if (blkdev.ahci_hba)
   {
     "\n";
@@ -118,6 +89,10 @@ public I64 SATARep(I64 bd_type=BDT_NULL)
             , serial;
             Free(st);
             Free(serial);
+            if (i>i_max)
+            {
+              i_max=i+1;
+            }
           }
           "\n";
           BlkDevDel(temp_blkdev);
@@ -129,5 +104,5 @@ public I64 SATARep(I64 bd_type=BDT_NULL)
   }
   else
     "blkdev.ahci_hba is NULL !\n\n";
-  return num;
+  return MaxI64(num,i_max); //TODO
 }

@@ -38,7 +38,8 @@ public CDoc *DocDblBufStart(CTask *task=NULL)
   CDoc *pdoc=DocPut(task),*ddoc=DocDisplay(task),*res;
   if (!pdoc || !ddoc || pdoc!=ddoc)
     res=NULL; //Already Double buffering
-  else {
+  else
+  {
     if (!task) task=Fs;
     unlock_ddoc=DocLock(ddoc); //dont change during winupdate, so lock DocPut$WW,0$
     res=DocNew(,task);
@@ -66,7 +67,8 @@ public Bool DocDblBufEnd(CTask *task=NULL)
 {//See $LK,"::/Demo/Spy.HC"$
   Bool res=FALSE;
   CDoc *pdoc=DocPut(task),*ddoc=DocDisplay(task);
-  if (pdoc && ddoc && pdoc!=ddoc) {//Double buffering?
+  if (pdoc && ddoc && pdoc!=ddoc)  //Double buffering?
+  {
     if (!task) task=Fs;
     ddoc->flags|=DOCF_DONT_SHOW;
     pdoc->flags&=~DOCF_DONT_SHOW;
@@ -83,7 +85,8 @@ public Bool DocDblBufSwap(CTask *task=NULL)
 {//See $LK,"::/Demo/Spy.HC"$
   Bool res=FALSE;
   CDoc *pdoc=DocPut(task),*ddoc=DocDisplay(task);
-  if (pdoc && ddoc && pdoc!=ddoc) {//Double buffering?
+  if (pdoc && ddoc && pdoc!=ddoc)  //Double buffering?
+  {
     if (!task) task=Fs;
     ddoc->flags|=DOCF_DONT_SHOW;
     pdoc->flags&=~DOCF_DONT_SHOW;
@@ -95,7 +98,7 @@ public Bool DocDblBufSwap(CTask *task=NULL)
     MemCpy(&ddoc->filename,&pdoc->filename,sizeof(CEdFileName));
     ddoc->max_entries		=pdoc->max_entries;
     ddoc->flags			=pdoc->flags&DOCG_DBL_BUF_FLAGS |
-	  ddoc->flags&~DOCG_DBL_BUF_FLAGS;
+                     ddoc->flags&~DOCG_DBL_BUF_FLAGS;
     ddoc->left_click_link	=pdoc->left_click_link;
     ddoc->right_click_link	=pdoc->right_click_link;
     ddoc->user_put_data		=pdoc->user_put_data;

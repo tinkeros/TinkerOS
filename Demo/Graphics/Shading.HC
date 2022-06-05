@@ -58,7 +58,7 @@ U0 DrawIt(CTask *task,CDC *dc)
   CCtrl *c=CtrlFindUnique(task,CTRLT_VIEWING_ANGLES);
   CViewAngles *s=c->state;
   F64 tt=0.5*(Sin(ã*2*(tS%10.0)/10.0)+2.0),
-	é,é2,è,è2,radius,d;
+        é,é2,è,è2,radius,d;
   I64 i,j,cx=task->pix_width/2,cy=task->pix_height/2;
   CD3I32 poly[3],ls;
 

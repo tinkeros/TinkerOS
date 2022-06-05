@@ -29,9 +29,9 @@ U0 DrawIt(CTask *task,CDC *)
   for (i=0;i<task->win_height;i++) {
     ptr=&map[y++][scrn_pix_x>>3];
     for (j=0;j<task->win_width;j++)
-	//By the time you clip to window and handle Fs->scroll_x,Fs->scroll_y,
-	//it is too much trouble to do raw access to gr.text_base like we do
-	//in $LK,"::/Demo/Games/Maze.HC"$.
+//By the time you clip to window and handle Fs->scroll_x,Fs->scroll_y,
+    //it is too much trouble to do raw access to gr.text_base like we do
+    //in $LK,"::/Demo/Games/Maze.HC"$.
       TextChar(task,FALSE,j,i,*ptr++);
   }
 }
@@ -137,25 +137,25 @@ U0 CharDemo()
   DocCursor;
 
   MenuPush(
-	"File {"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Play {"
-	"  Restart(,'\n');"
-	"  Left(,,SC_CURSOR_LEFT);"
-	"  Right(,,SC_CURSOR_RIGHT);"
-	"  Up(,,SC_CURSOR_UP);"
-	"  Down(,,SC_CURSOR_DOWN);"
-	"}"
-	);
+        "File {"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Play {"
+        "  Restart(,'\n');"
+        "  Left(,,SC_CURSOR_LEFT);"
+        "  Right(,,SC_CURSOR_RIGHT);"
+        "  Up(,,SC_CURSOR_UP);"
+        "  Down(,,SC_CURSOR_DOWN);"
+        "}"
+        );
   Init;
   Fs->animate_task=Spawn(&AnimateTask,NULL,"Animate",,Fs);
   Fs->draw_it=&DrawIt;
   try {
     while (TRUE) {
       switch (GetKey(&sc)) {
-	case 0:
+        case 0:
 	  switch (sc.u8[0]) {
 	    case SC_CURSOR_LEFT:
 	      Spawn(&ScrollTaskX,-1,"Scroll",,Fs);
@@ -171,12 +171,12 @@ U0 CharDemo()
 	      break;
 	  }
 	  break;
-	case '\n':
+        case '\n':
 	  CleanUp;
 	  Init;
 	  break;
-	case CH_SHIFT_ESC:
-	case CH_ESC:
+        case CH_SHIFT_ESC:
+        case CH_ESC:
 	  goto sq_done;
       }
     }

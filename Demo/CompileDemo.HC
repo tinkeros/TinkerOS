@@ -11,9 +11,9 @@ F64 CompileDemo(U8 *st)
   do {
     if (machine_code=LexExpression2Bin(cc,&type)) {
       if (type!=RT_F64)
-	res=ToF64(Call(machine_code));
+        res=ToF64(Call(machine_code));
       else
-	res=Call(machine_code)(F64);
+        res=Call(machine_code)(F64);
       Free(machine_code);
     }
     "res=%9.4f\n",res;

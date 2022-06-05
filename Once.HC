@@ -9,7 +9,14 @@
 
 U0 Tmp()
 {
+  I64 old_silent;
   OnceExe;
+  if(!DrvMounted('C')&&!DrvMounted('T')&&!AHCIMode)
+  {
+    old_silent=Silent;
+    SwitchToAHCI;
+    Silent(old_silent);
+  }
   switch (sys_boot_src.u16[0])
   {
   case BOOT_SRC_ROM:
@@ -78,4 +85,5 @@ U0 Tmp()
   }
 }
 
+//#exe { if (SNAILNET_NATIVE_DRIVER != NULL) StreamPrint("Netcfg;\n"); }
 Tmp;

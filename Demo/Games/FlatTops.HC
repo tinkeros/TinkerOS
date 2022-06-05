@@ -36,13 +36,13 @@ class Obj
   U16 flags;
   I16 squadron,member_num;
   F64 x,y,é,dé,
-	speed,turn_rate,
-	life_percent,
-	target_x,target_y,
-	ship_guns,ship_guns_range,
-	air_guns,air_guns_range,
-	fuel,max_fuel,fuel_burn_rate,
-	death_time,next_action_time;
+        speed,turn_rate,
+        life_percent,
+        target_x,target_y,
+        ship_guns,ship_guns_range,
+        air_guns,air_guns_range,
+        fuel,max_fuel,fuel_burn_rate,
+        death_time,next_action_time;
   I32 torpedos,max_torpedos;
   F64 torpedos_range;
   U8  fire[(FIRE_WIDTH*FIRE_HEIGHT+7)/8];
@@ -103,8 +103,8 @@ Obj *ObjFind(F64 x,F64 y,
 	  Bt(&type_mask,tmpo->type)&&Bt(&player_mask,tmpo->player)) {
       dd=Sqr(tmpo->x-x)+Sqr(tmpo->y-y);
       if (dd<best_dd) {
-	best=tmpo;
-	best_dd=dd;
+        best=tmpo;
+        best_dd=dd;
       }
     }
     tmpo=tmpo->next;
@@ -120,10 +120,10 @@ U0 ObjDel(Obj *tmpo)
       tmpo->flags&=~OF_ACTIVE;
     else {
       if (tmpo->squadron>=0)
-	SquadronRem(tmpo);
+        SquadronRem(tmpo);
       QueRem(tmpo);
       if (tmpo->squadron>=0)
-	LBts(&squadrons[tmpo->squadron].dead_mask,tmpo->member_num);
+        LBts(&squadrons[tmpo->squadron].dead_mask,tmpo->member_num);
       num_alive[tmpo->player]--;
       Free(tmpo);
     }
@@ -178,7 +178,7 @@ U0 DrawIt(CTask *task,CDC *dc)
 
       k=0;
       for (j=0;j<FIRE_HEIGHT;j++)
-	for (i=0;i<FIRE_WIDTH;i++)
+        for (i=0;i<FIRE_WIDTH;i++)
 	  if (Bt(tmpo->fire,k++)) {
 	    dc->color=fire_colors[ToI64(k+10*tS)&(FIRE_COLORS-1)];
 	    GrPlot(dc,
@@ -190,10 +190,10 @@ U0 DrawIt(CTask *task,CDC *dc)
 		  FIRE_X_SCALE*(i-FIRE_WIDTH /2+(13*tS+i)%1.7)*Sin(tmpo->é));
 	  }
       if (Blink) {
-	dc->color=BLACK;
-	GrLine(dc,tmpo->x+5,tmpo->y,tmpo->x+5+10,tmpo->y);
+        dc->color=BLACK;
+        GrLine(dc,tmpo->x+5,tmpo->y,tmpo->x+5+10,tmpo->y);
 
-	if (tmpo->life_percent>0) {
+        if (tmpo->life_percent>0) {
 	  if (tmpo->life_percent<33)
 	    dc->color=RED;
 	  else if (tmpo->life_percent<66)
@@ -201,13 +201,13 @@ U0 DrawIt(CTask *task,CDC *dc)
 	  else
 	    dc->color=GREEN;
 	  GrLine(dc,tmpo->x+5,tmpo->y,
-		tmpo->x+5+10*tmpo->life_percent/100,tmpo->y);
-	}
+	        tmpo->x+5+10*tmpo->life_percent/100,tmpo->y);
+        }
 
-	dc->color=BLACK;
-	GrLine(dc,tmpo->x+5,tmpo->y+2,tmpo->x+5+10,tmpo->y+2);
-	d=tmpo->fuel*100/tmpo->max_fuel;
-	if (d>0) {
+        dc->color=BLACK;
+        GrLine(dc,tmpo->x+5,tmpo->y+2,tmpo->x+5+10,tmpo->y+2);
+        d=tmpo->fuel*100/tmpo->max_fuel;
+        if (d>0) {
 	  if (d<33)
 	    dc->color=RED;
 	  else if (d<66)
@@ -215,7 +215,7 @@ U0 DrawIt(CTask *task,CDC *dc)
 	  else
 	    dc->color=GREEN;
 	  GrLine(dc,tmpo->x+5,tmpo->y+2,tmpo->x+5+10*d/100,tmpo->y+2);
-	}
+        }
       }
     }
     tmpo=tmpo->next;
@@ -252,13 +252,13 @@ U0 DrawIt(CTask *task,CDC *dc)
 
   dc->color=YELLOW;
   GrPrint(dc,-task->scroll_x,-task->scroll_y,
-	"Game Speed: %5.2f",game_speed);
+        "Game Speed: %5.2f",game_speed);
   dc->color=LTCYAN;
   GrPrint(dc,-task->scroll_x,-task->scroll_y+FONT_HEIGHT,
-	"Player 1: %d",num_alive[0]);
+        "Player 1: %d",num_alive[0]);
   dc->color=LTPURPLE;
   GrPrint(dc,-task->scroll_x,-task->scroll_y+2*FONT_HEIGHT,
-	"Player 2: %d",num_alive[1]);
+        "Player 2: %d",num_alive[1]);
 
   if ((!num_alive[0]||!num_alive[1]) && Blink) {
     if (!num_alive[1]) {
@@ -276,7 +276,7 @@ U0 DrawIt(CTask *task,CDC *dc)
 U0 Init()
 {
   I64 i,fighter,ship,player,squadron,
-	w=Fs->pix_width,h=Fs->pix_height;
+        w=Fs->pix_width,h=Fs->pix_height;
   Squadron *tmps;
   Obj *tmpo,*tmpo1;
   QueInit(&obj_head);
@@ -334,7 +334,7 @@ U0 Init()
 
       for (squadron=0;squadron<num_squadrons_per_carrier[player];
 	    squadron++,num_squadrons++) {
-	for (fighter=0;fighter<num_planes_per_squadron[player];fighter++) {
+        for (fighter=0;fighter<num_planes_per_squadron[player];fighter++) {
 	  tmpo=CAlloc(sizeof(Obj));
 	  num_alive[player]++;
 	  tmpo->type=OT_FIGHTER;	 tmpo->player=player;
@@ -350,7 +350,7 @@ U0 Init()
 	  tmpo->torpedos =tmpo->max_torpedos=1;
 	  tmpo->torpedos_range =20.0;
 	  QueIns(tmpo,obj_head.last);
-	}
+        }
       }
     }
   }
@@ -395,10 +395,10 @@ Obj *ObjLaunch(I64 player,I64 squadron=-1,
 	    !(tmpo->flags&OF_ACTIVE) &&
 	    (tmpo->squadron<0||squadrons[tmpo->squadron].action==SA_PARKED||
 	    squadrons[tmpo->squadron].action==SA_LAUNCHING)) {
-	if (tmpo->fuel<=0.0)
+        if (tmpo->fuel<=0.0)
 //When low on fuel, not zero, gets launched and captured.
 	  LBts(&squadrons[tmpo->squadron].dead_mask,tmpo->member_num);
-	else {
+        else {
 	  tmpo->flags=tmpo->flags&~OF_RETURNING|OF_ACTIVE;
 	  tmpo->é=host->é;
 	  if (x==F64_MAX || y==F64_MAX || Sqr(x-host->x)+Sqr(y-host->y)>3*3)
@@ -409,7 +409,7 @@ Obj *ObjLaunch(I64 player,I64 squadron=-1,
 	  tmpo->y=host->y;
 	  host->next_action_time=cur_time+0.25/game_speed;
 	  return tmpo;
-	}
+        }
       }
       tmpo=tmpo->next;
     }
@@ -432,8 +432,8 @@ Squadron *SquadronLaunch(I64 player,F64 x=F64_MAX,F64 y=F64_MAX)
     if (tmpo->squadron>=0) {
       tmps=&squadrons[tmpo->squadron];
       if (tmps->action==SA_PARKED) {
-	tmps->action=SA_LAUNCHING;
-	tmps->é=tmpo->é+tmpo->dé;
+        tmps->action=SA_LAUNCHING;
+        tmps->é=tmpo->é+tmpo->dé;
       }
       return tmps;
     }
@@ -458,15 +458,15 @@ Squadron *SquadronReturn(I64 player,F64 x,F64 y)
       return_unit_x1=tmpo->x;
       return_unit_y1=tmpo->y;
       if (tmpo->host) {
-	return_unit_x2=tmpo->host->x;
-	return_unit_y2=tmpo->host->y;
-	return_t=tS+0.5;
+        return_unit_x2=tmpo->host->x;
+        return_unit_y2=tmpo->host->y;
+        return_t=tS+0.5;
       }
     }
     if (tmpo->squadron>=0) {
       tmps=&squadrons[tmpo->squadron];
       if (tmps->action==SA_FLYING)
-	tmps->action=SA_RETURNING;
+        tmps->action=SA_RETURNING;
       return tmps;
     }
   }
@@ -477,7 +477,7 @@ Obj *ObjSeté(I64 player,F64 x=F64_MAX,F64 y=F64_MAX,F64 é=F64_MAX)
 {
   Obj *tmpo;
   if ((tmpo=ObjFind(x,y,,,,1<<player)) && tmpo->flags&OF_ACTIVE &&
-	!(tmpo->flags&OF_RETURNING)) {
+        !(tmpo->flags&OF_RETURNING)) {
     if (é==F64_MAX)
       é=Arg(x-tmpo->x,y-tmpo->y);
     tmpo->dé+=Wrap(é-(tmpo->é+tmpo->dé),-ã);
@@ -501,8 +501,8 @@ Squadron *SquadronSeté(I64 player,F64 x=F64_MAX,F64 y=F64_MAX,F64 é=F64_MAX)
     if (tmpo->squadron>=0) {
       tmps=&squadrons[tmpo->squadron];
       if (tmps->action==SA_FLYING) {
-	tmps->action=SA_SET_é;
-	tmps->é=tmpo->é+tmpo->dé;
+        tmps->action=SA_SET_é;
+        tmps->é=tmpo->é+tmpo->dé;
       }
       return tmps;
     }
@@ -519,42 +519,42 @@ U0 SquadronActions()
     completed_mask=0;
     switch (tmps->action) {
       case SA_LAUNCHING:
-	ObjLaunch(tmps->player,i,tmps->host,,,tmps->é);
-	tmpo=tmps->next_in_squadron;
-	while (tmpo!=tmps) {
+        ObjLaunch(tmps->player,i,tmps->host,,,tmps->é);
+        tmpo=tmps->next_in_squadron;
+        while (tmpo!=tmps) {
 	  LBEqu(&completed_mask,tmpo->member_num,tmpo->flags&OF_ACTIVE);
 	  tmpo=tmpo->next_in_squadron;
-	}
-	if (completed_mask|tmps->dead_mask==tmps->total_mask)
+        }
+        if (completed_mask|tmps->dead_mask==tmps->total_mask)
 	  tmps->action=SA_FLYING;
-	break;
+        break;
       case SA_FLYING:
-	tmpo=tmps->next_in_squadron;
-	while (tmpo!=tmps) {
+        tmpo=tmps->next_in_squadron;
+        while (tmpo!=tmps) {
 	  LBEqu(&completed_mask,tmpo->member_num,!(tmpo->flags&OF_ACTIVE));
 	  tmpo=tmpo->next_in_squadron;
-	}
-	if (completed_mask|tmps->dead_mask==tmps->total_mask)
+        }
+        if (completed_mask|tmps->dead_mask==tmps->total_mask)
 	  tmps->action=SA_PARKED;
-	break;
+        break;
       case SA_SET_é:
-	tmpo=tmps->next_in_squadron;
-	while (tmpo!=tmps) {
+        tmpo=tmps->next_in_squadron;
+        while (tmpo!=tmps) {
 	  tmpo->dé+=Wrap(tmps->é-(tmpo->é+tmpo->dé),-ã);
 	  tmpo=tmpo->next_in_squadron;
-	}
-	tmps->action=SA_FLYING;
-	break;
+        }
+        tmps->action=SA_FLYING;
+        break;
       case SA_RETURNING:
-	tmpo=tmps->next_in_squadron;
-	while (tmpo!=tmps) {
+        tmpo=tmps->next_in_squadron;
+        while (tmpo!=tmps) {
 	  tmpo->flags|=OF_RETURNING;
 	  LBEqu(&completed_mask,tmpo->member_num,!(tmpo->flags&OF_ACTIVE));
 	  tmpo=tmpo->next_in_squadron;
-	}
-	if (completed_mask|tmps->dead_mask==tmps->total_mask)
+        }
+        if (completed_mask|tmps->dead_mask==tmps->total_mask)
 	  tmps->action=SA_PARKED;
-	break;
+        break;
     }
     if (tmps->dead_mask==tmps->total_mask)
       tmps->action=SA_DEAD;
@@ -568,10 +568,10 @@ U0 AI(I64 player,F64 period)
   while (tmpo!=&obj_head) {
     if (tmpo->player==player) {
       if (tmpo->type==OT_CARRIER && Rand<5*period)
-	SquadronLaunch(player,tmpo->x,tmpo->y);
+        SquadronLaunch(player,tmpo->x,tmpo->y);
       if (tmpo->flags&OF_ACTIVE && !(tmpo->flags&OF_RETURNING) &&
 	    Rand<10.0*period)
-	SquadronSeté(player,tmpo->x,tmpo->y,tmpo->é+pi/2*(Rand-0.5));
+        SquadronSeté(player,tmpo->x,tmpo->y,tmpo->é+pi/2*(Rand-0.5));
     }
     tmpo=tmpo->next;
   }
@@ -629,7 +629,7 @@ U0 Combat(F64 period)
       tmpo->target_x=tmpo1->x;
       tmpo->target_y=tmpo1->y;
       if (tmpo1->flags&OF_SHIP) {
-	if (tmpo->torpedos && d<tmpo->torpedos_range && Rand<125*period) {
+        if (tmpo->torpedos && d<tmpo->torpedos_range && Rand<125*period) {
 	  tmpo->torpedos--;
 	  tmpt=CAlloc(sizeof(Torpedo));
 	  tmpt->x=tmpo->x;
@@ -641,7 +641,7 @@ U0 Combat(F64 period)
 	  tmpt->é=Arg(tmpo1->x-tmpo->x,tmpo1->y-tmpo->y);
 	  QueIns(tmpt,torpedo_head.last);
 	  Sweep(2000,86,53);
-	} else if (tmpo->ship_guns>0 && d<tmpo->ship_guns_range) {
+        } else if (tmpo->ship_guns>0 && d<tmpo->ship_guns_range) {
 	  tmpo->flags|=OF_SHOOTING;
 	  if (Rand<125.0*period) {
 	    ShipDamage(tmpo1,tmpo->ship_guns*Rand*period);
@@ -652,9 +652,9 @@ U0 Combat(F64 period)
 	    Noise(100,29,46);
 	    next_noise=tS+0.1;
 	  }
-	}
+        }
       } else {
-	if (tmpo->air_guns>0 && d<tmpo->air_guns_range) {
+        if (tmpo->air_guns>0 && d<tmpo->air_guns_range) {
 	  tmpo->flags|=OF_SHOOTING;
 	  if (Rand<125.0*period) {
 	    tmpo1->life_percent-=tmpo->air_guns*Rand*period;
@@ -665,7 +665,7 @@ U0 Combat(F64 period)
 	    Noise(25,62,86);
 	    next_noise=tS+0.025;
 	  }
-	}
+        }
       }
     }
     tmpo=tmpo->next;
@@ -703,16 +703,16 @@ U0 AnimateTask(I64)
     tmpo=obj_head.next;
     while (tmpo!=&obj_head) {
       if (tmpo->flags&OF_ACTIVE && tmpo->fuel>0) {
-	if (tmpo->dé) {
+        if (tmpo->dé) {
 	  d=tmpo->dé;
 	  if (d> tmpo->turn_rate*period) d= tmpo->turn_rate*period;
 	  if (d<-tmpo->turn_rate*period) d=-tmpo->turn_rate*period;
 	  tmpo->é +=d;
 	  tmpo->dé-=d;
-	}
-	tmpo->x+=tmpo->speed*Cos(tmpo->é)*period*tmpo->life_percent/100.0;
-	tmpo->y+=tmpo->speed*Sin(tmpo->é)*period*tmpo->life_percent/100.0;
-	tmpo->fuel-=tmpo->speed*tmpo->fuel_burn_rate*period;
+        }
+        tmpo->x+=tmpo->speed*Cos(tmpo->é)*period*tmpo->life_percent/100.0;
+        tmpo->y+=tmpo->speed*Sin(tmpo->é)*period*tmpo->life_percent/100.0;
+        tmpo->fuel-=tmpo->speed*tmpo->fuel_burn_rate*period;
       }
       tmpo=tmpo->next;
     }
@@ -721,17 +721,17 @@ U0 AnimateTask(I64)
     while (tmpt!=&torpedo_head) {
       tmpt1=tmpt->next;
       if (tS>tmpt->timeout) {
-	tmpo=tmpt->target;
-	if (Rand<0.333333) {
+        tmpo=tmpt->target;
+        if (Rand<0.333333) {
 	  ShipDamage(tmpo,150*Rand*Rand);
 	  if (Rand<0.333333)
 	    tmpo->fuel*=0.75*Rand+0.25;
-	}
-	QueRem(tmpt);
-	Free(tmpt);
+        }
+        QueRem(tmpt);
+        Free(tmpt);
       } else {
-	tmpt->x+=tmpt->speed*Cos(tmpt->é)*period;
-	tmpt->y+=tmpt->speed*Sin(tmpt->é)*period;
+        tmpt->x+=tmpt->speed*Cos(tmpt->é)*period;
+        tmpt->y+=tmpt->speed*Sin(tmpt->é)*period;
       }
       tmpt=tmpt1;
     }
@@ -739,8 +739,8 @@ U0 AnimateTask(I64)
     tmpo=obj_head.next;
     while (tmpo!=&obj_head) {
       if (tmpo->host && !(tmpo->flags&OF_ACTIVE)) {
-	tmpo->x=tmpo->host->x;
-	tmpo->y=tmpo->host->y;
+        tmpo->x=tmpo->host->x;
+        tmpo->y=tmpo->host->y;
       }
       tmpo=tmpo->next;
     }
@@ -748,7 +748,7 @@ U0 AnimateTask(I64)
     tmpo=obj_head.next;
     while (tmpo!=&obj_head) {
       if (tmpo->flags&OF_ACTIVE) {
-	if (tmpo->host) {
+        if (tmpo->host) {
 	  d=Sqrt(Sqr(tmpo->x-tmpo->host->x)+Sqr(tmpo->y-tmpo->host->y));
 	  if (d<8 && tmpo->max_fuel-tmpo->fuel>30) {
 	    tmpo->life_percent=100.0;
@@ -767,7 +767,7 @@ U0 AnimateTask(I64)
 	  if (tmpo->flags&OF_RETURNING)
 	    tmpo->dé+=Wrap(Arg(tmpo->host->x-tmpo->x,
 		  tmpo->host->y-tmpo->y)-(tmpo->é+tmpo->dé),-ã);
-	} else if (tmpo->type==OT_CARRIER)
+        } else if (tmpo->type==OT_CARRIER)
 	  ShipFix(tmpo,2.5*period);
       }
       tmpo=tmpo->next;
@@ -791,20 +791,20 @@ U0 FlatTops()
   DocCursor;
   DocClear;
   PopUpOk("$$GREEN$${Left-Mouse}$$FG$$\t\tChange Course\n"
-	"$$GREEN$${Right-Mouse}$$FG$$\t\tLaunch Squadron\n"
-	"$$GREEN$${Right-Double-Mouse}$$FG$$\tReturn Squadron\n"
-	"$$GREEN$${Ctrl-Left Grab}$$FG$$\tScroll Scrn\n");
+        "$$GREEN$${Right-Mouse}$$FG$$\t\tLaunch Squadron\n"
+        "$$GREEN$${Right-Double-Mouse}$$FG$$\tReturn Squadron\n"
+        "$$GREEN$${Ctrl-Left Grab}$$FG$$\tScroll Scrn\n");
   MenuPush(
-	"File {"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Play {"
-	"  Restart(,'\n');"
-	"  Faster(,'+');"
-	"  Slower(,'-');"
-	"}"
-	);
+        "File {"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Play {"
+        "  Restart(,'\n');"
+        "  Faster(,'+');"
+        "  Slower(,'-');"
+        "}"
+        );
   Fs->win_inhibit|=WIF_SELF_MS_L|WIF_SELF_MS_R;
   Init;
   Fs->draw_it=&DrawIt;
@@ -813,7 +813,7 @@ U0 FlatTops()
     while (TRUE)
       switch (GetMsg(&arg1,&arg2,
 	    1<<MSG_KEY_DOWN|1<<MSG_MS_L_UP|1<<MSG_MS_R_UP|1<<MSG_MS_R_D_UP)) {
-	case MSG_KEY_DOWN:
+        case MSG_KEY_DOWN:
 	  switch (arg1) {
 	    case '\n':
 	      CleanUp;
@@ -830,13 +830,13 @@ U0 FlatTops()
 	      break;
 	  }
 	  break;
-	case MSG_MS_L_UP:
+        case MSG_MS_L_UP:
 	  SquadronSeté(0,arg1,arg2);
 	  break;
-	case MSG_MS_R_UP:
+        case MSG_MS_R_UP:
 	  SquadronLaunch(0,arg1,arg2);
 	  break;
-	case MSG_MS_R_D_UP:
+        case MSG_MS_R_D_UP:
 	  SquadronReturn(0,arg1,arg2);
 	  break;
       }

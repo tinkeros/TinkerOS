@@ -20,8 +20,8 @@ U0 Main1()
 {
   static Test s1[]={
   {10,"Static1"},
-	{(tS%10.0)*100,"Static2"}, //Dynamic initialization
-	{30,"Static3"}
+        {(tS%10.0)*100,"Static2"}, //Dynamic initialization
+        {30,"Static3"}
   };
   D(s1,sizeof(s1));
   "Time 2:%d\n",s1[1].time;
@@ -61,8 +61,8 @@ U0 Main2()
 {
   static Test s2[]={
   {10,"static1"},
-	{(tS%10.0)*100,"static2"}, //No dynamic initialization--cvted to const
-	{30,"static3"}
+        {(tS%10.0)*100,"static2"}, //No dynamic initialization--cvted to const
+        {30,"static3"}
   };
   D(s2,sizeof(s2));
   "Time 4:%d\n",s2[1].time;

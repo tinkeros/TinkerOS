@@ -65,9 +65,9 @@ U0 AsmAndC2()
     LIST
 //You can clobber RAX,RBX,RCX,RDX, but preserve the rest.
     MOV	RCX,R15 //You can clobber RAX,RBX,RCX,RDX. Preserve the rest.
-    @@05:	PUSH	RCX
+@@05:	PUSH	RCX
 
-//U0 $LK,"Snd",A="MN:Snd"$(I8 ona);
+    //U0 $LK,"Snd",A="MN:Snd"$(I8 ona);
     MOV	RAX,RCX	//ona=loop*10+100.0Hz
     IMUL2	RAX,glbl_ona_step //Intentionally evaluated at compile time
     ADD	RAX,U64 [&glbl_ona_base]  //Intentionally evaluated at run time

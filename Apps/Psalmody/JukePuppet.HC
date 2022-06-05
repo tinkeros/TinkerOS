@@ -15,11 +15,11 @@ U0 SongPuppet(CTask *task,I64 passes)
     while (TRUE) {
       i=0;
       while (TaskValidate(task) && (rip=TaskCaller(task,i++))) {
-	if (start<=rip<end) {
+        if (start<=rip<end) {
 	  if (rip<last_rip && --passes<=0)
 	    return;
 	  last_rip=rip;
-	}
+        }
       }
       Sleep(1);
     }

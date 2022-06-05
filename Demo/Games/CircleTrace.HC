@@ -19,7 +19,7 @@ U0 SongTask(I64)
 U0 DrawIt(CTask *task,CDC *dc)
 {
   GrPrint(dc,0,0,"Error:%6.3fTime:%6.3fScore:%6.3fBest:%8.3f",
-	avg_error,elapsed_time,score,best_score);
+        avg_error,elapsed_time,score,best_score);
 }
 
 #define CIRCLE_RADIUS	100
@@ -61,31 +61,31 @@ U0 CircleTrace()
 	  1<<MSG_KEY_DOWN+1<<MSG_MS_L_DOWN);
     switch (msg_code) {
       case MSG_KEY_UP:
-	break;
+        break;
       case MSG_MS_L_DOWN:
-	DCFill;
-	dc->color=ROP_XOR+BLACK^TRANSPARENT;
-	GrCircle(dc,cx,cy,CIRCLE_RADIUS);
-	dc->color=ROP_XOR+RED^TRANSPARENT;
-	t0=tS;
-	total_distance=0.001;
-	total_error=0;
-	x1=arg1; y1=arg2;
-	do {
+        DCFill;
+        dc->color=ROP_XOR+BLACK^TRANSPARENT;
+        GrCircle(dc,cx,cy,CIRCLE_RADIUS);
+        dc->color=ROP_XOR+RED^TRANSPARENT;
+        t0=tS;
+        total_distance=0.001;
+        total_error=0;
+        x1=arg1; y1=arg2;
+        do {
 	  msg_code=ScanMsg(&arg1,&arg2,
-		1<<MSG_MS_L_UP+1<<MSG_MS_MOVE);
+	        1<<MSG_MS_L_UP+1<<MSG_MS_MOVE);
 	  switch (msg_code) {
 	    case MSG_MS_L_UP:
 	      break;
 	    case MSG_MS_MOVE:
 	      if (x1!=arg1 || y1!=arg2) {
-		total_distance+=Sqrt(Sqr(x1-arg1)+Sqr(y1-arg2));
-		Line(dc,x1,y1,0,arg1,arg2,0,&CTPlot);
-		x1=arg1;y1=arg2;
+	        total_distance+=Sqrt(Sqr(x1-arg1)+Sqr(y1-arg2));
+	        Line(dc,x1,y1,0,arg1,arg2,0,&CTPlot);
+	        x1=arg1;y1=arg2;
 //undo overlapping pixs on segments
-		GrPlot(dc,x1,y1);
-		rad=Sqrt(Sqr(x1-cx)+Sqr(y1-cy));
-		total_error-=Abs(rad-CIRCLE_RADIUS);
+	        GrPlot(dc,x1,y1);
+	        rad=Sqrt(Sqr(x1-cx)+Sqr(y1-cy));
+	        total_error-=Abs(rad-CIRCLE_RADIUS);
 	      }
 	      break;
 	  }
@@ -100,9 +100,9 @@ U0 CircleTrace()
 	  //no need to do anything until the window mgr runs.
 	  Refresh;
 
-	} while (msg_code!=MSG_MS_L_UP);
-	music.mute=TRUE; Sleep(200);
-	if (total_distance>0.95*CIRCUMFERENCE) {
+        } while (msg_code!=MSG_MS_L_UP);
+        music.mute=TRUE; Sleep(200);
+        if (total_distance>0.95*CIRCUMFERENCE) {
 	  if (score<best_score) {
 	    Snd(86);Sleep(50);Snd;Sleep(50);
 	    Snd(86);Sleep(50);Snd;Sleep(50);
@@ -111,11 +111,11 @@ U0 CircleTrace()
 	  } else {
 	    Snd(62);Sleep(50);
 	  }
-	} else {
+        } else {
 	  Snd(34);Sleep(1000);
-	}
-	Snd; Sleep(200); music.mute=FALSE;
-	break;
+        }
+        Snd; Sleep(200); music.mute=FALSE;
+        break;
     }
   } while (msg_code!=MSG_KEY_DOWN || arg1!=CH_SHIFT_ESC && arg1!=CH_ESC);
   GetMsg(,,1<<MSG_KEY_UP);

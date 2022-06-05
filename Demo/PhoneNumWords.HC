@@ -10,7 +10,7 @@ U0 PhoneNumWords(U8 *num)
 {
   I64 ch;
   U8 *_num=StrNew(num),*dst=_num,
-	*dict=acd.word_lst,*st,*src;
+        *dict=acd.word_lst,*st,*src;
   while (*num) {
     if ('0'<=*num<='9')
       *dst++=*num;
@@ -22,25 +22,25 @@ U0 PhoneNumWords(U8 *num)
     if (StrLen(dict)>2) {
       dst=st=StrNew(dict);
       while (ch=ToUpper(*dst)) {
-	if ('A'<=ch<='Z')
+        if ('A'<=ch<='Z')
 	  *dst=char_map[ch-'A'];
-	else
+        else
 	  *dst=CH_SPACE;
-	dst++;
+        dst++;
       }
       *dst=0;
 
       src=_num;
       while (*src) {
-	if (!StrNCmp(st,src,StrLen(st))) {
+        if (!StrNCmp(st,src,StrLen(st))) {
 	  ch=*src;
 	  *src=0;
 	  "%s",_num;
 	  *src=ch;
 	  "$$GREEN$$%s$$FG$$",dict;
 	  "%s\n",src+StrLen(st);
-	}
-	src++;
+        }
+        src++;
       }
       Free(st);
     }

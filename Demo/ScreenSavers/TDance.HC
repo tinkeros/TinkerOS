@@ -7,15 +7,14 @@
 U0 TerryDanceTask(U8 *data)
 {
   CDC *dc=data;
-  I64 i,j,k,size,pal_cnt,width,height,num_imgs,x=0,y=0,xdir=1,ydir=1;
-  U8 r,b,g;
+  I64 i,j,size,pal_cnt,width,height,num_imgs,x=0,y=0,xdir=1,ydir=1;
   U8 *imgbuf,*imgsfile = FileRead("::/Demo/ScreenSavers/TDance.BIN.Z", &size);
   imgbuf=imgsfile;
   pal_cnt=*imgbuf++;
-  // Setup
+// Setup
   // load extended palette
   for (i=0; i<pal_cnt; i++)
-  {
+    {
     gr_palette[16+i].r=*imgbuf++;
     gr_palette[16+i].g=*imgbuf++;
     gr_palette[16+i].b=*imgbuf++;
@@ -26,26 +25,26 @@ U0 TerryDanceTask(U8 *data)
   CDC *tdance=DCNew(width, height);
   i=0;
   while(TRUE)
-  {
+    {
     x=x+xdir;
     y=y+ydir;
     if (x>GR_WIDTH-width)
-    {
+      {
       x--;
       xdir=-1;
     }
     if (x<0)
-    {
+      {
       x++;
       xdir=1;
     }
     if (y>GR_HEIGHT-height)
-    {
+      {
       y--;
       ydir=-1;
     }
     if (y<0)
-    {
+      {
       y++;
       ydir=1;
     }
@@ -73,7 +72,7 @@ U0 TerryDanceTask(U8 *data)
 U0 ScreenSaverTerryDance(CDC *dc, I64 ss_cnts)
 {
   if (!ss_cnts)
-  {
+    {
     MemCpy(dc->body,gr.dc2->body,GR_WIDTH*GR_HEIGHT);
     gr.scrn_saver_task=Spawn(&TerryDanceTask,dc,"Screen Saver Task");
   }

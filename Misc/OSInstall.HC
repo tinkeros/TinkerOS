@@ -101,7 +101,6 @@ U0 VMInstallDrv(CTask *task,U8 drv_let,
     if (atapi_drv)
       XTalkWait(task,"T");
     XTalkWait(task,"\n\n"); //Exit Drives,Dsk Cache
-    XTalkWait(task,"AHCIMode\n"); //AHCIMode Option
     if (res)
       XTalkWait(task,"%s",res); //Options
     XTalkWait(task,"\n"); //Exit Options
@@ -137,8 +136,9 @@ U0 DispResOptions()
   "11: 1360x768 via 1366x768 (approx 16:9)\n"
   "12: 1280x720 (HD 720p)\n"
   "13: 1920x1080 (HD 1080p)\n"
-  "14: Text mode 80x60 columns, no graphics\n\n";
-  "15: Enter custom width and height\n\n";
+  "14: 960x540 via 1920x1080 (2x scaling)\n"
+  "15: Text mode 80x60 columns, no graphics\n\n";
+  "16: Enter custom width and height\n\n";
 }
 
 U8* ResPrompt(U8 drive)
@@ -146,7 +146,7 @@ U8* ResPrompt(U8 drive)
   I64 res,width,height;
   U8 *cfg=NULL, *pmpt;
   pmpt=MStrPrint("Select graphics mode for drive %c: ",drive);
-  res=GetI64(pmpt,0,0,15);
+  res=GetI64(pmpt,0,0,16);
   Free(pmpt);
   if (res==0)
   {
@@ -206,9 +206,13 @@ U8* ResPrompt(U8 drive)
   }
   else if (res==14)
   {
-    cfg=MStrPrint("TextMode\n\n");
+    cfg=MStrPrint("Resolution\n1920\n1080\nYY2\n2\n\n");
   }
   else if (res==15)
+  {
+    cfg=MStrPrint("TextMode\n\n");
+  }
+  else if (res==16)
   {
     width=GetI64("Enter width (min=320, max=2560): ",640,320,2560);
     height=GetI64("Enter height (min=200, max=1600): ",480,200,1600);
@@ -481,7 +485,7 @@ U0 RegularInstallWizAHCI()
   WinVert(task->win_bottom + 3, Fs->win_bottom);
   WinToTop(Fs);
   XTalk(task, "Mount;\nC\n");
-  "\nSelect the port of the ATA drive to install on.\n";
+  "\nSelect the port of the ATA drive to install on listed in the window above.\n";
   "Hard Drive Port: ";
   while (TRUE)
   {
@@ -529,14 +533,16 @@ U0 RegularInstallWizAHCI()
   DispResOptions;
   res=ResPrompt(drv_let);
   XTalkWait(task,"BootHDIns('%C');\n\nB\n0x20000\n"
-            "C\ns%s\n%s\n%C\n\nAHCIMode\n%s\n", //Exit Drives,Dsk Cache,Options
+            "C\n%s\n\n\n%s\n", //Exit Drives,Dsk Cache,Options
             drv_let,port_st,res);
+  /*
   "$$RED$$Install Master Boot loader?$$FG$$";
   if (YorN)
   {
     '\n';
     BootMHDIns(drv_let);
   }
+  */
   WinVert(task->win_top, Fs->win_bottom);
   Kill(task);
 }
@@ -562,22 +568,6 @@ Bool DoInstall(Bool pmt_reboot)
 {
   I64 res=FALSE,vm_install;
   InstallOptions *cfg;
-  if(!DrvMounted('T')&&!AHCIMode)
-  {
-    "\n\nIt appears you booted from USB and\n"
-    "currently you are in legacy mode.  If\n"
-    "your drives are setup in AHCI mode you\n"
-    "should switch to AHCI mode before you\n"
-    "continue.\n\n";
-    "Switch to AHCI mode ";
-    if (YorN)
-      if (!SwitchToAHCI)
-        {
-          "\nSwitch to AHCI mode failed!\n"
-          "Unable to continue!\n";
-          return FALSE;
-        }
-  }
   if(DrvMounted('C'))
   {
     "\n\nIt appears drive C is already mounted.\n"

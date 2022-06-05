@@ -68,7 +68,7 @@ U8 *BgtPopUpAcct(U8 *header=NULL,U8 *dft=NULL)
       doc_e=DocPrint(doc,"$$FG,%d$$$$MU-UL,\"%s\",LE=0x%X$$\n",
 	    tmph->user_data1,tmph->str,tmph->str);
       if (dft && !StrCmp(dft,tmph->str))
-	doc_dft=doc_e;
+        doc_dft=doc_e;
       tmph=tmph->next;
     }
   }

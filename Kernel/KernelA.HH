@@ -3058,7 +3058,9 @@ class CAtapiModeWriteList
 #define BDT_AHCI_SATA		6
 #define BDT_AHCI_SATAPI	7
 #define BDT_OTHER		8
-#define BDT_TYPES_NUM		9
+#define BDT_SERIAL		9
+#define BDT_VIRTUAL		10
+#define BDT_TYPES_NUM	11	
 
 #define BDF_REMOVABLE		0x001
 #define BDF_INITIALIZED		0x002
@@ -3109,8 +3111,10 @@ public class CBlkDev
   I64	drv_offset,init_root_dir_blks,
 	max_blk, port_num;
   U16	*dev_id_record;
-  U8	*RAM_dsk, *file_dsk_name, *prd_buf,
-        *read_func, *write_func, *max_func;
+  U8	*RAM_dsk, *file_dsk_name, *prd_buf;
+  Bool (*init_func)(), (*deinit_func)(),
+  (*read_func)(U8* buf, I64 blk, I64 cnt), (*write_func)(U8* buf, I64 blk, I64 cnt);
+  I64 (*max_func)();
   CFile *file_dsk;
   CTask *owning_task;
   F64	last_time;
@@ -3997,6 +4001,18 @@ public class CSysFixedArea
 #define SC_F10		0x44
 #define SC_F11		0x57
 #define SC_F12		0x58
+#define SC_F13		0x64
+#define SC_F14		0x65
+#define SC_F15		0x66
+#define SC_F16		0x67
+#define SC_F17		0x68
+#define SC_F18		0x69
+#define SC_F19		0x6A
+#define SC_F20		0x6B
+#define SC_F21		0x6C
+#define SC_F22		0x6D
+#define SC_F23		0x6E
+#define SC_F24		0x76
 #define SC_PAUSE	0x61
 #define SC_GUI		0xDB
 #define SC_PRTSCRN1	0xAA

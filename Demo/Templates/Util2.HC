@@ -34,8 +34,8 @@ I64 MyUtilLst(CDirEntry *tmpde,I64 fuf_flags)
     tmpde1=tmpde->next;
     if (tmpde->attr & RS_ATTR_DIR) {
       if (tmpde->sub) {
-	"Processing Directory: %s\n",tmpde->full_name;
-	res+=MyUtilLst(tmpde->sub,fuf_flags);
+        "Processing Directory: %s\n",tmpde->full_name;
+        res+=MyUtilLst(tmpde->sub,fuf_flags);
       }
     } else
       res+=MyUtilFile(tmpde->full_name,fuf_flags);
@@ -50,5 +50,5 @@ I64 MyUtil(U8 *files_find_mask="*",U8 *fu_flags=NULL)
   ScanFlags(&fuf_flags,Define("ST_FILE_UTIL_FLAGS"),"+r+$$");
   ScanFlags(&fuf_flags,Define("ST_FILE_UTIL_FLAGS"),fu_flags);
   return MyUtilLst(FilesFind(files_find_mask,fuf_flags&FUG_FILES_FIND),
-	fuf_flags&~FUG_FILES_FIND);
+        fuf_flags&~FUG_FILES_FIND);
 }

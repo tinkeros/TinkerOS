@@ -12,7 +12,7 @@ U0 MGInit()
   for (i=0;i<256;i++)
     for (j=0;j<8;j++)
       if (Bt(&i,j))
-	Bts(&rev[i],7-j);
+        Bts(&rev[i],7-j);
 }
  
 U0 MGUpdate()

@@ -17,11 +17,11 @@ U0 MyDerivative(CMathODE *ode,F64,COrder2D3 *,COrder2D3 *)
       D3Sub(&p,&tmpm2->state->x,&tmpm1->state->x);
       dd=D3NormSqr(&p);
       if (dd<=Sqr(tmpm1->radius+tmpm2->radius)) {
-	d=Sqrt(dd)+0.0001;
-	dd=10.0*Sqr(Sqr(Sqr(tmpm1->radius+tmpm2->radius)-dd));
-	D3MulEqu(&p,dd/d);
-	D3AddEqu(&tmpm2->DstateDt->DxDt,&p);
-	D3SubEqu(&tmpm1->DstateDt->DxDt,&p);
+        d=Sqrt(dd)+0.0001;
+        dd=10.0*Sqr(Sqr(Sqr(tmpm1->radius+tmpm2->radius)-dd));
+        D3MulEqu(&p,dd/d);
+        D3AddEqu(&tmpm2->DstateDt->DxDt,&p);
+        D3SubEqu(&tmpm1->DstateDt->DxDt,&p);
       }
       tmpm2=tmpm2->next;
     }

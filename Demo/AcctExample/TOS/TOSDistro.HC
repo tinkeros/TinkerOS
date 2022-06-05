@@ -46,7 +46,7 @@ public U0 TOSCopyDrv(U8 src,U8 dst)
 
 public U0 TOSPmtAndCopyDrv()
 {//Pmt for drv lets. Then, Fmt dst and copy entire drv.
-   I64 src,dst;
+  I64 src,dst;
   "$$RED$$\nCopy Src Drive:\n$$FG$$";
   src=TOSGetDrv;
   "$$RED$$\nCopy Dst Drive:\n$$FG$$";
@@ -118,7 +118,7 @@ U0 DbgDistroFilePrep()
   Copy("C:/Adam/TaskRep.HC.Z",	"A:/Adam");
 
   FileWrite("C:" CFG_DBG_DISTRO_FILE,
-	bd->RAM_dsk,(bd->max_blk+1)<<BLK_SIZE_BITS);
+        bd->RAM_dsk,(bd->max_blk+1)<<BLK_SIZE_BITS);
 }
 
 
@@ -142,8 +142,8 @@ U0 MakeStdDistro()
   StdDistroPrep;
   RedSeaISO(TOS_ISO_NAME,TOS_DISTRO_DIR,TOS_DISTRO_DIR BOOT_DIR_KERNEL_BIN_C);
   DefinePrint("DD_TEMPLEOSCD_SIZE",
-	"Download $TX,"TempleOS V5.03",D="DD_OS_NAME_VERSION"$ - Standard Distro (%0.1fMB)",
-	0.1*(10*Size(TOS_ISO_NAME,"+s")/1024/1024));
+        "Download $TX,"TinkerOS V5.07",D="DD_OS_NAME_VERSION"$ - Standard Distro (%0.1fMB)",
+        0.1*(10*Size(TOS_ISO_NAME,"+s")/1024/1024));
   Drv('C');
 }
 
@@ -173,8 +173,8 @@ U0 MakeLiteDistro()
   LiteDistroPrep;
   RedSeaISO(TOS_ISO_NAME,TOS_DISTRO_DIR,TOS_DISTRO_DIR BOOT_DIR_KERNEL_BIN_C);
   DefinePrint("DD_TEMPLEOSCD_SIZE",
-	"Download $TX,"TempleOS V5.03",D="DD_OS_NAME_VERSION"$ - Standard Distro (%0.1fMB)",
-	0.1*(10*Size(TOS_ISO_NAME,"+s")/1024/1024));
+        "Download $TX,"TinkerOS V5.07",D="DD_OS_NAME_VERSION"$ - Standard Distro (%0.1fMB)",
+        0.1*(10*Size(TOS_ISO_NAME,"+s")/1024/1024));
   Drv('C');
 }
 
@@ -199,8 +199,8 @@ U0 MakeDbgDistro()
   DbgDistroPrep;
   RedSeaISO(TOS_ISO_NAME,TOS_DISTRO_DIR,TOS_DISTRO_DIR BOOT_DIR_KERNEL_BIN_C);
   DefinePrint("DD_TEMPLEOS_DBG_SIZE",
-	"Download $TX,"TempleOS V5.03",D="DD_OS_NAME_VERSION"$ - Debug Distro (%0.1fMB)",
-	0.1*(10*Size(TOS_ISO_NAME,"+s")/1024/1024));
+        "Download $TX,"TinkerOS V5.07",D="DD_OS_NAME_VERSION"$ - Debug Distro (%0.1fMB)",
+        0.1*(10*Size(TOS_ISO_NAME,"+s")/1024/1024));
   Drv('C');
 }
 
@@ -223,8 +223,8 @@ U0 MakeStaffDistro()
   StaffDistroPrep;
   RedSeaISO(TOS_ISO_NAME,TOS_DISTRO_DIR,TOS_DISTRO_DIR BOOT_DIR_KERNEL_BIN_C);
   DefinePrint("DD_TEMPLEOS_STAFF_SIZE",
-	"Download $TX,"TempleOS V5.03",D="DD_OS_NAME_VERSION"$ - T.S. Company Internal Distro (%0.1fMB)",
-	0.1*(10*Size(TOS_ISO_NAME,"+s")/1024/1024));
+        "Download $TX,"TinkerOS V5.07",D="DD_OS_NAME_VERSION"$ - T.S. Company Internal Distro (%0.1fMB)",
+        0.1*(10*Size(TOS_ISO_NAME,"+s")/1024/1024));
   Drv('C');
 }
 
@@ -244,12 +244,12 @@ I64 UpdateLineCnts()
   DocMax;
   DocClear;
   res=LineRep("C:/*","-r")+LineRep("C:/Adam/*")+
-	LineRep("C:/Compiler/*","-S+$$")+LineRep("C:/Kernel/*");
+        LineRep("C:/Compiler/*","-S+$$")+LineRep("C:/Kernel/*");
   CopyTree("B:/TOS/TOS","C:/Home");
   DelTree("B:/TOS/TOS");
 
   DocTreeFWrite("C:/Adam/ADefine.HC.Z","LineRep",
-	"DefinePrint(\"DD_TEMPLEOS_LOC\",\"%,d\");\n",res);
+        "DefinePrint(\"DD_TEMPLEOS_LOC\",\"%,d\");\n",res);
   DefinePrint("DD_TEMPLEOS_LOC","%,d",res);
 
   "Total LOC:%12,d\n\n",res;
@@ -260,7 +260,7 @@ U0 UpdateISODocDefines()
 {
   try {
     DefinePrint("DD_TEMPLEOSCD_SIZE",
-	  "Download $TX,"TempleOS V5.03",D="DD_OS_NAME_VERSION"$ - Standard Distro (%0.1fMB)",
+	  "Download $TX,"TinkerOS V5.07",D="DD_OS_NAME_VERSION"$ - Standard Distro (%0.1fMB)",
 	  0.1*(10*Size("D:/Downloads/TOS_Distro.ISO","+s")/1024/1024));
     DefinePrint("DD_TEMPLEOSCD_K_SIZE",
 	  "%dKB",Size("D:/Downloads/TOS_Distro.ISO","+s")/1024);
@@ -321,19 +321,19 @@ U0 TOSRegen2()
   TOSProgress("Make Supplemental3 ISO");
   RedSeaISO("D:/Downloads/TOS_Supplemental3","C:/Home/Sup3");
 
-#if MAKE_LITE
+  #if MAKE_LITE
   TOSProgress("Make Lite Distro ISO");
   MakeLiteDistro;
   DocClear;
   Move(TOS_ISO_NAME,"D:/Downloads/TOS_Lite.ISO");
 #endif
-#if MAKE_DBG
+  #if MAKE_DBG
   TOSProgress("Make Dbg Distro ISO");
   MakeDbgDistro;
   DocClear;
   Move(TOS_ISO_NAME,"D:/Downloads/TOS_Dbg.ISO");
 #endif
-#if MAKE_STAFF
+  #if MAKE_STAFF
   TOSProgress("Make Staff Distro ISO");
   MakeStaffDistro;
   DocClear;
@@ -370,11 +370,11 @@ U0 TOSRegen2()
 public U0 TOSPreRegen()
 {//Copy bins from D:/Home/Sup1 to C:/Home/Sup1
   Copy("D:/Home/" INS_REG_PERSONAL_INITIALS "/*",
-	"C:/Home/" INS_REG_PERSONAL_INITIALS);
+        "C:/Home/" INS_REG_PERSONAL_INITIALS);
   DelTree("C:/Home/Sup1/Sup1Bin");
   CopyTree("D:/Home/Sup1/Sup1Bin","C:/Home/Sup1/Sup1Bin");
   Copy("D:/Home/Sup1/Sup1CodeScraps/Comm/TOSSocket*",
-	"C:/Home/Sup1/Sup1CodeScraps/Comm");
+        "C:/Home/Sup1/Sup1CodeScraps/Comm");
   DelTree("C:/Downloads/Linux");
   CopyTree("D:/Downloads/Linux","C:/Downloads/Linux");
 }

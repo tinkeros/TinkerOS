@@ -123,6 +123,6 @@ public U0 ProfRep(I64 filter_cnt=1,Bool leave_it=OFF,Bool print_max=ON)
   }
   if (print_max && max_percent > 0)
   {
-    "\nRoutine with max hits: %s\n\n",max_buf;
+    "\nRoutine with max hits: %s (%1.2f %%)\n\n",max_buf,max_percent;
   }
 }

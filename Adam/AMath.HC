@@ -123,13 +123,16 @@ public Complex *CPoly(Complex *dst,I64 n,Complex *zeros,Complex *x)
 {//Eval complex polynomial
   I64 i;
   Complex n1,n2;
-  if (n>0) {
+  if (n>0)
+  {
     CSub(dst,x,&zeros[0]);
-    for (i=1;i<n;i++) {
+    for (i=1; i<n; i++)
+    {
       CCopy(&n1,dst);
       CMul(dst,&n1,CSub(&n2,x,&zeros[i]));
     }
-  } else
+  }
+  else
     CEqu(dst,1.0,0.0);
   return dst;
 }

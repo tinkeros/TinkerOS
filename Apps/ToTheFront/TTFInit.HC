@@ -23,7 +23,7 @@ $SP,"<4>",BI=4$
 U0 DrawHexes()
 {
   F64 dx=2*HEX_SIDE+2*DCOS,dy=2*DSIN,
-	x,y,x1,y1,x2,y2;
+        x,y,x1,y1,x2,y2;
   I64 i,j;
   map_dc->color=WHITE;
   GrRect(map_dc,0,0,map_dc->width,map_dc->height);
@@ -48,7 +48,7 @@ U0 DrawHexes()
       x1=x2; y1=y2;
       x2+=DCOS; y2-=DSIN;
       if (j || i<map_cols-1)
-	GrLine(map_dc,x1,y1,x2,y2);
+        GrLine(map_dc,x1,y1,x2,y2);
       x+=dx;
     }
     y+=dy;
@@ -98,9 +98,9 @@ U0 MakeRivers()
       rivers[row][col]=TRUE;
       Toward(&row,&col,direction);
       if (!(0<=row<map_rows && 0<=col<map_cols))
-	break;
+        break;
       if (!(RandU16&3))
-	direction=(direction+(7-RandU16%3))%6;
+        direction=(direction+(7-RandU16%3))%6;
     }
   }
 }
@@ -116,9 +116,9 @@ U0 MakeRoads()
       roads[row][col]=TRUE;
       Toward(&row,&col,direction);
       if (!(0<=row<map_rows && 0<=col<map_cols))
-	break;
+        break;
       if (!(RandU16%3))
-	direction=(direction+(7-RandU16%3))%6;
+        direction=(direction+(7-RandU16%3))%6;
     }
   }
 }
@@ -142,12 +142,12 @@ U0 DrawRivers()
   for (j=0;j<map_rows;j++)
     for (i=0;i<map_cols;i++) {
       if (rivers[j][i]) {
-	RowCol2XY(&x1,&y1,j,i);
-	for (k=0;k<6;k++) {
+        RowCol2XY(&x1,&y1,j,i);
+        for (k=0;k<6;k++) {
 	  r=j;c=i;
 	  Toward(&r,&c,k);
 	  if (0<=r<map_rows && 0<=c<map_cols &&
-		rivers[r][c]) {
+	        rivers[r][c]) {
 	    RowCol2XY(&x2,&y2,r,c);
 	    map_dc->color=LTBLUE;
 	    map_dc->thick=4;
@@ -156,7 +156,7 @@ U0 DrawRivers()
 	    map_dc->thick=2;
 	    GrLine3(map_dc,x1,y1,0,x2,y2,0);
 	  }
-	}
+        }
       }
     }
 }
@@ -170,16 +170,16 @@ U0 DrawRoads()
   for (j=0;j<map_rows;j++)
     for (i=0;i<map_cols;i++) {
       if (roads[j][i]) {
-	RowCol2XY(&x1,&y1,j,i);
-	for (k=0;k<6;k++) {
+        RowCol2XY(&x1,&y1,j,i);
+        for (k=0;k<6;k++) {
 	  r=j;c=i;
 	  Toward(&r,&c,k);
 	  if (0<=r<map_rows && 0<=c<map_cols &&
-		roads[r][c]) {
+	        roads[r][c]) {
 	    RowCol2XY(&x2,&y2,r,c);
 	    GrLine3(map_dc,x1,y1,0,x2,y2,0);
 	  }
-	}
+        }
       }
     }
 }
@@ -204,7 +204,7 @@ U0 HexCentersCalc()
     for (i=0;i<map_cols;i++) {
       x=(2*HEX_SIDE+2*DCOS)*i+HEX_SIDE/2+DCOS;
       if (j&1)
-	x+=HEX_SIDE+DCOS;
+        x+=HEX_SIDE+DCOS;
       y=DSIN*(j+1);
       hex_centers[j][i].x=x;
       hex_centers[j][i].y=y;
@@ -243,33 +243,33 @@ U0 InitUnits()
       tmpu->life=100;
       tmpu->facing=RandU16%6;
       if (!j) {
-	if (i>=UNITS_NUM/2) {
+        if (i>=UNITS_NUM/2) {
 	  if (i>=15*UNITS_NUM/16)
 	    type=UT_ARTILLERY;
 	  else
 	    type=UT_INFANTRY;
-	} else {
+        } else {
 	  if (i>=UNITS_NUM/4)
 	    type=UT_MD_TANK;
 	  else
 	    type=UT_LT_TANK;
-	}
+        }
       } else {
-	if (i>=UNITS_NUM/2) {
+        if (i>=UNITS_NUM/2) {
 	  if (i>=15*UNITS_NUM/16)
 	    type=UT_ARTILLERY;
 	  else
 	    type=UT_INFANTRY;
-	} else {
+        } else {
 	  if (i>=UNITS_NUM/4)
 	    type=UT_MD_TANK;
 	  else
 	    type=UT_LT_TANK;
-	}
+        }
       }
       tmpu->type=type;
       switch (type) {
-	case UT_INFANTRY:
+        case UT_INFANTRY:
 	  tmpu->infantry=TRUE;
 	  tmpu->indirect_fire=FALSE;
 	  tmpu->armor	 =0;
@@ -280,7 +280,7 @@ U0 InitUnits()
 	  tmpu->movement=4;
 	  tmpu->img	 =$IB,"<1>",BI=1$;
 	  break;
-	case UT_ARTILLERY:
+        case UT_ARTILLERY:
 	  tmpu->infantry=TRUE;
 	  tmpu->indirect_fire=TRUE;
 	  tmpu->armor	 =0;
@@ -291,7 +291,7 @@ U0 InitUnits()
 	  tmpu->movement=2;
 	  tmpu->img	 =$IB,"<2>",BI=2$;
 	  break;
-	case UT_LT_TANK:
+        case UT_LT_TANK:
 	  tmpu->infantry=FALSE;
 	  tmpu->indirect_fire=FALSE;
 	  tmpu->armor	 =30;
@@ -302,7 +302,7 @@ U0 InitUnits()
 	  tmpu->movement=24;
 	  tmpu->img	 =$IB,"<3>",BI=3$;
 	  break;
-	case UT_MD_TANK:
+        case UT_MD_TANK:
 	  tmpu->infantry=FALSE;
 	  tmpu->indirect_fire=FALSE;
 	  tmpu->armor	 =60;
@@ -315,9 +315,9 @@ U0 InitUnits()
 	  break;
       }
       do {
-	row=RandU32%map_rows;
-	col=RandU32%(map_cols/3);
-	if (j)
+        row=RandU32%map_rows;
+        col=RandU32%(map_cols/3);
+        if (j)
 	  col+=2*map_cols/3;
       } while (UnitFind(row,col));
       tmpu->row=row;
@@ -408,9 +408,9 @@ U0 PlayerPick(U8 *dirname,I64 player)
   DirTreeDel(tmpde);
   DirTreeDel(tmpde2);
   ExePrint("player_indirect[%d]=&PlayerIndirect;"
-	"player_move[%d]=&PlayerMove;"
-	"player_direct[%d]=&PlayerDirect;",
-	player,player,player);
+        "player_move[%d]=&PlayerMove;"
+        "player_direct[%d]=&PlayerDirect;",
+        player,player,player);
 }
         L         ÿÿÿÿüÿÿÿ          úÿÿÿ      üÿÿÿúÿÿÿþÿÿÿ   
            øÿÿÿ              üÿÿÿüÿÿÿ          

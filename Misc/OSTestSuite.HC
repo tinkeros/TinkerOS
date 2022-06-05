@@ -3,7 +3,7 @@ if (!HashFind("FindTaskByTitle",adam_task->hash_table,HTT_FUN))
   AdamFile("/Adam/Opt/Utils/MakeUtils");
 }
 
-I64 ts_i;
+I64 ts_i,old_silent;
 F64 ts_t0;
 Bool lite=FALSE;
 
@@ -28,7 +28,7 @@ U0 TS(U8 *desc)
            (PROGRESS_DESC_LEN-StrLen(st))>>1,CH_SPACE,st);
   Free(st);
   progress4=ts_i++;
-  progress4_max=173;
+  progress4_max=177;
   progress4_t0=ts_t0;
   *progress4_desc=0;
   RegExe("TempleOS/OSTestSuite");
@@ -119,6 +119,50 @@ U0 DoOnceDemo()
   XTalkWait(task,"#include \"::/Demo/OnceDemo\";\n");
 }
 */
+
+
+U0 DoSudoku()
+{
+  I64 i;
+  CTask *task=User;
+  XTalkWait(task,"#include \"::/Apps/Sudoku/Run\";\n");
+  for (i=0; i<81; i++)
+  {
+    Sleep(50);
+    PostMsgWait(task,MSG_KEY_DOWN_UP,'H',0);
+  }
+  Sleep(1000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_ESC,0);
+  DeathWait(&task,TRUE);
+}
+
+
+U0 DoTDScreenSaver()
+{
+  AdamFile("/Demo/ScreenSavers/TDance.HC.Z");
+  SetScreenSaverTimeout(1);
+  Sleep(10000);
+  AdamFile("/Demo/ScreenSavers/Default.HC.Z");
+  SetScreenSaverTimeout(300);
+}
+
+U0 DoLSScreenSaver()
+{
+  AdamFile("/Demo/ScreenSavers/LineSand.HC.Z");
+  SetScreenSaverTimeout(1);
+  Sleep(8000);
+  AdamFile("/Demo/ScreenSavers/Default.HC.Z");
+  SetScreenSaverTimeout(300);
+}
+$PL,1000$$PL,1000$
+U0 DoNGScreenSaver()
+{
+  AdamFile("/Demo/ScreenSavers/NewGlass.HC.Z");
+  SetScreenSaverTimeout(1);
+  Sleep(8000);
+  AdamFile("/Demo/ScreenSavers/Default.HC.Z");
+  SetScreenSaverTimeout(300);
+}
 $PL,1000$
 U0 DoRandDemo()
 {
@@ -827,7 +871,7 @@ U0 DoPersonalMenu()
     Sleep(100);
     PostMsgWait(task,MSG_KEY_DOWN_UP,0,SC_CURSOR_DOWN);
   }
-  Sleep(1000);
+  Sleep(1000);
   PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SHIFT_ESC,0);
   Sleep(500);
   XTalkWait(task,"DocDel(m);\n");
@@ -943,7 +987,7 @@ U0 DoSpyHunt()
   I64 i,j;
   CTask *task=User;
   XTalkWait(task,"#include \"::/Apps/SpyHunt/Run\";\n");
-  for (i=0; i<10; i++)
+  for (i=0; i<3; i++)
   {
     Sleep(1000);
     PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SPACE,0);
@@ -1664,8 +1708,16 @@ U0 OSTestSuite()
     TS("AfterEgypt");
     DoAfterEgypt;
   }
+  TS("TerryDanceScreenSaver");
+  DoTDScreenSaver;
+  TS("LineSandScreenSaver");
+  DoLSScreenSaver;
+  TS("NewGlassScreenSaver");
+  DoNGScreenSaver;
   TS("Chess");
   DoChess;
+  TS("Sudoku");
+  DoSudoku;
   TS("BlackDiamond");
   DoBlackDiamond;
   TS("Talons");
@@ -2043,6 +2095,17 @@ U0 OSTestSuite()
 }
 
 ms.show=0;
+SetScreenSaverTimeout(300);
 OSTestSuite;
 ms.show=1;
 progress4_max=0;
+old_silent=Silent;
+Del("~/DemoWebLog.DD.Z");
+Del("~/DemoPoemFwd.DD.Z");
+Del("~/DemoUnsortedF64.DD.Z");
+Del("~/DemoUnsortedF64.DATA.Z");
+Del("~/DemoSortedF64.DD.Z");
+Del("~/DemoSortedF64.DATA.Z");
+Del("~/DemoOutPage.html");
+Del("~/DemoOutPage.TXT");
+Silent(old_silent);

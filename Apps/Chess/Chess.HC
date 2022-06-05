@@ -38,7 +38,7 @@ $SP,"bpawn",BI=7$
 
 
 $SP,"bcastle",BI=8$
-
+
 
 
 
@@ -103,9 +103,9 @@ class GameState
   GameState *next,*last,*parent;
   PieceState pieces[32];
   I64 cur_player,
-	mv_num,
-	moved_mask,
-	raw_score;	    //Positive favors player#0
+        mv_num,
+        moved_mask,
+        raw_score;	    //Positive favors player#0
   Bool is_human[2];
   Move potential_en_passant_victim;
 };
@@ -213,7 +213,7 @@ I64 PieceMoves(GameState *state,I64 piece_num,Move *mvs)
   switch [state->pieces[piece_num].type] {
     case P_PAWN:
       if (!state->cur_player) {
-	if (BrdPeek(brd,xx+1,yy)==T_CLR) {
+        if (BrdPeek(brd,xx+1,yy)==T_CLR) {
 	  mvs[res].x=xx+1;
 	  mvs[res].y=yy;
 	  res++;
@@ -222,23 +222,23 @@ I64 PieceMoves(GameState *state,I64 piece_num,Move *mvs)
 	    mvs[res].y=yy;
 	    res++;
 	  }
-	}
-	if (BrdPeek(brd,xx+1,yy-1)==T_PLAYER1 ||
+        }
+        if (BrdPeek(brd,xx+1,yy-1)==T_PLAYER1 ||
 	      state->potential_en_passant_victim.x==xx &&
 	      state->potential_en_passant_victim.y==yy-1) {
 	  mvs[res].x=xx+1;
 	  mvs[res].y=yy-1;
 	  res++;
-	}
-	if (BrdPeek(brd,xx+1,yy+1)==T_PLAYER1 ||
+        }
+        if (BrdPeek(brd,xx+1,yy+1)==T_PLAYER1 ||
 	      state->potential_en_passant_victim.x==xx &&
 	      state->potential_en_passant_victim.y==yy+1) {
 	  mvs[res].x=xx+1;
 	  mvs[res].y=yy+1;
 	  res++;
-	}
+        }
       } else {
-	if (BrdPeek(brd,xx-1,yy)==T_CLR) {
+        if (BrdPeek(brd,xx-1,yy)==T_CLR) {
 	  mvs[res].x=xx-1;
 	  mvs[res].y=yy;
 	  res++;
@@ -247,27 +247,27 @@ I64 PieceMoves(GameState *state,I64 piece_num,Move *mvs)
 	    mvs[res].y=yy;
 	    res++;
 	  }
-	}
-	if (!BrdPeek(brd,xx-1,yy-1) ||
+        }
+        if (!BrdPeek(brd,xx-1,yy-1) ||
 	      state->potential_en_passant_victim.x==xx &&
 	      state->potential_en_passant_victim.y==yy-1) {
 	  mvs[res].x=xx-1;
 	  mvs[res].y=yy-1;
 	  res++;
-	}
-	if (!BrdPeek(brd,xx-1,yy+1) ||
+        }
+        if (!BrdPeek(brd,xx-1,yy+1) ||
 	      state->potential_en_passant_victim.x==xx &&
 	      state->potential_en_passant_victim.y==yy+1) {
 	  mvs[res].x=xx-1;
 	  mvs[res].y=yy+1;
 	  res++;
-	}
+        }
       }
       break;
     case P_ROOK:
       for (j=0;j<4;j++) {
-	x=xx; y=yy;
-	for (i=1;i<8;i++) {
+        x=xx; y=yy;
+        for (i=1;i<8;i++) {
 	  x+=gr_x_offsets2[j];
 	  y+=gr_y_offsets2[j];
 	  k=BrdPeek(brd,x,y);
@@ -279,25 +279,25 @@ I64 PieceMoves(GameState *state,I64 piece_num,Move *mvs)
 	      break;
 	  } else
 	    break;
-	}
+        }
       }
       break;
     case P_KNIGHT:
       for (j=0;j<8;j++) {
-	x=xx+knight_x_offsets[j];
-	y=yy+knight_y_offsets[j];
-	k=BrdPeek(brd,x,y);
-	if (k==T_CLR || k==cur_p->player^1) {
+        x=xx+knight_x_offsets[j];
+        y=yy+knight_y_offsets[j];
+        k=BrdPeek(brd,x,y);
+        if (k==T_CLR || k==cur_p->player^1) {
 	  mvs[res].x=x;
 	  mvs[res].y=y;
 	  res++;
-	}
+        }
       }
       break;
     case P_BISHOP:
       for (j=0;j<4;j++) {
-	x=xx; y=yy;
-	for (i=1;i<8;i++) {
+        x=xx; y=yy;
+        for (i=1;i<8;i++) {
 	  x+=bishop_x_offsets3[j];
 	  y+=bishop_y_offsets3[j];
 	  k=BrdPeek(brd,x,y);
@@ -309,13 +309,13 @@ I64 PieceMoves(GameState *state,I64 piece_num,Move *mvs)
 	      break;
 	  } else
 	    break;
-	}
+        }
       }
       break;
     case P_QUEEN:
       for (j=0;j<8;j++) {
-	x=xx; y=yy;
-	for (i=1;i<8;i++) {
+        x=xx; y=yy;
+        for (i=1;i<8;i++) {
 	  x+=gr_x_offsets[j];
 	  y+=gr_y_offsets[j];
 	  k=BrdPeek(brd,x,y);
@@ -327,58 +327,58 @@ I64 PieceMoves(GameState *state,I64 piece_num,Move *mvs)
 	      break;
 	  } else
 	    break;
-	}
+        }
       }
       break;
     case P_KING:
       for (j=0;j<8;j++) {
-	x=xx+gr_x_offsets[j];
-	y=yy+gr_y_offsets[j];
-	k=BrdPeek(brd,x,y);
-	if (k==T_CLR || k==cur_p->player^1) {
+        x=xx+gr_x_offsets[j];
+        y=yy+gr_y_offsets[j];
+        k=BrdPeek(brd,x,y);
+        if (k==T_CLR || k==cur_p->player^1) {
 	  mvs[res].x=x;
 	  mvs[res].y=y;
 	  res++;
-	}
+        }
       }
       if (!Bt(&state->moved_mask,piece_num)) {
-	if (!state->cur_player) {
+        if (!state->cur_player) {
 	  if (state->pieces[0].player>=0 &&
-		!Bt(&state->moved_mask,0) &&
-		BrdPeek(brd,0,1)==T_CLR &&
-		BrdPeek(brd,0,2)==T_CLR &&
-		BrdPeek(brd,0,3)==T_CLR) {
+	        !Bt(&state->moved_mask,0) &&
+	        BrdPeek(brd,0,1)==T_CLR &&
+	        BrdPeek(brd,0,2)==T_CLR &&
+	        BrdPeek(brd,0,3)==T_CLR) {
 	    mvs[res].x=0;
 	    mvs[res].y=2;
 	    res++;
 	  }
 	  if (state->pieces[7].player>=0 &&
-		!Bt(&state->moved_mask,7) &&
-		BrdPeek(brd,0,6)==T_CLR &&
-		BrdPeek(brd,0,5)==T_CLR) {
+	        !Bt(&state->moved_mask,7) &&
+	        BrdPeek(brd,0,6)==T_CLR &&
+	        BrdPeek(brd,0,5)==T_CLR) {
 	    mvs[res].x=0;
 	    mvs[res].y=6;
 	    res++;
 	  }
-	} else {
+        } else {
 	  if (state->pieces[24].player>=0 &&
-		!Bt(&state->moved_mask,24) &&
-		BrdPeek(brd,7,1)==T_CLR &&
-		BrdPeek(brd,7,2)==T_CLR &&
-		BrdPeek(brd,7,3)==T_CLR) {
+	        !Bt(&state->moved_mask,24) &&
+	        BrdPeek(brd,7,1)==T_CLR &&
+	        BrdPeek(brd,7,2)==T_CLR &&
+	        BrdPeek(brd,7,3)==T_CLR) {
 	    mvs[res].x=7;
 	    mvs[res].y=2;
 	    res++;
 	  }
 	  if (state->pieces[31].player>=0 &&
-		!Bt(&state->moved_mask,31) &&
-		BrdPeek(brd,7,6)==T_CLR &&
-		BrdPeek(brd,7,5)==T_CLR) {
+	        !Bt(&state->moved_mask,31) &&
+	        BrdPeek(brd,7,6)==T_CLR &&
+	        BrdPeek(brd,7,5)==T_CLR) {
 	    mvs[res].x=7;
 	    mvs[res].y=6;
 	    res++;
 	  }
-	}
+        }
       }
       break;
   }
@@ -395,7 +395,7 @@ Bool SqrInChk(GameState *state,I64 x,I64 y)
     if (state->pieces[i].player==state->cur_player) {
       mv_cnt=PieceMoves(state,i,mvs);
       for (j=0;j<mv_cnt;j++)
-	if (mvs[j].x==x && mvs[j].y==y)
+        if (mvs[j].x==x && mvs[j].y==y)
 	  return TRUE;
     }
   return FALSE;
@@ -465,14 +465,14 @@ Bool MoveDo(GameState *state,I64 piece_num,I64 x2,I64 y2,Bool final)
   } else if (p->type==P_KING && AbsI64(y1-y2)==2) { //castling?
     if (!state->cur_player) {
       if (y2-y1<0)
-	state->pieces[6].y=y2+1;
+        state->pieces[6].y=y2+1;
       else
-	state->pieces[7].y=y2-1;
+        state->pieces[7].y=y2-1;
     } else {
       if (y2-y1<0)
-	state->pieces[22].y=y2+1;
+        state->pieces[22].y=y2+1;
       else
-	state->pieces[23].y=y2-1;
+        state->pieces[23].y=y2-1;
     }
   }
   p->x=x2;
@@ -496,9 +496,9 @@ Bool MoveDo(GameState *state,I64 piece_num,I64 x2,I64 y2,Bool final)
 	  y1+'A',x1+'1',y2+'A',x2+'1');
     if (ty>=0) {
       if (state->cur_player)
-	DocPrint(chess_doc,"$$FG$$*$$FG,BLACK$$");
+        DocPrint(chess_doc,"$$FG$$*$$FG,BLACK$$");
       else
-	DocPrint(chess_doc,"$$FG$$*$$FG,LTGRAY$$");
+        DocPrint(chess_doc,"$$FG$$*$$FG,LTGRAY$$");
       DocPrint(chess_doc,"%c",piece_letters[ty]);
     }
     DocPrint(chess_doc,"$$FG$$\n");
@@ -547,7 +547,7 @@ I64 ChkPieceMoves(GameState *state,I64 piece_num,Move *src,I64 mv_cnt)
     tmpg=cur_state.next;
     while (tmpg!=&cur_state) {
       if (!MemCmp(tmpg->pieces,state2.pieces,sizeof(PieceState)*32))
-	goto cm_skip;
+        goto cm_skip;
       tmpg=tmpg->next;
     }
 
@@ -557,7 +557,7 @@ I64 ChkPieceMoves(GameState *state,I64 piece_num,Move *src,I64 mv_cnt)
       dy=y-state->pieces[k].y;
       if (AbsI64(dy)==2 && //castling?
 	    (SqrInChk(&state2,x,y-dy) || SqrInChk(&state2,x,y-SignI64(dy))))
-	goto cm_skip; // This really needs to go into PieceMoves
+        goto cm_skip; // This really needs to go into PieceMoves
     } else {
       x=state->pieces[k].x;
       y=state->pieces[k].y;
@@ -616,42 +616,42 @@ U0 DrawIt(CTask *task,CDC *dc)
   dc->color=LTRED;
   dc->thick=2;
   GrBorder(dc,(cursor_x-4)*g+2,(cursor_y-4)*g+2,
-	(cursor_x-3)*g-1,(cursor_y-3)*g-1);
+        (cursor_x-3)*g-1,(cursor_y-3)*g-1);
 
   DCDepthBufAlloc(dc);
   k0=k1=0;
   for (i=0;i<32;i++,s++) {
     if (s->player>=0) { //Alive?
       if (s->x!=last_mv.x || s->y!=last_mv.y || Blink) {
-	x=g/2+(s->x-4)*g;
-	y=g/2+(s->y-4)*g;
-	z=0;
-	DCTransform(dc,&x,&y,&z);
-	z=GR_Z_ALL+s->x-s->y;
+        x=g/2+(s->x-4)*g;
+        y=g/2+(s->y-4)*g;
+        z=0;
+        DCTransform(dc,&x,&y,&z);
+        z=GR_Z_ALL+s->x-s->y;
 
-	dc->flags&=~DCF_TRANSFORMATION;
-	Sprite3(dc,x,y,z,imgs[s->type*2+s->player]);
-	dc->flags|=DCF_TRANSFORMATION;
+        dc->flags&=~DCF_TRANSFORMATION;
+        Sprite3(dc,x,y,z,imgs[s->type*2+s->player]);
+        dc->flags|=DCF_TRANSFORMATION;
       }
     } else { //Dead
       if (s->player==-2) {
-	if (k1<8) {
+        if (k1<8) {
 	  x=cx+100+k1++*g/2;
 	  y=cy-180;
-	} else {
+        } else {
 	  x=cx+100+(k1++-8)*g/2;
 	  y=cy-130;
-	}
-	z=0;
+        }
+        z=0;
       } else {
-	if (k0<8) {
+        if (k0<8) {
 	  x=cx+100+k0++*g/2;
 	  y=cy+220;
-	} else {
+        } else {
 	  x=cx+100+(k0++-8)*g/2;
 	  y=cy+170;
-	}
-	z=0;
+        }
+        z=0;
       }
       dc->flags&=~DCF_TRANSFORMATION;
       Sprite3(dc,x,y,z,imgs[s->type*2+s->player+2]);
@@ -713,9 +713,9 @@ CDC *BrdNew()
   for (j=-4;j<4;j++) {
     for (i=-4;i<4;i++) {
       if ((i+j)&1)
-	dc->color=WHITE;
+        dc->color=WHITE;
       else
-	dc->color=DKGRAY;
+        dc->color=DKGRAY;
       GrFloodFill3(dc,i*g+g/2,j*g+g/2,0);
     }
     if (j&1)
@@ -746,7 +746,7 @@ I64 move_depth,kill_depth;
 I64 AIMove2(GameState *state,I64 depth)
 {
   I64 i,possible_moves=0,best_piece,score,
-	best_score=I64_MIN,mv_cnt,score_adjust;
+        best_score=I64_MIN,mv_cnt,score_adjust;
   Move best_mv,mvs[32],*ptr;
   GameState state2;
   Bool first=TRUE;
@@ -762,23 +762,23 @@ I64 AIMove2(GameState *state,I64 depth)
       possible_moves+=mv_cnt;
       ptr=mvs;
       while (mv_cnt--) {
-	MemCpy(&state2,state,sizeof(GameState));
-	state2.parent=state;
-	if (MoveDo(&state2,i,ptr->x,ptr->y,FALSE)&&depth<kill_depth ||
+        MemCpy(&state2,state,sizeof(GameState));
+        state2.parent=state;
+        if (MoveDo(&state2,i,ptr->x,ptr->y,FALSE)&&depth<kill_depth ||
 	      depth<move_depth)
 	  score=-AIMove2(&state2,depth+1);
-	else {
+        else {
 	  score=AIStateScore(&state2,state->cur_player);
 	  if (score_adjust=AbsI64(state2.raw_score-state->raw_score))
 	    score+=score_adjust-piece_scores[state->pieces[i].type];
-	}
-	if (first || score>best_score) {
+        }
+        if (first || score>best_score) {
 	  best_score=score;
 	  best_piece=i;
 	  MemCpy(&best_mv,ptr,sizeof(Move));
 	  first=FALSE;
-	}
-	ptr++;
+        }
+        ptr++;
       }
     }
   if (!first)
@@ -824,10 +824,10 @@ U0 AIMove(GameState *state)
     ptr=ptr2=MAlloc(cnt*sizeof(Move));
     for (i=0;i<32;i++)
       if (state->pieces[i].player==state->cur_player) {
-	mv_cnt=PieceMoves(state,i,mvs);
-	mv_cnt=ChkPieceMoves(state,i,mvs,mv_cnt);
-	MemCpy(ptr,mvs,mv_cnt*sizeof(Move));
-	ptr+=mv_cnt;
+        mv_cnt=PieceMoves(state,i,mvs);
+        mv_cnt=ChkPieceMoves(state,i,mvs,mv_cnt);
+        MemCpy(ptr,mvs,mv_cnt*sizeof(Move));
+        ptr+=mv_cnt;
       }
 
       //Dispatch to MP scoring all moves
@@ -847,7 +847,7 @@ U0 AIMove(GameState *state)
     //Wait for finish
     for (i=0,ptr=ptr2;i<cnt;i++,ptr++)
       while (ptr->score==-I32_MAX)
-	Yield;
+        Yield;
     QSort(ptr2,cnt,sizeof(Move),&MoveCmp);
 
     //Cnt ties for first
@@ -893,8 +893,8 @@ U0 CleanUp()
 U0 SetMouseCursor()
 {
   I64 x=(cursor_x-4)*g+g/2,
-	y=(cursor_y-4)*g+g/2,
-	z=0;
+        y=(cursor_y-4)*g+g/2,
+        z=0;
   Mat4x4MulXYZ(w2s,&x,&y,&z);
   x+=cx+Fs->pix_left+Fs->scroll_x;
   y+=cy+Fs->pix_top +Fs->scroll_y;
@@ -924,14 +924,14 @@ U0 Chess()
   Init;
 
   MenuPush(
-	"File {"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Play {"
-	"  Move(,CH_SPACE);"
-	"  Restart(,'\n');"
-	"}");
+        "File {"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Play {"
+        "  Move(,CH_SPACE);"
+        "  Restart(,'\n');"
+        "}");
 
 
   Fs->win_inhibit=WIG_TASK_DFT
@@ -962,7 +962,7 @@ U0 Chess()
     while (TRUE) {
       switch (ScanMsg(&arg1,&arg2,1<<MSG_KEY_DOWN+1<<MSG_KEY_UP
 	    +1<<MSG_MS_L_DOWN+1<<MSG_MS_L_UP+1<<MSG_MS_MOVE)) {
-	case 0:
+        case 0:
 	  if (!game_over && !cur_state.is_human[cur_state.cur_player]) {
 	    ai_thinking=TRUE;
 	    AIMove(&cur_state);
@@ -971,10 +971,10 @@ U0 Chess()
 	  }
 	  Refresh;
 	  break;
-	case MSG_MS_MOVE:
+        case MSG_MS_MOVE:
 	  SetKbdCursor(arg1,arg2);
 	  break;
-	case MSG_MS_L_DOWN:
+        case MSG_MS_L_DOWN:
 	  SetKbdCursor(arg1,arg2);
 ch_mv_start:
 	  if (!game_over && cur_state.is_human[cur_state.cur_player]) {
@@ -986,7 +986,7 @@ ch_mv_start:
 	      cur_mv_cnt=0;
 	  }
 	  break;
-	case MSG_MS_L_UP:
+        case MSG_MS_L_UP:
 	  SetKbdCursor(arg1,arg2);
 ch_mv_end:
 	  if (!game_over && cur_state.is_human[cur_state.cur_player]) {
@@ -1002,11 +1002,11 @@ ch_mv_end:
 	    }
 	  }
 	  break;
-	case MSG_KEY_UP:
+        case MSG_KEY_UP:
 	  if (arg1==CH_SPACE)
 	    goto ch_mv_end;
 	  break;
-	case MSG_KEY_DOWN:
+        case MSG_KEY_DOWN:
 	  switch (arg1) {
 	    case '\n':
 	      CleanUp;
@@ -1019,19 +1019,19 @@ ch_mv_end:
 	      goto ch_mv_start;
 	    case 0:
 	      switch (arg2.u8[0]) {
-		case SC_CURSOR_RIGHT:
+	        case SC_CURSOR_RIGHT:
 		  cursor_y=ClampI64(cursor_y+1,0,7);
 		  SetMouseCursor;
 		  break;
-		case SC_CURSOR_LEFT:
+	        case SC_CURSOR_LEFT:
 		  cursor_y=ClampI64(cursor_y-1,0,7);
 		  SetMouseCursor;
 		  break;
-		case SC_CURSOR_DOWN:
+	        case SC_CURSOR_DOWN:
 		  cursor_x=ClampI64(cursor_x-1,0,7);
 		  SetMouseCursor;
 		  break;
-		case SC_CURSOR_UP:
+	        case SC_CURSOR_UP:
 		  cursor_x=ClampI64(cursor_x+1,0,7);
 		  SetMouseCursor;
 		  break;

@@ -76,7 +76,7 @@ class CRandHex5Form
 {
   I64	timestamp;
   U8	rnd0[512]	format "$$DA-P-TRM,LEN=5,"
-	"A=\"Line (5-Digit Hex):%5s\"$$\n";
+        "A=\"Line (5-Digit Hex):%5s\"$$\n";
   U8	rnd1[512];
   U8	rnd2[512];
   U8	rnd3[512];
@@ -95,7 +95,7 @@ class CRandHex8Form
 {
   I64	timestamp;
   U8	rnd0[512]	format "$$DA-P-TRM,LEN=8,"
-	"A=\"Line (8-Digit Hex):%8s\"$$\n";
+        "A=\"Line (8-Digit Hex):%8s\"$$\n";
   U8	rnd1[512];
   U8	rnd2[512];
   U8	rnd3[512];
@@ -114,7 +114,7 @@ class CMoviesForm
 {
   I64	timestamp;
   U8	rnd0[512]	format "$$DA-P,"
-	"A=\"Movie#1-100 (2 Decimal Digits from Hex):%s\"$$\n";
+        "A=\"Movie#1-100 (2 Decimal Digits from Hex):%s\"$$\n";
   U8	rnd1[512];
   U8	rnd2[512];
   U8	rnd3[512];
@@ -133,7 +133,7 @@ class CPaintings100Form
 {
   I64	timestamp;
   U8	rnd0[512]	format "$$DA-P,"
-	"A=\"Painting#00-99 (2 Decimal Digits from Hex):%s\"$$\n";
+        "A=\"Painting#00-99 (2 Decimal Digits from Hex):%s\"$$\n";
   U8	rnd1[512];
   U8	rnd2[512];
   U8	rnd3[512];
@@ -152,7 +152,7 @@ class CPaintings1000Form
 {
   I64	timestamp;
   U8	rnd0[512]	format "$$DA-P,"
-	"A=\"Painting#000-999 (3 Decimal Digits from Hex):%s\"$$\n";
+        "A=\"Painting#000-999 (3 Decimal Digits from Hex):%s\"$$\n";
   U8	rnd1[512];
   U8	rnd2[512];
   U8	rnd3[512];
@@ -171,7 +171,7 @@ class CPoems100Form
 {
   I64	timestamp;
   U8	rnd0[512]	format "$$DA-P,"
-	"A=\"Poems#00-99 (2 Decimal Digits from Hex):%s\"$$\n";
+        "A=\"Poems#00-99 (2 Decimal Digits from Hex):%s\"$$\n";
   U8	rnd1[512];
   U8	rnd2[512];
   U8	rnd3[512];
@@ -190,7 +190,7 @@ class CMetallicaForm
 {
   I64	timestamp;
   U8	rnd0[512]	format "$$DA-P,"
-	"A=\"Song#1-99 (2 Decimal Digits from Hex):%s\"$$\n";
+        "A=\"Song#1-99 (2 Decimal Digits from Hex):%s\"$$\n";
   U8	rnd1[512];
   U8	rnd2[512];
   U8	rnd3[512];
@@ -280,7 +280,7 @@ class CFamilyPhotoForm
   I64	part		format	"$$DA,A=\"Part:%d\"$$\n";
   U8	picture[STR_LEN] format	"$$DA-P,A=\"Picture:%s\"$$\n";
   I64	width		format	"$$GREEN$$640x427 or 640x960$$FG$$\n"
-				"$$DA,A=\"Width:%d\"$$\n";
+        "$$DA,A=\"Width:%d\"$$\n";
   I64	height		format	"$$DA,A=\"Height:%d\"$$\n";
 };
 

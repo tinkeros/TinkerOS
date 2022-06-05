@@ -14,66 +14,66 @@ class Man
 class ManDefineStruct
 {
   F64 head_rad	 format
-	"$$DA-TRM,A=\"Head Radius:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"Head Radius:%8.3f\"$$\n";
 
   F64 torso_len  format
-	"$$DA-TRM,A=\"Torso Length:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"Torso Length:%8.3f\"$$\n";
   F64 arm_len	 format
-	"$$DA-TRM,A=\"Arm Length:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"Arm Length:%8.3f\"$$\n";
   F64 hand_len	 format
-	"$$DA-TRM,A=\"Hand Length:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"Hand Length:%8.3f\"$$\n";
   F64 leg_len	 format
-	"$$DA-TRM,A=\"Leg Length:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"Leg Length:%8.3f\"$$\n";
   F64 foot_len	 format
-	"$$DA-TRM,A=\"Foot Length:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"Foot Length:%8.3f\"$$\n";
   F64 torso_width format
-	"$$DA-TRM,A=\"Torso Width:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"Torso Width:%8.3f\"$$\n";
   F64 torso_depth format
-	"$$DA-TRM,A=\"Torso Depth:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"Torso Depth:%8.3f\"$$\n";
   F64 arm_rad	 format
-	"$$DA-TRM,A=\"Arm Radius:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"Arm Radius:%8.3f\"$$\n";
   F64 hand_rad	 format
-	"$$DA-TRM,A=\"Hand Radius:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"Hand Radius:%8.3f\"$$\n";
   F64 leg_rad	 format
-	"$$DA-TRM,A=\"Leg Radius:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"Leg Radius:%8.3f\"$$\n";
   F64 foot_rad	 format
-	"$$DA-TRM,A=\"Foot Radius:%8.3f\"$$\n\n";
+        "$$DA-TRM,A=\"Foot Radius:%8.3f\"$$\n\n";
 
   F64 r_shoulder_a1	 format
-	"$$DA-TRM,A=\"R.ShoulderFront/BackAngle:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"R.ShoulderFront/BackAngle:%8.3f\"$$\n";
   F64 l_shoulder_a1	 format
-	"$$DA-TRM,A=\"L.ShoulderFront/BackAngle:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"L.ShoulderFront/BackAngle:%8.3f\"$$\n";
   F64 r_hip_a1	 format
-	"$$DA-TRM,A=\"R.HipFront/BackAngle:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"R.HipFront/BackAngle:%8.3f\"$$\n";
   F64 l_hip_a1	 format
-	"$$DA-TRM,A=\"L.HipFront/BackAngle:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"L.HipFront/BackAngle:%8.3f\"$$\n";
 
   F64 r_shoulder_a2	 format
-	"$$DA-TRM,A=\"R.ShoulderSideAngle:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"R.ShoulderSideAngle:%8.3f\"$$\n";
   F64 l_shoulder_a2	 format
-	"$$DA-TRM,A=\"L.ShoulderSideAngle:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"L.ShoulderSideAngle:%8.3f\"$$\n";
   F64 r_hip_a2	 format
-	"$$DA-TRM,A=\"R.HipSideAngle:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"R.HipSideAngle:%8.3f\"$$\n";
   F64 l_hip_a2	 format
-	"$$DA-TRM,A=\"L.HipSideAngle:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"L.HipSideAngle:%8.3f\"$$\n";
 
   F64 r_elbow_a	 format
-	"$$DA-TRM,A=\"R.ElbowAngle:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"R.ElbowAngle:%8.3f\"$$\n";
   F64 l_elbow_a	 format
-	"$$DA-TRM,A=\"L.ElbowAngle:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"L.ElbowAngle:%8.3f\"$$\n";
   F64 r_knee_a	 format
-	"$$DA-TRM,A=\"R.KneeAngle:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"R.KneeAngle:%8.3f\"$$\n";
   F64 l_knee_a	 format
-	"$$DA-TRM,A=\"L.KneeAngle:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"L.KneeAngle:%8.3f\"$$\n";
 
   F64 r_wrist_a	 format
-	"$$DA-TRM,A=\"R.WristAngle:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"R.WristAngle:%8.3f\"$$\n";
   F64 l_wrist_a	 format
-	"$$DA-TRM,A=\"L.WristAngle:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"L.WristAngle:%8.3f\"$$\n";
   F64 r_ankle_a	 format
-	"$$DA-TRM,A=\"R.AnkleAngle:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"R.AnkleAngle:%8.3f\"$$\n";
   F64 l_ankle_a	 format
-	"$$DA-TRM,A=\"L.AnkleAngle:%8.3f\"$$\n";
+        "$$DA-TRM,A=\"L.AnkleAngle:%8.3f\"$$\n";
 
 };
 
@@ -167,7 +167,7 @@ U0 AddBox(ManDefineStruct *md,I64 c,I64 x1,I64 y1,I64 z1,
   I64 p1a,p2a,p3a,p4a;
   I64 p1b,p2b,p3b,p4b;
   I64 wx=w/2,wy=0,wz=0,hx=0,hy=h,hz=0,h2x=0,h2y=h2,h2z=0,
-	h3x=0,h3y=h3,h3z=0,dx=0,dy=0,dz=d/2;
+        h3x=0,h3y=h3,h3z=0,dx=0,dy=0,dz=d/2;
 
   r=Mat4x4IdentNew;
   Mat4x4RotZ(r,az*ã/180.0);
@@ -213,9 +213,9 @@ U8 *Man2CSprite()
 {
 //See $LK,"::/Adam/Gr/GrSpritePlot.HC",A="FL:::/Adam/Gr/GrSpritePlot.HC,1"$ for how CSprite are stored.
   U8 *res=MAlloc(sizeof(CSpriteMeshU8s)+
-	m->vertex_cnt*sizeof(CD3I32)+m->tri_cnt*sizeof(CMeshTri)+
-	sprite_elem_base_sizes[SPT_END]),
-	*dst=res;
+        m->vertex_cnt*sizeof(CD3I32)+m->tri_cnt*sizeof(CMeshTri)+
+        sprite_elem_base_sizes[SPT_END]),
+        *dst=res;
   *dst++ =SPT_MESH;
   *dst(I32 *)++ =m->vertex_cnt;
   *dst(I32 *)++ =m->tri_cnt;

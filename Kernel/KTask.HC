@@ -520,7 +520,7 @@ I64 TaskEnd()
     if (fp_set_std_palette)
       (*fp_set_std_palette)();
   }
-  //QueRem
+//QueRem
   task->task_signature(I64)=0;
   tmpt =task->next_input_filter_task;
   tmpt1=task->last_input_filter_task;

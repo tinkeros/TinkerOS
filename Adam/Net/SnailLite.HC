@@ -1,11 +1,29 @@
+#define CMD_SOCKET        1
+#define CMD_CLOSE         2
+#define CMD_CONNECT_TCP   3
+#define CMD_SEND          4
+#define CMD_RECV          5
+#define CMD_HELLO         0xAA
+
+#define SOCK_STREAM 1
+#define SOCK_DGRAM  2
+#define SOCK_RAW    3
+
+#define AF_UNSPEC   0
+#define AF_INET     2
+#define AF_INET6    10
+
+#define SNAIL_TIMEOUT     500
+#define SNAIL_FRAME_SIZE  112
+
+
+
 // starting at 6 since SnailLib uses < 6
 #define CMD_FILE_RECV     6
 #define CMD_FILE_SEND     7
-#define CMD_HELLO         0xAA
 
-#define SNAIL_COM         1
-#define SNAIL_TIMEOUT     500
-#define SNAIL_FRAME_SIZE  112
+
+public U8 SNAIL_COM=0;
 
 static U8 ReadByte()
 {
@@ -45,6 +63,7 @@ static U0 ReadBlock(U8* buf, I64 count)
   }
 }
 
+
 I64 SocketInit()
 {
   U8 chr;
@@ -78,3 +97,115 @@ I64 SocketInit()
   throw;
 }
 
+#define CMD_ID 8
+
+public U0 ProbeComm()
+{
+  I64 i,j;
+  U8 tmp_buf[17], tmp_byte;
+  MemSet(tmp_buf,0,17);
+  for (i=1; i<=MAX_COMM_NUM; i++)
+  {
+    if (comm_ports[i].base)
+    {
+      "Checking COMM %d - ",i;
+      CommInit8n1(i, 115200);
+      CommPutChar(i,0xAA);
+      Sleep(1);
+      if (CommGetCharNoWait(i,&tmp_byte))
+      {
+        if (tmp_byte==0xAA)
+        {
+          CommPutChar(i,CMD_ID);
+          Sleep(200);
+          for (j=0; j<16; j++)
+          {
+            Sleep(5);
+            if (CommGetCharNoWait(i,&tmp_byte))
+            {
+              tmp_buf[j]=tmp_byte;
+            }
+          }
+          if (!StrCmp("TOSSERVER",tmp_buf))
+          {
+            "Found TOS Server on COMM %d\n",i;
+            SNAIL_COM=i;
+            goto probe_end;
+          }
+        }
+      }
+    }
+    " No device detected!\n";
+  }
+probe_end:
+}
+
+// TODO add this back when adding network support
+// TODO disable other net functions below when real
+// net is available also!
+/*
+if (!HashFind("SocketInit",adam_task->hash_table,HTT_FUN))
+{
+ 
+ Adam("I64 SocketInit(){if (SNAIL_COM>0) SocketInitComm;}\n");
+}
+*/
+
+I64 socket(I64 domain, I64 type)
+{
+  CommPutChar(SNAIL_COM, CMD_SOCKET);
+  CommPutChar(SNAIL_COM, domain);
+  CommPutChar(SNAIL_COM, type);
+  return ReadI8();
+}
+
+I64 close(I64 sockfd)
+{
+  CommPutChar(SNAIL_COM, CMD_CLOSE);
+  CommPutChar(SNAIL_COM, sockfd);
+  return ReadI8();
+}
+
+I64 create_connection(U8* addr, U16 port)
+{
+  I64 sockfd = socket(AF_INET, SOCK_STREAM);
+  if (sockfd < 0)
+    return sockfd;
+  CommPutChar(SNAIL_COM, CMD_CONNECT_TCP);
+  CommPutChar(SNAIL_COM, sockfd);
+  CommPutChar(SNAIL_COM, StrLen(addr));
+  CommPutS(SNAIL_COM, addr);
+  CommPutChar(SNAIL_COM, port & 0xff);
+  CommPutChar(SNAIL_COM, port >> 8);
+  I64 error = ReadI8();
+  if (error < 0)
+  {
+    close(sockfd);
+    return error;
+  }
+  return sockfd;
+}
+
+I64 recv(I64 sockfd, U8* buf, I64 len, I64 flags)
+{// This will be problematic for UDP
+  if (len > SNAIL_FRAME_SIZE)
+    len = SNAIL_FRAME_SIZE;
+  CommPutChar(SNAIL_COM, CMD_RECV);
+  CommPutChar(SNAIL_COM, sockfd);
+  CommPutChar(SNAIL_COM, len);
+  CommPutChar(SNAIL_COM, flags);
+  I64 got = ReadI8();
+  if (got > 0)
+    ReadBlock(buf, got);
+  return got;
+}
+
+I64 send(I64 sockfd, U8* buf, I64 len, I64 flags)
+{// FIXME: use frames
+  CommPutChar(SNAIL_COM, CMD_SEND);
+  CommPutChar(SNAIL_COM, sockfd);
+  CommPutChar(SNAIL_COM, len);
+  CommPutChar(SNAIL_COM, flags);
+  CommPutBlk(SNAIL_COM, buf, len);
+  return ReadI8();
+}

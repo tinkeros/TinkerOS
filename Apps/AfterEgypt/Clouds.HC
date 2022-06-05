@@ -46,7 +46,7 @@ U0 MPDrawClouds(CTask *task)
   I64 i,j,k,xx,yy,lo=Gs->num*CLOUD_PTS/mp_cnt,hi=(Gs->num+1)*CLOUD_PTS/mp_cnt;
   for (j=0,c=clouds; j<CLOUDS_NUM; j++,c++)
     for (i=lo; i<hi; i++)
-    {
+      {
       k=c->pc[i];
       if (k<c->color)
         dc->color=ROP_MONO+LTGRAY;
@@ -85,21 +85,21 @@ U0 AnimateTask(I64)
   Cloud *c;
   CloudPen *cp;
   while (TRUE)
-  {
+    {
     Refresh;
     for (i=0,cp=cloud_pens; i<CLOUD_PENS; i++,cp++)
-    {
+      {
       DCClear(cp->img);
       cp->img->color=COLOR_MONO;
       for (j=0; j<CLOUD_PEN_PTS; j++)
-      {
+        {
         GrPlot(cp->img,cp->px[j],cp->py[j]);
         cp->px[j]=ClampI64(cp->px[j]+RandU16%3-1,0,CLOUD_PEN_SIZE-1);
         cp->py[j]=ClampI64(cp->py[j]+RandU16%3-1,0,CLOUD_PEN_SIZE-1);
       }
     }
     for (i=0,c=clouds; i<CLOUDS_NUM; i++,c++)
-    {
+      {
       c->x+=c->dx;
       c->y=ClampI64(c->y+c->dy,0,0.7*(SKY_LINES*FONT_HEIGHT)<<32);
       c->color=U16_MAX*c->y.i32[1]/(0.8*(SKY_LINES*FONT_HEIGHT));
@@ -114,10 +114,10 @@ U0 Init()
   Cloud *c=clouds;
   CloudPen *cp=cloud_pens;
   I64 i,j,k,l,
-      w=Fs->pix_width,
-      h=SKY_LINES*FONT_HEIGHT;
+        w=Fs->pix_width,
+        h=SKY_LINES*FONT_HEIGHT;
   for (i=0; i<CLOUDS_NUM; i++,c++)
-  {
+    {
     c->x=ToI64(w/2+Rand*w/2-w/4)<<32;
     c->y=ToI64(h/2+Rand*h/2-h/4)<<32;
     c->dx=RandI32;
@@ -126,7 +126,7 @@ U0 Init()
     c->h=50;
     c->color=RandU16;
     for (l=0; l<CLOUD_PTS; l++)
-    {
+      {
       k=0;
       for (j=0; j<SAMPLES; j++)
         k+=RandI16;
@@ -139,10 +139,10 @@ U0 Init()
     }
   }
   for (i=0; i<CLOUD_PENS; i++,cp++)
-  {
+    {
     cp->img=DCNew(CLOUD_PEN_SIZE,CLOUD_PEN_SIZE);
     for (j=0; j<CLOUD_PEN_PTS; j++)
-    {
+      {
       cp->px[j]=RandU16%CLOUD_PEN_SIZE;
       cp->py[j]=RandU16%CLOUD_PEN_SIZE;
     }
@@ -164,7 +164,7 @@ U0 SongTask(I64)
   Fs->task_end_cb=&SndTaskEndCB;
   MusicSettingsRst;
   while (TRUE)
-  {
+    {
     Play("4qB5etD4AG5qD4sG5E4G5EetCEDqFEeDC");
     Play("4qB5etD4AG5qD4sG5E4G5EetCEDqFEeDC");
     Play("5CGqD4eA5DsDCDCqGEetD4A5D4sG5D4G5D");
@@ -176,7 +176,7 @@ U0 CloudScene()
 {
   SettingsPush; //See $LK,"SettingsPush",A="MN:SettingsPush"$
   try
-  {
+    {
     Fs->text_attr=YELLOW<<4+BLUE;
     Fs->song_task=Spawn(&SongTask,NULL,"Song",,Fs);
     AutoComplete;
@@ -187,9 +187,9 @@ U0 CloudScene()
     Init;
     Fs->animate_task=Spawn(&AnimateTask,NULL,"Animate",,Fs);
     "$$BG,LTCYAN$$%h*c"
-    ,SKY_LINES,'\n';
+	  ,SKY_LINES,'\n';
     "$$BG,YELLOW$$%h5c"
-    ,'\n';
+	  ,'\n';
     BibleVerse(,"Exodus,14:19",7);
     Fs->draw_it=&DrawIt;
     GetChar;

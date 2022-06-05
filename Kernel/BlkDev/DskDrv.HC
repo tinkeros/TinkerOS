@@ -208,8 +208,10 @@ I64 Let2BlkDevType(U8 drv_let)
     return BDT_ISO_FILE_READ;
   if ('Q'<=drv_let<='S')
     return BDT_ISO_FILE_WRITE;
-  if ('T'<=drv_let<='Z')
+  if ('T'<=drv_let<='W')
     return BDT_ATAPI;
+  if ('X'<=drv_let<='Z')
+    return BDT_VIRTUAL;
   return BDT_NULL;
 }
 
@@ -331,7 +333,7 @@ Bool Drv(U8 drv_let)
   }
 }
 
-U8 blkdev_text_attr[BDT_TYPES_NUM]= {BLACK,LTCYAN,WHITE,LTGREEN,LTRED,LTBLUE,WHITE,LTBLUE,LTPURPLE};
+U8 blkdev_text_attr[BDT_TYPES_NUM]= {BLACK,LTCYAN,WHITE,LTGREEN,LTRED,LTBLUE,WHITE,LTBLUE,LTPURPLE,LTPURPLE,LTPURPLE};
 U8 drv_text_attr[3]= {BLACK,BLUE,RED};
 
 U8 DrvTextAttrGet(U8 drv_let=0)
@@ -403,7 +405,13 @@ U0 DrvRep()
         "Serial#:%s\n",st;
         Free(st);
       }
-      if (bd->type==BDT_ISO_FILE_READ || bd->type==BDT_ISO_FILE_WRITE)
+      if (bd->type==BDT_OTHER)
+        "^_^_^_Other block device\n";
+      else if (bd->type==BDT_SERIAL)
+        "^_^_^_Serial block device %04X\n",bd->base0;
+      else if (bd->type==BDT_VIRTUAL)
+        "^_^_^_Virtual block device\n";
+      else if (bd->type==BDT_ISO_FILE_READ || bd->type==BDT_ISO_FILE_WRITE)
         "File=\"%s\"\n",bd->file_dsk_name;
       "%016X-%016X\n$$FG$$$$BG$$"
       ,dv->drv_offset,dv->drv_offset+dv->size-1;

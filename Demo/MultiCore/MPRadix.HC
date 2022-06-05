@@ -28,34 +28,34 @@ U0 QSortU32(I32 *base,I64 num)
       greater=base+num;
       pivot=base[num/2];
       while (less<greater) {
-	if (*less<=pivot)
+        if (*less<=pivot)
 	  less++;
-	else {
+        else {
 	  greater--;
 	  SwapU32(less,greater);
-	}
+        }
       }
       i=less-base;
       if (i==num) {//All less or equ to pivot
 
-	//Point greater to first less
-	do greater--;
-	while (--i && *greater==pivot);
+        //Point greater to first less
+        do greater--;
+        while (--i && *greater==pivot);
 
-	if (i) {
+        if (i) {
 	  less=base+num/2; //Pivot was not moved, point to it
 	  if (less<greater)
 	    SwapU32(less,greater);
 	  num=i;
-	} else //All equ
+        } else //All equ
 	  break;
       } else if (i<num/2) {
-	QSortU32(base,i);
-	num-=i;
-	base=greater;
+        QSortU32(base,i);
+        num-=i;
+        base=greater;
       } else {
-	QSortU32(greater,num-i);
-	num=i;
+        QSortU32(greater,num-i);
+        num=i;
       }
     } while (num>1);
   }

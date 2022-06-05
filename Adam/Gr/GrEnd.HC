@@ -8,7 +8,7 @@ U0 CtrlAltZ(I64 sc)
     GrScaleZoom(2.0);
 }
 CtrlAltCBSet('Z',&CtrlAltZ,"Cmd/Zoom In",
-	"Cmd/Zoom Out");
+             "Cmd/Zoom Out");
 
 U0 Scrn2Clip(I64)
 {

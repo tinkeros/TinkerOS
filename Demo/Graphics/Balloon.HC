@@ -22,13 +22,13 @@ U0 Balloon()
 
     for (i=0;i<20;i++)
       for (j=0;j<3;j++)
-	*(text.vga_alias(I64)+0x1000+(i+k)*640/8+j)(U8 *)=a[i*3+j];
+        *(text.vga_alias(I64)+0x1000+(i+k)*640/8+j)(U8 *)=a[i*3+j];
 
     Busy(40000);
 
     for (i=0;i<20;i++)
       for (j=0;j<3;j++)
-	*(text.vga_alias(I64)+0x1000+(i+k)*640/8+j)(U8 *)=0;
+        *(text.vga_alias(I64)+0x1000+(i+k)*640/8+j)(U8 *)=0;
   }
 
   STI

@@ -48,10 +48,10 @@ U0 DrawIt(CTask *task,CDC *dc)
 
   dc->color=BLACK;
   GrRect(dc,poles_x[0]-50,task->pix_height-PEDESTAL_HEIGHT,
-	poles_x[2]-poles_x[0]+100,PEDESTAL_HEIGHT-FONT_HEIGHT);
+        poles_x[2]-poles_x[0]+100,PEDESTAL_HEIGHT-FONT_HEIGHT);
   dc->color=DKGRAY;
   GrRect(dc,poles_x[0]-49,task->pix_height-PEDESTAL_HEIGHT+1,
-	poles_x[2]-poles_x[0]+98,PEDESTAL_HEIGHT-FONT_HEIGHT-2);
+        poles_x[2]-poles_x[0]+98,PEDESTAL_HEIGHT-FONT_HEIGHT-2);
 
   for (i=0;i<3;i++) {
     dc->color=BLACK;
@@ -91,8 +91,8 @@ U0 MoveDisks(I64 src_pole,I64 dst_pole,I64 num)
 
   top=TopDisk(src_pole);
   for (y=disks_y[top];
-	y>Fs->pix_height-PEDESTAL_HEIGHT-(DISK_HEIGHT+1)/2
-	-(DISK_HEIGHT+1)*(DISKS_NUM+2);y--) {
+        y>Fs->pix_height-PEDESTAL_HEIGHT-(DISK_HEIGHT+1)/2
+        -(DISK_HEIGHT+1)*(DISKS_NUM+2);y--) {
     disks_y[top]=y;
     MySleep;
   }
@@ -109,8 +109,8 @@ U0 MoveDisks(I64 src_pole,I64 dst_pole,I64 num)
 
   disks_pole[top]=dst_pole;
   for (y=disks_y[top];
-	y<Fs->pix_height-PEDESTAL_HEIGHT-(DISK_HEIGHT+1)/2-1
-	-(DISK_HEIGHT+1)*PosInStk(dst_pole,top);y++) {
+        y<Fs->pix_height-PEDESTAL_HEIGHT-(DISK_HEIGHT+1)/2-1
+        -(DISK_HEIGHT+1)*PosInStk(dst_pole,top);y++) {
     disks_y[top]=y;
     MySleep;
   }

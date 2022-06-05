@@ -23,18 +23,18 @@ U0 Bounce()
   try {//Catch <CTRL-ALT-c>
     do {
       for (i=0;i<16;i++) {
-	dc->color=i;
-	GrPlot(dc,x[i].i32[1],y[i].i32[1]);
-	x[i]+=dx[i];
-	y[i]+=dy[i];
-	if (!(0<=x[i]<Fs->pix_width<<32)) {
+        dc->color=i;
+        GrPlot(dc,x[i].i32[1],y[i].i32[1]);
+        x[i]+=dx[i];
+        y[i]+=dy[i];
+        if (!(0<=x[i]<Fs->pix_width<<32)) {
 	  x[i]-=dx[i];
 	  dx[i]=-dx[i];
-	}
-	if (!(0<=y[i]<Fs->pix_height<<32)) {
+        }
+        if (!(0<=y[i]<Fs->pix_height<<32)) {
 	  y[i]-=dy[i];
 	  dy[i]=-dy[i];
-	}
+        }
       }
       Yield;
     } while (!(ch=ScanChar) || (ch!=CH_SHIFT_ESC && ch!=CH_ESC));

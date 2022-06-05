@@ -27,7 +27,8 @@ public U8 *PopUpPickFile(U8 *dir=NULL)
   U8 *res,*st,*st2;
   if (dir)
     st=MStrPrint("Cd(\"%Q\");FileMgr(FM_PICK_FILE,Fs->parent_task);",dir);
-  else {
+  else
+  {
     st2=DirCur;
     st=MStrPrint("Cd(\"%Q\");FileMgr(FM_PICK_FILE,Fs->parent_task);",st2);
     Free(st2);
@@ -42,7 +43,8 @@ public U8 *PopUpPickDir(U8 *dir=NULL)
   U8 *res,*st,*st2;
   if (dir)
     st=MStrPrint("Cd(\"%Q\");FileMgr(FM_PICK_DIR,Fs->parent_task);",dir);
-  else {
+  else
+  {
     st2=DirCur;
     st=MStrPrint("Cd(\"%Q\");FileMgr(FM_PICK_DIR,Fs->parent_task);",st2);
     Free(st2);
@@ -68,7 +70,7 @@ public U8 *FileNameForm(U8 *dft=NULL,I64 dof_flags=0,CTask *mem_task=NULL)
 public U8 *PopUpFileName(U8 *dft=NULL,I64 dof_flags=0)
 {//Filename chooser. Uses form, not $LK,"FileMgr",A="MN:FileMgr"$().
   U8 *st=MStrPrint("FileNameForm(\"%Q\",0x%X,Fs->parent_task);",
-	dft,dof_flags|DOF_SIZE_MIN),*res=PopUp(st,Fs);
+                   dft,dof_flags|DOF_SIZE_MIN),*res=PopUp(st,Fs);
   Free(st);
   return res;
 }
@@ -78,10 +80,12 @@ Bool PopUpCd()
 {
   Bool res;
   U8 *st=PopUpPickDir;
-  if (st) {
+  if (st)
+  {
     res=Cd(st);
     Free(st);
-  } else
+  }
+  else
     res=FALSE;
   return res;
 }
@@ -92,8 +96,10 @@ public I64 PopUpPickLst(U8 *lst)
   I64 res,i=0;
   CDoc *doc=DocNew;
   DocPrint(doc,"$$LTBLUE$$");
-  while (*lst) {
-    if (*lst=='@') {//Check for '@' alias lst entry
+  while (*lst)
+  {
+    if (*lst=='@')  //Check for '@' alias lst entry
+    {
       i--;
       lst++;
     }
@@ -129,15 +135,18 @@ public I64 PopUp2(U8 *b1,I64 n1,U8 *b2,I64 n2,U8 *header=NULL,U8 *footer=NULL)
 {//Make PopUp win task with two bttns.
   I64 i,l1=StrLen(b1),l2=StrLen(b2),y;
   CDoc *doc=DocNew;
-  if (header) {
+  if (header)
+  {
     DocPrint(doc,"%s",header);
     y=4;
-  } else {
+  }
+  else
+  {
     DocPrint(doc,"%*s\n",l1+l2+10,"");
     y=3;
   }
   DocPrint(doc,"$$CM+CX,%d,%d$$$$BT,\"%s\",LE=%d$$",-(l1+l2+3)>>1,y,b1,n1);
-  DocPrint(doc,"$$CM+CX,%d,0$$$$BT,\"%s\",LE=%d$$\n" ,-(l1+l2+3)>>1+l1+6,b2,n2);
+  DocPrint(doc,"$$CM+CX,%d,0$$$$BT,\"%s\",LE=%d$$\n",-(l1+l2+3)>>1+l1+6,b2,n2);
   if (footer) DocPrint(doc,"%s",footer);
   i=PopUpMenu(doc);
   DocDel(doc);
@@ -173,7 +182,7 @@ U8 *PopUpGetStr2(U8 *header,CTask *mem_task)
 public U8 *PopUpGetStr(U8 *header=NULL)
 {//Prompt for text str in PopUp win task.
   U8 *st=MStrPrint("PopUpGetStr2(0x%X,0x%X);",header,Fs),
-	*res=PopUp(st,Fs);
+      *res=PopUp(st,Fs);
   Free(st);
   return res;
 }
@@ -195,14 +204,14 @@ public F64 PopUpGetF64(U8 *msg,F64 dft,F64 lo=F64_MIN,F64 hi=F64_MAX)
 }
 
 public I64 PopUpRangeI64(I64 lo,I64 hi,I64 step=1,
-	U8 *header=NULL,U8 *footer=NULL)
+                         U8 *header=NULL,U8 *footer=NULL)
 {//Evenly-spaced I64 range chooser in PopUp win task.
   I64 i;
   CDoc *doc=DocNew;
   if (header)
     DocPrint(doc,"%s",header);
   DocPrint(doc,"$$LTBLUE$$");
-  for (i=lo;i<=hi;i+=step)
+  for (i=lo; i<=hi; i+=step)
     DocPrint(doc,"$$MU,\"%d\",LE=%d$$\n",i,i);
   if (footer)
     DocPrint(doc,"%s",footer);
@@ -212,7 +221,7 @@ public I64 PopUpRangeI64(I64 lo,I64 hi,I64 step=1,
 }
 
 public F64 PopUpRangeF64(F64 lo,F64 hi,F64 step,
-    U8 *fmt="%9.4f",U8 *header=NULL,U8 *footer=NULL)
+                         U8 *fmt="%9.4f",U8 *header=NULL,U8 *footer=NULL)
 {//Evenly-spaced F64 range chooser in PopUp win task.
   F64 d;
   I64 i;
@@ -221,7 +230,8 @@ public F64 PopUpRangeF64(F64 lo,F64 hi,F64 step,
   if (header)
     DocPrint(doc,"%s",header);
   DocPrint(doc,"$$LTBLUE$$");
-  for (d=lo;d<=hi;d+=step) {
+  for (d=lo; d<=hi; d+=step)
+  {
     StrPrint(buf,fmt,d);
     DocPrint(doc,"$$MU,\"%s\",LE=0x%X$$\n",buf,d);
   }
@@ -233,7 +243,7 @@ public F64 PopUpRangeF64(F64 lo,F64 hi,F64 step,
 }
 
 public F64 PopUpRangeF64Exp(F64 lo,F64 hi,F64 factor,
-    U8 *fmt="%9.4f",U8 *header=NULL,U8 *footer=NULL)
+                            U8 *fmt="%9.4f",U8 *header=NULL,U8 *footer=NULL)
 {//Exp-spaced F64 range chooser in PopUp win task.
   F64 d;
   I64 i;
@@ -242,7 +252,8 @@ public F64 PopUpRangeF64Exp(F64 lo,F64 hi,F64 factor,
   if (header)
     DocPrint(doc,"%s",header);
   DocPrint(doc,"$$LTBLUE$$");
-  for (d=lo;d<=hi;d*=factor) {
+  for (d=lo; d<=hi; d*=factor)
+  {
     StrPrint(buf,fmt,d);
     DocPrint(doc,"$$MU,\"%s\",LE=0x%X$$\n",buf,d);
   }
@@ -254,7 +265,7 @@ public F64 PopUpRangeF64Exp(F64 lo,F64 hi,F64 factor,
 }
 
 public F64 PopUpRangeF64Log(F64 lo,F64 hi,I64 steps,
-    U8 *fmt="%9.4f",U8 *header=NULL,U8 *footer=NULL)
+                            U8 *fmt="%9.4f",U8 *header=NULL,U8 *footer=NULL)
 {//Log-spaced F64 range chooser in PopUp win task.
   return PopUpRangeF64Exp(lo,hi,Exp(Ln(hi/lo)/(steps-1)),fmt,header,footer);
 }
@@ -264,11 +275,11 @@ public I64 AdamFile(U8 *filename,Bool warn_ext=TRUE)
 {//Make adam_task execute file.
   Bool okay=TRUE;
   U8 *name=FileNameAbs(filename),
-	*name2=ExtDft(name,"HC.Z");
+      *name2=ExtDft(name,"HC.Z");
   I64 res=0;
   if (warn_ext &&
-	!FilesFindMatch(name2,FILEMASK_JIT) &&
-	!PopUpCancelOk(ST_WARN_ST "Not .HC File\n\n"))
+      !FilesFindMatch(name2,FILEMASK_JIT) &&
+      !PopUpCancelOk(ST_WARN_ST "Not .HC File\n\n"))
     okay=FALSE;
   if (okay)
     res=Adam("#include \"%s\";",name2);
@@ -278,21 +289,22 @@ public I64 AdamFile(U8 *filename,Bool warn_ext=TRUE)
 }
 
 public I64 PopUpFile(U8 *filename,Bool warn_ext=TRUE,
-	CTask *parent=NULL,CTask **_pu_task=NULL)
+                     CTask *parent=NULL,CTask **_pu_task=NULL)
 {//$LK,"ExeFile2",A="MN:ExeFile2"$() in $LK,"PopUp",A="MN:PopUp"$ task. Cont as User.
   Bool okay=TRUE;
   U8 *st,*name=FileNameAbs(filename),
-	*name2=ExtDft(name,"HC.Z");
+          *name2=ExtDft(name,"HC.Z");
   I64 res=0;
   if (warn_ext &&
-	!FilesFindMatch(name2,FILEMASK_JIT) &&
-	!PopUpCancelOk(ST_WARN_ST "Not .HC File\n\n"))
+      !FilesFindMatch(name2,FILEMASK_JIT) &&
+      !PopUpCancelOk(ST_WARN_ST "Not .HC File\n\n"))
     okay=FALSE;
-  if (okay) {
+  if (okay)
+  {
     st=MStrPrint(
-	  "\"$$$$WW+H,1$$$$\";In(\"ExeFile2(\\\"%s\\\",CCF_CMD_LINE);\\n\");"
-	  "UserTaskCont;",
-	  name2);
+       "\"$$$$WW+H,1$$$$\";In(\"ExeFile2(\\\"%s\\\",CCF_CMD_LINE);\\n\");"
+       "UserTaskCont;",
+       name2);
     res=PopUp(st,parent,_pu_task);
     Free(st);
   }
@@ -304,11 +316,11 @@ public I64 PopUpFile(U8 *filename,Bool warn_ext=TRUE,
 public I64 PopUpRunFile(U8 *filename,I64 ccf_flags=0,...)
 {//$LK,"ExeFile",A="MN:ExeFile"$() with args using $LK,"LastFun",A="MN:LastFun"$() in $LK,"PopUp",A="MN:PopUp"$ task.
   U8 *st,*name=FileNameAbs(filename),
-	*name2=ExtDft(name,"HC.Z");
+          *name2=ExtDft(name,"HC.Z");
   I64 res=0;
   st=MStrPrint(
-	"\"$$$$WW+H,1$$$$\";ExeFile2(\"%s\",0x%X);LastFun(0x%X,0x%X);",
-	name2,ccf_flags,argc,argv);
+     "\"$$$$WW+H,1$$$$\";ExeFile2(\"%s\",0x%X);LastFun(0x%X,0x%X);",
+     name2,ccf_flags,argc,argv);
   res=PopUp(st,Fs);
   Free(st);
   Free(name2);

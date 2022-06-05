@@ -19,26 +19,26 @@ public U0 SpeedLineDemo()
 	  1<<MSG_KEY_DOWN+1<<MSG_MS_L_DOWN+1<<MSG_MS_R_UP);
     switch (msg_code) {
       case MSG_MS_R_UP:
-	color=PopUpColor;
-	if (color>=0)
+        color=PopUpColor;
+        if (color>=0)
 	  dc->color=color;
-	break;
+        break;
       case MSG_MS_L_DOWN:
-	x1=arg1; y1=arg2;
-	x2=arg1; y2=arg2;
-	cnt=0;
-	while (msg_code!=MSG_MS_L_UP) {
+        x1=arg1; y1=arg2;
+        x2=arg1; y2=arg2;
+        cnt=0;
+        while (msg_code!=MSG_MS_L_UP) {
 	  dc->thick=0.04*ms.speed;
 	  GrLine3(dc,x1,y1,0,x2,y2,0);
 	  msg_code=GetMsg(&arg1,&arg2,
-		1<<MSG_MS_L_UP+1<<MSG_MS_MOVE);
+	        1<<MSG_MS_L_UP+1<<MSG_MS_MOVE);
 	  x1=x2; y1=y2;
 	  x2=arg1; y2=arg2;
-	}
-	GrLine3(dc,x1,y1,0,x2,y2,0);
-	break;
+        }
+        GrLine3(dc,x1,y1,0,x2,y2,0);
+        break;
       case MSG_KEY_DOWN:
-	break;
+        break;
     }
   } while (msg_code!=MSG_KEY_DOWN || !arg1);
   GetMsg(,,1<<MSG_KEY_UP);

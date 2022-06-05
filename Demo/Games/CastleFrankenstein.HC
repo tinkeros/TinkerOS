@@ -132,15 +132,15 @@ Bool LOSPlot(U8 *,I64 x,I64 y,I64)
 Bool LOS(I64 x1,I64 y1,I64 x2,I64 y2)
 {//Line of sight
   return Line(NULL,x1*LOS_SCALE/SCRN_SCALE,y1*LOS_SCALE/SCRN_SCALE,0,
-	x2*LOS_SCALE/SCRN_SCALE,y2*LOS_SCALE/SCRN_SCALE,0,&LOSPlot);
+        x2*LOS_SCALE/SCRN_SCALE,y2*LOS_SCALE/SCRN_SCALE,0,&LOSPlot);
 }
 
 U0 DrawIt(CTask *task,CDC *dc)
 {
   I64 i,j,*r1,*r2,*r3,*s2w,xx,yy,zz,x,y,x1,y1,z1,
-	c,x1w,y1w,x1h,y1h,xh,yh,zh,
-	cx=task->pix_width/2,
-	cy=task->pix_height/2;
+        c,x1w,y1w,x1h,y1h,xh,yh,zh,
+        cx=task->pix_width/2,
+        cy=task->pix_height/2;
   U8 *tmps;
   F64 tt;
   CD3I32 poly[4];
@@ -198,7 +198,7 @@ U0 DrawIt(CTask *task,CDC *dc)
       x=xx*SCRN_SCALE-man_xx; y=yy*SCRN_SCALE-man_yy;
       if (1<=xx<map_width-1 && 1<=yy<map_height-1 &&
 	    !LBts(panels_processed_bitmap,yy*map_width+xx)) {
-	if ((c=map[yy*map_width+xx]) &&
+        if ((c=map[yy*map_width+xx]) &&
 	      LOS(xx*SCRN_SCALE+SCRN_SCALE/2,yy*SCRN_SCALE+SCRN_SCALE/2,
 	      man_xx,man_yy)) {
 	  if (c==YELLOW)
@@ -298,7 +298,7 @@ U0 DrawIt(CTask *task,CDC *dc)
 	    poly[3].z=SCRN_SCALE;
 	    GrFillPoly3(dc,4,poly);
 	  }
-	}
+        }
       }
       x1w-=yh;
       y1w+=xh;
@@ -319,14 +319,14 @@ U0 DrawIt(CTask *task,CDC *dc)
       zz=0;
       DCTransform(dc,&xx,&yy,&zz);
       if (zz>0) {
-	if (tmpm->dead)
+        if (tmpm->dead)
 	  Sprite3Mat4x4B(dc,x,y,0,$IB,"<2>",BI=2$,r2);
-	else {
+        else {
 	  tt=Tri(tS,1.0);
 	  tmps=SpriteInterpolate(tt,$IB,"<3>",BI=3$,$IB,"<4>",BI=4$);
 	  Sprite3Mat4x4B(dc,x,y,0,tmps,r1);
 	  Free(tmps);
-	}
+        }
       }
     }
   }
@@ -369,7 +369,7 @@ U0 DrawIt(CTask *task,CDC *dc)
     tt=tS;
   }
   GrPrint(dc,0,0,"Enemy:%d Time:%3.2f Best:%3.2f",
-	monsters_left,tt-t0,best_score);
+        monsters_left,tt-t0,best_score);
   Free(s2w);
   Seed(0);
 }
@@ -389,16 +389,16 @@ U0 Fire()
       dx=x-man_xx;
       dy=man_yy-y;
       if (d=Sqrt(dx*dx+dy*dy)) {
-	dx/=d;
-	dy/=d;
-	if (dx*xx+dy*yy>0.995) {
+        dx/=d;
+        dy/=d;
+        if (dx*xx+dy*yy>0.995) {
 	  tmpm->dead=TRUE;
 	  if (!--monsters_left) {
 	    tf=tS;
 	    if (tf-t0<best_score)
 	      best_score=tf-t0;
 	  }
-	}
+        }
       }
     }
   }
@@ -449,28 +449,28 @@ U0 AnimateTask(I64)
     dd=0.25*SCRN_SCALE*Sin(tS/2);
     for (i=0,tmpm=monsters;i<MONSTERS_NUM;i++,tmpm++)
       if (!tmpm->dead) {
-	x=tmpm->x;
-	y=tmpm->y;
-	if (i&1)
+        x=tmpm->x;
+        y=tmpm->y;
+        if (i&1)
 	  x+=dd;
-	else
+        else
 	  y+=dd;
-	if (0<=x<=map_width*SCRN_SCALE &&
+        if (0<=x<=map_width*SCRN_SCALE &&
 	      0<=y<=map_height*SCRN_SCALE &&
 	      map[(y/SCRN_SCALE)*map_width+x/SCRN_SCALE]) {
 	  if (!map[(y/SCRN_SCALE)*map_width+x/SCRN_SCALE+1] &&
-		x-RoundI64(x,SCRN_SCALE)>SCRN_SCALE/2 ||
-		!map[(y/SCRN_SCALE)*map_width+x/SCRN_SCALE-1] &&
-		x-RoundI64(x,SCRN_SCALE)<SCRN_SCALE/2)
+	        x-RoundI64(x,SCRN_SCALE)>SCRN_SCALE/2 ||
+	        !map[(y/SCRN_SCALE)*map_width+x/SCRN_SCALE-1] &&
+	        x-RoundI64(x,SCRN_SCALE)<SCRN_SCALE/2)
 	    x=RoundI64(x,SCRN_SCALE)+SCRN_SCALE/2;
 	  if (!map[(y/SCRN_SCALE+1)*map_width+x/SCRN_SCALE] &&
-		y-RoundI64(y,SCRN_SCALE)>SCRN_SCALE/2 ||
-		!map[(y/SCRN_SCALE-1)*map_width+x/SCRN_SCALE] &&
-		y-RoundI64(y,SCRN_SCALE)<SCRN_SCALE/2)
+	        y-RoundI64(y,SCRN_SCALE)>SCRN_SCALE/2 ||
+	        !map[(y/SCRN_SCALE-1)*map_width+x/SCRN_SCALE] &&
+	        y-RoundI64(y,SCRN_SCALE)<SCRN_SCALE/2)
 	    y=RoundI64(y,SCRN_SCALE)+SCRN_SCALE/2;
 	  tmpm->x=x;
 	  tmpm->y=y;
-	}
+        }
       }
     Sleep(20);
   }
@@ -527,19 +527,19 @@ U0 CastleFrankenstein()
 {
   I64 sc;
   MenuPush(
-	"File {"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Play {"
-	"  Restart(,'\n');"
-	"  Fwd(,,SC_CURSOR_UP);"
-	"  Bwd(,,SC_CURSOR_DOWN);"
-	"  Left(,,SC_CURSOR_LEFT);"
-	"  Right(,,SC_CURSOR_RIGHT);"
-	"  Fire(,CH_SPACE);"
-	"}"
-	);
+        "File {"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Play {"
+        "  Restart(,'\n');"
+        "  Fwd(,,SC_CURSOR_UP);"
+        "  Bwd(,,SC_CURSOR_DOWN);"
+        "  Left(,,SC_CURSOR_LEFT);"
+        "  Right(,,SC_CURSOR_RIGHT);"
+        "  Fire(,CH_SPACE);"
+        "}"
+        );
 
   SettingsPush; //See $LK,"SettingsPush",A="MN:SettingsPush"$
   Fs->text_attr=DKGRAY<<4+WHITE;
@@ -555,16 +555,16 @@ U0 CastleFrankenstein()
   try {
     while (TRUE) {
       switch (GetKey(&sc)) {
-	case CH_SPACE:
+        case CH_SPACE:
 	  Fire;
 	  break;
-	case '\n':
+        case '\n':
 	  Init;
 	  break;
-	case CH_ESC:
-	case CH_SHIFT_ESC:
+        case CH_ESC:
+        case CH_SHIFT_ESC:
 	  goto fs_done;
-	case 0:
+        case 0:
 	  switch (sc.u8[0]) {
 	    case SC_CURSOR_RIGHT:
 	      Spawn(&RotateMan,(ã/32)(I64));
@@ -590,7 +590,7 @@ fs_done:
   CleanUp;
   MenuPop;
   RegWrite("TempleOS/CastleFrankenstein","F64 best_score=%5.4f;\n",
-	best_score);
+        best_score);
 }
 
 CastleFrankenstein;

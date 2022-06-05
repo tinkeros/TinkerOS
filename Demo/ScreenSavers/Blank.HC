@@ -13,7 +13,7 @@
 
 U0 ScreenSaverBlank(CDC *dc, I64 ss_cnts)
 {// draw a blank image once on the first
-  // call when ss_cnts == 0
+// call when ss_cnts == 0
   if (!ss_cnts)
     DCClear(dc);
 }

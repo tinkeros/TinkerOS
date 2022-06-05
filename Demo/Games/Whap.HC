@@ -13,8 +13,8 @@ F64 collision_t;
 U0 DrawIt(CTask *task,CDC *dc)
 {
   I64 i,
-	cx=task->pix_width>>1,
-	cy=task->pix_height>>1;
+        cx=task->pix_width>>1,
+        cy=task->pix_height>>1;
   Bool snd_on=FALSE;
   dc->color=BLACK;
   GrPrint(dc,0,0,"Protect your base.");
@@ -23,8 +23,8 @@ U0 DrawIt(CTask *task,CDC *dc)
   GrRect(dc,cx-BASE_SIZE+2,cy-BASE_SIZE+2,BASE_SIZE*2-4,BASE_SIZE*2-4);
   dc->color=YELLOW;
   GrLine(dc,balls[0].x,balls[0].y,
-	ms.pos.x-task->pix_left-task->scroll_x,
-	ms.pos.y-task->pix_top-task->scroll_y);
+        ms.pos.x-task->pix_left-task->scroll_x,
+        ms.pos.y-task->pix_top-task->scroll_y);
   for (i=0;i<SPRINGS_NUM;i++)
     GrLine(dc,springs[i].end1->x,springs[i].end1->y,
 	  springs[i].end2->x,springs[i].end2->y);
@@ -59,9 +59,9 @@ U0 MyDerivative(CMathODE *ode,F64 t,COrder2D3 *,COrder2D3 *)
   CTask *task=ode->win_task;
 
   D3SubEqu(D3Equ(&p2,
-	ms.pos.x-task->pix_left-task->scroll_x,
-	ms.pos.y-task->pix_top-task->scroll_y,0),
-	&balls[0].state->x);
+        ms.pos.x-task->pix_left-task->scroll_x,
+        ms.pos.y-task->pix_top-task->scroll_y,0),
+        &balls[0].state->x);
   D3AddEqu(&balls[0].DstateDt->DxDt,D3MulEqu(&p2,STRETCH));
 
   D3Equ(&p2,task->pix_width>>1,task->pix_height>>1,0);
@@ -79,15 +79,15 @@ U0 MyDerivative(CMathODE *ode,F64 t,COrder2D3 *,COrder2D3 *)
       D3Sub(&p,&balls[j].state->x,&balls[i].state->x);
       dd=D3NormSqr(&p);
       if (dd<=(2*BALL_RADIUS)*(2*BALL_RADIUS)) {
-	if (t-collision_t>0.05) {
+        if (t-collision_t>0.05) {
 	  Noise(50,102,105);
 	  collision_t=t;
-	}
-	d=Sqrt(dd)+0.0001;
-	dd=10.0*Sqr(Sqr((2*BALL_RADIUS)*(2*BALL_RADIUS)-dd));
-	D3MulEqu(&p,dd/d);
-	D3AddEqu(&balls[j].DstateDt->DxDt,&p);
-	D3SubEqu(&balls[i].DstateDt->DxDt,&p);
+        }
+        d=Sqrt(dd)+0.0001;
+        dd=10.0*Sqr(Sqr((2*BALL_RADIUS)*(2*BALL_RADIUS)-dd));
+        D3MulEqu(&p,dd/d);
+        D3AddEqu(&balls[j].DstateDt->DxDt,&p);
+        D3SubEqu(&balls[i].DstateDt->DxDt,&p);
       }
     }
 
@@ -115,11 +115,11 @@ U0 Whap()
   WinMax;
 
   MenuPush(
-	"File {"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	);
+        "File {"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        );
   ode->derive=&MyDerivative;
   ode->drag_v2=0.002;
   ode->drag_v3=0.00001;

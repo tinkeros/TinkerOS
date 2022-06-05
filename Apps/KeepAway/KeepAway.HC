@@ -297,24 +297,24 @@ U0 DrawIt(CTask *task,CDC *dc)
   dc->thick=2;
   dc->color=RED;
   GrBorder(dc,COURT_BORDER,COURT_BORDER,
-	task->pix_width -1-COURT_BORDER,
-	task->pix_height-1-COURT_BORDER);
+        task->pix_width -1-COURT_BORDER,
+        task->pix_height-1-COURT_BORDER);
   for (i=0;i<OBJS_NUM;i++) {
     o=o_sort[i]=&objs[i];
     if (o!=ball) {
       if (o->has_ball) {
-	ball->x=o->x+HAND_X_OFFSET*Cos(o->é-ã/2)+HAND_Y_OFFSET*Cos(o->é);
+        ball->x=o->x+HAND_X_OFFSET*Cos(o->é-ã/2)+HAND_Y_OFFSET*Cos(o->é);
 //The factor 2 is because the man is not transformed.
-	ball->y=o->y+HAND_X_OFFSET*Sin(o->é-ã/2)/2+HAND_Y_OFFSET*Sin(o->é)/2;
-	if (ball->z+ball->radius*2>o->z+HAND_Z_OFFSET)
+        ball->y=o->y+HAND_X_OFFSET*Sin(o->é-ã/2)/2+HAND_Y_OFFSET*Sin(o->é)/2;
+        if (ball->z+ball->radius*2>o->z+HAND_Z_OFFSET)
 	  ball->z=o->z+HAND_Z_OFFSET-ball->radius*2;
       } else if (o->shooting) {
-	ball->x=o->x;
-	ball->y=o->y;
-	ball->z=o->z+HEAD_Z_OFFSET;
+        ball->x=o->x;
+        ball->y=o->y;
+        ball->z=o->z+HEAD_Z_OFFSET;
       }
       if (tt>o->next_t0) {
-	if (o->has_ball && (ball->z+ball->radius*2>=o->z+HAND_Z_OFFSET ||
+        if (o->has_ball && (ball->z+ball->radius*2>=o->z+HAND_Z_OFFSET ||
 	      Abs(ball->DzDt)<30)) {
 //This is an approximation.  My instinct tells me the viscosity term
 	  //needs an $LK,"Exp",A="MN:Exp"$().  However, we should be syncronized to img frames,
@@ -323,21 +323,21 @@ U0 DrawIt(CTask *task,CDC *dc)
 	  d_up	=1.0/COLLISION_DAMP;
 //Up bounce takes higher % because speed lost in collision.
 	  ball->DzDt=-((d_down+d_up)*
-		(o->z+HAND_Z_OFFSET-ball->radius*4)/(1.0-AIR_VISCOSITY)+
-		0.5*GRAVITY_ACCELERATION*(
-		Sqr(DRIBBLE_T*d_up/(d_down+d_up))-
-		Sqr(DRIBBLE_T*d_down/(d_down+d_up)) ))/DRIBBLE_T;
-	}
-	o->last_t0=tt;
-	o->last_img=o->next_img++;
-	if (o->stopped) {
+	        (o->z+HAND_Z_OFFSET-ball->radius*4)/(1.0-AIR_VISCOSITY)+
+	        0.5*GRAVITY_ACCELERATION*(
+	        Sqr(DRIBBLE_T*d_up/(d_down+d_up))-
+	        Sqr(DRIBBLE_T*d_down/(d_down+d_up)) ))/DRIBBLE_T;
+        }
+        o->last_t0=tt;
+        o->last_img=o->next_img++;
+        if (o->stopped) {
 	  if (o->has_ball) {
 	    if (!(FIRST_STOPPED_DRIBBLING<=o->next_img<=LAST_STOPPED_DRIBBLING))
 	      o->next_img=FIRST_STOPPED_DRIBBLING;
 	  } else
 	    o->next_img=FIRST_STANDING;
 	  o->stopped=FALSE;
-	} else if (o->shooting) {
+        } else if (o->shooting) {
 	  if (!(FIRST_SHOOTING<=o->last_img<=LAST_SHOOTING))
 	    o->next_img=FIRST_SHOOTING;
 	  if (o->next_img>LAST_SHOOTING) {
@@ -347,25 +347,25 @@ U0 DrawIt(CTask *task,CDC *dc)
 	    ball->DyDt=o->DyDt+SHOT_VELOCITY/sqrt2*Sin(o->é-ã/2);
 	    ball->DzDt=o->DzDt+SHOT_VELOCITY/sqrt2;
 	    shot_land_t=tt+(ball->DzDt+Sqrt(Sqr(ball->DzDt)+
-		2*GRAVITY_ACCELERATION*ball->z))/GRAVITY_ACCELERATION;
+		  2*GRAVITY_ACCELERATION*ball->z))/GRAVITY_ACCELERATION;
 	  } else {
 	    ball->DxDt=0;
 	    ball->DyDt=0;
 	    ball->DzDt=0;
 	  }
-	} else if (o->has_ball) {
+        } else if (o->has_ball) {
 	  if (FIRST_RUNNING<=o->next_img<=LAST_RUNNING)
 	    o->next_img+=FIRST_DRIBBLING-FIRST_RUNNING;
 	  if (!(FIRST_DRIBBLING<=o->next_img<=LAST_DRIBBLING))
 	    o->next_img=FIRST_DRIBBLING;
-	} else {
+        } else {
 	  if (FIRST_DRIBBLING<=o->next_img<=LAST_DRIBBLING)
 	    o->next_img+=FIRST_RUNNING-FIRST_DRIBBLING;
 	  if (!(FIRST_RUNNING<=o->next_img<=LAST_RUNNING))
 	    o->next_img=FIRST_RUNNING;
-	}
-	o->next_t0+=imgs[o->last_img].dt;
-	if (o->next_t0<=tt)
+        }
+        o->next_t0+=imgs[o->last_img].dt;
+        if (o->next_t0<=tt)
 	  o->next_t0=tt+imgs[o->last_img].dt;
       }
     }
@@ -385,7 +385,7 @@ U0 DrawIt(CTask *task,CDC *dc)
     if (tS<foul_t_end) {
       dc->color=LTRED;
       if (Blink)
-	GrPrint(dc,(task->pix_width-FONT_WIDTH*4)>>1,
+        GrPrint(dc,(task->pix_width-FONT_WIDTH*4)>>1,
 	      (task->pix_height-FONT_HEIGHT)>>1,"Foul");
     }
     dc->color=BLACK;
@@ -426,49 +426,49 @@ U0 AnimateTask(CTask *parent_task)
       game_t_end=0;
       Beep;
       if (score0-score1>best_score0-best_score1) {
-	best_score0=score0;
-	best_score1=score1;
-	Snd(86);Sleep(100); Snd;Sleep(100);
-	Snd(86);Sleep(100); Snd;Sleep(100);
+        best_score0=score0;
+        best_score1=score1;
+        Snd(86);Sleep(100); Snd;Sleep(100);
+        Snd(86);Sleep(100); Snd;Sleep(100);
       }
     }
 
     if (game_t_end) {
       MemSet(&nearest_ball,0,sizeof(nearest_ball));
       for (i=0;i<OBJS_NUM;i++) {
-	o=&objs[i];
-	o->nearest_ball=FALSE;
-	if (o!=ball) {
+        o=&objs[i];
+        o->nearest_ball=FALSE;
+        if (o!=ball) {
 	  d=0;
 	  for (j=0;j<5;j++) //Iterative estimate of how long to get ball.
 	    d=Sqrt(Sqr(ball->DxDt*d+ball->x-o->x)+
 		  Sqr(ball->DyDt*d+ball->y-o->y))/MAN_VELOCITY;
 	  o->get_ball_dt=d;
 	  o->get_ball_é=Arg(ball->DxDt*d+ball->x-o->x,
-		ball->DyDt*d+ball->y-o->y);
+	        ball->DyDt*d+ball->y-o->y);
 	  if (o!=last_owner && !nearest_ball[o->team] ||
-		o->get_ball_dt<nearest_ball[o->team]->get_ball_dt)
+	        o->get_ball_dt<nearest_ball[o->team]->get_ball_dt)
 	    nearest_ball[o->team]=o;
-	}
+        }
       }
       nearest_ball[0]->nearest_ball=TRUE;
       nearest_ball[1]->nearest_ball=TRUE;
 
       for (i=0;i<OBJS_NUM;i++) {
-	o=&objs[i];
-	if (o==ball) {
+        o=&objs[i];
+        if (o==ball) {
 	  o->x+=dt*o->DxDt;
 	  o->y+=dt*o->DyDt;
 	  if (!someone_shooting)
 	    o->z+=dt*(o->DzDt-0.5*GRAVITY_ACCELERATION*dt);
-	} else {
+        } else {
 	  if (!o->has_ball) {
 	    if (t0-o->stolen_t0>2.0 && !someone_shooting) {
 	      dx=ball->x-o->x;
 	      dy=ball->y-o->y;
 	      if (dx*dx+dy*dy<HAND_SQR_OFFSET && ball->z<o->z+HAND_Z_OFFSET) {
-		gets_ball=TRUE;
-		for (j=0;j<PER_SIDE_NUM*2;j++)
+	        gets_ball=TRUE;
+	        for (j=0;j<PER_SIDE_NUM*2;j++)
 		  if (j!=i && objs[j].has_ball) {
 		    if (Rand<2.0*dt) {
 		      objs[j].stolen_t0=t0;
@@ -476,25 +476,25 @@ U0 AnimateTask(CTask *parent_task)
 		    } else
 		      gets_ball=FALSE;
 		  }
-		if (gets_ball) {
+	        if (gets_ball) {
 		  someone_has_ball=o->has_ball=TRUE;
 		  if (o!=last_owner) {
 		    if (o->team) {
 		      if (t0<shot_land_t+0.1)
-			score1+=6;
+		        score1+=6;
 		      else
-			score1+=2;
+		        score1+=2;
 		      Noise(250,74,74);
 		    } else {
 		      if (t0<shot_land_t+0.1)
-			score0+=6;
+		        score0+=6;
 		      else
-			score0+=2;
+		        score0+=2;
 		      Noise(250,86,86);
 		    }
 		    last_owner=o;
 		  }
-		}
+	        }
 	      }
 	    }
 	  } else if (o!=human && Rand<0.25*dt)
@@ -506,11 +506,11 @@ U0 AnimateTask(CTask *parent_task)
 	    } else {
 	      if (!someone_has_ball && o->nearest_man_dd>4*MAN_SQR_RADIUS &&
 		    o->nearest_ball) {
-		dx=o->DxDt=MAN_VELOCITY*Cos(o->get_ball_é);
-		dy=o->DyDt=MAN_VELOCITY*Sin(o->get_ball_é);
+	        dx=o->DxDt=MAN_VELOCITY*Cos(o->get_ball_é);
+	        dy=o->DyDt=MAN_VELOCITY*Sin(o->get_ball_é);
 	      } else {
-		dx=o->DxDt+=RANDOM_MAN_ACCELERATION/sqrt2*RandI16/I16_MAX*dt;
-		dy=o->DyDt+=RANDOM_MAN_ACCELERATION/sqrt2*RandI16/I16_MAX*dt;
+	        dx=o->DxDt+=RANDOM_MAN_ACCELERATION/sqrt2*RandI16/I16_MAX*dt;
+	        dy=o->DyDt+=RANDOM_MAN_ACCELERATION/sqrt2*RandI16/I16_MAX*dt;
 	      }
 	    }
 	    d=Sqrt(dx*dx+dy*dy);
@@ -520,7 +520,7 @@ U0 AnimateTask(CTask *parent_task)
 	      dy*=MAN_VELOCITY/sqrt2*dt/d;
 	      o->nearest_man_dd=F64_MAX;
 	      for (j=0;j<PER_SIDE_NUM*2;j++)
-		if (j!=i) {
+	        if (j!=i) {
 		  dx2=objs[j].x-o->x;
 		  dy2=objs[j].y-o->y;
 		  d=Sqr(dx2)+Sqr(dy2);
@@ -537,17 +537,17 @@ U0 AnimateTask(CTask *parent_task)
 		      if (o==human && t0>o->foul_t0+1.0 &&
 			    dt && d/dt>FOUL_VELOCITY_THRESHOLD &&
 			    objs[j].team) {
-			Noise(250,62,62);
-			score1+=1;
-			foul_t_end=t0+1.0;
+		        Noise(250,62,62);
+		        score1+=1;
+		        foul_t_end=t0+1.0;
 		      }
 		      o->foul_t0=t0;
 		    }
 		  }
-		}
+	        }
 	      if (t0<o->foul_t0+0.15) {
-		dx=-dx;
-		dy=-dy;
+	        dx=-dx;
+	        dy=-dy;
 	      }
 	      o->x+=dx;
 	      o->y+=dy;
@@ -557,49 +557,49 @@ U0 AnimateTask(CTask *parent_task)
 	  }
 	  if (o->DzDt)
 	    o->z+=dt*(o->DzDt-0.5*GRAVITY_ACCELERATION*dt);
-	}
+        }
 
-	if (o->x+o->radius>=parent_task->pix_width-COURT_BORDER) {
+        if (o->x+o->radius>=parent_task->pix_width-COURT_BORDER) {
 	  o->x=parent_task->pix_width-COURT_BORDER-1-o->radius;
 	  o->DxDt=-COLLISION_DAMP*o->DxDt;
 	  if (o==ball)
 	    Noise(10,74,86);
-	}
-	if (o->x-o->radius<COURT_BORDER) {
+        }
+        if (o->x-o->radius<COURT_BORDER) {
 	  o->x=COURT_BORDER+o->radius;
 	  o->DxDt=-COLLISION_DAMP*o->DxDt;
 	  if (o==ball)
 	    Noise(10,74,86);
-	}
+        }
 
-	if (o->y+o->radius*2>=(parent_task->pix_height-COURT_BORDER)*2) {
+        if (o->y+o->radius*2>=(parent_task->pix_height-COURT_BORDER)*2) {
 	  o->y=(parent_task->pix_height-COURT_BORDER)*2-1-o->radius*2;
 	  o->DyDt=-COLLISION_DAMP*o->DyDt;
 	  if (o==ball)
 	    Noise(10,74,86);
-	}
-	if (o->y-o->radius*2<2*COURT_BORDER) {
+        }
+        if (o->y-o->radius*2<2*COURT_BORDER) {
 	  o->y=COURT_BORDER*2+o->radius*2;
 	  o->DyDt=-COLLISION_DAMP*o->DyDt;
 	  if (o==ball)
 	    Noise(10,74,86);
-	}
+        }
 
-	if (o->z-o->radius*2<0) {
+        if (o->z-o->radius*2<0) {
 	  o->z=o->radius*2;
 	  o->DzDt=-COLLISION_DAMP*o->DzDt;
 	  if (o->DzDt>ROLL_VELOCITY_THRESHOLD)
 	    Noise(10,74,86);
 	  if (o!=ball)
 	    o->DzDt=0;
-	} else if (o->z-o->radius*2>0)
+        } else if (o->z-o->radius*2>0)
 	  o->DzDt-=GRAVITY_ACCELERATION*dt;
-	if (o==ball) {
+        if (o==ball) {
 	  d=Exp(-AIR_VISCOSITY*dt);
 	  o->DxDt*=d;
 	  o->DyDt*=d;
 	  o->DzDt*=d;
-	}
+        }
       }
     }
     Refresh;
@@ -636,12 +636,12 @@ U0 KeepAway()
   I64 msg_code,arg1,arg2;
 
   PopUpOk(
-	"Pass or hand-off to your team to score points.$$FG$$\n\n"
-	"\t2 points for successful hand-off.\n"
-	"\t6 points for successful pass.\n"
-	"\t1 point penalty for foul.\n\n"
-	"Left-Click\tto pass.\n\n"
-	"Right-Click\tto jump.\n");
+        "Pass or hand-off to your team to score points.$$FG$$\n\n"
+        "\t2 points for successful hand-off.\n"
+        "\t6 points for successful pass.\n"
+        "\t1 point penalty for foul.\n\n"
+        "Left-Click\tto pass.\n\n"
+        "Right-Click\tto jump.\n");
   SettingsPush; //See $LK,"SettingsPush",A="MN:SettingsPush"$
   Fs->text_attr=BLACK+YELLOW<<4;
   Fs->win_inhibit|=WIG_DBL_CLICK;
@@ -652,16 +652,16 @@ U0 KeepAway()
   DocClear;
 
   MenuPush(
-	"File {"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Play {"
-	"  Restart(,'\n');"
-	"  Shoot(,CH_SPACE);"
-	"  Jump(,'j');"
-	"}"
-	);
+        "File {"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Play {"
+        "  Restart(,'\n');"
+        "  Shoot(,CH_SPACE);"
+        "  Jump(,'j');"
+        "}"
+        );
 
   Init;
   Fs->draw_it=&DrawIt;
@@ -672,15 +672,15 @@ U0 KeepAway()
       msg_code=GetMsg(&arg1,&arg2,
 	    1<<MSG_MS_L_DOWN|1<<MSG_MS_R_DOWN|1<<MSG_KEY_DOWN);
       switch (msg_code) {
-	case MSG_MS_L_DOWN:
+        case MSG_MS_L_DOWN:
 ka_shoot:
 	  Shoot(human);
 	  break;
-	case MSG_MS_R_DOWN:
+        case MSG_MS_R_DOWN:
 ka_jump:
 	  human->DzDt=JUMP_VELOCITY;
 	  break;
-	case MSG_KEY_DOWN:
+        case MSG_KEY_DOWN:
 	  switch (arg1) {
 	    case '\n':
 	      Init;
@@ -703,7 +703,7 @@ ka_done: //Don't goto out of try
   SettingsPop;
   MenuPop;
   RegWrite("TempleOS/KeepAway","I64 best_score0=%d,best_score1=%d;\n",
-	best_score0,best_score1);
+        best_score0,best_score1);
 }
         Ê     p   ¨      ­ÿÿÿûÿÿÿûÿÿÿ­ÿÿÿûÿÿÿ   ·ÿÿÿûÿÿÿûÿÿÿ·ÿÿÿûÿÿÿ   ­ÿÿÿ   ûÿÿÿ­ÿÿÿ      ·ÿÿÿ   ûÿÿÿ·ÿÿÿ   
    ·ÿÿÿûÿÿÿöÿÿÿ·ÿÿÿûÿÿÿ

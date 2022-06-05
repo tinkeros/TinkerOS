@@ -97,32 +97,32 @@ I64 MorseWaitKey()
       m_start=0;
       space_sent=FALSE;
       if (dt_down<M_DASH_THRESHOLD)
-	return '.';
+        return '.';
       else
-	return '-';
+        return '-';
     } else {
       if (!space_sent) {
-	while (!ScanMsg(&ch,NULL,1<<MSG_KEY_DOWN)) {
+        while (!ScanMsg(&ch,NULL,1<<MSG_KEY_DOWN)) {
 	  dt=tS-m_end;
 	  if (dt>=M_SPACE_THRESHOLD) {
 	    space_sent=TRUE;
 	    return CH_SPACE;
 	  }
 	  Yield;
-	}
+        }
       } else
-	ch=GetChar(,FALSE);
+        ch=GetChar(,FALSE);
       m_start=tS;
       Snd(74);
       if (ch==CH_SHIFT_ESC || ch==CH_ESC) {
-	'\n';
-	Snd;
-	throw; //exit program
+        '\n';
+        Snd;
+        throw; //exit program
       }
       dt_up=m_start-m_end;
       if (!space_sent && dt_up>=M_SPACE_THRESHOLD) {
-	space_sent=TRUE;
-	return CH_SPACE;
+        space_sent=TRUE;
+        return CH_SPACE;
       }
     }
   }
@@ -155,18 +155,18 @@ U0 Morse()
       *dst=0;
       src=morse_lst;
       while (*src) {
-	if (!StrCmp(src+1,buf)) {
+        if (!StrCmp(src+1,buf)) {
 	  "$$GREEN$$%C$$FG$$",*src;
 	  break;
-	} else
+        } else
 	  src+=StrLen(src)+1;
       }
       '' CH_SPACE;
       dst=buf;
     } else {
       if (dst-buf<sizeof(buf)-1) {
-	'' ch;
-	*dst++=ch;
+        '' ch;
+        *dst++=ch;
       }
     }
   }

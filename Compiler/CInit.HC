@@ -3,7 +3,8 @@
 class CInternalType
 {
   U8 type,size,name[8];
-} internal_types_table[INTERNAL_TYPES_NUM]={
+} internal_types_table[INTERNAL_TYPES_NUM]=
+{
   {RT_I0,0,"I0i"},{RT_I0,0,"I0"},{RT_U0,0,"U0i"},{RT_U0,0,"U0"},
   {RT_I8,1,"I8i"},{RT_I8,1,"I8"},{RT_I8,1,"Bool"},
   {RT_U8,1,"U8i"},{RT_U8,1,"U8"},
@@ -13,7 +14,8 @@ class CInternalType
   {RT_F64,8,"F64i"},{RT_F64,8,"F64"},
 };
 
-CIntermediateStruct intermediate_code_table[IC_ICS_NUM]={
+CIntermediateStruct intermediate_code_table[IC_ICS_NUM]=
+{
   {IS_0_ARG,0,IST_NULL,FALSE,FALSE,0,0,0,"END"},
   {IS_0_ARG,0,IST_NULL,FALSE,FALSE,0,0,0,"NOP1"},
   {IS_1_ARG,0,IST_NULL,FALSE,FALSE,0,0,0,"END_EXP"},
@@ -204,34 +206,34 @@ CIntermediateStruct intermediate_code_table[IC_ICS_NUM]={
 U0 CmpLoadDefines()
 {
   DefineLstLoad("ST_RAW_TYPES",
-	"\0\0I0\0U0\0I8\0U8\0I16\0U16\0I32\0U32\0I64\0U64\0"
-	"F32\0UF32\0F64\0UF64\0");
+                "\0\0I0\0U0\0I8\0U8\0I16\0U16\0I32\0U32\0I64\0U64\0"
+                "F32\0UF32\0F64\0UF64\0");
   DefineLstLoad("ST_NATURAL_TYPES",
-	"I8\0U8\0I16\0U16\0I32\0U32\0I64\0U64\0F64\0String\0");
+                "I8\0U8\0I16\0U16\0I32\0U32\0I64\0U64\0F64\0String\0");
   DefineLstLoad("ST_INT_SIZE_TYPES",
-	"I8\0U8\0I16\0U16\0I32\0U32\0I64\0U64\0");
+                "I8\0U8\0I16\0U16\0I32\0U32\0I64\0U64\0");
   DefineLstLoad("ST_TY_TYPES","NULL\0STK\0IMM\0REG\0DISP\0SIB\0RIP\0");
   DefineLstLoad("ST_U8_REGS","AL\0CL\0DL\0BL\0AH\0CH\0DH\0BH\0"
-	"R8u8\0R9u8\0R10u8\0R11u8\0R12u8\0R13u8\0R14u8\0R15u8\0");
+                "R8u8\0R9u8\0R10u8\0R11u8\0R12u8\0R13u8\0R14u8\0R15u8\0");
   DefineLstLoad("ST_U8_REX_REGS","AL\0CL\0DL\0BL\0RSPu8\0RBPu8\0RSIu8\0RDIu8\0"
-	"R8u8\0R9u8\0R10u8\0R11u8\0R12u8\0R13u8\0R14u8\0R15u8\0");
+                "R8u8\0R9u8\0R10u8\0R11u8\0R12u8\0R13u8\0R14u8\0R15u8\0");
   DefineLstLoad("ST_U16_REGS","AX\0CX\0DX\0BX\0SP\0BP\0SI\0DI\0"
-	"R8u16\0R9u16\0R10u16\0R11u16\0R12u16\0R13u16\0R14u16\0R15u16\0");
+                "R8u16\0R9u16\0R10u16\0R11u16\0R12u16\0R13u16\0R14u16\0R15u16\0");
   DefineLstLoad("ST_U32_REGS","EAX\0ECX\0EDX\0EBX\0ESP\0EBP\0ESI\0EDI\0"
-	"R8u32\0R9u32\0R10u32\0R11u32\0R12u32\0R13u32\0R14u32\0R15u32\0");
+                "R8u32\0R9u32\0R10u32\0R11u32\0R12u32\0R13u32\0R14u32\0R15u32\0");
   DefineLstLoad("ST_U64_REGS","RAX\0RCX\0RDX\0RBX\0RSP\0RBP\0RSI\0RDI\0"
-	"R8\0R9\0R10\0R11\0R12\0R13\0R14\0R15\0");
+                "R8\0R9\0R10\0R11\0R12\0R13\0R14\0R15\0");
   DefineLstLoad("ST_MM_REGS","MM0\0MM1\0MM2\0MM3\0MM4\0MM5\0MM6\0MM7\0");
   DefineLstLoad("ST_XMM_REGS",
-	"XMM0\0XMM1\0XMM2\0XMM3\0XMM4\0XMM5\0XMM6\0XMM7\0");
+                "XMM0\0XMM1\0XMM2\0XMM3\0XMM4\0XMM5\0XMM6\0XMM7\0");
   DefineLstLoad("ST_ARG_TYPES","NONE\0REL8\0REL16\0REL32\0"
-	"IMM8\0IMM16\0IMM32\0IMM64\0UIMM8\0UIMM16\0UIMM32\0UIMM64\0"
-	"R8\0R16\0R32\0R64\0RM8\0RM16\0RM32\0RM64\0"
-	"M8\0M16\0M32\0M64\0M1632\0M16N32\0M16N16\0M32N32\0"
-	"MOFFS8\0MOFFS16\0MOFFS32\0MOFFS64\0"
-	"AL\0AX\0EAX\0RAX\0CL\0DX\0\0SREG\0"
-	"SS\0DS\0ES\0FS\0GS\0CS\0ST0\0STI\0"
-	"MM\0MM32\0MM64\0XMM\0XMM32\0XMM64\0XMM128\0XMM0\0");
+                "IMM8\0IMM16\0IMM32\0IMM64\0UIMM8\0UIMM16\0UIMM32\0UIMM64\0"
+                "R8\0R16\0R32\0R64\0RM8\0RM16\0RM32\0RM64\0"
+                "M8\0M16\0M32\0M64\0M1632\0M16N32\0M16N16\0M32N32\0"
+                "MOFFS8\0MOFFS16\0MOFFS32\0MOFFS64\0"
+                "AL\0AX\0EAX\0RAX\0CL\0DX\0\0SREG\0"
+                "SS\0DS\0ES\0FS\0GS\0CS\0ST0\0STI\0"
+                "MM\0MM32\0MM64\0XMM\0XMM32\0XMM64\0XMM128\0XMM0\0");
   DefineLstLoad("ST_SEG_REGS","ES\0CS\0SS\0DS\0FS\0GS\0");
   DefineLstLoad("ST_FSTK_REGS","ST0\0ST1\0ST2\0ST3\0ST4\0ST5\0ST6\0ST7\0");
 }
@@ -240,21 +242,18 @@ U0 CmpFillTables()
 {
   I64 i;
   U32 *d;
-
   cmp.to_reg_vars_map=CAlloc(REG_REGS_NUM*sizeof(U8));
   cmp.num_reg_vars=0;
   cmp.reg_vars_mask=REGG_LOCAL_VARS;
-  for (i=0;i<REG_REGS_NUM;i++)
+  for (i=0; i<REG_REGS_NUM; i++)
     if (Bt(&cmp.reg_vars_mask,i))
       cmp.to_reg_vars_map[cmp.num_reg_vars++]=i;
-
   cmp.non_ptr_vars_map=CAlloc(REG_REGS_NUM*sizeof(U8));
   cmp.num_non_ptr_vars=0;
   cmp.non_ptr_vars_mask=REGG_LOCAL_NON_PTR_VARS;
-  for (i=0;i<REG_REGS_NUM;i++)
+  for (i=0; i<REG_REGS_NUM; i++)
     if (Bt(&cmp.non_ptr_vars_mask,i))
       cmp.non_ptr_vars_map[cmp.num_non_ptr_vars++]=i;
-
   cmp.dual_U16_tokens1=d=CAlloc(sizeof(U32)*TK_TKS_NUM);
   d['!']=TK_NOT_EQU<<16+'=';
   d['&']=TK_AND_AND<<16+'&';
@@ -269,7 +268,6 @@ U0 CmpFillTables()
   d['^']=TK_XOR_EQU<<16+'=';
   d['|']=TK_OR_OR<<16+'|';
   d['%']=TK_MOD_EQU<<16+'=';
-
   cmp.dual_U16_tokens2=d=CAlloc(sizeof(U32)*TK_TKS_NUM);
   d['&']=TK_AND_EQU<<16+'=';
   d['+']=TK_ADD_EQU<<16+'=';
@@ -279,43 +277,30 @@ U0 CmpFillTables()
   d['>']=TK_SHR<<16+'>';
   d['^']=TK_XOR_XOR<<16+'^';
   d['|']=TK_OR_EQU<<16+'=';
-
   cmp.dual_U16_tokens3=d=CAlloc(sizeof(U32)*TK_TKS_NUM);
   d['-']=TK_SUB_EQU<<16+'=';
   d['/']=TK_DIV_EQU<<16+'=';
-
   cmp.binary_ops=d=CAlloc(sizeof(U32)*TK_TKS_NUM);
   d['`']   =(PREC_EXP+ASSOCF_RIGHT)<<16+IC_POWER;
   d[TK_SHL]=(PREC_EXP+ASSOCF_LEFT)<<16+IC_SHL;
   d[TK_SHR]=(PREC_EXP+ASSOCF_LEFT)<<16+IC_SHR;
-
   d['*']=PREC_MUL<<16+IC_MUL;
   d['/']=(PREC_MUL+ASSOCF_LEFT)<<16+IC_DIV;
   d['%']=(PREC_MUL+ASSOCF_LEFT)<<16+IC_MOD;
-
   d['&']=PREC_AND<<16+IC_AND;
-
   d['^']=PREC_XOR<<16+IC_XOR;
-
   d['|']=PREC_OR<<16+IC_OR;
-
   d['+']=PREC_ADD<<16+IC_ADD;
   d['-']=(PREC_ADD+ASSOCF_LEFT)<<16+IC_SUB;
-
   d['<']		=PREC_CMP<<16+IC_LESS;
   d['>']		=PREC_CMP<<16+IC_GREATER;
   d[TK_LESS_EQU]	=PREC_CMP<<16+IC_LESS_EQU;
   d[TK_GREATER_EQU]	=PREC_CMP<<16+IC_GREATER_EQU;
-
   d[TK_EQU_EQU]	=PREC_CMP2<<16+IC_EQU_EQU;
   d[TK_NOT_EQU]	=PREC_CMP2<<16+IC_NOT_EQU;
-
   d[TK_AND_AND]	=PREC_AND_AND<<16+IC_AND_AND;
-
   d[TK_XOR_XOR]	=PREC_XOR_XOR<<16+IC_XOR_XOR;
-
   d[TK_OR_OR]	=PREC_OR_OR<<16+IC_OR_OR;
-
   d['=']	 =(PREC_ASSIGN+ASSOCF_RIGHT)<<16+IC_ASSIGN;
   d[TK_SHL_EQU]=(PREC_ASSIGN+ASSOCF_RIGHT)<<16+IC_SHL_EQU;
   d[TK_SHR_EQU]=(PREC_ASSIGN+ASSOCF_RIGHT)<<16+IC_SHR_EQU;

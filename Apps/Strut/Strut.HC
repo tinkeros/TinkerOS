@@ -101,7 +101,7 @@ U0 DrawIt(CTask *,CDC *dc)
       task->text_attr=BLACK<<4+WHITE;
       dc->color=WHITE;
       for (i=0;i<STARS_NUM;i++)
-	GrPlot3(dc,stars_x[i],stars_y[i],0);
+        GrPlot3(dc,stars_x[i],stars_y[i],0);
       break;
   }
 
@@ -145,9 +145,9 @@ U0 DrawIt(CTask *,CDC *dc)
     if (tmps->type==EMD_THRUSTER) {
       é=Arg(x2-x1,y2-y1);
       if (Bt(kbd.down_bitmap,action_scan_codes[tmps->action_key-'0'])) {
-	dc->flags|=DCF_SYMMETRY;
-	DCSymmetry3Set(dc,x1,y1,256,x1,y1,0,x1-256*Cos(é),y1-256*Sin(é),0);
-	for (i=0;i<8;i++) {
+        dc->flags|=DCF_SYMMETRY;
+        DCSymmetry3Set(dc,x1,y1,256,x1,y1,0,x1-256*Cos(é),y1-256*Sin(é),0);
+        for (i=0;i<8;i++) {
 	  d=20*Rand+6;
 	  if (d<10)
 	    dc->color=BLUE;
@@ -156,23 +156,23 @@ U0 DrawIt(CTask *,CDC *dc)
 	  else
 	    dc->color=YELLOW;
 	  GrLine3(dc,x1-3*Cos(é),y1-3*Sin(é),0,
-		x1-d*Cos(é)+0.5*d*Sin(é),
-		y1-d*Sin(é)-0.5*d*Cos(é),0);
+	        x1-d*Cos(é)+0.5*d*Sin(é),
+	        y1-d*Sin(é)-0.5*d*Cos(é),0);
 	  GrLine3(dc,x1-2*d*Cos(é),y1-2*d*Sin(é),0,
-		x1-d*Cos(é)+0.5*d*Sin(é),
-		y1-d*Sin(é)-0.5*d*Cos(é),0);
-	}
-	dc->flags&=~DCF_SYMMETRY;
+	        x1-d*Cos(é)+0.5*d*Sin(é),
+	        y1-d*Sin(é)-0.5*d*Cos(é),0);
+        }
+        dc->flags&=~DCF_SYMMETRY;
       }
       Sprite3ZB(dc,x1,y1,0,$IB,"<3>",BI=3$,é);
       if (zoom>0.5) {
-	dc->color=YELLOW;
-	GrPutChar3(dc,(x1*7+x2)/8,(y1*7+y2)/8,0,tmps->action_key);
+        dc->color=YELLOW;
+        GrPutChar3(dc,(x1*7+x2)/8,(y1*7+y2)/8,0,tmps->action_key);
       }
     } else if (tmps->type==EMD_CONNECTOR) {
       if (zoom>0.5) {
-	dc->color=CYAN;
-	GrPutChar3(dc,(x1*7+x2)/8,(y1*7+y2)/8,0,tmps->action_key);
+        dc->color=CYAN;
+        GrPutChar3(dc,(x1*7+x2)/8,(y1*7+y2)/8,0,tmps->action_key);
       }
     }
     tmps=tmps->next;
@@ -197,11 +197,11 @@ U0 MyDerivative(CMathODE *ode,F64,COrder2D3 *,COrder2D3 *)
       D3Sub(&p,&tmpm2->state->x,&tmpm1->state->x);
       dd=D3NormSqr(&p);
       if (dd<=Sqr(2*RADIUS)) {
-	d=Sqrt(dd)+0.0001;
-	dd=10.0*Sqr(Sqr(Sqr(2*RADIUS)-dd));
-	D3MulEqu(&p,dd/d);
-	D3AddEqu(&tmpm2->DstateDt->DxDt,&p);
-	D3SubEqu(&tmpm1->DstateDt->DxDt,&p);
+        d=Sqrt(dd)+0.0001;
+        dd=10.0*Sqr(Sqr(Sqr(2*RADIUS)-dd));
+        D3MulEqu(&p,dd/d);
+        D3AddEqu(&tmpm2->DstateDt->DxDt,&p);
+        D3SubEqu(&tmpm1->DstateDt->DxDt,&p);
       }
       tmpm2=tmpm2->next;
     }
@@ -325,43 +325,43 @@ U0 PlayShip()
   Bool okay;
   ODEPause(ode,OFF);
   MenuPush(
-	"File {"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Edit {"
-	"  EditShip(,CH_SPACE);"
-	"}"
-	"Play {"
-	"  Center(,'c');"
-	"  Damp(,'d');"
-	"  Action0(,'0');"
-	"  Action1(,'1');"
-	"  Action2(,'2');"
-	"  Action3(,'3');"
-	"  Action4(,'4');"
-	"  Action5(,'5');"
-	"  Action6(,'6');"
-	"  Action7(,'7');"
-	"  Action8(,'8');"
-	"  Action9(,'9');"
-	"}"
-	"View {"
-	"  ZoomIn(,'z');"
-	"  ZoomOut(,'Z');"
-	"}"
-	);
+        "File {"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Edit {"
+        "  EditShip(,CH_SPACE);"
+        "}"
+        "Play {"
+        "  Center(,'c');"
+        "  Damp(,'d');"
+        "  Action0(,'0');"
+        "  Action1(,'1');"
+        "  Action2(,'2');"
+        "  Action3(,'3');"
+        "  Action4(,'4');"
+        "  Action5(,'5');"
+        "  Action6(,'6');"
+        "  Action7(,'7');"
+        "  Action8(,'8');"
+        "  Action9(,'9');"
+        "}"
+        "View {"
+        "  ZoomIn(,'z');"
+        "  ZoomOut(,'Z');"
+        "}"
+        );
   DocClear;
   try {
     while (main_mode_bttn.state==MMD_PLAY) {
       BreakConnectors;
       switch (ScanMsg(&arg1,&arg2,1<<MSG_KEY_DOWN|1<<MSG_KEY_UP)) {
-	case MSG_KEY_DOWN:
+        case MSG_KEY_DOWN:
 	  switch (arg1) {
 	    case '0'...'9':
 	      if (tS>last_noise+0.25) {
-		Noise(250,18,46);
-		last_noise=tS;
+	        Noise(250,18,46);
+	        last_noise=tS;
 	      }
 	      break;
 	    case 'z':
@@ -379,7 +379,7 @@ U0 PlayShip()
 	      break;
 	    case CH_SPACE:
 	      if (++main_mode_bttn.state==MMD_MODES_NUM)
-		main_mode_bttn.state=0;
+	        main_mode_bttn.state=0;
 	      GetMsg(,,1<<MSG_KEY_UP);
 	      goto ps_done;
 	    case CH_SHIFT_ESC:
@@ -387,7 +387,7 @@ U0 PlayShip()
 	      throw;
 	  }
 	  break;
-	case MSG_KEY_UP:
+        case MSG_KEY_UP:
 	  switch (arg1) {
 	    case 'd':
 	      ode->drag_v2=0.000002;
@@ -416,56 +416,56 @@ U0 EditShip()
   Bool okay;
   MyMass *tmpm1=NULL,*tmpm2=NULL;
   CCtrl *bt_edit_mode=CtrlBttnNew(0,5*FONT_HEIGHT+4,80,,EMD_MODES_NUM,
-	Define("ST_EDIT_MODES"),edit_mode_colors,&edit_mode_bttn);
+        Define("ST_EDIT_MODES"),edit_mode_colors,&edit_mode_bttn);
   ODEPause(ode);
   MenuPush(
-	"File {"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Play {"
-	"  PlayShip(,CH_SPACE);"
-	"  Center(,'c');"
-	"  Damp(,'d');"
-	"}"
-	"Edit {"
-	"  Move(,'v');"
-	"  Mass(,'m');"
-	"  Spring(,'s');"
-	"  Connector(,'n');"
-	"  Thruster(,'t');"
-	"  Restart(,'\n');"
-	"  Action0(,'0');"
-	"  Action1(,'1');"
-	"  Action2(,'2');"
-	"  Action3(,'3');"
-	"  Action4(,'4');"
-	"  Action5(,'5');"
-	"  Action6(,'6');"
-	"  Action7(,'7');"
-	"  Action8(,'8');"
-	"  Action9(,'9');"
-	"}"
-	"View {"
-	"  ZoomIn(,'z');"
-	"  ZoomOut(,'Z');"
-	"}"
-	);
+        "File {"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Play {"
+        "  PlayShip(,CH_SPACE);"
+        "  Center(,'c');"
+        "  Damp(,'d');"
+        "}"
+        "Edit {"
+        "  Move(,'v');"
+        "  Mass(,'m');"
+        "  Spring(,'s');"
+        "  Connector(,'n');"
+        "  Thruster(,'t');"
+        "  Restart(,'\n');"
+        "  Action0(,'0');"
+        "  Action1(,'1');"
+        "  Action2(,'2');"
+        "  Action3(,'3');"
+        "  Action4(,'4');"
+        "  Action5(,'5');"
+        "  Action6(,'6');"
+        "  Action7(,'7');"
+        "  Action8(,'8');"
+        "  Action9(,'9');"
+        "}"
+        "View {"
+        "  ZoomIn(,'z');"
+        "  ZoomOut(,'Z');"
+        "}"
+        );
   DocClear;
   try {
     while (main_mode_bttn.state==MMD_EDIT) {
       switch (ScanMsg(&arg1,&arg2,
 	    1<<MSG_MS_L_DOWN|1<<MSG_MS_L_UP|1<<MSG_MS_R_DOWN|
 	    1<<MSG_MS_MOVE|1<<MSG_KEY_DOWN|1<<MSG_KEY_UP)) {
-	case MSG_MS_L_DOWN:
+        case MSG_MS_L_DOWN:
 	  switch (edit_mode_bttn.state) {
 	    case EMD_MASS:
 	      S2W(ms.pos.x,ms.pos.y,&wx,&wy);
 	      tmpm1=PlaceMass(wx,wy);
 	      if (ode->next_mass==tmpm1)
-		tmpm1->img=$IB,"<1>",BI=1$;
+	        tmpm1->img=$IB,"<1>",BI=1$;
 	      else
-		tmpm1->img=$IB,"<2>",BI=2$;
+	        tmpm1->img=$IB,"<2>",BI=2$;
 	      tmpm1=NULL;
 	      break;
 	    case EMD_SPRING:
@@ -478,7 +478,7 @@ U0 EditShip()
 	      break;
 	  }
 	  break;
-	case MSG_MS_L_UP:
+        case MSG_MS_L_UP:
 	  switch (edit_mode_bttn.state) {
 	    case EMD_MASS:
 	      break;
@@ -487,41 +487,41 @@ U0 EditShip()
 	    case EMD_THRUSTER:
 	      S2W(ms.pos.x,ms.pos.y,&wx,&wy);
 	      if (tmpm1 && (tmpm2=MassFind(ode,wx,wy)) && tmpm1!=tmpm2)
-		PlaceSpring(tmpm1,tmpm2,edit_mode_bttn.state);
+	        PlaceSpring(tmpm1,tmpm2,edit_mode_bttn.state);
 	      tmpm1=tmpm2=NULL;
 	      break;
 	    case EMD_MOVE:
 	      S2W(ms.pos.x,ms.pos.y,&wx,&wy);
 	      if (tmpm1) {
-		tmpm1->x=wx;
-		tmpm1->y=wy;
-		tmpm1->z=0;
-		NullSprings;
+	        tmpm1->x=wx;
+	        tmpm1->y=wy;
+	        tmpm1->z=0;
+	        NullSprings;
 	      }
 	      tmpm1=tmpm2=NULL;
 	      break;
 	  }
 	  break;
-	case MSG_MS_MOVE:
+        case MSG_MS_MOVE:
 	  switch (edit_mode_bttn.state) {
 	    case EMD_MOVE:
 	      S2W(ms.pos.x,ms.pos.y,&wx,&wy);
 	      if (tmpm1) {
-		tmpm1->x=wx;
-		tmpm1->y=wy;
-		tmpm1->z=0;
-		NullSprings;
+	        tmpm1->x=wx;
+	        tmpm1->y=wy;
+	        tmpm1->z=0;
+	        NullSprings;
 	      }
 	      break;
 	  }
 	  break;
-	case MSG_MS_R_DOWN:
+        case MSG_MS_R_DOWN:
 	  if (++edit_mode_bttn.state==EMD_MODES_NUM)
 	    edit_mode_bttn.state=0;
 	  break;
-	case MSG_MS_R_UP:
+        case MSG_MS_R_UP:
 	  break;
-	case MSG_KEY_DOWN:
+        case MSG_KEY_DOWN:
 	  switch (arg1) {
 	    case '\n':
 	      CleanUp;
@@ -561,7 +561,7 @@ U0 EditShip()
 	      break;
 	    case CH_SPACE:
 	      if (++main_mode_bttn.state==MMD_MODES_NUM)
-		main_mode_bttn.state=0;
+	        main_mode_bttn.state=0;
 	      GetMsg(,,1<<MSG_KEY_UP);
 	      goto es_done;
 	    case CH_SHIFT_ESC:
@@ -569,7 +569,7 @@ U0 EditShip()
 	      throw;
 	  }
 	  break;
-	case MSG_KEY_UP:
+        case MSG_KEY_UP:
 	  switch (arg1) {
 	    case 'd':
 	      ODEPause(ode);
@@ -604,19 +604,19 @@ U0 Strut()
   DocCursor;
   DocClear;
   "\n$$WW,1$$$$PURPLE$$$$TX+CX,\"Build a ship.\"$$$$FG$$\n\n"
-	"Sel mass mode.\tLeft-click to place masses.\n"
-	"Sel spring mode.\tLeft-drag to make members.\n"
-	"Sel thruster mode.\tPress a digit, 0-9.Drag to make thruster.\n"
-	"Sel connector mode.\tPress a digit, 0-9."
-	"Drag to make breakable connector.\n\n"
-	"Press $$GREEN$$<SPACE>$$FG$$ to run the game.Press digits to operate "
-	"thrusters and break connectors.\n\n"
-	"Press $$GREEN$$<z>$$FG$$ or $$GREEN$$<SHIFT-Z>$$FG$$ to zoom in/out.\n\n";
+        "Sel mass mode.\tLeft-click to place masses.\n"
+        "Sel spring mode.\tLeft-drag to make members.\n"
+        "Sel thruster mode.\tPress a digit, 0-9.Drag to make thruster.\n"
+        "Sel connector mode.\tPress a digit, 0-9."
+        "Drag to make breakable connector.\n\n"
+        "Press $$GREEN$$<SPACE>$$FG$$ to run the game.Press digits to operate "
+        "thrusters and break connectors.\n\n"
+        "Press $$GREEN$$<z>$$FG$$ or $$GREEN$$<SHIFT-Z>$$FG$$ to zoom in/out.\n\n";
 
   PressAKey;
   bt_main_mode=CtrlBttnNew(
-	(GR_WIDTH-4*FONT_WIDTH-16)>>1,1*FONT_HEIGHT+4,80,,MMD_MODES_NUM,
-	Define("ST_MAIN_MODES"),main_mode_colors,&main_mode_bttn);
+        (GR_WIDTH-4*FONT_WIDTH-16)>>1,1*FONT_HEIGHT+4,80,,MMD_MODES_NUM,
+        Define("ST_MAIN_MODES"),main_mode_colors,&main_mode_bttn);
   DocClear;
   Init;
   Fs->draw_it=&DrawIt;

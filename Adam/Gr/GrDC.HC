@@ -14,7 +14,7 @@ public U0 Mat4x4MulXYZ(I64 *r,I64 *_x,I64 *_y,I64 *_z)
   *_z=z1;
 }
 
-public U0 DCTransform(CDC *dc,I64 *_x,I64 *_y,I64 *_z)
+public U0 DCTransformOld(CDC *dc,I64 *_x,I64 *_y,I64 *_z)
 {//This is the dft dc->transform() callback.
 //Uses $LK,"fixed-point",A="FI:::/Demo/Lectures/FixedPoint.HC"$.
   Mat4x4MulXYZ(dc->r,_x,_y,_z);
@@ -23,13 +23,25 @@ public U0 DCTransform(CDC *dc,I64 *_x,I64 *_y,I64 *_z)
   *_z+=dc->z;
 }
 
+public U0 DCTransform(CDC *dc,I64 *_x,I64 *_y,I64 *_z)
+{//This is the dft dc->transform() callback.
+//Uses $LK,"fixed-point",A="FI:::/Demo/Lectures/FixedPoint.HC"$.
+//This function is frequently called, inlined Mat4x4MulXYZ and simplified
+  I64 x1,y1,*r=dc->r;
+  x1=(r[0*4+0]*_x[0]+r[0*4+1]*_y[0]+r[0*4+2]*_z[0]+r[0*4+3])>>32;
+  y1=(r[1*4+0]*_x[0]+r[1*4+1]*_y[0]+r[1*4+2]*_z[0]+r[1*4+3])>>32;
+  *_z=(r[2*4+0]*_x[0]+r[2*4+1]*_y[0]+r[2*4+2]*_z[0]+r[2*4+3])>>32 + dc->z;
+  *_x=x1 + dc->x;
+  *_y=y1 + dc->y;
+}
+
 public I64 *Mat4x4IdentEqu(I64 *r)
 {//Set matrix to identity. Uses $LK,"fixed-point",A="FI:::/Demo/Lectures/FixedPoint.HC"$.
-  MemSet(r,0,sizeof(I64)*16);
-  r[0*4+0].i32[1]=1;
+  MemSetI64(&r[1],0,14);
+  r[0*4+0]=1<<32;
   r[1*4+1].i32[1]=1;
   r[2*4+2].i32[1]=1;
-  r[3*4+3].i32[1]=1;
+  r[3*4+3]=1<<32;
   return r;
 }
 

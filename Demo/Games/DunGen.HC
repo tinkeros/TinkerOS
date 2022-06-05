@@ -85,15 +85,15 @@ Bool LOSPlot(U8 *,I64 x,I64 y,I64)
 Bool LOS(I64 x1,I64 y1,I64 x2,I64 y2)
 {//Line of sight
   return Line(NULL,x1*LOS_SCALE+LOS_SCALE/2,y1*LOS_SCALE+LOS_SCALE/2,0,
-	x2*LOS_SCALE+LOS_SCALE/2,y2*LOS_SCALE+LOS_SCALE/2,0,&LOSPlot);
+        x2*LOS_SCALE+LOS_SCALE/2,y2*LOS_SCALE+LOS_SCALE/2,0,&LOSPlot);
 }
 
 U0 DrawIt(CTask *task,CDC *dc)
 {
   CDC *dc_t=DCAlias(gr.dc2,task);
   I64 i,x,y,xx,yy,x1,y1,z1,color,
-	cx=task->pix_width/2,
-	cy=task->pix_height/2;
+        cx=task->pix_width/2,
+        cy=task->pix_height/2;
   CD3I32 poly[4];
   U8 **_tiles;
   F64 tt;
@@ -119,10 +119,10 @@ U0 DrawIt(CTask *task,CDC *dc)
     yy=y+scrn_y;
     if (0<=yy<map_height)
       for (x=-SCRN_WIDTH/2;x<SCRN_WIDTH/2;x++) {
-	xx=x+scrn_x;
-	if (0<=xx<map_width) {
+        xx=x+scrn_x;
+        if (0<=xx<map_width) {
 	  if ((color=map[yy*map_width+xx]) &&
-		LOS(xx,yy,man_x,man_y)) {
+	        LOS(xx,yy,man_x,man_y)) {
 	    if (_tiles[color]) {
 	      x1=x*SCRN_SCALE;
 	      y1=y*SCRN_SCALE;
@@ -146,7 +146,7 @@ U0 DrawIt(CTask *task,CDC *dc)
 	      GrFillPoly3(dc_t,4,poly);
 	    }
 	  }
-	}
+        }
       }
   }
 
@@ -154,8 +154,8 @@ U0 DrawIt(CTask *task,CDC *dc)
     yy=y+scrn_y;
     if (0<=yy<map_height)
       for (x=-SCRN_WIDTH/2;x<SCRN_WIDTH/2;x++) {
-	xx=x+scrn_x;
-	if (0<=xx<map_width) {
+        xx=x+scrn_x;
+        if (0<=xx<map_width) {
 	  if (!map[yy*map_width+xx]) {
 	    if (yy+1<map_height && LOS(xx,yy+1,man_x,man_y)) {
 	      x1=x*SCRN_SCALE;
@@ -172,7 +172,7 @@ U0 DrawIt(CTask *task,CDC *dc)
 	      Sprite3(dc,x1,y1,z1,$IB,"<10>",BI=10$);
 	    }
 	  }
-	}
+        }
       }
   }
 
@@ -183,10 +183,10 @@ U0 DrawIt(CTask *task,CDC *dc)
       z1=0;
       DCTransform(dc_t,&x1,&y1,&z1);
       if (tmpm->dx<0) {
-	dc->flags|=DCF_SYMMETRY|DCF_JUST_MIRROR;
-	DCSymmetrySet(dc,x1,y1,x1,y1+1);
+        dc->flags|=DCF_SYMMETRY|DCF_JUST_MIRROR;
+        DCSymmetrySet(dc,x1,y1,x1,y1+1);
       } else
-	dc->flags&=~(DCF_SYMMETRY|DCF_JUST_MIRROR);
+        dc->flags&=~(DCF_SYMMETRY|DCF_JUST_MIRROR);
       Sprite3(dc,x1,y1,z1,$IB,"<4>",BI=4$);
     }
 
@@ -223,7 +223,7 @@ U0 DrawIt(CTask *task,CDC *dc)
     tt=tS;
   }
   GrPrint(dc,0,0,"Enemy:%d Time:%3.2f Best:%3.2f",
-	monsters_left,tt-t0,best_score);
+        monsters_left,tt-t0,best_score);
 }
 
 U0 Attack()
@@ -238,8 +238,8 @@ U0 Attack()
 	  man_x+man_dx==tmpm->x && man_y+man_dy==tmpm->y) {
       tmpm->dead=TRUE;
       if (!--monsters_left) {
-	tf=tS;
-	if (tf-t0<best_score)
+        tf=tS;
+        if (tf-t0<best_score)
 	  best_score=tf-t0;
       }
     }
@@ -298,16 +298,16 @@ U0 AnimateTask(I64)
   while (TRUE) {
     for (i=0,tmpm=monsters;i<MONSTERS_NUM;i++,tmpm++)
       if (!tmpm->dead) {
-	dx=RandU16%3-1;
-	dy=RandU16%3-1;
-	x=tmpm->x+dx;
-	y=tmpm->y+dy;
-	if (0<=x<map_width && 0<=y<map_height && map[y*map_width+x]) {
+        dx=RandU16%3-1;
+        dy=RandU16%3-1;
+        x=tmpm->x+dx;
+        y=tmpm->y+dy;
+        if (0<=x<map_width && 0<=y<map_height && map[y*map_width+x]) {
 	  tmpm->x=x;
 	  tmpm->y=y;
 	  tmpm->dx=dx;
 	  tmpm->dy=dy;
-	}
+        }
       }
     Sleep(1000);
   }
@@ -318,19 +318,19 @@ U0 DunGen()
   I64 ch,sc;
 
   MenuPush(
-	"File {"
-	"  Abort(,CH_SHIFT_ESC);"
-	"  Exit(,CH_ESC);"
-	"}"
-	"Play {"
-	"  Restart(,'\n');"
-	"  Up(,,SC_CURSOR_UP);"
-	"  Down(,,SC_CURSOR_DOWN);"
-	"  Left(,,SC_CURSOR_LEFT);"
-	"  Right(,,SC_CURSOR_RIGHT);"
-	"  Attack(,CH_SPACE);"
-	"}"
-	);
+        "File {"
+        "  Abort(,CH_SHIFT_ESC);"
+        "  Exit(,CH_ESC);"
+        "}"
+        "Play {"
+        "  Restart(,'\n');"
+        "  Up(,,SC_CURSOR_UP);"
+        "  Down(,,SC_CURSOR_DOWN);"
+        "  Left(,,SC_CURSOR_LEFT);"
+        "  Right(,,SC_CURSOR_RIGHT);"
+        "  Attack(,CH_SPACE);"
+        "}"
+        );
 
   SettingsPush; //See $LK,"SettingsPush",A="MN:SettingsPush"$
   Fs->text_attr=BLACK<<4+WHITE;
@@ -346,7 +346,7 @@ U0 DunGen()
   try {
     while (TRUE) {
       switch (GetMsg(&ch,&sc,1<<MSG_KEY_DOWN|1<<MSG_KEY_UP)) {
-	case MSG_KEY_DOWN:
+        case MSG_KEY_DOWN:
 	  switch (ch) {
 	    case '\n':
 	      Init;
@@ -359,7 +359,7 @@ U0 DunGen()
 	      goto dg_done;
 	    case 0:
 	      switch (sc.u8[0]) {
-		case SC_CURSOR_RIGHT:
+	        case SC_CURSOR_RIGHT:
 		  if (man_attack) {
 		    man_dx=1;
 		    man_dy=0;
@@ -369,13 +369,13 @@ U0 DunGen()
 			  map[man_y*map_width+(man_x+1)]==DKGRAY) {
 		      man_x++;
 		      if (man_x-scrn_x>SCRN_WIDTH/2-3) {
-			scrn_x+=SCRN_WIDTH/2;
-			if (scrn_x+SCRN_WIDTH/2>map_width)
+		        scrn_x+=SCRN_WIDTH/2;
+		        if (scrn_x+SCRN_WIDTH/2>map_width)
 			  scrn_x=map_width-SCRN_WIDTH/2;
 		      }
 		    }
 		  break;
-		case SC_CURSOR_LEFT:
+	        case SC_CURSOR_LEFT:
 		  if (man_attack) {
 		    man_dx=-1;
 		    man_dy=0;
@@ -385,13 +385,13 @@ U0 DunGen()
 			  map[man_y*map_width+(man_x-1)]==DKGRAY) {
 		      man_x--;
 		      if (man_x-scrn_x<-SCRN_WIDTH/2+3) {
-			scrn_x-=SCRN_WIDTH/2;
-			if (scrn_x-SCRN_WIDTH/2<0)
+		        scrn_x-=SCRN_WIDTH/2;
+		        if (scrn_x-SCRN_WIDTH/2<0)
 			  scrn_x=SCRN_WIDTH/2;
 		      }
 		    }
 		  break;
-		case SC_CURSOR_UP:
+	        case SC_CURSOR_UP:
 		  if (man_attack) {
 		    man_dx=0;
 		    man_dy=-1;
@@ -401,13 +401,13 @@ U0 DunGen()
 			  map[(man_y-1)*map_width+man_x]==DKGRAY) {
 		      man_y--;
 		      if (man_y-scrn_y<-SCRN_HEIGHT/2+3) {
-			scrn_y-=SCRN_HEIGHT/2;
-			if (scrn_y-SCRN_HEIGHT/2<0)
+		        scrn_y-=SCRN_HEIGHT/2;
+		        if (scrn_y-SCRN_HEIGHT/2<0)
 			  scrn_y=SCRN_HEIGHT/2;
 		      }
 		    }
 		  break;
-		case SC_CURSOR_DOWN:
+	        case SC_CURSOR_DOWN:
 		  if (man_attack) {
 		    man_dx=0;
 		    man_dy=1;
@@ -417,8 +417,8 @@ U0 DunGen()
 			  map[(man_y+1)*map_width+man_x]==DKGRAY) {
 		      man_y++;
 		      if (man_y-scrn_y>SCRN_HEIGHT/2-3) {
-			scrn_y+=SCRN_HEIGHT/2;
-			if (scrn_y+SCRN_HEIGHT/2>map_height)
+		        scrn_y+=SCRN_HEIGHT/2;
+		        if (scrn_y+SCRN_HEIGHT/2>map_height)
 			  scrn_y=map_height-SCRN_HEIGHT/2;
 		      }
 		    }
@@ -426,7 +426,7 @@ U0 DunGen()
 	      }
 	  }
 	  break;
-	case MSG_KEY_UP:
+        case MSG_KEY_UP:
 	  if (ch==CH_SPACE)
 	    man_attack=FALSE;
 	  break;

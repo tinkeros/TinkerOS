@@ -120,6 +120,41 @@ U0 DoOnceDemo()
 }
 */
 
+U0 DoWordle()
+{
+  I64 i,j;
+  U8 buf[6], *guess;
+  CTask *task=User;
+  XTalkWait(task,"#include \"::/Apps/Wordle/Run\";\n");
+  for (i=0; i<5; i++)
+  {
+    buf[0]=0;
+    while (StrLen(buf) != 5)
+    {
+      buf[5]=0;
+      guess=god.words[RandRange(0,god.num_words-1)];
+      if (StrLen(guess) == 5)
+      {
+        for (j=0;j<5;j++) {
+          if ('a' < guess[j] | 0x20 < 'z')
+            buf[j]=guess[j] | 0x20;
+          else
+            buf[j]=0;
+        }
+      }
+    }
+    for (j=0;j<5;j++) {
+      Sleep(200);
+      PostMsgWait(task,MSG_KEY_DOWN_UP,buf[j],0);
+    }
+    XTalkWait(task,"\n");
+    Sleep(750);
+  }
+  Sleep(750);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_ESC,0);
+  DeathWait(&task,TRUE);
+}
+
 
 U0 DoSudoku()
 {
@@ -174,7 +209,7 @@ U0 DoNGScreenSaver()
   AdamFile("/Demo/ScreenSavers/Default.HC.Z");
   PostMsgWait(task,MSG_KEY_DOWN_UP,CH_ESC,0);
   SetScreenSaverTimeout(0);
-  ms_hard.timestamp = GetTSC;
+  ms_hard.timestamp = GetTSC;
   Sleep(1);
   Kill(task);
 }
@@ -1718,11 +1753,6 @@ U0 OSTestSuite()
   ts_i=0;
   TS("PersonalMenu");
   DoPersonalMenu;
-  if (GR_WIDTH == 640)
-  {
-    TS("AfterEgypt");
-    DoAfterEgypt;
-  }
   TS("TerryDanceScreenSaver");
   DoTDScreenSaver;
   TS("LineSandScreenSaver");
@@ -1733,6 +1763,13 @@ U0 OSTestSuite()
   DoChess;
   TS("Sudoku");
   DoSudoku;
+  TS("Wordle");
+  DoWordle;
+  if (GR_WIDTH == 640)
+  {
+    TS("AfterEgypt");
+    DoAfterEgypt;
+  }
   TS("BlackDiamond");
   DoBlackDiamond;
   TS("Talons");

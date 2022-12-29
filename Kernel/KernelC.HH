@@ -53,7 +53,7 @@ public extern CDate Str2Date(U8 *src);
 
 #help_index "Char/Flags"
 public extern U0 ScanFlags(U8 *_dst_flags,U8 *lst,U8 *src);
-public extern U8 *StrPrintFlags(U8 *dst,U8 *lst,I64 flags);
+public extern U8 *StrPrintFlags(U8 *dst,U8 *lst,I64 flags, Bool print_all=FALSE, I64 print_all_length=0);
 
 #help_index "Char/Lists"
 public extern I64 LstMatch(U8 *needle, U8 *haystack_lst,I64 flags=0);
@@ -79,6 +79,7 @@ public _extern _STRNICMP I64 StrNICmp(U8 *st1,U8 *st2,I64 n);
 public extern I64 StrOcc(U8 *src, U8 ch);
 public extern U8 *StrPrint(U8 *dst,U8 *fmt,...);
 public extern U8 *StrPrintJoin(U8 *dst,U8 *fmt,I64 argc,I64 *argv);
+public extern U8 *StrReplace(U8 *str, U8 *old, U8 *new, I64 sff_flags=0, Bool free_str=FALSE);
 public extern U8 *StrUtil(U8 *_src,I64 flags);
 public extern U8 *Tabs2Spaces(U8 *src);
 public extern Bool WildMatch(U8 *test_str,U8 *wild_str);
@@ -644,6 +645,9 @@ public extern U0 HeapCtrlDel(CHeapCtrl *hc);
 public extern CHeapCtrl *HeapCtrlInit(CHeapCtrl *hc=NULL,
 	CTask *task=NULL,CBlkPool *bp);
 
+#help_index "Memory/Segmentation"
+public extern U8 *Seg2Linear(U32 *ptr);
+
 #help_index "Memory/Page Tables"
 public extern I64 *MemPageTable(U8 *a);
 
@@ -723,6 +727,9 @@ public _extern SYS_PCIBIOS_SERVICE_DIR
 	U32 sys_PCIBIOS_service_dir;//Far call routine in the BIOS
 public _extern SYS_PCI_SERVICES
 	U32 sys_pci_services;//Far call routine in the BIOS
+public extern Bool PCIBt(U8 *bit_field, I64 bit);
+public extern Bool PCIBtr(U8 *bit_field, I64 bit);
+public extern Bool PCIBts(U8 *bit_field, I64 bit);
 
 #help_index "PCI;Info;File/System;Devices"
 public extern I64 ATARep(Bool pmt=TRUE,

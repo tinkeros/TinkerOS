@@ -32,6 +32,7 @@ class CPciDevInfo
   // ...a lot of trash comes here...
 
   U8 interrupt_line;
+  I64 bus,dev,fun;
 };
 
 U0 PciDumpInfo(CPciDevInfo* info)
@@ -109,6 +110,9 @@ U0 PciGetDevInfo(CPciDevInfo* info_out, I64 bus, I64 dev, I64 fun)
   info_out->bar[4] =          PCIReadU32(bus, dev, fun, PCI_REG_BAR4);
   info_out->bar[5] =          PCIReadU32(bus, dev, fun, PCI_REG_BAR5);
   info_out->interrupt_line =  PCIReadU8(bus, dev, fun, PCI_REG_INTERRUPT_LINE);
+  info_out->bus = bus;
+  info_out->dev = dev;
+  info_out->fun = fun;
 }
 
 //TODO fix me

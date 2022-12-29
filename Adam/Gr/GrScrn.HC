@@ -1,5 +1,18 @@
 #help_index "Graphics/Scrn"
 
+#define I_UPDATE_CACHE 0xfd
+#define I_BLOT         0xfe
+#define I_REDRAW       0xff
+
+// TODOs
+
+// User IRQ add function like Zeal
+// Fixes/speedups for when pitch!=GR_WIDTH*4 and other scaled modes
+// Sprite blinking when partially offscreen ( bug in TOS too )
+
+I64 BlotGlblCnt,CacheGlblCnt,DrawGlblCnt;
+U8 *scrn_src=gr.dc2->body;
+
 U0 GrUpdateTaskODEs(CTask *task)
 {
   sys_task_being_scrn_updated=task;
@@ -268,7 +281,7 @@ U0 GrUpdateTextFG()
   }
 }
 
-U0 DCBlotColor8(CDC *dc,CDC *img)
+U0 DCBlotColor80(CDC *dc,CDC *img)
 {
   U8  *src=img->body,*b0=dc->body;
   I64 j,k,d0=img->width_internal*img->height;
@@ -381,13 +394,13 @@ U0 GrPartialUpdateLetterbox(U8 *screen)
 }
 
 
-U0 GrPartialUpdate(U16 *screen)
+U0 GrPartialUpdate0(U16 *screen)
 {
   U16 *last_screen = gr.screen_cache;
-  I64 i,j,idx,*dst = text.fb_alias;
+  I64 i,j,idx,*dst;
   for (i=0; i<GR_HEIGHT; i++)
   {
-    dst=text.fb_alias;
+    dst=text.raw_scrn_image;
     dst=dst+i*gr.pitch/8;
     for (j=0; j<GR_WIDTH/2; j++)
     {
@@ -399,6 +412,43 @@ U0 GrPartialUpdate(U16 *screen)
       }
     }
   }
+}
+
+
+interrupt U0 GrPartialUpdatePartIrq()
+{
+  U16 *screen=scrn_src,*last_screen = gr.screen_cache;
+  I64 i,j,idx,*dst;
+
+  for (i=(Gs->num-1)*GR_HEIGHT/(mp_cnt-1); i<Gs->num*GR_HEIGHT/(mp_cnt-1); i++)
+  {
+    dst=text.raw_scrn_image;  //TODO size pitch fix
+    dst=dst+i*gr.pitch/8;
+    for (j=0; j<GR_WIDTH/2; j++)
+    {
+      idx=i*GR_WIDTH/2+j;
+      if (screen[idx] != last_screen[idx])
+      {
+        last_screen[idx] = screen[idx];
+        dst[j] = gr_palette[screen[idx].u8[0]] | gr_palette[screen[idx].u8[1]] << 32;
+      }
+    }
+  }
+  lock DrawGlblCnt++;
+  *(dev.uncached_alias+LAPIC_EOI)(U32 *)=0;
+}
+
+interrupt U0 GrUpdateCacheIrq()
+{
+  I64 i,my_rows;
+
+  i=(Gs->num-1)*GR_HEIGHT/(mp_cnt-1);
+  my_rows=Gs->num*GR_HEIGHT/(mp_cnt-1)-i;
+
+  MemCpy(gr.screen_cache+i*GR_WIDTH, scrn_src+i*GR_WIDTH,my_rows*GR_WIDTH);
+
+  lock CacheGlblCnt++;
+  *(dev.uncached_alias+LAPIC_EOI)(U32 *)=0;
 }
 
 U0 GrDoLetterBox()
@@ -451,11 +501,72 @@ U0 GrDoFinalScaling()
   }
 }
 
+U0 DCBlotColor8(CDC *dc,CDC *img)
+{
+    I64 i,*PBlotGlblCnt=&BlotGlblCnt+dev.uncached_alias;
+
+    if (mp_cnt>1&&dc==gr.dc2&&img==gr.dc)
+    { 
+      lock BlotGlblCnt=0;
+      for (i=1;i<mp_cnt;i++)
+       MPInt(I_BLOT,i);
+      while (*PBlotGlblCnt != mp_cnt-1)
+      {
+        Yield;
+      }
+    }
+    else {
+      DCBlotColor80(dc,img);
+    }
+}
+
+
+U0 GrPartialUpdate(U64 *screen)
+{
+  I64 i,*PDrawGlblCnt=&DrawGlblCnt+dev.uncached_alias;
+
+  if (mp_cnt>1) {
+    lock DrawGlblCnt=0;
+    for (i=1;i<mp_cnt;i++)
+      MPInt(I_REDRAW,i);
+    while (*PDrawGlblCnt != mp_cnt-1)
+    {
+      Yield;
+    }    
+  }
+  else {
+    GrPartialUpdate0(screen);
+  }
+
+  MemCpy64(text.fb_alias, text.raw_scrn_image, text.buffer_size/8);
+}
+
+U0 GrUpdateCache(U8 *src_start)
+{
+  I64 i,*PCacheGlblCnt=&CacheGlblCnt+dev.uncached_alias;
+
+  scrn_src=src_start;
+
+  if (mp_cnt>1) {
+    lock CacheGlblCnt=0;
+    for (i=1;i<mp_cnt;i++)
+      MPInt(I_UPDATE_CACHE,i);
+    while (*PCacheGlblCnt != mp_cnt-1)
+    {
+      Yield;
+    }    
+  }
+  else {
+    MemCpy64(gr.screen_cache,src_start, text.buffer_size/32);  //TODO pitch
+  }
+}
+
+
 U0 GrUpdateVGAGraphics()
 {
   U64 size, *dst = text.raw_scrn_image;
   I64 last_event, i,j;
-  U8 *src, *src_start;
+  U8 *src, *src_start = gr.dc2->body;
   U32 *dst2;
   last_event = KbdMsEvtTime;
   if (gr.scrn_saver_timeout && (GetTSC - last_event)/cnts.time_stamp_freq > gr.scrn_saver_timeout)
@@ -516,7 +627,7 @@ U0 GrUpdateVGAGraphics()
             dst2[j]=gr_palette[src[j] & 0xff];
         }
       }
-      MemCpy64(gr.screen_cache,src_start, text.buffer_size/32);
+      GrUpdateCache(src_start);
       if (LETTER_BOX)
         GrDoLetterBox;
       else if (DO_SCALING)
@@ -555,36 +666,7 @@ U0 GrUpdateVGAGraphics()
   }
 }
 
-U0 DCBlotColor8Seth()
-{
-  lock
-  {
-    seth_gfx_flag=1;
-  }
-  while (TRUE)
-  {
-    while (!seth_gr_sema)
-    {
-      SleepUntil(cnts.jiffies+5*JIFFY_FREQ/1000);
-      if (seth_gfx_flag == 0)
-      {
-        lock
-        {
-          seth_gr_task=NULL;
-        }
-        goto blot8_exit;
-      }
-    }
-    DCBlotColor8(gr.dc2,gr.dc);
-    lock
-    {
-      seth_gr_sema--;
-    }
-  }
-blot8_exit:
-}
-
-U0 GrUpdateScrn0()
+U0 GrUpdateScrn()
 {//Called by the Window Manager HERE, 30 times a second.
   CDC *dc;
   if (!Bt(&sys_run_level,RLf_VGA)) //if text mode
@@ -611,58 +693,6 @@ U0 GrUpdateScrn0()
   }
 }
 
-U0 GrUpdateScrnSeth()
-{
-  CDC *dc;
-  if (seth_gr_sema>0)
-  {
-    while (seth_gr_sema)
-    {
-      SleepUntil(cnts.jiffies+5*JIFFY_FREQ/1000);
-    }
-  }
-  GrUpdateTextBG;
-  GrUpdateTextFG;
-  GrUpdateTasks;
-  // Notify Seth of more work
-  lock
-  {
-    seth_gr_sema++;
-  }
-  while (seth_gr_sema)
-  {
-    SleepUntil(cnts.jiffies+5*JIFFY_FREQ/1000);
-  }
-  dc=DCAlias(gr.dc2,Fs);
-  dc->flags|=DCF_ON_TOP;
-  if (gr.fp_final_scrn_update)
-    (*gr.fp_final_scrn_update)(dc);
-  DCDel(dc);
-  if (!Bt(&sys_run_level,RLf_VGA)) //if text mode
-    GrUpdateTextModeText;
-  else
-  {
-    DCBlotColor4(gr.dc1->body,gr.dc2->body,gr.dc_cache->body,
-          gr.dc2->height*gr.dc2->width_internal>>3);
-    GrUpdateVGAGraphics;
-  }
-}
-
-U0 GrUpdateScrn()
-{//Called by the Window Manager $LK,"HERE",A="FF:::/Adam/WinMgr.HC,GrUpdateScrn"$, 30 times a second.
-  if (mp_cnt<=1||seth_gfx_flag==0)
-  {
-    GrUpdateScrn0;
-    return;
-  }
-  else if (!TaskValidate(seth_gr_task))
-  {
-    GrUpdateScrn0;
-    return;
-  }
-  GrUpdateScrnSeth;
-}
-
 public U0 ToggleBlink()
 {// Toggles blinking
   blink_master_flag^=1;
@@ -673,17 +703,38 @@ public U0 ToggleScroll()
   scroll_master_flag^=1;
 }
 
-public U0 EnableSethGfx()
+interrupt U0 DCBlotColor8Irq()
 {
-  lock
+  U64 b,j,*src=gr.dc->body,*b0=gr.dc2->body;
+  I64 k,d0=gr.dc->width_internal*gr.dc->height/8;
+
+  for (k=(Gs->num-1)*d0/(mp_cnt-1); k<Gs->num*d0/(mp_cnt-1); k++)
   {
-    seth_gr_sema=0;
+    j=*src++;
+    if (j!=0xFFFFFFFFFFFFFFFF) {
+      b=*b0;
+      if (j.u8[0]!=TRANSPARENT) b.u8[0]=j.u8[0];
+      if (j.u8[1]!=TRANSPARENT) b.u8[1]=j.u8[1];
+      if (j.u8[2]!=TRANSPARENT) b.u8[2]=j.u8[2];
+      if (j.u8[3]!=TRANSPARENT) b.u8[3]=j.u8[3];
+      if (j.u8[4]!=TRANSPARENT) b.u8[4]=j.u8[4];
+      if (j.u8[5]!=TRANSPARENT) b.u8[5]=j.u8[5];
+      if (j.u8[6]!=TRANSPARENT) b.u8[6]=j.u8[6];
+      if (j.u8[7]!=TRANSPARENT) b.u8[7]=j.u8[7];
+      b0++;
+    }
+    else
+    {
+     b0++;
+    }
   }
-  lock
-  {
-    seth_gr_task = Spawn(&DCBlotColor8Seth, NULL, "Seth GFX Helper Blot8", 1);
-  }
+  lock BlotGlblCnt++;
+  *(dev.uncached_alias+LAPIC_EOI)(U32 *)=0;  
 }
+
+IntEntrySet(I_BLOT,&DCBlotColor8Irq);
+IntEntrySet(I_REDRAW,&GrPartialUpdatePartIrq);
+IntEntrySet(I_UPDATE_CACHE,&GrUpdateCacheIrq);
 
 public U0 SetScreenSaverTimeout(I64 new_timeout)
 {//Set timeout value for screen saver in seconds
@@ -702,11 +753,11 @@ public U0 SetFPS(I64 new_fps)
       fps_master=1;
     }
   }
-  else if (new_fps>99)
+  else if (new_fps>999)
   {
     lock
     {
-      fps_master=99;
+      fps_master=999;
     }
   }
   else
@@ -717,3 +768,4 @@ public U0 SetFPS(I64 new_fps)
     }
   }
 }
+

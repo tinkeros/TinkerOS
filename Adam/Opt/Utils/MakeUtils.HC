@@ -18,4 +18,5 @@ Cd(__DIR__);;
 #include "MD5"
 #include "TOSClient"
 #include "SethUtil"
+#include "SysRep"
 Cd("..");;

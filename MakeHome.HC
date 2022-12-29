@@ -16,6 +16,13 @@ Silent;       //no output to scrn
 ACInit("/*;!*/Bible.TXT*");
 Silent(OFF); //no output to scrn
 
+// Misc helper functions
+U0 AutoHome()
+{
+    MountIDEAuto;
+    Cdd("C:/Home");
+}
+
 #include "~/HomeWrappers"
 MapFileLoad("::/Kernel/Kernel");
 MapFileLoad("::/Compiler/Compiler");

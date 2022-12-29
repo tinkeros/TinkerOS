@@ -270,10 +270,10 @@ I64 WinMgrSleep(Bool flush_msgs=FALSE)
   CDC *diff;
   CDate cdt;
   TimeCal;
-  if ((t_delta=(t=tS)-winmgr.last_refresh_tS)>0.01)
+  if ((t_delta=(t=tS)-winmgr.last_refresh_tS)>0.001)
     winmgr.fps=Max(1.0/t_delta,1);
   else
-    winmgr.fps=99;
+    winmgr.fps=fps_master;
   winmgr.last_refresh_tS=t;
   WinCalcIdles;
   if (flush_msgs)
@@ -309,13 +309,13 @@ I64 WinMgrSleep(Bool flush_msgs=FALSE)
   WinMsUpdate;
   if (!LBtr(&sys_semas[SEMA_JUST_PUMP_MSGS],0))
   {
+    LBts(&sys_semas[SEMA_REFRESH_IN_PROGRESS],0);
+    GrUpdateScrn;
+    LBtr(&sys_semas[SEMA_REFRESH_IN_PROGRESS],0);
     t=tS+1001/(fps_master*8000.0);
     while (winmgr.ideal_refresh_tS<t)
       winmgr.ideal_refresh_tS+=1001/(fps_master*1000.0);
     timeout_val=cnts.jiffies+(winmgr.ideal_refresh_tS-tS)*JIFFY_FREQ;
-    LBts(&sys_semas[SEMA_REFRESH_IN_PROGRESS],0);
-    GrUpdateScrn;
-    LBtr(&sys_semas[SEMA_REFRESH_IN_PROGRESS],0);
     if (scrncast.record  && !scrncast.just_audio)
     {
       cdt=scrncast.t0_now(I64)+ToI64(CDATE_FREQ*(tS-scrncast.t0_tS));

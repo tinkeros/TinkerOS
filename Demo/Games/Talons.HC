@@ -5,7 +5,6 @@ RegExe("TempleOS/Talons");
 
 //Keep these power of two so shift is used instead of multiply
 //to index arrays.
-#define mp_cnt2 1
 #define MAP_WIDTH		1024
 #define MAP_HEIGHT		1024
 
@@ -149,7 +148,7 @@ class Bird
   Bird *next,*last;
   CD3I64 p;
   F64 é;
-} b_head[mp_cnt2];
+} b_head[mp_cnt];
 
 class Obj
 {
@@ -264,7 +263,7 @@ Bool TestSameSlope(I64 x,I64 y,I64 w,I64 h)
   for (k2=0;k2<h;k2++)
     for (k1=0;k1<w;k1++)
       if (D3NormSqr(D3Sub(&p,&normals[y+k2][x+k1],s))>.10)
-        return FALSE;
+	return FALSE;
   return TRUE;
 }
 
@@ -275,12 +274,12 @@ U0 MPDoPanels(CTask *task)
   Panel *tmpp,*start_ptr=NULL,*end_ptr=NULL;
   CD3I32 *poly;
   Obj *tmpo;
-  lo=Gs->num*(MAP_HEIGHT-1)/mp_cnt2;
-  hi=(Gs->num+1)*(MAP_HEIGHT-1)/mp_cnt2;
+  lo=Gs->num*(MAP_HEIGHT-1)/mp_cnt;
+  hi=(Gs->num+1)*(MAP_HEIGHT-1)/mp_cnt;
   for (threshold=8;threshold>=1;threshold--)
     for (j=lo;j<hi;j++) {
       for (i=0;i<MAP_WIDTH-1;i++) {
-        if (!panels[j][i]) {
+	if (!panels[j][i]) {
 	  w=1;
 	  h=1;
 	  do {
@@ -304,30 +303,30 @@ U0 MPDoPanels(CTask *task)
 		  elevations[j+h-1][i+w-1]<=WATER_ELEVATION*MAP_SCALE) {
 	      tmpp->color=BLUE;
 	      if (Rand<0.05) {
-	        tmpo=MAlloc(sizeof(Obj),task);
-	        tmpo->p.x=(i+w/2)*MAP_SCALE;
-	        tmpo->p.y=(j+h/2)*MAP_SCALE;
-	        if (Rand<0.1) {
+		tmpo=MAlloc(sizeof(Obj),task);
+		tmpo->p.x=(i+w/2)*MAP_SCALE;
+		tmpo->p.y=(j+h/2)*MAP_SCALE;
+		if (Rand<0.1) {
 		  tmpo->fish=FALSE;
 		  if (RandI16&1)
 		    tmpo->img=landscape_large_imgs[0]; //Boat
 		  else
 		    tmpo->img=landscape_large_imgs[1]; //Boat
 		  tmpo->p.z=(WATER_ELEVATION+2)*MAP_SCALE;
-	        } else {
+		} else {
 		  tmpo->fish=TRUE;
 		  tmpo->img=$IB,"<1>",BI=1$; //Fish
 		  tmpo->p.z=WATER_ELEVATION*MAP_SCALE;
-	        }
-	        QueIns(tmpo,tmpp->last_obj);
+		}
+		QueIns(tmpo,tmpp->last_obj);
 	      }
 	    } else {
 	      if (l<ROCK_ELEVATION*MAP_SCALE) {
-	        if (RandI16&1)
+		if (RandI16&1)
 		  tmpp->color=LTGREEN;
-	        else
+		else
 		  tmpp->color=GREEN+LTGREEN<<16+ROPF_DITHER;
-	        if (Rand<0.03) {
+		if (Rand<0.03) {
 		  tmpo=MAlloc(sizeof(Obj),task);
 		  tmpo->p.x=(i+w/2)*MAP_SCALE;
 		  tmpo->p.y=(j+h/2)*MAP_SCALE;
@@ -335,31 +334,31 @@ U0 MPDoPanels(CTask *task)
 		  tmpo->img=landscape_large_imgs[2]; //Tree
 		  tmpo->fish=FALSE;
 		  QueIns(tmpo,tmpp->last_obj);
-	        }
+		}
 	      } else if (l<SNOW_ELEVATION*MAP_SCALE) {
-	        if (!(RandU16&3)) {
+		if (!(RandU16&3)) {
 		  if (RandI16&1)
 		    tmpp->color=LTGRAY;
 		  else
 		    tmpp->color=DKGRAY+LTGRAY<<16+ROPF_DITHER;
-	        } else {
+		} else {
 		  if (RandI16&1)
 		    tmpp->color=LTGREEN;
 		  else
 		    tmpp->color=GREEN+LTGREEN<<16+ROPF_DITHER;
-	        }
+		}
 	      } else {
-	        if (!(RandU16&3)) {
+		if (!(RandU16&3)) {
 		  if (RandI16&1)
 		    tmpp->color=WHITE;
 		  else
 		    tmpp->color=LTGRAY;
-	        } else {
+		} else {
 		  if (RandI16&1)
 		    tmpp->color=LTGRAY+WHITE<<16+ROPF_DITHER;
 		  else
 		    tmpp->color=DKGRAY+LTGRAY<<16+ROPF_DITHER;
-	        }
+		}
 	      }
 	    }
 	    tmpp->num_sides=4;
@@ -382,9 +381,9 @@ U0 MPDoPanels(CTask *task)
 	      end_ptr=tmpp;
 	    for (k2=0;k2<h;k2++)
 	      for (k1=0;k1<w;k1++)
-	        panels[j+k2][i+k1]=tmpp;
+		panels[j+k2][i+k1]=tmpp;
 	  }
-        }
+	}
       }
     }
   if (end_ptr) {
@@ -409,16 +408,16 @@ U0 InitElevations()
     l=0;
     while (j--) {
       if (!l && RandU16<U16_MAX/4)
-        l=RandU16%(j+1);
+	l=RandU16%(j+1);
       if (l) {
-        x1=ClampI64(x-j,0,MAP_WIDTH-1);
-        x2=ClampI64(x+j,0,MAP_WIDTH-1);
-        y1=ClampI64(y-j,0,MAP_HEIGHT-1);
-        y2=ClampI64(y+j,0,MAP_HEIGHT-1);
-        for (yy=y1;yy<y2;yy++)
+	x1=ClampI64(x-j,0,MAP_WIDTH-1);
+	x2=ClampI64(x+j,0,MAP_WIDTH-1);
+	y1=ClampI64(y-j,0,MAP_HEIGHT-1);
+	y2=ClampI64(y+j,0,MAP_HEIGHT-1);
+	for (yy=y1;yy<y2;yy++)
 	  for (xx=x1;xx<x2;xx++)
 	    elevations[yy][xx]+=MAP_SCALE/2;
-        l--;
+	l--;
       }
     }
   }
@@ -426,7 +425,7 @@ U0 InitElevations()
   for (j=0;j<MAP_HEIGHT;j++)
     for (i=0;i<MAP_WIDTH;i++)
       if (elevations[j][i]<WATER_ELEVATION*MAP_SCALE)
-        elevations[j][i]=WATER_ELEVATION*MAP_SCALE;
+	elevations[j][i]=WATER_ELEVATION*MAP_SCALE;
 }
 
 U0 InitMap()
@@ -439,8 +438,8 @@ for each spot.
   MemSet(panels,0,sizeof(panels));
   CalcNormals;
   panel_head=NULL;
-  mp.init_not_done_flags=1<<mp_cnt2-1;
-  for (i=0;i<mp_cnt2;i++)
+  mp.init_not_done_flags=1<<mp_cnt-1;
+  for (i=0;i<mp_cnt;i++)
     Spawn(&MPDoPanels,Fs,"Do Panels",i);
   while (mp.init_not_done_flags)
     Sleep(1);
@@ -466,17 +465,17 @@ U0 ClawDraw(CDC *dc,I64 x1,I64 y1,I64 x2,I64 y2,I64 w,I64 segments,Bool talon)
     dc->thick=w;
     dc->color=BLACK;
     GrLine3(dc,
-	  j*x1/segments+i*x2/segments,
-	  j*y1/segments+i*y2/segments,0,
-	  (j-1)*x1/segments+(i+1)*x2/segments,
-	  (j-1)*y1/segments+(i+1)*y2/segments,0);
+	j*x1/segments+i*x2/segments,
+	j*y1/segments+i*y2/segments,0,
+	(j-1)*x1/segments+(i+1)*x2/segments,
+	(j-1)*y1/segments+(i+1)*y2/segments,0);
     dc->thick=w-2;
     dc->color=YELLOW;
     GrLine3(dc,
-	  j*x1/segments+i*x2/segments,
-	  j*y1/segments+i*y2/segments,0,
-	  (j-1)*x1/segments+(i+1)*x2/segments,
-	  (j-1)*y1/segments+(i+1)*y2/segments,0);
+	j*x1/segments+i*x2/segments,
+	j*y1/segments+i*y2/segments,0,
+	(j-1)*x1/segments+(i+1)*x2/segments,
+	(j-1)*y1/segments+(i+1)*y2/segments,0);
   }
   if (talon) {
     if (y1<y2)
@@ -576,8 +575,8 @@ I64 update_jiffy_limit;
 U0 MPDrawIt(CTask *task,CDC *dc)
 {
   I64 j,update=winmgr.updates&65535,strip_width,*s2w,x1,y1,z1,xx,yy,
-        xh,yh,zh,yh2,xh2,x1h,y1h,x1wa,y1wa,x1wb,y1wb,x3,y3,z3,dd,dd_old,
-        cx=task->pix_width>>1,cy=task->pix_height>>1,r[16],*elems1,*elems_hard;
+	xh,yh,zh,yh2,xh2,x1h,y1h,x1wa,y1wa,x1wb,y1wb,x3,y3,z3,dd,dd_old,
+	cx=task->pix_width>>1,cy=task->pix_height>>1,r[16],*elems1,*elems_hard;
   Panel reg *tmpp;
   Bird	*tmpb;
   Obj	*tmpo;
@@ -668,7 +667,7 @@ U0 MPDrawIt(CTask *task,CDC *dc)
     for (j=0;j<strip_height && cnts.jiffies<update_jiffy_limit;j++) {
       x1=x1h>>8; y1=y1h>>8;
       if (0<=x1<MAP_WIDTH && 0<=y1<MAP_HEIGHT) {
-        if ((tmpp=panels[y1][x1]) && tmpp->update!=update) {
+	if ((tmpp=panels[y1][x1]) && tmpp->update!=update) {
 	  tmpp->update=update;
 	  if (tmpp->cnt>8*(1.1-Gs->idle_factor)) {
 	    dc->color=tmpp->color;
@@ -680,10 +679,10 @@ U0 MPDrawIt(CTask *task,CDC *dc)
 	    Sprite3(dc,tmpo->p.x,tmpo->p.y,tmpo->p.z,tmpo->img);
 	    tmpo=tmpo->next;
 	  }
-        }
-        h_on_map=TRUE;
+	}
+	h_on_map=TRUE;
       } else if (h_on_map)
-        break;
+	break;
       x1h+=xh;
       y1h+=yh;
     }
@@ -705,7 +704,7 @@ U0 MPDrawIt(CTask *task,CDC *dc)
     if (!w_on_map) {
       dd=SqrI64(x1wa>>8-MAP_WIDTH>>1)+SqrI64(y1wa>>8-MAP_HEIGHT>>1);
       if (dd>dd_old)
-        break;
+	break;
       dd_old=dd;
     }
   }
@@ -750,8 +749,8 @@ U0 CoreAPTalonsTask(CTask *master_task)
 U0 DrawHorizon(CDC *dc)
 {
   I64 x1,y1,z1,x2,y2,z2,xh,yh,zh,*s2w=Mat4x4IdentNew,
-        cx=Fs->pix_width>>1,
-        cy=Fs->pix_height>>1;
+	cx=Fs->pix_width>>1,
+	cy=Fs->pix_height>>1;
   CD3I32 p[4];
   I32 *old_db=dc->depth_buf;
   dc->depth_buf=NULL;
@@ -809,45 +808,45 @@ U0 DrawHorizon(CDC *dc)
       p[3].x=0;
       p[3].y=y1;
       if (rolled_over)
-        dc->color=ground_color;
+	dc->color=ground_color;
       else
-        dc->color=LTCYAN;
+	dc->color=LTCYAN;
       GrFillPoly3(dc,4,p);
       p[0].y=dc->height-1;
       p[1].y=dc->height-1;
       if (rolled_over)
-        dc->color=LTCYAN;
+	dc->color=LTCYAN;
       else
-        dc->color=ground_color;
+	dc->color=ground_color;
       GrFillPoly3(dc,4,p);
     } else {
       if (y2<y1) {
-        SwapI64(&x1,&x2);
-        SwapI64(&y1,&y2);
+	SwapI64(&x1,&x2);
+	SwapI64(&y1,&y2);
       }
       if (!y1 && y2==dc->height-1) {
-        p[0].x=0;
-        p[0].y=0;
-        p[1].x=0;
-        p[1].y=dc->height-1;
-        p[2].x=x2;
-        p[2].y=dc->height-1;
-        p[3].x=x1;
-        p[3].y=0;
-        if (x1<x2 ^^ rolled_over)
+	p[0].x=0;
+	p[0].y=0;
+	p[1].x=0;
+	p[1].y=dc->height-1;
+	p[2].x=x2;
+	p[2].y=dc->height-1;
+	p[3].x=x1;
+	p[3].y=0;
+	if (x1<x2 ^^ rolled_over)
 	  dc->color=ground_color;
-        else
+	else
 	  dc->color=LTCYAN;
-        GrFillPoly3(dc,4,p);
-        p[0].x=dc->width-1;
-        p[1].x=dc->width-1;
-        if (x1<x2 ^^ rolled_over)
+	GrFillPoly3(dc,4,p);
+	p[0].x=dc->width-1;
+	p[1].x=dc->width-1;
+	if (x1<x2 ^^ rolled_over)
 	  dc->color=LTCYAN;
-        else
+	else
 	  dc->color=ground_color;
-        GrFillPoly3(dc,4,p);
+	GrFillPoly3(dc,4,p);
       } else
-        DCFill(dc,LTCYAN); //Not correct.
+	DCFill(dc,LTCYAN); //Not correct.
     }
   }
 
@@ -888,13 +887,13 @@ U0 Core0Talons()
     }
   } else {
     DCDepthBufRst(dc);
-    mp.update_not_done_flags=1<<mp_cnt2-1;
+    mp.update_not_done_flags=1<<mp_cnt-1;
     MPDrawIt(Fs,dc);
     while (mp.update_not_done_flags)
       Sleep(1);
 
     min_strip_width=F64_MAX;
-    for (i=0;i<mp_cnt2;i++)
+    for (i=0;i<mp_cnt;i++)
       min_strip_width=Min(min_strip_width,32.0*mp.strip_width[i]/(i+32.0));
     strip_height=ClampI64(
 	  strip_height*Clamp(0.25*min_strip_width/strip_height,0.9,1.1),
@@ -926,7 +925,7 @@ U0 Core0Talons()
 	  "Height:%5d [Core Strip:%3d]",
 	  pitch*180/ã,roll*180/ã,heading*180/ã,height,strip_height);
   GrPrint(dc,0,FONT_HEIGHT,"Fish Remaining:%d Time:%3.2f Best:%3.2f",
-        fish_left,tt,best_score);
+	fish_left,tt,best_score);
 
   //We made an alias of this we don't want freed.
   dc->depth_buf=NULL;
@@ -944,11 +943,11 @@ Obj *FishFind(I64 x1,I64 y1,I64 *_dd)
     tmpo=tmpp->next_obj;
     while (tmpo!=&tmpp->next_obj) {
       if (tmpo->fish) {
-        dd=SqrI64(tmpo->p.x-x1)+SqrI64(tmpo->p.y-y1);
-        if (dd<best_dd) {
+	dd=SqrI64(tmpo->p.x-x1)+SqrI64(tmpo->p.y-y1);
+	if (dd<best_dd) {
 	  best_dd=dd;
 	  res=tmpo;
-        }
+	}
       }
       tmpo=tmpo->next;
     }
@@ -984,7 +983,7 @@ U0 AnimateTask(I64)
       Free(s2w);
       x1=x/COORDINATE_SCALE; y1=y/COORDINATE_SCALE; z1=z/COORDINATE_SCALE;
       if (z1<(WATER_ELEVATION+3)*MAP_SCALE) {
-        if (z1<WATER_ELEVATION*MAP_SCALE) {
+	if (z1<WATER_ELEVATION*MAP_SCALE) {
 	  z=WATER_ELEVATION*MAP_SCALE*COORDINATE_SCALE;
 	  if (invert_pitch) {
 	    if (pitch<-ã/8)
@@ -992,11 +991,11 @@ U0 AnimateTask(I64)
 	  } else if (pitch<-ã/8)
 	    è+=ms/1000.0*Sign(-3*ã/8-è);
 	  WrapAngles;
-        }
-        speed=1.0;
-        if (rolled_over || !(tmpo=FishFind(x1,y1,&dd)))
+	}
+	speed=1.0;
+	if (rolled_over || !(tmpo=FishFind(x1,y1,&dd)))
 	  claws_down=0;
-        else {
+	else {
 	  d=Sqrt(dd);
 	  x1-=tmpo->p.x;
 	  y1-=tmpo->p.y;
@@ -1009,7 +1008,7 @@ U0 AnimateTask(I64)
 	    if (!--fish_left) {
 	      game_tf=tS;
 	      if (game_tf-game_t0<best_score)
-	        best_score=game_tf-game_t0;
+		best_score=game_tf-game_t0;
 	    }
 	    QueRem(tmpo);
 	    Free(tmpo);
@@ -1017,28 +1016,28 @@ U0 AnimateTask(I64)
 	    Snd(74); Sleep(200); Snd;
 	    music.mute=FALSE;
 	  }
-        }
+	}
       } else {
-        claws_down=0;
-        if (-ã/4<=è<=ã/4)
+	claws_down=0;
+	if (-ã/4<=è<=ã/4)
 	  speed+=0.0005;
-        else if (-3*ã/4<=è<=3*ã/4)
+	else if (-3*ã/4<=è<=3*ã/4)
 	  speed+=0.0001;
-        else
+	else
 	  speed-=0.0001;
-        speed=Clamp(speed+(0.0005-0.0002*Abs(è)/(ã/4)),0.1,5.0);
+	speed=Clamp(speed+(0.0005-0.0002*Abs(è)/(ã/4)),0.1,5.0);
       }
 
-      for (i=0;i<mp_cnt2;i++) {
-        tmpb=b_head[i].next;
-        while (tmpb!=&b_head[i]) {
+      for (i=0;i<mp_cnt;i++) {
+	tmpb=b_head[i].next;
+	while (tmpb!=&b_head[i]) {
 	  tmpb->p.x+=10*ms/1000*MAP_SCALE*Cos(tmpb->é);
 	  tmpb->p.y+=10*ms/1000*MAP_SCALE*Sin(tmpb->é);
 	  tmpb->p.z=BIRD_ELEVATION*MAP_SCALE+
-	        elevations[tmpb->p.y/MAP_SCALE][tmpb->p.x/MAP_SCALE];
+		elevations[tmpb->p.y/MAP_SCALE][tmpb->p.x/MAP_SCALE];
 	  tmpb->é+=2*ã*ms/1000/10;
 	  tmpb=tmpb->next;
-        }
+	}
       }
     }
     Refresh;
@@ -1048,7 +1047,7 @@ U0 AnimateTask(I64)
 U0 MPEnd()
 {
   update_jiffy_limit=0;
-  mp.app_not_done_flags=1<<mp_cnt2-1-1;
+  mp.app_not_done_flags=1<<mp_cnt-1-1;
   mp.app_done=TRUE;
 //Wait for all cores to exit
   while (mp.app_not_done_flags)
@@ -1120,7 +1119,7 @@ U0 Init()
   yy=y/(MAP_SCALE*COORDINATE_SCALE);
   z+=elevations[yy][xx]*COORDINATE_SCALE;
 
-  for (i=0;i<mp_cnt2;i++)
+  for (i=0;i<mp_cnt;i++)
     QueInit(&b_head[i]);
 
   for (i=0;i<B_NUM;i++) {
@@ -1130,10 +1129,10 @@ U0 Init()
     tmpb->p.z=BIRD_ELEVATION*MAP_SCALE+
 	  elevations[tmpb->p.y/MAP_SCALE][tmpb->p.x/MAP_SCALE];
     tmpb->é=2*ã*Rand;
-    QueIns(tmpb,b_head[i%mp_cnt2].last);
+    QueIns(tmpb,b_head[i%mp_cnt].last);
   }
 
-  for (i=1;i<mp_cnt2;i++)
+  for (i=1;i<mp_cnt;i++)
     Spawn(&CoreAPTalonsTask,Fs,"AP Talons",i);
   Fs->task_end_cb=&TaskEndCB;
   game_t0=tS;
@@ -1151,7 +1150,7 @@ U0 CleanUp()
     Free(tmpp);
     tmpp=tmpp1;
   }
-  for (i=0;i<mp_cnt2;i++) {
+  for (i=0;i<mp_cnt;i++) {
     QueDel(&b_head[i]);
     QueInit(&b_head[i]);
   }
@@ -1163,18 +1162,18 @@ U0 Talons()
   I64 ch,sc;
   SettingsPush; //See $LK,"SettingsPush",A="MN:SettingsPush"$
   MenuPush(
-        "File {"
-        "  Abort(,CH_SHIFT_ESC);"
-        "  Exit(,CH_ESC);"
-        "}"
-        "Play {"
-        "  Restart(,'\n');"
-        "  Down(,,SC_CURSOR_UP);"
-        "  Up(,,SC_CURSOR_DOWN);"
-        "  Left(,,SC_CURSOR_LEFT);"
-        "  Right(,,SC_CURSOR_RIGHT);"
-        "}"
-        );
+	"File {"
+	"  Abort(,CH_SHIFT_ESC);"
+	"  Exit(,CH_ESC);"
+	"}"
+	"Play {"
+	"  Restart(,'\n');"
+	"  Down(,,SC_CURSOR_UP);"
+	"  Up(,,SC_CURSOR_DOWN);"
+	"  Left(,,SC_CURSOR_LEFT);"
+	"  Right(,,SC_CURSOR_RIGHT);"
+	"}"
+	);
   AutoComplete;
   WinBorder;
   WinMax;
@@ -1189,26 +1188,26 @@ U0 Talons()
   try //in case <CTRL-ALT-c> is pressed.
     do {
       if (ScanKey(&ch,&sc)) {
-        switch (ch) {
+	switch (ch) {
 	  case 0:
 	    switch (sc.u8[0]) {
 	      start:
-	        case SC_CURSOR_DOWN:
+		case SC_CURSOR_DOWN:
 		  è-=CTRLS_SCALE*Cos(roll);
 		  heading-=CTRLS_SCALE*Sin(roll)*Sin(è);
 		  break;
-	        case SC_CURSOR_UP:
+		case SC_CURSOR_UP:
 		  è+=CTRLS_SCALE*Cos(roll);
 		  heading+=CTRLS_SCALE*Sin(roll)*Sin(è);
 		  break;
-	        case SC_CURSOR_RIGHT:
+		case SC_CURSOR_RIGHT:
 		  roll+=CTRLS_SCALE;
 		  break;
-	        case SC_CURSOR_LEFT:
+		case SC_CURSOR_LEFT:
 		  roll-=CTRLS_SCALE;
 		  break;
 	      end:
-	        WrapAngles;
+		WrapAngles;
 	    }
 	    break;
 	  case '\n':
@@ -1218,9 +1217,9 @@ U0 Talons()
 	    Init;
 	    Fs->draw_it=&DrawIt;
 	    break;
-        }
+	}
       } else
-        Core0Talons;
+	Core0Talons;
     } while (ch!=CH_SHIFT_ESC && ch!=CH_ESC);
   catch
     PutExcept;

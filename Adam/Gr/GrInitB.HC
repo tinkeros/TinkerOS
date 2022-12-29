@@ -162,7 +162,7 @@ U0 GrInit2()
   fp_set_std_palette=&PaletteSetStd;
   gr.to_8_bits	=MAlloc(256*sizeof(I64));
   gr.to_8_colors=MAlloc(256*sizeof(I64));
-  gr.screen_cache = MAlloc(GR_WIDTH * GR_HEIGHT);
+  gr.screen_cache = MAllocAligned(GR_WIDTH * GR_HEIGHT,16);
   gr.text_base=CAlloc(TEXT_ROWS*TEXT_COLS*sizeof(U32));
   gr.vga_text_cache=MAlloc(TEXT_ROWS*TEXT_COLS*sizeof(U16));
   gr.win_uncovered_bitmap=CAlloc(65536/8);

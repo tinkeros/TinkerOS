@@ -59,6 +59,7 @@ extern U8 *FileNameAbs(U8 *_filename,I64 fuf_flags=0);
 extern U8 *FileRead(U8 *filename,I64 *_size=NULL,I64 *_attr=NULL);
 extern I64 FileWrite(U8 *filename,U8 *fbuf,I64 size,CDate cdt=0,I64 attr=0);
 extern I64 FlushMsgs(CTask *task=NULL);
+extern U0 Free(U8 *addr);
 extern I64 GetChar(I64 *_scan_code=NULL,Bool echo=TRUE,Bool raw_cursor=FALSE);
 extern I64 GetS(U8 *buf,I64 size,Bool allow_ext=TRUE);
 extern CHeapCtrl *HeapCtrlInit(CHeapCtrl *hc=NULL,
@@ -95,11 +96,13 @@ extern U0 RedSeaFmt(U8 drv_let,Bool quick=TRUE);
 extern U0 RedSeaFreeFreeLst(CDrv *dv);
 extern U0 RedSeaInit(CDrv *dv);
 extern Bool RedSeaValidate(U8 drv_let);
+extern I64 Seg2Linear(U32 *ptr);
 extern CTask *SpawnQue(U0 (*fp_addr)(U8 *data),U8 *data=NULL,
                        U8 *task_name=NULL,I64 target_cpu,CTask *parent=NULL, //NULL means adam
                        I64 stk_size=0,I64 flags=1<<JOBf_ADD_TO_QUE);
 extern U8 *StrPrint(U8 *dst,U8 *fmt,...);
 extern U0 StrPrintFunSeg(U8 *buf,I64 addr,I64 field_len,I64 flags);
+extern U8 *StrNew(U8 *buf, CTask *mem_task=NULL);
 extern Bool Suspend(CTask *task=NULL,Bool state=TRUE);
 extern CJob *TaskMsg(CTask *_srv,CTask *master,
                      I64 msg_code,I64 arg1,I64 arg2,I64 flags);

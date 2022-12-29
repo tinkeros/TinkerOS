@@ -419,7 +419,7 @@ CBlkDev *AHCIMount(U8 first_drv_let, I64 type, I64 port_num)
     res = BlkDevNextFreeSlot(first_drv_let, type);
     res->port_num = port_num;
     res->ahci_port = &blkdev.ahci_hba->ports[port_num];
-    res->ahci_port->cmd_list_base = NULL; // See $LK+PU,"AHCIAtaInit",A="FF:::/Kernel/BlkDev/DiskAHCI.CC,if (bd->ahci_port->cmd_list_base)"$ ...
+    res->ahci_port->cmd_lst_base = NULL; // See $LK+PU,"AHCIAtaInit",A="FF:::/Kernel/BlkDev/DiskAHCI.CC,if (bd->ahci_port->cmd_lst_base)"$ ...
     if (BlkDevAdd(res,, FALSE, FALSE))
       return res;
   }

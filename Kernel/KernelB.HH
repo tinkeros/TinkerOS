@@ -91,6 +91,9 @@ public _extern _REP_OUT_U32 U0 RepOutU32(
 public _extern _REP_OUT_U8  U0 RepOutU8(
 	U8 *buf,I64 cnt,I64 port); //Repeated write U8 to I/O port.
 
+#help_index "Processor/SMBIOS"
+public _extern SYS_SMBIOS_ENTRY U8  *sys_smbios_entry;
+
 #help_index "Math"
 public _intern IC_ATAN F64 ATan(F64 d); //Arc Tan (Inverse Tan).
 public _intern IC_ABS F64 Abs(F64 d); //Absolute F64.

@@ -7,7 +7,7 @@ Cd(__DIR__);;
 #include "Gr/MakeGr"
 #include "AMem"
 #include "Training"
-#include "ASnd"
+#include "Snd/MakeSnd"
 #include "Device/DevInfo"
 #include "ABlkDev/MakeABlkDev"
 #include "Menu"
@@ -35,6 +35,4 @@ LBts(&sys_run_level,RLf_DOC);
 //#include "Device/SerialMouse"
 //#include "Net/MakeNet"
 Cd("..");;
-if (mp_cnt>1)
-  EnableSethGfx;
 SetFPS(30); // restore default FPS now

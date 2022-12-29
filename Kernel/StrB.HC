@@ -200,15 +200,20 @@ U0 ScanFlags(U8 *_dst_flags,U8 *lst,U8 *src)
   }
 }
 
-U8 *StrPrintFlags(U8 *dst,U8 *lst,I64 flags)
-{//Only 64 flags. Flags passed by value.
-  I64 i;
+U8 *StrPrintFlags(U8 *dst,U8 *lst,I64 flags, Bool print_all=FALSE, I64 print_all_length=0)
+{//Only 64 flags. Flags passed by value. print_all will print false flags using `-`.
+//Specify print_all_length (list length) if print_all is true.
+  I64 i=0;
   *dst=0;
-  while (flags)
+  if (!print_all_length)
+    print_all_length =  64;
+  while (i < print_all_length)
   {
-    i=Bsf(flags);
-    Btr(&flags,i);
-    CatPrint(dst,"+%z",i,lst);
+    if (Bt(&flags, i))
+      CatPrint(dst, "+%z", i, lst);
+    else if (print_all)
+      CatPrint(dst, "-%z", i, lst);
+    i++;
   }
   return dst;
 }

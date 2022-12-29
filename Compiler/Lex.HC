@@ -584,42 +584,45 @@ lex_ident:
     case '0'...'9':
       i=ch-'0';
       ch=ToUpper(LexGetChar(cc));
-      if (ch=='X')
+      if (!Bt(&cc->opts, OPTf_DECIMAL_ONLY))
       {
-        while (TRUE)
+        if (ch=='X')
         {
-          ch=ToUpper(LexGetChar(cc));
-          if (Bt(char_bmp_hex_numeric,ch))
+          while (TRUE)
           {
-            if (ch<='9')
-              i=i<<4+ch-'0';
+            ch=ToUpper(LexGetChar(cc));
+            if (Bt(char_bmp_hex_numeric,ch))
+            {
+              if (ch<='9')
+                i=i<<4+ch-'0';
+              else
+                i=i<<4+ch-'A'+10;
+            }
             else
-              i=i<<4+ch-'A'+10;
-          }
-          else
-          {
-            cc->cur_i64=i;
-            cc->flags|=CCF_USE_LAST_U16;
-            cc->token=TK_I64;
-            goto lex_end;
+            {
+              cc->cur_i64=i;
+              cc->flags|=CCF_USE_LAST_U16;
+              cc->token=TK_I64;
+              goto lex_end;
+            }
           }
         }
-      }
-      else if (ch=='B')
-      {
-        while (TRUE)
+        else if (ch=='B')
         {
-          ch=LexGetChar(cc);
-          if (ch=='0')
-            i=i<<1;
-          else if (ch=='1')
-            i=i<<1+1;
-          else
+          while (TRUE)
           {
-            cc->cur_i64=i;
-            cc->flags|=CCF_USE_LAST_U16;
-            cc->token=TK_I64;
-            goto lex_end;
+            ch=LexGetChar(cc);
+            if (ch=='0')
+              i=i<<1;
+            else if (ch=='1')
+              i=i<<1+1;
+            else
+            {
+              cc->cur_i64=i;
+              cc->flags|=CCF_USE_LAST_U16;
+              cc->token=TK_I64;
+              goto lex_end;
+            }
           }
         }
       }

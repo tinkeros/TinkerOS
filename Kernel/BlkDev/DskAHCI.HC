@@ -1,11 +1,18 @@
 /*
-- Perhaps make more references to spec in comments
+- Mk more references to spec in comments
 
-- ATAPI RW
+- ATAPI RW needs cleaning up / improving
 
-- Remove Buffer alignment check and just do it on every call
+- Rem Buffer alignment check and just do it on every call
 
-- AHCIATAPISetMaxSpeed?
+- AHCIATAPISetMaxSpeed needs to be implemented
+
+- TODO FIXME: Variable casting into AHCI memory-mapped areas caused strange crashes
+	on a Ryzen with Gigabyte brand motherboard, all PCI devices AMD brand.
+	Cmpiler casting internal functionality needs to be researched to fix those bugs.
+	Example line that caused crashes with Page Faults and bad memory address on Ryzen:
+		cmd_header = &port->cmd_lst_base(CPortCmdHeader *)[i];
+
 */
 
 I64 AHCI_DEBUG = FALSE;
@@ -24,19 +31,19 @@ U0 AHCIDbg(I64 port_num)
   , port_num;
   "\nPort Interrupt Status: %b"
   , port->interrupt_status;
-  if (Bt(&port->interrupt_status, AHCI_PxIf_CPDS))
+  if (PCIBt(&port->interrupt_status, AHCI_PxIf_CPDS))
     "\n\tCold Port Detect Status";
-  if (Bt(&port->interrupt_status, AHCI_PxIf_TFE))
+  if (PCIBt(&port->interrupt_status, AHCI_PxIf_TFE))
     "\n\tTask File Error";
-  if (Bt(&port->interrupt_status, AHCI_PxIf_HBFS))
+  if (PCIBt(&port->interrupt_status, AHCI_PxIf_HBFS))
     "\n\tHost Bus Fatal Error";
-  if (Bt(&port->interrupt_status, AHCI_PxIf_HBDS))
+  if (PCIBt(&port->interrupt_status, AHCI_PxIf_HBDS))
     "\n\tHost Bus Data Error";
-  if (Bt(&port->interrupt_status, AHCI_PxIf_IFS))
+  if (PCIBt(&port->interrupt_status, AHCI_PxIf_IFS))
     "\n\tSATA Interface Fatal Error";
-  if (Bt(&port->interrupt_status, AHCI_PxIf_INFS))
+  if (PCIBt(&port->interrupt_status, AHCI_PxIf_INFS))
     "\n\tSATA Interface Non-Fatal Error";
-  if (Bt(&port->interrupt_status, AHCI_PxIf_OFS))
+  if (PCIBt(&port->interrupt_status, AHCI_PxIf_OFS))
     "\n\tOverflow Status (HBA RX bytes > PRDT bytes)";
   "\nPort Command:          %b"
   , port->command;
@@ -44,7 +51,7 @@ U0 AHCIDbg(I64 port_num)
   , port->cmd_issue;
   "\nPort Task File Data:   %b"
   , port->task_file_data;
-  if (Bt(&port->task_file_data, AHCI_PxTFDf_STS_ERR))
+  if (PCIBt(&port->task_file_data, AHCI_PxTFDf_STS_ERR))
   {
     "\n\tTask File Data Error";
     "\n\tTask File Data Error Register: %b"
@@ -57,27 +64,27 @@ U0 AHCIDbg(I64 port_num)
   , port->sata_ctrl;
   "\nPort SATA Error:       %b"
   , port->sata_error;
-  if (Bt(&port->sata_error, AHCI_PxSERR_ERR_I))
+  if (PCIBt(&port->sata_error, AHCI_PxSERR_ERR_I))
     "\n\tRecovered Data Integrity Error";
-  if (Bt(&port->sata_error, AHCI_PxSERR_ERR_M))
+  if (PCIBt(&port->sata_error, AHCI_PxSERR_ERR_M))
     "\n\tRecovered Communication Error";
-  if (Bt(&port->sata_error, AHCI_PxSERR_ERR_T))
+  if (PCIBt(&port->sata_error, AHCI_PxSERR_ERR_T))
     "\n\tTransient Data Integrity Error";
-  if (Bt(&port->sata_error, AHCI_PxSERR_ERR_C))
+  if (PCIBt(&port->sata_error, AHCI_PxSERR_ERR_C))
     "\n\tPersistent Communication Error";
-  if (Bt(&port->sata_error, AHCI_PxSERR_ERR_P))
+  if (PCIBt(&port->sata_error, AHCI_PxSERR_ERR_P))
     "\n\tSATA Protocol Error";
-  if (Bt(&port->sata_error, AHCI_PxSERR_ERR_E))
+  if (PCIBt(&port->sata_error, AHCI_PxSERR_ERR_E))
     "\n\tInternal Error";
-  if (Bt(&port->sata_error, AHCI_PxSERR_DIAG_I))
+  if (PCIBt(&port->sata_error, AHCI_PxSERR_DIAG_I))
     "\n\tPHY Internal Error";
-  if (Bt(&port->sata_error, AHCI_PxSERR_DIAG_C))
+  if (PCIBt(&port->sata_error, AHCI_PxSERR_DIAG_C))
     "\n\tLink Layer CRC Error";
-  if (Bt(&port->sata_error, AHCI_PxSERR_DIAG_H))
+  if (PCIBt(&port->sata_error, AHCI_PxSERR_DIAG_H))
     "\n\tHandshake Error";
-  if (Bt(&port->sata_error, AHCI_PxSERR_DIAG_S))
+  if (PCIBt(&port->sata_error, AHCI_PxSERR_DIAG_S))
     "\n\tLink Sequence Error";
-  if (Bt(&port->sata_error, AHCI_PxSERR_DIAG_T))
+  if (PCIBt(&port->sata_error, AHCI_PxSERR_DIAG_T))
     "\n\tTransport State Transition Error";
   "\nPort SATA Active:      %b"
   , port->sata_active;
@@ -96,15 +103,15 @@ U0 AHCIDbg(I64 port_num)
   , hba->version;
   "\nHBA Ext Capabilities:  %b"
   , hba->caps_ext;
-  if (Bt(&hba->caps_ext, AHCI_CAPSEXTf_BOH))
+  if (PCIBt(&hba->caps_ext, AHCI_CAPSEXTf_BOH))
     "\n\tBIOS/OS Handoff supported.";
-  if (Bt(&hba->caps_ext, AHCI_CAPSEXTf_NVMP))
+  if (PCIBt(&hba->caps_ext, AHCI_CAPSEXTf_NVMP))
     "\n\tNVMHCI Supported (Non-Volatile Memory Host Controller Interface)";
   "\nHBA BIOS/OS Handoff:   %b"
   , hba->bohc;
-  if (Bt(&hba->bohc, AHCI_BOHCf_BOS))
+  if (PCIBt(&hba->bohc, AHCI_BOHCf_BOS))
     "\n\tBIOS owns AHCI Controller";
-  if (Bt(&hba->bohc, AHCI_BOHCf_BB))
+  if (PCIBt(&hba->bohc, AHCI_BOHCf_BB))
     "\n\tBIOS Busy";
   "\n";
 }
@@ -121,7 +128,7 @@ I64 AHCIPortCmdSlotGet(I64 port_num)
   I64			 i;
   CAHCIPort	*port	= &blkdev.ahci_hba->ports[port_num];
   U32			 slots	= port->sata_active | port->cmd_issue;
-  for (i = 0; i < blkdev.cmd_slot_count; i++)
+  for (i = 0; i < blkdev.cmd_slot_cnt; i++)
   {
     if (!(slots & 1))
       return i;
@@ -148,17 +155,17 @@ Bool AHCIPortIsIdle(I64 port_num)
 U0 AHCIPortCmdStop(I64 port_num)
 {//Stop command engine on port.
   CAHCIPort *port = &blkdev.ahci_hba->ports[port_num];
-  Btr(&port->command, AHCI_PxCMDf_ST);
-  Btr(&port->command, AHCI_PxCMDf_FRE);
-  while (Bt(&port->command, AHCI_PxCMDf_CR) || Bt(&port->command, AHCI_PxCMDf_FR));
+  PCIBtr(&port->command, AHCI_PxCMDf_ST);
+  PCIBtr(&port->command, AHCI_PxCMDf_FRE);
+  while (PCIBt(&port->command, AHCI_PxCMDf_CR) || PCIBt(&port->command, AHCI_PxCMDf_FR));
 }
 
 U0 AHCIPortCmdStart(I64 port_num)
 {//Start command engine on port.
   CAHCIPort *port = &blkdev.ahci_hba->ports[port_num];
-  while (Bt(&port->command, AHCI_PxCMDf_CR));
-  Bts(&port->command, AHCI_PxCMDf_FRE);
-  Bts(&port->command, AHCI_PxCMDf_ST);
+  while (PCIBt(&port->command, AHCI_PxCMDf_CR));
+  PCIBts(&port->command, AHCI_PxCMDf_FRE);
+  PCIBts(&port->command, AHCI_PxCMDf_ST);
 }
 
 Bool AHCIPortWait(I64 port_num, F64 timeout, Bool throwing=TRUE)
@@ -205,7 +212,7 @@ U0 AHCIPortReset(I64 port_num)
 CPortCmdHeader *AHCIPortActiveHeaderGet(I64 port_num, I64 cmd_slot)
 {//Get current command slot header on port.
   CAHCIPort		*port = &blkdev.ahci_hba->ports[port_num];
-  CPortCmdHeader	*cmd_header = port->cmd_list_base;
+  CPortCmdHeader	*cmd_header = port->cmd_lst_base;
   return cmd_header + cmd_slot; //Move up pointer to the slot we have in the command list.
 }
 
@@ -215,9 +222,9 @@ U0 AHCIPortCmdWait(I64 port_num, I64 cmd_slot)
   U8		   str[STR_LEN];
   while (TRUE)
   {
-    if (!Bt(&port->cmd_issue, cmd_slot)) //When command has been processed
+    if (!PCIBt(&port->cmd_issue, cmd_slot)) //When command has been processed
       break;
-    if (Bt(&port->interrupt_status, AHCI_PxIf_TFE)) //Task File Error ($LK,"ATAS_ERR",A="MN:ATAS_ERR"$)
+    if (PCIBt(&port->interrupt_status, AHCI_PxIf_TFE)) //Task File Error ($LK,"ATAS_ERR",A="MN:ATAS_ERR"$)
     {
 error:
       if (AHCI_DEBUG)
@@ -230,7 +237,7 @@ error:
     }
     Yield; // don't hang OS
   }
-  if (Bt(&port->interrupt_status, AHCI_PxIf_TFE)) //Second safety check
+  if (PCIBt(&port->interrupt_status, AHCI_PxIf_TFE)) //Second safety check
     goto error;
 }
 
@@ -248,20 +255,20 @@ I64 AHCIAtapiCapacityGet(CBlkDev *bd)
     throw('AHCI');
   }
   buf = CAlloc(8, adam_task->code_heap);
-  Bts(&cmd_header->desc, AHCI_CH_DESCf_A);
+  PCIBts(&cmd_header->desc, AHCI_CH_DESCf_A);
   cmd_table = cmd_header->cmd_table_base;
   MemSet(cmd_table, 0, sizeof(CPortCmdTable));
   //Set up single PRD
   cmd_table->prdt[0].data_base	   = buf;
-  cmd_table->prdt[0].data_byte_count = DVD_BLK_SIZE - 1; //Zero-based value
+  cmd_table->prdt[0].data_byte_cnt = DVD_BLK_SIZE - 1; //Zero-based value
   cmd_header->prdt_len = 1;
   cmd_fis	= cmd_table->cmd_fis;
   cmd_fis->type		= FISt_H2D;
-  Bts(&cmd_fis->desc, AHCI_CF_DESCf_C); //Set Command bit in H2D FIS.
+  PCIBts(&cmd_fis->desc, AHCI_CF_DESCf_C); //Set Command bit in H2D FIS.
   cmd_fis->command	= ATA_PACKET;
   cmd_table->acmd[0]	= ATAPI_READ_CAPACITY >> 8;
   AHCIPortWait(bd->port_num, tS + 2);
-  Bts(&port->cmd_issue, cmd_slot); //Issue the command.
+  PCIBts(&port->cmd_issue, cmd_slot); //Issue the command.
   try
     AHCIPortCmdWait(bd->port_num, cmd_slot);
   catch
@@ -284,16 +291,16 @@ Bool AHCIAtapiSync(CBlkDev *bd)
     AdamErr("AHCI: Drive is not an ATAPI drive!\n");
     throw('AHCI');
   }
-  Bts(&cmd_header->desc, AHCI_CH_DESCf_A);
+  PCIBts(&cmd_header->desc, AHCI_CH_DESCf_A);
   cmd_table = cmd_header->cmd_table_base;
   MemSet(cmd_table, 0, sizeof(CPortCmdTable));
   cmd_fis	= cmd_table->cmd_fis;
   cmd_fis->type		= FISt_H2D;
-  Bts(&cmd_fis->desc, AHCI_CF_DESCf_C); //Set Command bit in H2D FIS.
+  PCIBts(&cmd_fis->desc, AHCI_CF_DESCf_C); //Set Command bit in H2D FIS.
   cmd_fis->command	= ATA_PACKET;
   cmd_table->acmd[0]	= ATAPI_SYNC_CACHE >> 8;
   AHCIPortWait(bd->port_num, tS + 2);
-  Bts(&port->cmd_issue, cmd_slot); //Issue the command.
+  PCIBts(&port->cmd_issue, cmd_slot); //Issue the command.
   try
     AHCIPortCmdWait(bd->port_num, cmd_slot);
   catch
@@ -317,12 +324,12 @@ Bool AHCIAtapiClose(CBlkDev *bd, I64 close_field=0x200, I64 track=0)
     AdamErr("AHCI: Drive is not an ATAPI drive!\n");
     throw('AHCI');
   }
-  Bts(&cmd_header->desc, AHCI_CH_DESCf_A);
+  PCIBts(&cmd_header->desc, AHCI_CH_DESCf_A);
   cmd_table = cmd_header->cmd_table_base;
   MemSet(cmd_table, 0, sizeof(CPortCmdTable));
   cmd_fis	= cmd_table->cmd_fis;
   cmd_fis->type		= FISt_H2D;
-  Bts(&cmd_fis->desc, AHCI_CF_DESCf_C); //Set Command bit in H2D FIS.
+  PCIBts(&cmd_fis->desc, AHCI_CF_DESCf_C); //Set Command bit in H2D FIS.
   cmd_fis->command	= ATA_PACKET;
   MemSet(&close_cmd, 0, sizeof(CAtapiCloseCmd));
   close_cmd.command	= ATAPI_CLOSE_TRACK_SESSION >> 8;
@@ -330,7 +337,7 @@ Bool AHCIAtapiClose(CBlkDev *bd, I64 close_field=0x200, I64 track=0)
   close_cmd.track_num	= EndianU16(track);
   MemCpy(&cmd_table->acmd, &close_cmd, sizeof(CAtapiCloseCmd));
   AHCIPortWait(bd->port_num, tS + 2);
-  Bts(&port->cmd_issue, cmd_slot); //Issue the command.
+  PCIBts(&port->cmd_issue, cmd_slot); //Issue the command.
   try
     AHCIPortCmdWait(bd->port_num, cmd_slot);
   catch
@@ -353,17 +360,17 @@ Bool AHCIAtapiBlank(CBlkDev *bd, Bool minimal=TRUE)
     AdamErr("AHCI: Drive is not an ATAPI drive!\n");
     throw('AHCI');
   }
-  Bts(&cmd_header->desc, AHCI_CH_DESCf_A);
+  PCIBts(&cmd_header->desc, AHCI_CH_DESCf_A);
   cmd_table = cmd_header->cmd_table_base;
   MemSet(cmd_table, 0, sizeof(CPortCmdTable));
   cmd_fis	= cmd_table->cmd_fis;
   cmd_fis->type		= FISt_H2D;
-  Bts(&cmd_fis->desc, AHCI_CF_DESCf_C); //Set Command bit in H2D FIS.
+  PCIBts(&cmd_fis->desc, AHCI_CF_DESCf_C); //Set Command bit in H2D FIS.
   cmd_fis->command	= ATA_PACKET;
   cmd_table->acmd[0]	= ATAPI_BLANK >> 8;
   cmd_table->acmd[1]	= minimal;
   AHCIPortWait(bd->port_num, tS + 2);
-  Bts(&port->cmd_issue, cmd_slot); //Issue the command.
+  PCIBts(&port->cmd_issue, cmd_slot); //Issue the command.
   try
     AHCIPortCmdWait(bd->port_num, cmd_slot);
   catch
@@ -381,33 +388,33 @@ Bool AHCIAtapiModeWriteSelect(CBlkDev *bd)
   CAHCIPort				*port		= bd->ahci_port;
   I64						 cmd_slot	= AHCIPortCmdSlotGet(bd->port_num);
   CPortCmdHeader			*cmd_header	= AHCIPortActiveHeaderGet(bd->port_num, cmd_slot);
-  CAtapiModeWriteList		*mode_list;
+  CAtapiModeWriteList		*mode_lst;
   if (port->signature != AHCI_PxSIG_ATAPI)
   {
     AdamErr("AHCI: Drive is not an ATAPI drive!\n");
     throw('AHCI');
   }
-  mode_list = CAlloc(sizeof(CAtapiModeWriteList), adam_task->code_heap);
-  mode_list->page.code				= 0x05;			// Write Parameters mode page code
-  mode_list->page.length				= 0x32;			// 0x32 indicates no support for Vendor Specific field.
-  mode_list->page.type				= 0x00;			// Packet/Incremental mode
-  mode_list->page.mode				= 4 | 1 << 5;	// Set CD Track Mode, set Fixed Packet Size bit
-  mode_list->page.block_type			= 8;			// Mode 1: 2048-size blocks of data
-  mode_list->page.packet_size			= EndianU32(16);// Number of User Data Blocks per Fixed Packet. DVD media default: 16.
-  Bts(&cmd_header->desc, AHCI_CH_DESCf_A);
+  mode_lst = CAlloc(sizeof(CAtapiModeWriteList), adam_task->code_heap);
+  mode_lst->page.code				= 0x05;			// Write Parameters mode page code
+  mode_lst->page.length				= 0x32;			// 0x32 indicates no support for Vendor Specific field.
+  mode_lst->page.type				= 0x00;			// Packet/Incremental mode
+  mode_lst->page.mode				= 4 | 1 << 5;	// Set CD Track Mode, set Fixed Packet Size bit
+  mode_lst->page.block_type			= 8;			// Mode 1: 2048-size blocks of data
+  mode_lst->page.packet_size			= EndianU32(16);// Number of User Data Blocks per Fixed Packet. DVD media default: 16.
+  PCIBts(&cmd_header->desc, AHCI_CH_DESCf_A);
   cmd_table = cmd_header->cmd_table_base;
   MemSet(cmd_table, 0, sizeof(CPortCmdTable));
-  cmd_table->prdt[0].data_base		= mode_list;
-  cmd_table->prdt[0].data_byte_count	= sizeof(CAtapiModeWriteList) - 1; // zero based, size of mode write list
+  cmd_table->prdt[0].data_base		= mode_lst;
+  cmd_table->prdt[0].data_byte_cnt	= sizeof(CAtapiModeWriteList) - 1; // zero based, size of mode write list
   cmd_header->prdt_len = 1;
   cmd_fis	= cmd_table->cmd_fis;
   cmd_fis->type		= FISt_H2D;
   cmd_fis->feature_low= 0x01; // Core Feature, 'mandatory'
-  Bts(&cmd_fis->desc, AHCI_CF_DESCf_C); //Set Command bit in H2D FIS.
+  PCIBts(&cmd_fis->desc, AHCI_CF_DESCf_C); //Set Command bit in H2D FIS.
   cmd_fis->command	= ATA_PACKET;
   cmd_table->acmd[0]	= ATAPI_MODE_SELECT >> 8;
   AHCIPortWait(bd->port_num, tS + 2);
-  Bts(&port->cmd_issue, cmd_slot); //Issue the command.
+  PCIBts(&port->cmd_issue, cmd_slot); //Issue the command.
   try
     AHCIPortCmdWait(bd->port_num, cmd_slot);
   catch
@@ -430,17 +437,17 @@ Bool AHCIAtapiStartStop(CBlkDev *bd, Bool start)
     AdamErr("AHCI: Drive is not an ATAPI drive!\n");
     throw('AHCI');
   }
-  Bts(&cmd_header->desc, AHCI_CH_DESCf_A);
+  PCIBts(&cmd_header->desc, AHCI_CH_DESCf_A);
   cmd_table = cmd_header->cmd_table_base;
   MemSet(cmd_table, 0, sizeof(CPortCmdTable));
   cmd_fis	= cmd_table->cmd_fis;
   cmd_fis->type		= FISt_H2D;
-  Bts(&cmd_fis->desc, AHCI_CF_DESCf_C); //Set Command bit in H2D FIS.
+  PCIBts(&cmd_fis->desc, AHCI_CF_DESCf_C); //Set Command bit in H2D FIS.
   cmd_fis->command	= ATA_PACKET;
   cmd_table->acmd[0]	= ATAPI_START_STOP_UNIT >> 8;
   cmd_table->acmd[4]	= start;
   AHCIPortWait(bd->port_num, tS + 2);
-  Bts(&port->cmd_issue, cmd_slot); //Issue the command.
+  PCIBts(&port->cmd_issue, cmd_slot); //Issue the command.
   try
     AHCIPortCmdWait(bd->port_num, cmd_slot);
   catch
@@ -489,12 +496,12 @@ U0 AHCIPortIdentify(CBlkDev *bd, Bool verbose=FALSE)
   //Set up single PRD
   cmd_table->prdt[0].data_base	   = dev_id_record;
   cmd_table->prdt[0].data_base_upper = 0;
-  cmd_table->prdt[0].data_byte_count = 512 - 1; //Zero-based value
+  cmd_table->prdt[0].data_byte_cnt = 512 - 1; //Zero-based value
   cmd_header->prdt_len = 1; //1 PRD, as described above, which contains the address to put the ID record.
   //Setup command FIS
   cmd_fis = cmd_table->cmd_fis;
   cmd_fis->type = FISt_H2D;
-  Bts(&cmd_fis->desc, AHCI_CF_DESCf_C); //Set Command bit in H2D FIS.
+  PCIBts(&cmd_fis->desc, AHCI_CF_DESCf_C); //Set Command bit in H2D FIS.
   if (port->signature == AHCI_PxSIG_ATAPI)
     cmd_fis->command = ATA_IDENTIFY_PACKET;
   else
@@ -502,21 +509,19 @@ U0 AHCIPortIdentify(CBlkDev *bd, Bool verbose=FALSE)
   cmd_fis->device  = 0; //No bits need to be set in the device register.
   //Wait on previous command to complete.
   AHCIPortWait(bd->port_num, tS + 2);
-  Bts(&port->cmd_issue, cmd_slot); //Issue the command.
+  PCIBts(&port->cmd_issue, cmd_slot); //Issue the command.
   AHCIPortCmdWait(bd->port_num, cmd_slot);
   Free(bd->dev_id_record);
   bd->dev_id_record = dev_id_record;
   if (port->signature == AHCI_PxSIG_ATA)
   {
     bd->max_blk = AHCILBA48CapacityGet(dev_id_record);
-    if (verbose)
-      "Disk Size: %d MiB\n", bd->max_blk * BLK_SIZE / 1024 / 1024;
+    if (verbose) "(Max Block: %d, Dsk Size: %d MiB)\n", bd->max_blk, bd->max_blk * BLK_SIZE / 1024 / 1024;
   }
   else
   {
     bd->max_blk = AHCIAtapiCapacityGet(bd);
-    if (verbose)
-      "Disk Size: %d MiB\n", bd->max_blk * DVD_BLK_SIZE / 1024 / 1024;
+    if (verbose) "(Max Block: %d, Dsk Size: %d MiB)\n", bd->max_blk, bd->max_blk * DVD_BLK_SIZE / 1024 / 1024;
   }
 }
 
@@ -531,22 +536,22 @@ U8 *AHCIBufferAlign(CBlkDev *bd, U8 *user_buf, I64 buf_size, Bool write)
 //		"Aligning buffer under 32-bit range\n";
     Free(bd->prd_buf);
     bd->prd_buf = MAlloc(buf_size, adam_task->code_heap);
-    Bts(&bd->flags, BDf_INTERNAL_BUF);
+    PCIBts(&bd->flags, BDf_INTERNAL_BUF);
     if (write)
       MemCpy(bd->prd_buf, user_buf, buf_size);
     return bd->prd_buf;
   }
-  Btr(&bd->flags, BDF_INTERNAL_BUF);
+  PCIBtr(&bd->flags, BDF_INTERNAL_BUF);
   return user_buf;
 }
 
-I64 AHCIAtaBlksRW(CBlkDev *bd, U8 *buf, I64 blk, I64 count, Bool write)
-{//Read/Write ATA disk blocks. Returns number of bytes transferred between system and disk.
+I64 AHCIAtaBlksRW(CBlkDev *bd, U8 *buf, I64 blk, I64 cnt, Bool write)
+{//Read/Write ATA disk blocks. Returns number of bytes transferred between adam and disk.
 //Don't use this, use the AHCIAtaBlksRead and AHCIAtaBlksWrite functions.
   CPortCmdTable  *cmd_table;
   CFisH2D		   *cmd_fis;
   CAHCIPort      *port = bd->ahci_port;
-  I64 i, buf_size, buf_size_tmp, byte_count, prdt_len, cmd_slot = AHCIPortCmdSlotGet(bd->port_num);
+  I64 i, buf_size, buf_size_tmp, byte_cnt, prdt_len, cmd_slot = AHCIPortCmdSlotGet(bd->port_num);
   CPortCmdHeader *cmd_header = AHCIPortActiveHeaderGet(bd->port_num, cmd_slot);
   U8             *internal_buf_tmp, *internal_buf;
   Bool			unlock;
@@ -555,24 +560,20 @@ I64 AHCIAtaBlksRW(CBlkDev *bd, U8 *buf, I64 blk, I64 count, Bool write)
     AdamErr("AHCI: Drive is not an ATA drive!\n");
     throw('AHCI');
   }
-  if (count < 1) return 0;
-  if (count > AHCI_PRDT_MAX_BLOCKS)
+  if (cnt < 1) return 0;
+  if (cnt > AHCI_PRDT_MAX_BLOCKS)
   {
-    AdamErr("AHCI: Block count %d max allowed in one command (%d)", count, AHCI_PRDT_MAX_BLOCKS);
+    AdamErr("AHCI: Block cnt %d max allowed in one command (%d)", cnt, AHCI_PRDT_MAX_BLOCKS);
     throw('AHCI');
   }
   unlock = BlkDevLock(bd);
   //Determine buffer size and PRDT length.
-  buf_size = buf_size_tmp = count * BLK_SIZE;
+  buf_size = buf_size_tmp = cnt * BLK_SIZE;
   prdt_len = (buf_size - 1) / AHCI_PRD_MAX_BYTES + 1;
-//	"PRDT Length:\t%d\n", prdt_len;
-//	"Count:\t\t\t%d\n", count;
-//	"Buffer size:\t%X\n", buf_size;
   cmd_header->prdt_len = prdt_len; //Set PRD table length in cmd header.
   //Set 'write' bit depending on 'write' argument.
-  LBEqu(&cmd_header->desc, AHCI_CH_DESCf_W, write);
+  BEqu(&cmd_header->desc, AHCI_CH_DESCf_W, write);
   internal_buf = internal_buf_tmp = AHCIBufferAlign(bd, buf, buf_size, write);
-//	"Buffer:\t\t\t0x%X\n", internal_buf;
   if (!internal_buf) throw('AHCI'); //Will probably never happen.
   //Obtain command table and zero it. This contains the command FIS and the PRDT.
   cmd_table = cmd_header->cmd_table_base;
@@ -582,20 +583,18 @@ I64 AHCIAtaBlksRW(CBlkDev *bd, U8 *buf, I64 blk, I64 count, Bool write)
   {
     //Use max PRD size until the remaining buffer is smaller than max size.
     if (buf_size_tmp > AHCI_PRD_MAX_BYTES)
-      byte_count = AHCI_PRD_MAX_BYTES;
+      byte_cnt = AHCI_PRD_MAX_BYTES;
     else
-      byte_count = buf_size_tmp;
-//		"prdt[%d].data_base_addr  = 0x%X\n"  , i, internal_buf_tmp;
-//		"prdt[%d].data_byte_count = 0x%X\n\n", i, byte_count;
+      byte_cnt = buf_size_tmp;
     cmd_table->prdt[i].data_base = internal_buf_tmp;
-    cmd_table->prdt[i].data_byte_count = byte_count - 1; //Zero-based value
-    buf_size_tmp -= byte_count;
-    internal_buf_tmp += byte_count;
+    cmd_table->prdt[i].data_byte_cnt = byte_cnt - 1; //Zero-based value
+    buf_size_tmp -= byte_cnt;
+    internal_buf_tmp += byte_cnt;
   }
   //Setup the command FIS.
   cmd_fis = cmd_table->cmd_fis;
   cmd_fis->type = FISt_H2D;
-  Bts(&cmd_fis->desc, AHCI_CF_DESCf_C); //Set Command bit in H2D FIS
+  PCIBts(&cmd_fis->desc, AHCI_CF_DESCf_C); //Set Command bit in H2D FIS
   if (write) //Assumed support for LBA48.
     cmd_fis->command = ATA_WRITE_DMA_EXT;
   else
@@ -608,11 +607,11 @@ I64 AHCIAtaBlksRW(CBlkDev *bd, U8 *buf, I64 blk, I64 count, Bool write)
   cmd_fis->lba3	= blk.u8[3];
   cmd_fis->lba4	= blk.u8[4];
   cmd_fis->lba5	= blk.u8[5];
-  cmd_fis->count	= count;
+  cmd_fis->cnt	= cnt;
   //Wait on previous command to complete.
   AHCIPortWait(bd->port_num, tS + 2);
   //Issue the command.
-  Bts(&port->cmd_issue, cmd_slot);
+  PCIBts(&port->cmd_issue, cmd_slot);
   //Wait on command to finish.
   AHCIPortCmdWait(bd->port_num, cmd_slot);
   if (!write) //If internal_buf was created it back to argument buf.
@@ -623,70 +622,62 @@ I64 AHCIAtaBlksRW(CBlkDev *bd, U8 *buf, I64 blk, I64 count, Bool write)
     }
   if (unlock)
     BlkDevUnlock(bd);
-  return cmd_header->prd_byte_count;
+  return cmd_header->prd_byte_cnt;
 }
 
-I64 AHCIAtaBlksRead(CBlkDev *bd, U8 *buf, I64 blk, I64 count)
-{//Read 'blk' amount of blocks from AHCI disk device. Returns num of bytes transferred between disk and memory.
-  I64 byte_count = 0;
-  if (!count)
+I64 AHCIAtaBlksRead(CBlkDev *bd, U8 *buf, I64 blk, I64 cnt)
+{//Read 'cnt' amount of blocks from block 'blk' in AHCI disk device. Returns num of bytes transferred between disk and memory.
+  I64 byte_cnt = 0;
+  if (!cnt)
     return 0;
-  if (count <= AHCI_PRDT_MAX_BLOCKS)
+  if (cnt <= AHCI_PRDT_MAX_BLOCKS)
   {
-//		"$$GREEN$$READ less than MAX_BLOCKS$$FG$$\n";
-    return AHCIAtaBlksRW(bd, buf, blk, count, FALSE);
+    return AHCIAtaBlksRW(bd, buf, blk, cnt, FALSE);
   }
   else
   {
-//		"$$GREEN$$READ greater than MAX_BLOCKS\n";
-//		"read count: %d\n$$FG$$", count;
-    while (count > AHCI_PRDT_MAX_BLOCKS)
+    while (cnt > AHCI_PRDT_MAX_BLOCKS)
     {
-      byte_count += AHCIAtaBlksRW(bd, buf, blk, AHCI_PRDT_MAX_BLOCKS, FALSE);
-      count -= AHCI_PRDT_MAX_BLOCKS;
+      byte_cnt += AHCIAtaBlksRW(bd, buf, blk, AHCI_PRDT_MAX_BLOCKS, FALSE);
+      cnt -= AHCI_PRDT_MAX_BLOCKS;
       blk += AHCI_PRDT_MAX_BLOCKS;
       buf += AHCI_PRDT_MAX_BLOCKS * BLK_SIZE;
-//			"$$GREEN$$read count: %d\n$$FG$$", count;
-    }$ER$
-    byte_count += AHCIAtaBlksRW(bd, buf, blk, count, FALSE);
-  }
-  blkdev.read_count += (count * bd->blk_size) >> BLK_SIZE_BITS;
-  return byte_count;
-}
-
-I64 AHCIAtaBlksWrite(CBlkDev *bd, U8 *buf, I64 blk, I64 count)
-{//Write 'blk' amount of blocks to AHCI disk device. Returns num of bytes transferred between memory and disk.
-  I64  byte_count = 0;
-  if (!count)
-    return 0;
-  if (count <= AHCI_PRDT_MAX_BLOCKS)
-  {
-//		"$$GREEN$$WRITE less than MAX_BLOCKS$$FG$$\n";
-    return AHCIAtaBlksRW(bd, buf, blk, count, TRUE);
-  }
-  else
-  {
-//		"$$GREEN$$WRITE greater than MAX_BLOCKS\n";
-//		"write count: %d$$FG$$\n", count;
-    while (count > AHCI_PRDT_MAX_BLOCKS)
-    {
-      byte_count += AHCIAtaBlksRW(bd, buf, blk, AHCI_PRDT_MAX_BLOCKS, TRUE);
-      count -= AHCI_PRDT_MAX_BLOCKS;
-      blk += AHCI_PRDT_MAX_BLOCKS;
-      buf += AHCI_PRDT_MAX_BLOCKS * BLK_SIZE;
-//			"$$GREEN$$write count: %d\n$$FG$$\n", count;
     }
-    byte_count += AHCIAtaBlksRW(bd, buf, blk, count, TRUE);
+    byte_cnt += AHCIAtaBlksRW(bd, buf, blk, cnt, FALSE);
   }
-  return byte_count;
+  blkdev.read_cnt += (cnt * bd->blk_size) >> BLK_SIZE_BITS;
+  return byte_cnt;
 }
 
-I64 AHCIAtapiBlksRead(CBlkDev *bd, U8 *buf, I64 blk, I64 count, Bool lock=TRUE)
-{//Read 'blk' amount of blocks from from AHCI ATAPI device. Returns num of bytes transferred.
+I64 AHCIAtaBlksWrite(CBlkDev *bd, U8 *buf, I64 blk, I64 cnt)
+{//Write 'cnt' amount of blocks from block 'blk' in AHCI disk device. Returns num of bytes transferred between memory and disk.
+  I64  byte_cnt = 0;
+  if (!cnt)
+    return 0;
+  if (cnt <= AHCI_PRDT_MAX_BLOCKS)
+  {
+    return AHCIAtaBlksRW(bd, buf, blk, cnt, TRUE);
+  }
+  else
+  {
+    while (cnt > AHCI_PRDT_MAX_BLOCKS)
+    {
+      byte_cnt += AHCIAtaBlksRW(bd, buf, blk, AHCI_PRDT_MAX_BLOCKS, TRUE);
+      cnt -= AHCI_PRDT_MAX_BLOCKS;
+      blk += AHCI_PRDT_MAX_BLOCKS;
+      buf += AHCI_PRDT_MAX_BLOCKS * BLK_SIZE;
+    }
+    byte_cnt += AHCIAtaBlksRW(bd, buf, blk, cnt, TRUE);
+  }
+  return byte_cnt;
+}
+
+I64 AHCIAtapiBlksRead(CBlkDev *bd, U8 *buf, I64 blk, I64 cnt, Bool lock=TRUE)
+{//Read 'cnt' amount of blocks from block 'blk' in AHCI ATAPI device. Returns num of bytes transferred.
   CPortCmdTable	*cmd_table;
   CFisH2D			*cmd_fis;
   CAHCIPort		*port = bd->ahci_port;
-  I64				 i, byte_count, buf_size, buf_size_tmp, prdt_len, cmd_slot = AHCIPortCmdSlotGet(bd->port_num);
+  I64				 i, byte_cnt, buf_size, buf_size_tmp, prdt_len, cmd_slot = AHCIPortCmdSlotGet(bd->port_num);
   CPortCmdHeader	*cmd_header = AHCIPortActiveHeaderGet(bd->port_num, cmd_slot);
   U8				*internal_buf, *internal_buf_tmp;
   CAtapiReadCmd	 read_cmd;
@@ -696,49 +687,43 @@ I64 AHCIAtapiBlksRead(CBlkDev *bd, U8 *buf, I64 blk, I64 count, Bool lock=TRUE)
     AdamErr("AHCI: Drive is not an ATAPI drive!\n");
     throw('AHCI');
   }
-  if (count < 1)
+  if (cnt < 1)
     return 0;
   if (lock)
     unlock = BlkDevLock(bd);
-  buf_size = buf_size_tmp = count * DVD_BLK_SIZE;
+  buf_size = buf_size_tmp = cnt * DVD_BLK_SIZE;
   prdt_len = (buf_size - 1) / AHCI_PRD_MAX_BYTES + 1;
-//	"PRDT Length:\t%d\n", prdt_len;
-//	"Count:\t\t\t%d\n", count;
-//	"Buffer size:\t%X\n", buf_size;
   cmd_header->prdt_len = prdt_len;
   internal_buf = internal_buf_tmp = AHCIBufferAlign(bd, buf, buf_size, FALSE);
-//	"Buffer:\t\t\t0x%X\n", internal_buf;
   if (!internal_buf) throw('AHCI');
-  Bts(&cmd_header->desc, AHCI_CH_DESCf_A); //Set ATAPI flag in command header
+  PCIBts(&cmd_header->desc, AHCI_CH_DESCf_A); //Set ATAPI flag in command header
   cmd_table = cmd_header->cmd_table_base;
   MemSet(cmd_table, 0, sizeof(CPortCmdTable));
   for (i = 0; i < prdt_len; i++)
   {
     if (buf_size_tmp > AHCI_PRD_MAX_BYTES) //$BK,1$SHOULD PROBABLY BE ATAPI MAX BYTES$BK,0$
-      byte_count = AHCI_PRD_MAX_BYTES;
+      byte_cnt = AHCI_PRD_MAX_BYTES;
     else
-      byte_count = buf_size_tmp;
-//		"prdt[%d].data_base_addr  = 0x%X\n"  , i, internal_buf_tmp;
-//		"prdt[%d].data_byte_count = 0x%X\n\n", i, byte_count;
+      byte_cnt = buf_size_tmp;
     cmd_table->prdt[i].data_base = internal_buf_tmp;
-    cmd_table->prdt[i].data_byte_count = byte_count - 1; //Zero-based value
-    buf_size_tmp	 -= byte_count;
-    internal_buf_tmp += byte_count;
+    cmd_table->prdt[i].data_byte_cnt = byte_cnt - 1; //Zero-based value
+    buf_size_tmp	 -= byte_cnt;
+    internal_buf_tmp += byte_cnt;
   }
   cmd_fis = cmd_table->cmd_fis;
   MemSet(cmd_fis, 0, sizeof(CFisH2D));
   cmd_fis->type = FISt_H2D;
-  Bts(&cmd_fis->desc, AHCI_CF_DESCf_C); //Set Command bit in H2D FIS
+  PCIBts(&cmd_fis->desc, AHCI_CF_DESCf_C); //Set Command bit in H2D FIS
   cmd_fis->feature_low = 1; //Necessary?
   cmd_fis->command	 = ATA_PACKET;
   MemSet(&read_cmd, 0, sizeof(CAtapiReadCmd));
   read_cmd.command = ATAPI_READ >> 8; //$BK,1$FIX$BK,0$
   read_cmd.lba	 = EndianU32(blk);
-  read_cmd.count	 = EndianU32(count);
+  read_cmd.cnt	 = EndianU32(cnt);
   MemCpy(&cmd_table->acmd, &read_cmd, 16);
-  cmd_fis->count = count; //Necessary?
+  cmd_fis->cnt = cnt; //Necessary?
   AHCIPortWait(bd->port_num, tS + 2);
-  Bts(&port->cmd_issue, cmd_slot);
+  PCIBts(&port->cmd_issue, cmd_slot);
   AHCIPortCmdWait(bd->port_num, cmd_slot);
   if (bd->flags & BDF_INTERNAL_BUF)
   {
@@ -747,15 +732,15 @@ I64 AHCIAtapiBlksRead(CBlkDev *bd, U8 *buf, I64 blk, I64 count, Bool lock=TRUE)
   }
   if (lock && unlock)
     BlkDevUnlock(bd);
-  return cmd_header->prd_byte_count;
+  return cmd_header->prd_byte_cnt;
 }
 
-I64 AHCIAtapiBlksWrite(CBlkDev *bd, U8 *buf, I64 blk, I64 count, Bool lock=TRUE)
+I64 AHCIAtapiBlksWrite(CBlkDev *bd, U8 *buf, I64 blk, I64 cnt, Bool lock=TRUE)
 {// Write blocks to a disc. (AHCIAtapiModeWriteSet must be called first.)
   CPortCmdTable	*cmd_table;
   CFisH2D			*cmd_fis;
   CAHCIPort		*port = bd->ahci_port;
-  I64				 i, byte_count, buf_size, buf_size_tmp, prdt_len, cmd_slot;
+  I64				 i, byte_cnt, buf_size, buf_size_tmp, prdt_len, cmd_slot;
   CPortCmdHeader	*cmd_header;
   U8				*internal_buf, *internal_buf_tmp;
   CAtapiWriteCmd	 write_cmd;
@@ -765,45 +750,45 @@ I64 AHCIAtapiBlksWrite(CBlkDev *bd, U8 *buf, I64 blk, I64 count, Bool lock=TRUE)
     AdamErr("AHCI: Drive is not an ATAPI drive!\n");
     throw('AHCI');
   }
-  if (count < 1)
+  if (cnt < 1)
     return 0;
   if (lock)
     unlock = BlkDevLock(bd);
   cmd_slot = AHCIPortCmdSlotGet(bd->port_num);
   cmd_header = AHCIPortActiveHeaderGet(bd->port_num, cmd_slot);
-  buf_size = buf_size_tmp = count * DVD_BLK_SIZE;
+  buf_size = buf_size_tmp = cnt * DVD_BLK_SIZE;
   prdt_len = (buf_size - 1) / AHCI_PRD_MAX_BYTES + 1;
   cmd_header->prdt_len = prdt_len;
   internal_buf = internal_buf_tmp = AHCIBufferAlign(bd, buf, buf_size, TRUE);
   if (!internal_buf) throw('AHCI');
-  Bts(&cmd_header->desc, AHCI_CH_DESCf_A); //Set ATAPI flag in command header
-  Bts(&cmd_header->desc, AHCI_CH_DESCf_W); //Set WRITE flag in command header
+  PCIBts(&cmd_header->desc, AHCI_CH_DESCf_A); //Set ATAPI flag in command header
+  PCIBts(&cmd_header->desc, AHCI_CH_DESCf_W); //Set WRITE flag in command header
   cmd_table = cmd_header->cmd_table_base;
   MemSet(cmd_table, 0, sizeof(CPortCmdTable));
   for (i = 0; i < prdt_len; i++)
   {
     if (buf_size_tmp > AHCI_PRD_MAX_BYTES)
-      byte_count = AHCI_PRD_MAX_BYTES;
+      byte_cnt = AHCI_PRD_MAX_BYTES;
     else
-      byte_count = buf_size_tmp;
+      byte_cnt = buf_size_tmp;
     cmd_table->prdt[i].data_base = internal_buf_tmp;
-    cmd_table->prdt[i].data_byte_count = byte_count - 1; //Zero-based value
-    buf_size_tmp	 -= byte_count;
-    internal_buf_tmp += byte_count;
+    cmd_table->prdt[i].data_byte_cnt = byte_cnt - 1; //Zero-based value
+    buf_size_tmp	 -= byte_cnt;
+    internal_buf_tmp += byte_cnt;
   }
   cmd_fis = cmd_table->cmd_fis;
   MemSet(cmd_fis, 0, sizeof(CFisH2D));
   cmd_fis->type = FISt_H2D;
-  Bts(&cmd_fis->desc, AHCI_CF_DESCf_C); //Set Command bit in H2D FIS
+  PCIBts(&cmd_fis->desc, AHCI_CF_DESCf_C); //Set Command bit in H2D FIS
   cmd_fis->command	 = ATA_PACKET;
-  if (count > U16_MAX) throw('AHCI');
+  if (cnt > U16_MAX) throw('AHCI');
   MemSet(&write_cmd, 0, sizeof(CAtapiWriteCmd));
   write_cmd.command = ATAPI_WRITE >> 8;
   write_cmd.lba	 = EndianU32(blk);
-  write_cmd.count	 = EndianU16(count);
+  write_cmd.cnt	 = EndianU16(cnt);
   MemCpy(&cmd_table->acmd, &write_cmd, sizeof(CAtapiWriteCmd));
   AHCIPortWait(bd->port_num, tS + 2);
-  Bts(&port->cmd_issue, cmd_slot);
+  PCIBts(&port->cmd_issue, cmd_slot);
   AHCIPortCmdWait(bd->port_num, cmd_slot);
   if (bd->flags & BDF_INTERNAL_BUF)
   {
@@ -812,13 +797,14 @@ I64 AHCIAtapiBlksWrite(CBlkDev *bd, U8 *buf, I64 blk, I64 count, Bool lock=TRUE)
   }
   if (lock && unlock)
     BlkDevUnlock(bd);
-  return cmd_header->prd_byte_count;
+  return cmd_header->prd_byte_cnt;
 }
 
 U0 AHCIPortInit(CBlkDev *bd, CAHCIPort *port, I64 port_num)
 {//Initialize base addresses for command list and FIS receive area and start command execution on port.
-  CPortCmdHeader *cmd_header;
-  I64				i;
+  CPortCmdHeader	*cmd_header,
+                  *cmd_header_base;
+  I64				 i;
   if (!(port->signature == AHCI_PxSIG_ATAPI || port->signature == AHCI_PxSIG_ATA))
     Dbg("AHCI Port/BlkDev error: Invalid Port Signature");
   if (Let2BlkDevType(bd->first_drv_let) == BDT_AHCI_SATA && port->signature == AHCI_PxSIG_ATAPI)
@@ -834,14 +820,15 @@ U0 AHCIPortInit(CBlkDev *bd, CAHCIPort *port, I64 port_num)
   Sleep(100); //Why?
   AHCIPortCmdStop(port_num);
   //'1K-byte' align as per SATA spec.
-  port->cmd_list_base = CAllocAligned(sizeof(CPortCmdHeader) * blkdev.cmd_slot_count, 1024, adam_task->code_heap);
-  port->cmd_list_base_upper = 0;
+  port->cmd_lst_base = CAllocAligned(sizeof(CPortCmdHeader) * blkdev.cmd_slot_cnt, 1024, adam_task->code_heap);
+  port->cmd_lst_base_upper = 0;
   //Alloc where received FISes will be copied to. '256-byte' align as per spec.
   port->fis_base = CAllocAligned(sizeof(CFisReceived), 256, adam_task->code_heap);
   port->fis_base_upper = 0;
-  for (i = 0; i < blkdev.cmd_slot_count; i++)
+  cmd_header_base = port->cmd_lst_base;
+  for (i = 0; i < blkdev.cmd_slot_cnt; i++)
   {
-    cmd_header = &port->cmd_list_base(CPortCmdHeader *)[i];
+    cmd_header = &cmd_header_base[i];
     //Write Command FIS Length (CFL, a fixed size) in bits 4:0 of the desc. Takes size in U32s.
     cmd_header->desc = sizeof(CFisH2D) / sizeof(U32);
     //'128-byte' align as per SATA spec, minus 1 since length is 1-based.
@@ -855,20 +842,21 @@ U0 AHCIPortInit(CBlkDev *bd, CAHCIPort *port, I64 port_num)
 Bool AHCIAtaInit(CBlkDev *bd)
 {
   Bool			unlock, okay = FALSE;
-  CPortCmdHeader *cmd_header;
+  CPortCmdHeader *cmd_header, *cmd_header_base;
   I64				i;
   if (!bd->ahci_port)
     return FALSE;
   unlock = BlkDevLock(bd);
   // if we re-init a port, keep memory from leaking.
-  if (bd->ahci_port->cmd_list_base)
+  if (bd->ahci_port->cmd_lst_base)
   {
-    for (i = 0; i < blkdev.cmd_slot_count; i++)
+    for (i = 0; i < blkdev.cmd_slot_cnt; i++)
     {
-      cmd_header = &bd->ahci_port->cmd_list_base(CPortCmdHeader *)[i];
+      cmd_header_base = bd->ahci_port->cmd_lst_base;
+      cmd_header = &cmd_header_base[i];
       Free(cmd_header->cmd_table_base);
     }
-    Free(bd->ahci_port->cmd_list_base);
+    Free(bd->ahci_port->cmd_lst_base);
     Free(bd->ahci_port->fis_base);
   }
   // try to init the port, catch if fails.
@@ -893,19 +881,20 @@ Bool AHCIAtaInit(CBlkDev *bd)
 
 U0 AHCIHbaReset()
 {
-  Bts(&blkdev.ahci_hba->ghc, AHCI_GHCf_HBA_RESET);
-  while (Bt(&blkdev.ahci_hba->ghc, AHCI_GHCf_HBA_RESET));
-  Bts(&blkdev.ahci_hba->ghc, AHCI_GHCf_AHCI_ENABLE);
+  PCIBts(&blkdev.ahci_hba->ghc, AHCI_GHCf_HBA_RESET);
+  while (PCIBt(&blkdev.ahci_hba->ghc, AHCI_GHCf_HBA_RESET));
+  PCIBts(&blkdev.ahci_hba->ghc, AHCI_GHCf_AHCI_ENABLE);
 }
 
+
 U0 AHCIInit(I64 addr=NULL)
-{
-  CAHCIHba	*hba = NULL;
-  CAHCIPort	*port;
-  I64			 i, bdf;
+ {
+  CAHCIHba     *hba = NULL;
+   CAHCIPort    *port;
+   I64                   i, bdf;
+  "______________________\n\n";
   if (blkdev.ahci_hba)
     return;
-  "컴컴컴컴컴컴컴컴컴컴컴\n";
   if (!addr)
   {
     bdf = PCIClassFind(PCIC_STORAGE << 16 | PCISC_AHCI << 8 + 1, 0); //0x010601, last byte prog_if, AHCI version 1.0
@@ -936,35 +925,39 @@ U0 AHCIInit(I64 addr=NULL)
   }
   else
   {
-    hba = dev.uncached_alias + addr;
+    "AHCI: No AHCI controller found.\n";
+    return;
   }
+  "AHCI: Controller found\n";
+  hba = dev.uncached_alias + PCIReadU32(bdf.u8[2], bdf.u8[1], bdf.u8[0], PCIR_BASE5) & ~0x1F; //Last 4 bits not part of address.
   blkdev.ahci_hba = hba;
-  Bts(&blkdev.ahci_hba->ghc, AHCI_GHCf_AHCI_ENABLE);
+  PCIBts(&blkdev.ahci_hba->ghc, AHCI_GHCf_AHCI_ENABLE);
   //"AHCI: GHC.AE set\n";
   //Transferring ownership from BIOS if supported.
-  if (Bt(&hba->caps_ext, AHCI_CAPSEXTf_BOH))
+  if (PCIBt(&hba->caps_ext, AHCI_CAPSEXTf_BOH))
   {
-    Bts(&hba->bohc, AHCI_BOHCf_OOS);
-    "AHCI: Transferring ownership from BIOS\n";
-    while (Bt(&hba->bohc, AHCI_BOHCf_BOS));
+    PCIBts(&hba->bohc, AHCI_BOHCf_OOS);
+    //"AHCI: Transferring ownership from BIOS\n";
+    while (PCIBt(&hba->bohc, AHCI_BOHCf_BOS));
     Sleep(25);
-    if (Bt(&hba->bohc, AHCI_BOHCf_BB)) //if Bios Busy is still set after 25 mS, wait 2 seconds.
+    if (PCIBt(&hba->bohc, AHCI_BOHCf_BB)) //if Bios Busy is still set after 25 mS, wait 2 seconds.
       Sleep(2000);
   }
-  blkdev.cmd_slot_count = (hba->caps & 0x1F00) >> 8;
-  //"AHCI: Command slot count: %d\n", blkdev.cmd_slot_count;
+  blkdev.cmd_slot_cnt = (hba->caps & 0x1F00) >> 8;
+  //"AHCI: Command slot cnt: %d\n", blkdev.cmd_slot_cnt;
   for (i = 0; i < AHCI_MAX_PORTS; i++)
   {
-    if (Bt(&hba->ports_implemented, i))
+    if (PCIBt(&hba->ports_implemented, i))
     {
-      //$BK,1$Make ports idle?$BK,0$
+      //$BK,1$Mk ports idle?$BK,0$
       port = &hba->ports[i];
+      "AHCI: Port %2d signature 0x%08X "
+      , i, port->signature;
       if (port->signature == AHCI_PxSIG_ATA || port->signature == AHCI_PxSIG_ATAPI)
       {
-        "AHCI: Port %2d signature 0x%08X ", i, port->signature;
         if (port->signature == AHCI_PxSIG_ATAPI)
         {
-          Bts(&port->command, AHCI_PxCMDf_ATAPI);
+          PCIBts(&port->command, AHCI_PxCMDf_ATAPI);
           "ATAPI drive\n";
         }
         else if (port->signature == AHCI_PxSIG_ATA)
@@ -975,9 +968,11 @@ U0 AHCIInit(I64 addr=NULL)
           AHCIPortCmdStop(i);
         }
       }
+      else
+        "Unknown\n";
     }
   }
-  "컴컴컴컴컴컴컴컴컴컴컴\n\n";
+  "______________________\n\n";
 }
 
 Bool AHCIBootDVDProbeAll(CBlkDev *bd)
@@ -986,12 +981,14 @@ Bool AHCIBootDVDProbeAll(CBlkDev *bd)
   CAHCIPort	*port;
   U8			*buf = CAlloc(DVD_BLK_SIZE);
   CKernel 	*kernel;
-  //"컴컴컴컴컴컴컴컴컴컴컴\n";
+  "______________________\n";
   for (i = 0; i < AHCI_MAX_PORTS; i++)
   {
-    if (Bt(&blkdev.ahci_hba->ports_implemented, i))
+    if (PCIBt(&blkdev.ahci_hba->ports_implemented, i))
     {
       port = &blkdev.ahci_hba->ports[i];
+      "AHCI: BootDVDProbeAll: Saw port at %2d with signature 0x%0X\n"
+      , i, port->signature;
       if (port->signature == AHCI_PxSIG_ATAPI)
       {
         "AHCI: Probing ATAPI drive at port %d\n", i;
@@ -999,19 +996,21 @@ Bool AHCIBootDVDProbeAll(CBlkDev *bd)
         {
           AHCIPortInit(bd, port, i);
           AHCIAtapiBlksRead(bd, buf, sys_boot_blk, 1, FALSE);
+          kernel = buf + sys_boot_src.u16[1] << BLK_SIZE_BITS;
+          if (kernel->compile_time == sys_compile_time)
+          {
+            "AHCI: Found sys_compile_time at BLK %d on Port %d\n", sys_boot_blk, i;
+            "______________________\n";
+            return TRUE;
+          }
+          else
+            "AHCI: Did not find matching sys_compile_time at BLK %d on Port %d\n", sys_boot_blk, i;
         }
         catch
         {
           Fs->catch_except = TRUE;
-          "AHCI: Error at Port %d"
+          "AHCI: Error at Port %d\n"
           , i;
-        }
-        kernel = buf + sys_boot_src.u16[1] << BLK_SIZE_BITS;
-        if (kernel->compile_time == sys_compile_time)
-        {
-          "Found boot disc on Port %d\n", i;
-          //"컴컴컴컴컴컴컴컴컴컴컴\n";
-          return TRUE;
         }
       }
     }
@@ -1020,7 +1019,7 @@ Bool AHCIBootDVDProbeAll(CBlkDev *bd)
   return FALSE;
 }
 
-Bool AHCIAtapiRBlks(CDrv *drive, U8 *buf, I64 blk, I64 count)
+Bool AHCIAtapiRBlks(CDrv *drive, U8 *buf, I64 blk, I64 cnt)
 {
   CBlkDev	*bd			= drive->bd;
   I64		 spc		= bd->blk_size >> BLK_SIZE_BITS, n, blk2,
@@ -1040,7 +1039,7 @@ Bool AHCIAtapiRBlks(CDrv *drive, U8 *buf, I64 blk, I64 count)
     AHCIAtapiBlksRead(bd, dvd_buf, blk2 / spc, n);
     if (bd->flags & BDF_READ_CACHE)
       DskCacheAdd(drive, dvd_buf, blk2, n * spc);
-    MemCpy(buf, dvd_buf + (blk - blk2) << BLK_SIZE_BITS, count << BLK_SIZE_BITS);
+    MemCpy(buf, dvd_buf + (blk - blk2) << BLK_SIZE_BITS, cnt << BLK_SIZE_BITS);
     Free(dvd_buf);
   }
   else
@@ -1048,20 +1047,20 @@ Bool AHCIAtapiRBlks(CDrv *drive, U8 *buf, I64 blk, I64 count)
   return TRUE;
 }
 
-Bool AHCIAtaRBlks(CDrv *drive, U8 *buf, I64 blk, I64 count)
+Bool AHCIAtaRBlks(CDrv *drive, U8 *buf, I64 blk, I64 cnt)
 {
   CBlkDev	*bd = drive->bd;
   if (bd->type == BDT_AHCI_SATA)
-    AHCIAtaBlksRead(bd, buf, blk, count);
+    AHCIAtaBlksRead(bd, buf, blk, cnt);
   else
     return FALSE;
   return TRUE;
 }
 
-Bool AHCIAtaWBlks(CDrv *drive, U8 *buf, I64 blk, I64 count)
+Bool AHCIAtaWBlks(CDrv *drive, U8 *buf, I64 blk, I64 cnt)
 {
   CBlkDev	*bd = drive->bd;
-  AHCIAtaBlksWrite(bd, buf, blk, count);
-  blkdev.write_count += count;
+  AHCIAtaBlksWrite(bd, buf, blk, cnt);
+  blkdev.write_cnt += cnt;
   return TRUE;
 }

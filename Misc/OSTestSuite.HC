@@ -28,7 +28,7 @@ U0 TS(U8 *desc)
            (PROGRESS_DESC_LEN-StrLen(st))>>1,CH_SPACE,st);
   Free(st);
   progress4=ts_i++;
-  progress4_max=177;
+  progress4_max=178;
   progress4_t0=ts_t0;
   *progress4_desc=0;
   RegExe("TempleOS/OSTestSuite");

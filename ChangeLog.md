@@ -1,3 +1,51 @@
+### TinkerOS 5.08
+
+#### Adam changes:
+
+- Add back sound wave file generation code from Sup1.
+- Wallpaper updated to display more than 16 CPU cores, should be good up to 80.
+- Wallpaper now supports 3 digit FPS number.
+- Remove old multi-core graphics startup code
+- Fix BootRAM regression
+
+#### API changes:
+- Add Seg2Linear, StrReplace from ZealOS.
+- Add modification to StrPrintFlags from ZealOS.
+- Add PCI bit test functions from ZealOS.
+- Added a port of SysRep from ZealOS.
+
+#### Compiler changes:
+- Add OPTf_DECIMAL_ONLY Lex option //Only allow decimal numbers (no 0x or 0b prefixed numbers).
+
+#### Demo changes:
+- Added MultiCore demo to just test a few Seth cores instead of all cores
+
+#### Driver changes:
+- Add AHCI updates from ZealOS.
+
+#### Graphics related changes:
+- Align more buffers.
+- Fix more glitches (hopefully all).
+- Mutlicore interrupt driven updates.
+- Each CPU only uses/updates part of cache for better CPU cache usage.
+- Increase max FPS to a 3 digit number.
+- Text mode add warning that changing monitors might have caused you to enter text mode.
+
+#### Games
+- Restore Talons to original version
+
+#### Kernel Changes:
+- Align Graphics Buffers
+- Remove old Seth graphics variables
+
+### Misc. Changes:
+- Added function AutoHome to MakeHome which just Mounts IDE drive C, switches to C:/Home and does Dir;
+
+### TinkerOS 5.07.1
+
+- Add Wordle and update OS Test Suite.
+
+
 ### Changes added in TinkerOS 5.07:
 
 #### Adam changes:

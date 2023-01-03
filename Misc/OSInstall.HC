@@ -254,7 +254,7 @@ U0 VMInstall(Bool just_std_ide=TRUE, InstallOptions *cfg)
   CATARep *head=NULL,*ata_drv=NULL,*atapi_drv=NULL;
   CATARep hd,cd;
   CTask *task;
-  I64			 i, atapi_port = -1, ata_port = -1;
+  I64			 i, atapi_port = -1, ata_port = -1, first_hd=-1;
   CAHCIPort	*port;
   "\nReady to do install, it's normal for this to freeze for a moment or two.\n";
   PressAKey;
@@ -270,20 +270,8 @@ U0 VMInstall(Bool just_std_ide=TRUE, InstallOptions *cfg)
   WinToTop(Fs);
   if (AHCIMode)
   {
-    SATARep;
-    for (i = 0; i < AHCI_MAX_PORTS; i++)
-    {
-      if (Bt(&blkdev.ahci_hba->ports_implemented, i))
-      {
-        port = &blkdev.ahci_hba->ports[i];
-        if (port->signature == AHCI_PxSIG_ATA)
-        {
-          ata_port = i;
-          hd.num=i;
-          break;
-        }
-      }
-    }
+    SATARep(,&first_hd);
+    ata_port=hd.num=first_hd;
     for (i = 0; i < AHCI_MAX_PORTS; i++)
     {
       if (Bt(&blkdev.ahci_hba->ports_implemented, i))
@@ -297,7 +285,7 @@ U0 VMInstall(Bool just_std_ide=TRUE, InstallOptions *cfg)
         }
       }
     }
-    if (atapi_port<0 || ata_port<0)
+    if (ata_port<0||(blkdev.boot_drv_let!='B'&&atapi_port<0))
     {
       "Failed to detect necessary drives to do install in AHCI mode!\n";
       WinVert(task->win_top,Fs->win_bottom);

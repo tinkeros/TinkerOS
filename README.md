@@ -33,5 +33,5 @@ TinkerOS is essentially TempleOS renamed with some changes that allow it to run 
 
 ### Acknowlegements
 - Terry Davis for <a href="https://templeos.org/">TempleOS</a> of course!
-- AHCI code ported from <a href="https://github.com/Zeal-Operating-System/ZealOS">ZealOS</a>.
+- Code ported from <a href="https://github.com/Zeal-Operating-System/ZealOS">ZealOS</a>.
 

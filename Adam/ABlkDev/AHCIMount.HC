@@ -1,8 +1,8 @@
 #help_index "PCI;Info;File/System;Devices"
 
-public I64 SATARep(I64 bd_type=BDT_NULL)
+public I64 SATARep(I64 bd_type=BDT_NULL, I64 *first_hdd=NULL)
 {// Report ATA and ATAPI drives implemented by SATA controller.
-  I64			 i, j, i_max=0, num = 0;
+  I64			 i, j, i_max=0, num = 0, first_hd=-1;
   CAHCIPort	*port;
   CBlkDev		*temp_blkdev;
   U16			*st, *model, *serial;
@@ -93,6 +93,8 @@ public I64 SATARep(I64 bd_type=BDT_NULL)
             {
               i_max=i+1;
             }
+            if (first_hd<0&&port->signature==AHCI_PxSIG_ATA)
+              first_hd=i;
           }
           "\n";
           BlkDevDel(temp_blkdev);
@@ -104,5 +106,7 @@ public I64 SATARep(I64 bd_type=BDT_NULL)
   }
   else
     "blkdev.ahci_hba is NULL !\n\n";
-  return MaxI64(num,i_max); //TODO
+  if (first_hdd)
+      *first_hdd=first_hd;
+  return MaxI64(num,i_max);
 }

@@ -580,6 +580,8 @@ public extern I64 KbdCmdRead();
 public extern U0 KbdCmdFlush();
 public extern U0 MsHardHndlr(U8 *pkt=NULL);
 public extern Bool MsHardRst();
+public extern U0 MsRawRst();
+public extern Bool MsRaw(Bool val);
 extern U0	KbdInit();
 public extern U0 KbdMsCmdAck(...);
 public extern I64 KbdMsEvtTime();

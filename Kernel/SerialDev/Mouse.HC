@@ -62,6 +62,26 @@ U0 MsSet(I64 x=I64_MAX,I64 y=I64_MAX,I64 z=I64_MAX,I64 l=I64_MAX,I64 r=I64_MAX)
   MsHardSet(x,y,z,l,r);
 }
 
+public U0 MsRawRst()
+{
+  ms_hard.raw_data.x=0;
+  ms_hard.raw_data.y=0;
+  ms_hard.raw_data.z=0;
+  ms_hard.raw_bttns[0]=FALSE;
+  ms_hard.raw_bttns[1]=FALSE;
+  ms_hard.raw_bttns[2]=FALSE;
+  ms_hard.raw_bttns[3]=FALSE;
+  ms_hard.raw_bttns[4]=FALSE;
+}
+
+public Bool MsRaw(Bool val)
+{ // Places mouse in "raw" mode, button presses will not go to windows manager when true
+  Bool old_val=ms_hard.raw_mode;
+  ms_hard.raw_mode=val;
+  ms.show=!val;
+  return old_val;
+}
+
 U0 MsInit()
 {
   MemSet(&ms,0,sizeof(CMsStateGlbls));
@@ -75,6 +95,7 @@ U0 MsInit()
   ms.timestamp=GetTSC;
   ms.dbl_time=0.350;
   GridInit;
+  MsRawRst;
 }
 
 U0 MsHardPktRead()
@@ -179,17 +200,20 @@ public Bool MsHardRst()
       KbdCmdSend(KBD_CTRL,0xA7); //Disable Mouse
     catch
       Fs->catch_except=TRUE;
+  MsRawRst;
   return res;
 }
 
 public U0 DisableMouse()
 {
   KbdCmdSend(KBD_CTRL,0xA7);
+  MsRawRst;
 }
 
 public U0 EnableMouse()
 {
   KbdCmdSend(KBD_CTRL,0xA8);
+  MsRawRst;
 }
 
 U0 MsHardSpeedSet()
@@ -245,7 +269,8 @@ public U0 MsHardHndlr(U8 *pkt=NULL)
 {
   I64 i,dx,dy,dz;
   U8 ms_buf[4];
-  MsHardSetPre;
+  if (!ms_hard.raw_mode)
+    MsHardSetPre;
   if (!pkt)
   {
     for (i=0; i<4; i++)
@@ -259,11 +284,6 @@ public U0 MsHardHndlr(U8 *pkt=NULL)
     for (i=0; i<4; i++)
       ms_buf[i]=pkt[i];
   }
-  ms_hard.bttns[0] = ms_buf[0] & 1;
-  ms_hard.bttns[1] = (ms_buf[0] & 2) >> 1;
-  ms_hard.bttns[2] = (ms_buf[0] & 4) >> 2;
-  ms_hard.bttns[3] = (ms_buf[3] & 0x10) >> 4;
-  ms_hard.bttns[4] = (ms_buf[3] & 0x20) >> 5;
   if (ms_buf[0] & 0x10)
     dx=ms_buf[1]-256;
   else
@@ -276,10 +296,30 @@ public U0 MsHardHndlr(U8 *pkt=NULL)
     dz=ms_buf[3]&7-8;
   else
     dz=ms_buf[3]&7;
-  ms_hard.prescale.x+=dx;
-  ms_hard.prescale.y+=dy;
-  ms_hard.prescale.z+=dz;
-  MsHardSetPost;
+  if (ms_hard.raw_mode) {
+    // buttons / position data need to by consumed by app
+    // buttons stay down, positions keep accumulating until
+    // consumed by app and reset with MsRawRst
+    ms_hard.raw_bttns[0] |= ms_buf[0] & 1;
+    ms_hard.raw_bttns[1] |= (ms_buf[0] & 2) >> 1;
+    ms_hard.raw_bttns[2] |= (ms_buf[0] & 4) >> 2;
+    ms_hard.raw_bttns[3] |= (ms_buf[3] & 0x10) >> 4;
+    ms_hard.raw_bttns[4] |= (ms_buf[3] & 0x20) >> 5;
+    ms_hard.raw_data.x+=dx;
+    ms_hard.raw_data.y+=dy;
+    ms_hard.raw_data.z+=dz;
+  }
+  else {
+    ms_hard.bttns[0] = ms_buf[0] & 1;
+    ms_hard.bttns[1] = (ms_buf[0] & 2) >> 1;
+    ms_hard.bttns[2] = (ms_buf[0] & 4) >> 2;
+    ms_hard.bttns[3] = (ms_buf[3] & 0x10) >> 4;
+    ms_hard.bttns[4] = (ms_buf[3] & 0x20) >> 5;
+    ms_hard.prescale.x+=dx;
+    ms_hard.prescale.y+=dy;
+    ms_hard.prescale.z+=dz;
+    MsHardSetPost;
+  }
 }
 
 U0 MsHardSet(I64 x,I64 y,I64 z,I64 l,I64 r)

@@ -705,9 +705,9 @@ start:
       "$$TR-C,\"BIOS\"$$\n";
       "$$FD,CYAN$$";
       "$$ID,3$$"
-      "Vendor\t\t\t:$$BLACK$$%s$$FG$$\n"
+      "Vendor\t\t:$$BLACK$$%s$$FG$$\n"
       , SMBIOSStr(header, bios_info->vendor);
-      "Version\t\t\t:$$BLACK$$%s$$FG$$\n"
+      "Version\t\t:$$BLACK$$%s$$FG$$\n"
       , SMBIOSStr(header, bios_info->version);
       "Release Date\t\t:$$BLACK$$%s (mm/dd/yyyy)$$FG$$\n"
       , SMBIOSStr(header, bios_info->release_date);
@@ -717,7 +717,7 @@ start:
       , Seg2Linear(&start_addr);
       "Image Size\t\t:$$BLACK$$%d bytes$$FG$$\n"
       , (0x10000 - bios_info->start_address_segment) * 16;
-      "ROM Size\t\t\t:$$BLACK$$";
+      "ROM Size\t\t:$$BLACK$$";
       if (bios_info->rom_size == 0xFF)
         "%d %ziB$$FG$$\n", bios_info->extended_rom_size & ~0xC000, Bt(&bios_info->extended_rom_size, 14), "M\0G";
       else
@@ -745,11 +745,11 @@ start:
       , SMBIOSStr(header, sys_info->manufacturer);
       "Product Name\t\t:$$BLACK$$%s$$FG$$\n"
       , SMBIOSStr(header, sys_info->product_name);
-      "Version\t\t\t:$$BLACK$$%s$$FG$$\n"
+      "Version\t\t:$$BLACK$$%s$$FG$$\n"
       , SMBIOSStr(header, sys_info->version);
       "Serial Number\t:$$BLACK$$%s$$FG$$\n"
       , SMBIOSStr(header, sys_info->serial_number);
-      "UUID\t\t\t\t:$$BLACK$$%X-%X-%X-%X-%X$$FG$$\n"
+      "UUID\t\t\t:$$BLACK$$%X-%X-%X-%X-%X$$FG$$\n"
       , EndianU32(sys_info->uuid(U32 *)),
       EndianU16((sys_info->uuid)(U16 *)[2]), EndianU16((sys_info->uuid)(U16 *)[3]), EndianU16((sys_info->uuid)(U16 *)[4]),
       EndianU16((sys_info->uuid)(U16 *)[5]) << 32 | EndianU32((sys_info->uuid)(U32 *)[3]);
@@ -757,7 +757,7 @@ start:
       , sys_info->wakeup_type, "ST_SMBIOS_WAKEUP_TYPES";
       "SKU Number\t\t:$$BLACK$$%s$$FG$$\n"
       , SMBIOSStr(header, sys_info->sku_number);
-      "Family\t\t\t:$$BLACK$$%s$$FG$$\n"
+      "Family\t\t:$$BLACK$$%s$$FG$$\n"
       , SMBIOSStr(header, sys_info->family);
       "$$ID,-3$$";
       break;
@@ -767,10 +767,10 @@ start:
       "$$FD,CYAN$$";
       "$$ID,3$$Manufacturer\t\t:$$BLACK$$%s$$FG$$\n"
       , SMBIOSStr(header, info->manufacturer);
-      "Type\t\t\t\t:$$BLACK$$%Z%z$$FG$$\n"
+      "Type\t\t\t:$$BLACK$$%Z%z$$FG$$\n"
       , info->type & 0x7F, "ST_SMBIOS_ENCLOSURE_TYPES",
       Bt(&info->type, 7), " \0, Lock Present";
-      "Version\t\t\t:$$BLACK$$%s$$FG$$\n"
+      "Version\t\t:$$BLACK$$%s$$FG$$\n"
       , SMBIOSStr(header, info->version);
       "Bootup State\t\t:$$BLACK$$%Z$$FG$$\n"
       , info->bootup_state, "ST_SMBIOS_ENCLOSURE_STATES";
@@ -780,7 +780,7 @@ start:
       , info->power_supply_state, "ST_SMBIOS_ENCLOSURE_STATES";
       "Security Status\t:$$BLACK$$%Z$$FG$$\n"
       , info->security_status, "ST_SMBIOS_ENCLOSURE_SECURITY_STATUSES";
-      "Height\t\t\t:$$BLACK$$";
+      "Height\t\t:$$BLACK$$";
       if (info->height)
         "%0.2f\"$$FG$$\n", info->height * 1.75; //height is in 'U' units. 1 'U' is 1.75 inches or 4.445 cm.
       else "Unknown$$FG$$\n";
@@ -805,7 +805,7 @@ start:
       , SMBIOSStr(header, p_info->name);
       "Processor Type\t:$$BLACK$$%Z$$FG$$\n"
       , p_info->type, "ST_SMBIOS_PROCESSOR_TYPES";
-      "Status\t\t\t:$$BLACK$$%z, %z$$FG$$\n"
+      "Status\t\t:$$BLACK$$%z, %z$$FG$$\n"
       ,  p_info->status >> 6, "Socket Unpopulated\0Socket Populated",
                         p_info->status & 7, "Unknown\0CPU Enabled\0CPU Disabled through BIOS Setup\0"
                         "CPU Disabled by BIOS (POST Error)\0CPU is Idle, Waiting to be Enabled\0 \0 \0Other";
@@ -816,19 +816,19 @@ start:
       "Manufacturer\t\t:$$BLACK$$%s$$FG$$\n"
       , SMBIOSStr(header, p_info->manufacturer);
 //					"CPU Family\t\t\t:$$BLACK$$%z$$FG$$\n", p_info->family, "ST_SMBIOS_PROCESSOR_FAMILIES"; TODO: maybe implement this?
-      "Name\t\t\t\t:$$BLACK$$%s$$FG$$\n"
+      "Name\t\t\t:$$BLACK$$%s$$FG$$\n"
       , SMBIOSStr(header, p_info->version);
-      "Family\t\t\t:$$BLACK$$";
+      "Family\t\t:$$BLACK$$";
       if (regs.rax >> 8 & 0xF < 0xF)
         "%d$$FG$$\n", regs.rax >> 8 & 0xF;
       else
         "%d$$FG$$\n", 0xF + regs.rax >> 20 & 0xFF;
-      "Model\t\t\t:$$BLACK$$";
+      "Model\t\t:$$BLACK$$";
       if (regs.rax >> 4 & 0xF < 0xF)
         "%d$$FG$$\n", regs.rax >> 4 & 0xF;
       else
         "%d$$FG$$\n", (regs.rax >> 4 & 0xF) << 4 | (regs.rax >> 16 & 0xF);
-      "Stepping\t\t\t:$$BLACK$$%d$$FG$$\n"
+      "Stepping\t\t:$$BLACK$$%d$$FG$$\n"
       , regs.rax & 0xF;
       "Current Speed\t:$$BLACK$$";
       if (p_info->current_speed)
@@ -838,9 +838,9 @@ start:
       if (p_info->max_speed)
         "%0.1f GHz$$FG$$\n", p_info->max_speed / 1000.0;
       else "Unknown$$FG$$\n";
-      "Socket\t\t\t:$$BLACK$$%Z$$FG$$\n"
+      "Socket\t\t:$$BLACK$$%Z$$FG$$\n"
       , p_info->upgrade, "ST_SMBIOS_PROCESSOR_UPGRADES";
-      "Voltage\t\t\t:$$BLACK$$";
+      "Voltage\t\t:$$BLACK$$";
       if (Bt(&p_info->voltage, 7))
         "%0.1fV$$FG$$\n", (p_info->voltage & 0x7F) / 10.0;
       else
@@ -935,9 +935,9 @@ start:
       "$$TR,\"Memory Array\"$$\n";
       "$$FD,CYAN$$";
       "$$ID,3$$";
-      "Location\t\t\t:$$BLACK$$%Z$$FG$$\n"
+      "Location\t\t:$$BLACK$$%Z$$FG$$\n"
       , ma_info->location, "ST_SMBIOS_PHYMEM_LOCATIONS";
-      "Use\t\t\t\t:$$BLACK$$%Z$$FG$$\n"
+      "Use\t\t\t:$$BLACK$$%Z$$FG$$\n"
       , ma_info->use, "ST_SMBIOS_PHYMEM_USES";
       "Error Correction\t:$$BLACK$$%z$$FG$$\n"
       , ma_info->use, " \0Other\0Unknown\0None\0Parity\0Single-bit ECC\0Multi-bit ECC\0CRC";
@@ -969,7 +969,7 @@ start:
       , SMBIOSStr(header, mem_info->bank_locator);
       "Manufacturer\t\t:$$BLACK$$%s$$FG$$\n"
       , SMBIOSStr(header, mem_info->manufacturer);
-      "Size\t\t\t\t:$$BLACK$$";
+      "Size\t\t\t:$$BLACK$$";
       if (!mem_info->size)
         "No Device Installed$$FG$$\n";
       else if (mem_info->size == 0xFFFF)
@@ -1001,12 +1001,12 @@ start:
         "%d bits$$FG$$\n", mem_info->total_width;
       else
         "Unknown$$FG$$\n";
-      "Data Width\t\t\t:$$BLACK$$";
+      "Data Width\t\t:$$BLACK$$";
       if (mem_info->data_width != 0xFFFF)
         "%d bits$$FG$$\n", mem_info->data_width;
       else
         "Unknown$$FG$$\n";
-      "Max Speed\t\t\t:$$BLACK$$";
+      "Max Speed\t\t:$$BLACK$$";
       if (mem_info->speed)
         "%d $MA-X+PU,"MT/s",LM="\"megatransfers per second\";View;"$$$FG$$\n", mem_info->speed;
         else
@@ -1020,11 +1020,11 @@ start:
       , SMBIOSStr(header, mem_info->serial_number);
       "Part Number\t\t:$$BLACK$$%s$$FG$$\n"
       , SMBIOSStr(header, mem_info->part_number);
-      "Asset Tag\t\t\t:$$BLACK$$%s$$FG$$\n"
+      "Asset Tag\t\t:$$BLACK$$%s$$FG$$\n"
       , SMBIOSStr(header, mem_info->asset_tag);
       "Form Factor\t\t:$$BLACK$$%Z$$FG$$\n"
       , mem_info->form_factor, "ST_SMBIOS_MEMDEV_FORM_FACTORS";
-      "Type\t\t\t\t:$$BLACK$$%Z$$FG$$\n"
+      "Type\t\t\t:$$BLACK$$%Z$$FG$$\n"
       , mem_info->type, "ST_SMBIOS_MEMDEV_TYPES";
       StrPrintFlags(buffer, Define("ST_SMBIOS_MEMDEV_TYPE_DETAILS"), mem_info->type_detail, show_all_flags, 16);
       str = SysRepFlagsMk(buffer);

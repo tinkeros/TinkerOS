@@ -82,7 +82,8 @@ extern I64 RedSeaISO(U8 *_iso_filename=NULL,U8 *_src_dir,
 extern U0 Refresh(I64 cnt=1,Bool force=FALSE);
 extern U0 RegOneTimePopUp(I64 flag_num,U8 *msg);
 extern Bool RegWrite(U8 *path,U8 *fmt,...);
-extern I64 SATARep(I64 bd_type=BDT_NULL);
+extern I64 SATARep(I64 bd_type=BDT_NULL, I64 *first_hdd=NULL);
+
 extern U0 SettingsPop(CTask *task=NULL,I64 flags=0);
 extern CTaskSettings *SettingsPush(CTask *task=NULL,I64 flags=0);
 extern U0 TemplateCtrlSlider(CDoc *doc);

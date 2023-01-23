@@ -10,8 +10,36 @@
 // Fixes/speedups for when pitch!=GR_WIDTH*4 and other scaled modes
 // Sprite blinking when partially offscreen ( bug in TOS too )
 
-I64 BlotGlblCnt,CacheGlblCnt,DrawGlblCnt;
+I64 BlotGlblCnt,CacheGlblCnt,DrawGlblCnt,GrSethHelperSema=0,GrSethHelperCnt=1;
 U8 *scrn_src=gr.dc2->body;
+
+public U0 SetGrSethHelperCnt(I64 cnt=-1)
+{// Set number of Seth cores to help render graphics, -1 for default
+    while (GrSethHelperSema) {
+        Yield;
+    }
+    PUSHFD
+    CLI
+    if (cnt<0) {
+        GrSethHelperCnt=mp_cnt/2;
+        if (GR_WIDTH==640&&GrSethHelperCnt>2) {
+            GrSethHelperCnt=2;
+        }
+        if (GR_WIDTH>800&&GrSethHelperCnt>3) {
+            GrSethHelperCnt=3;
+        }
+    }
+    else {
+        GrSethHelperCnt=cnt;
+    }
+    if (GrSethHelperCnt>mp_cnt-1) {
+        GrSethHelperCnt=mp_cnt-1;
+    }
+    lock GrSethHelperSema=0;
+    POPFD
+}
+
+SetGrSethHelperCnt(0);  // Use default
 
 U0 GrUpdateTaskODEs(CTask *task)
 {
@@ -420,7 +448,7 @@ interrupt U0 GrPartialUpdatePartIrq()
   U16 *screen=scrn_src,*last_screen = gr.screen_cache;
   I64 i,j,idx,*dst;
 
-  for (i=(Gs->num-1)*GR_HEIGHT/(mp_cnt-1); i<Gs->num*GR_HEIGHT/(mp_cnt-1); i++)
+  for (i=(Gs->num-1)*GR_HEIGHT/GrSethHelperCnt; i<Gs->num*GR_HEIGHT/GrSethHelperCnt; i++)
   {
     dst=text.raw_scrn_image;  //TODO size pitch fix
     dst=dst+i*gr.pitch/8;
@@ -442,8 +470,8 @@ interrupt U0 GrUpdateCacheIrq()
 {
   I64 i,my_rows;
 
-  i=(Gs->num-1)*GR_HEIGHT/(mp_cnt-1);
-  my_rows=Gs->num*GR_HEIGHT/(mp_cnt-1)-i;
+  i=(Gs->num-1)*GR_HEIGHT/GrSethHelperCnt;
+  my_rows=Gs->num*GR_HEIGHT/GrSethHelperCnt-i;
 
   MemCpy(gr.screen_cache+i*GR_WIDTH, scrn_src+i*GR_WIDTH,my_rows*GR_WIDTH);
 
@@ -505,12 +533,12 @@ U0 DCBlotColor8(CDC *dc,CDC *img)
 {
     I64 i,*PBlotGlblCnt=&BlotGlblCnt+dev.uncached_alias;
 
-    if (mp_cnt>1&&dc==gr.dc2&&img==gr.dc)
+    if (GrSethHelperCnt>0&&dc==gr.dc2&&img==gr.dc)
     { 
       lock BlotGlblCnt=0;
-      for (i=1;i<mp_cnt;i++)
+      for (i=1;i<1+GrSethHelperCnt;i++)
        MPInt(I_BLOT,i);
-      while (*PBlotGlblCnt != mp_cnt-1)
+      while (*PBlotGlblCnt != GrSethHelperCnt)
       {
         Yield;
       }
@@ -525,11 +553,11 @@ U0 GrPartialUpdate(U64 *screen)
 {
   I64 i,*PDrawGlblCnt=&DrawGlblCnt+dev.uncached_alias;
 
-  if (mp_cnt>1) {
+  if (GrSethHelperCnt>0) {
     lock DrawGlblCnt=0;
-    for (i=1;i<mp_cnt;i++)
+    for (i=1;i<1+GrSethHelperCnt;i++)
       MPInt(I_REDRAW,i);
-    while (*PDrawGlblCnt != mp_cnt-1)
+    while (*PDrawGlblCnt != GrSethHelperCnt)
     {
       Yield;
     }    
@@ -547,11 +575,11 @@ U0 GrUpdateCache(U8 *src_start)
 
   scrn_src=src_start;
 
-  if (mp_cnt>1) {
+  if (GrSethHelperCnt>0) {
     lock CacheGlblCnt=0;
-    for (i=1;i<mp_cnt;i++)
+    for (i=1;i<1+GrSethHelperCnt;i++)
       MPInt(I_UPDATE_CACHE,i);
-    while (*PCacheGlblCnt != mp_cnt-1)
+    while (*PCacheGlblCnt != GrSethHelperCnt)
     {
       Yield;
     }    
@@ -669,6 +697,7 @@ U0 GrUpdateVGAGraphics()
 U0 GrUpdateScrn()
 {//Called by the Window Manager HERE, 30 times a second.
   CDC *dc;
+  lock GrSethHelperSema++;
   if (!Bt(&sys_run_level,RLf_VGA)) //if text mode
     GrUpdateTasks;
   else
@@ -691,6 +720,7 @@ U0 GrUpdateScrn()
           gr.dc2->height*gr.dc2->width_internal>>3);
     GrUpdateVGAGraphics;
   }
+  lock GrSethHelperSema=0;
 }
 
 public U0 ToggleBlink()
@@ -708,7 +738,7 @@ interrupt U0 DCBlotColor8Irq()
   U64 b,j,*src=gr.dc->body,*b0=gr.dc2->body;
   I64 k,d0=gr.dc->width_internal*gr.dc->height/8;
 
-  for (k=(Gs->num-1)*d0/(mp_cnt-1); k<Gs->num*d0/(mp_cnt-1); k++)
+  for (k=(Gs->num-1)*d0/GrSethHelperCnt; k<Gs->num*d0/GrSethHelperCnt; k++)
   {
     j=*src++;
     if (j!=0xFFFFFFFFFFFFFFFF) {

@@ -1,5 +1,35 @@
 #help_index "Windows;Task/Delay"
 
+Bool fps_prof=FALSE;
+F64 fps_cnt=0, fps_sum=0;
+
+public U0 FPSProfReset()
+{ // Ensures FPS test not running
+  fps_cnt=0;
+  fps_sum=0;
+  fps_prof=FALSE;
+}
+
+public F64 FPSProf()
+{// Counts real FPS, does not include window manager sleeping
+  F64 res;
+  if (fps_prof) {
+      fps_prof=FALSE;
+      if (fps_cnt>0) {
+          res = fps_sum/fps_cnt;
+          fps_cnt=0;
+          fps_sum=0;
+          return res;
+      }
+  }
+  else {
+      fps_cnt=0;
+      fps_sum=0;
+      fps_prof=TRUE;
+  }
+  return 0;
+}
+
 public U0 Refresh(I64 cnt=1,Bool force=FALSE)
 {//Wait for 30fps WinMgr to start & finish scrn refresh.
   //0,FALSE Cnt Sync to WinMgr.
@@ -270,8 +300,13 @@ I64 WinMgrSleep(Bool flush_msgs=FALSE)
   CDC *diff;
   CDate cdt;
   TimeCal;
-  if ((t_delta=(t=tS)-winmgr.last_refresh_tS)>0.001)
+  if ((t_delta=(t=tS)-winmgr.last_refresh_tS)>0.001) {
     winmgr.fps=Max(1.0/t_delta,1);
+    if (fps_prof) {
+        fps_cnt+=1;
+        fps_sum+=winmgr.fps;
+    }
+  }
   else
     winmgr.fps=fps_master;
   winmgr.last_refresh_tS=t;

@@ -514,6 +514,30 @@ U0 MoveMan(F64 é)
 }
 
 #define MICRO_STEPS	4
+
+CTask *mouse_task=NULL;
+CTask *game_task=Fs;
+F64 mouse_scale=32.0;
+
+U0 MouseHandler()
+{
+  Bool button;
+  I64 x;
+  while (TRUE)
+  {
+    button=ms_hard.raw_bttns[0];
+    x=ms_hard.raw_data.x;
+    if (button || x!=0)
+      MsRawRst;
+    if (button)
+      PostMsgWait(game_task,MSG_KEY_DOWN_UP,CH_SPACE,0);
+    if (x != 0) {
+      man_é+=(x/mouse_scale)/MICRO_STEPS;
+    }
+    Sleep(10);
+  }
+}
+
 U0 RotateMan(F64 d)
 {
   I64 i;
@@ -538,6 +562,7 @@ U0 CastleFrankenstein()
         "  Left(,,SC_CURSOR_LEFT);"
         "  Right(,,SC_CURSOR_RIGHT);"
         "  Fire(,CH_SPACE);"
+        "  Mouse(,'m');"
         "}"
         );
 
@@ -555,6 +580,30 @@ U0 CastleFrankenstein()
   try {
     while (TRUE) {
       switch (GetKey(&sc)) {
+        case 'm':
+	  if (!mouse_task) {
+	    MsRaw(TRUE);
+	    mouse_task=Spawn(&MouseHandler,NULL);
+	  }
+          break;
+        case 'w':
+	  MoveMan(man_é);
+          break;
+	case 'a':
+	  MoveMan(man_é-ã/2.0);
+	  break;
+	case 'd':
+	  MoveMan(man_é+ã/2.0);
+	  break;
+	case 's':
+	  MoveMan(man_é+ã);
+	  break;
+        case '+':
+	  mouse_scale*=0.9;
+          break;
+        case '-':
+	  mouse_scale*=1.1;
+          break;
         case CH_SPACE:
 	  Fire;
 	  break;
@@ -567,10 +616,16 @@ U0 CastleFrankenstein()
         case 0:
 	  switch (sc.u8[0]) {
 	    case SC_CURSOR_RIGHT:
-	      Spawn(&RotateMan,(ã/32)(I64));
+	      if (mouse_task)
+	        MoveMan(man_é+ã/2.0);
+	      else
+	        Spawn(&RotateMan,(ã/32)(I64));
 	      break;
 	    case SC_CURSOR_LEFT:
-	      Spawn(&RotateMan,(-ã/32)(I64));
+	      if (mouse_task)
+	        MoveMan(man_é-ã/2.0);
+	      else
+	        Spawn(&RotateMan,(-ã/32)(I64));
 	      break;
 	    case SC_CURSOR_UP:
 	      MoveMan(man_é);
@@ -594,6 +649,8 @@ fs_done:
 }
 
 CastleFrankenstein;
+if (mouse_task) Kill(mouse_task);
+MsRaw(FALSE);
         &        
              
               

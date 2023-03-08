@@ -4,6 +4,8 @@
   <a href="https://tinkeros.github.io">
   <img src="https://github.com/tinkeros/TinkerOS/raw/main/Images/theme.gif" /></a>
 </p>
+<p align="center"><a href="https://tinkeros.github.io">TinkerOS/TempleOS documentation</p>
+
 
 ### Preface
 TinkerOS is essentially TempleOS renamed with some changes that allow it to run bare metal on some more modern machines since it "only" requires real or emulated PS/2 keyboard and mouse input and legacy boot support.  TempleOS on the other hand requires hardware which supports Terry's hard coded 640x480 video mode which has been deprecated on some newer machines.  Also TempleOS requires an IDE drive interface or legacy ATA SATA support.  TinkerOS supports AHCI SATA mode installation.  It also has a "Live USB" version which runs from a RAM disk which allows it to tried without installing.  You can also use the USB version to install it on supported machines that do not have a CD/DVD drive.  If your machine uses the newer EFI boot method, it will still need to support legacy booting (via CSM) which you may need to turn on in your BIOS.  

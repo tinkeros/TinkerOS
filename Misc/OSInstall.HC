@@ -71,13 +71,13 @@ U0 InstallDrv(U8 drv_let,Bool extras=FALSE,Bool templeos=FALSE)
     Free(st2);
   }
   Free(st);
-  if (drv_tos_cfg->no_hpet) {
+  if (templeos && drv_tos_cfg->no_hpet) {
     ExePrint("CopyTree(\"::/Misc/TempleOS/NoHPET\",\"%C:/Kernel\");",drv_let);
   }
-  if (drv_tos_cfg->text_mode) {
+  if (templeos && drv_tos_cfg->text_mode) {
     ExePrint("CopyTree(\"::/Misc/TempleOS/TextMode\",\"%C:/Kernel\");",drv_let);
   }
-  if (drv_tos_cfg->fps!=tos_orig.fps) {
+  if (templeos && drv_tos_cfg->fps!=tos_orig.fps) {
     st=MStrPrint("%C:/Kernel/KernelA.HH.Z",drv_let);
     "Patching file %s\n",st;
     st2=MStrPrint("#define WINMGR_FPS      (%d000.0/1001)\n",drv_tos_cfg->fps);

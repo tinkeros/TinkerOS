@@ -1,7 +1,8 @@
 ## TinkerOS a fork of TempleOS
 
 <p align="center">
-  <img src="https://github.com/tinkeros/TinkerOS/raw/main/Images/theme.gif" />
+  <a href="https://tinkeros.github.io">
+  <img src="https://github.com/tinkeros/TinkerOS/raw/main/Images/theme.gif" /></a>
 </p>
 
 ### Preface

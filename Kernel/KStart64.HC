@@ -2,6 +2,18 @@ asm {
   USE64
   BTS	U32 [SYS_RUN_LEVEL],RLf_64BIT
 
+  //Set required bits for SSE instruction execution
+
+  MOV_RAX_CR4
+  BTS     RAX, CR4f_OSFXSR
+  MOV_CR4_RAX
+
+  MOV_EAX_CR0
+  BTR     RAX, CR0f_EM
+  BTR     RAX, CR0f_MP
+  BTS     RAX, CR0f_NE
+  MOV_CR0_EAX
+
   FNINIT
   MOV	RAX,SYS_FIXED_AREA+CSysFixedArea.init_fpu_mmx
   FXSAVE	U64 [RAX]
@@ -42,8 +54,9 @@ asm {
 //************************************
   USE32
   SYS_ENTER_LONG_MODE:: //Switch to long 64-bit mode
+
   MOV_EAX_CR4
-  OR	EAX,0x2B0
+  OR      EAX, CR4F_PAE | CR4F_PGE
   MOV_CR4_EAX
 
   MOV	EAX,[MEM_PML4]

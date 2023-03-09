@@ -436,7 +436,7 @@ public CDC *DCScrnCapture(Bool include_zoom=TRUE,CTask *task=NULL)
   CDC *dc;
   U8 *dst;
   Refresh(0,FALSE);
-  if (include_zoom)
+  if (include_zoom && gr.scrn_zoom != 1)
     dc=DCCopy(gr.scrn_image,task);
   else
     dc=DCCopy(gr.dc1,task);

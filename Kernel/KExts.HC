@@ -133,3 +133,5 @@ extern U8 MountFile(U8 *filename);
 extern Bool Silent(Bool val=ON);
 extern CHashGeneric *HashPublic(U8 *st,I64 mask,Bool val=TRUE);
 extern U0 DefinePrint(U8 *dname,U8 *src,...);
+extern U0 PortNop();
+extern U0 Busy(I64 uS);

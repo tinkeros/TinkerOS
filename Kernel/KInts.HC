@@ -179,18 +179,57 @@ U8 *IntFaultHndlrsNew()
   return res;
 }
 
+public U0 RouteIrq(I64 irq, I64 cpu=0)
+{
+  U8 *da = dev.uncached_alias + IOAPIC_REG;
+  U32 *_d = dev.uncached_alias + IOAPIC_DATA;
+  *da=IOREDTAB+irq*2+1;
+  *_d=dev.mp_apic_ids[cpu] << 24;
+  *da=IOREDTAB+irq*2;
+  *_d=0x4000+irq;
+}
+
+public U0 MaskIrq(I64 irq, I64 cpu=0)
+{
+  U8 *da = dev.uncached_alias + IOAPIC_REG;
+  U32 *_d = dev.uncached_alias + IOAPIC_DATA;
+  *da=IOREDTAB+irq*2+1;
+  *_d=dev.mp_apic_ids[cpu] << 24;
+  *da=IOREDTAB+irq*2;
+  *_d=0x14000+irq;
+}
+
+U0 IntInit0()
+{
+  I64 i,fp=&IntNop;
+  U8 *dst=dev.idt(U8*)=MAlloc(16*256);
+  for (i=0; i<256; i++)
+  {
+    *dst(U16 *)++=fp.u16[0];
+    *dst(U16 *)++=offset(CGDT.cs64);
+    *dst(U16 *)++=0x8000+IDTET_IRQ<<8;
+    *dst(U16 *)++=fp.u16[1];
+    *dst(U32 *)++=fp.u32[1];
+    *dst(U32 *)++=0;
+  }
+  WBINVD
+}
+
 U0 IntInit1()
 {//Interrupt descriptor table part1.
-  I64 i;
   CSysLimitBase tmp_ptr;
   if (!Gs->num)  //Gs cur $LK,"CCPU",A="MN:CCPU"$ struct
   {
-    dev.idt=CAlloc(16*256);
-    for (i=0; i<256; i++)
-      IntEntrySet(i,&IntNop);
+    IntInit0;
   }
-  tmp_ptr.limit=256*16-1;
+  else
+  {
+    CLFlush(&dev);
+    CLFlush(&dev.idt);
+    Busy(10);
+  }
   tmp_ptr.base =dev.idt;
+  tmp_ptr.limit=256*16-1;
   SetRAX(&tmp_ptr);
   LIDT U64 [RAX]
 }
@@ -209,7 +248,9 @@ U0 IntInit2()
   I go ahead and ACK PIC in $LK,"IntNop",A="MN:IntNop"$().
   I have no idea why I got a IRQ 0x27.
   */
+  LBtr(&sys_semas[SEMA_NMI],0);
   IntEntrySet(I_NMI,_SYS_HLT);
+  // IntEntrySet(I_NMI,&IntNMI);  //TODO future different NMI handler
   IntEntrySet(I_TIMER,IRQ_TIMER);
   IntEntrySet(I_MP_CRASH,*INT_MP_CRASH_ADDR(U32 *));
   IntEntrySet(I_WAKE,INT_WAKE);

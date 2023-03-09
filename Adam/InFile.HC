@@ -98,13 +98,15 @@ public I64 InGetChar(...)
   }
 }
 
-public U0 InUntilKey(I64 scan_code,I64 sc_mask=0xFF|SCF_SHIFT|SCF_CTRL|SCF_ALT)
+public U0 InUntilKey(I64 scan_code,I64 sc_mask=0xFF|SCF_SHIFT|SCF_CTRL|SCF_ALT,I64 timeout=-1)
 {//Let user type until he presses certain key.
   I64 sc,ch;
+  F64 t0=tS;
   do
   {
     ch=GetKey(&sc);
     Msg(MSG_KEY_DOWN,ch,sc);
+    if (0<timeout<tS-t0) break;
   }
   while (sc&sc_mask!=scan_code&sc_mask);
 }

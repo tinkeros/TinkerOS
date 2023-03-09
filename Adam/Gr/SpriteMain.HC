@@ -299,6 +299,7 @@ CSprite *SMScrnBitMap(I64 eletype,CDC *dc,CDC *dc2,I64 x,I64 y,
   res->pwhu.height=yy2-yy1;
   res->pwhu.x1=0;
   res->pwhu.y1=0;
+  ms.show=FALSE;
   SpriteScrnInit(dc,x,y);
   i=gr.scrn_zoom;
   GrScaleZoom(1.0/i);
@@ -313,6 +314,7 @@ CSprite *SMScrnBitMap(I64 eletype,CDC *dc,CDC *dc2,I64 x,I64 y,
   DCDel(img);
   DCDel(dc3);
   dc2->thick=old_width;
+  ms.show=TRUE;
   Fs->win_inhibit=WIG_TASK_DFT-WIF_SELF_FOCUS
                   -WIF_SELF_BORDER-WIF_SELF_GRAB_SCROLL;
   return res;

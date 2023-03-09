@@ -1,4 +1,4 @@
-Bool CopySingleZ(U8 *f1,U8 *f2) //Just one file
+Bool CopySingleZ(U8 *f1,U8 *f2,Bool yield=TRUE) //Just one file
 {
   U8 *file_buf=NULL;
   I64 size,attr=0,c;
@@ -11,6 +11,7 @@ Bool CopySingleZ(U8 *f1,U8 *f2) //Just one file
     if (file_buf)
     {
       "Copying%s to %s\n",f1,f2;
+      if (yield) Yield;
       c=FileWrite(f2,file_buf,size,de.datetime,attr);
       Free(file_buf);
       return ToBool(c);
@@ -24,7 +25,7 @@ Bool CopySingleZ(U8 *f1,U8 *f2) //Just one file
 }
 
 #define COPY_BUF_BLKS	0x80
-Bool CopySingle(U8 *f1,U8 *f2) //Just one file
+Bool CopySingle(U8 *f1,U8 *f2, Bool yield=TRUE) //Just one file
 {
   U8 *absf1=FileNameAbs(f1),*absf2=FileNameAbs(f2),*buf;
   I64 cnt,n,size,attr1=FileAttr(f1),attr2=FileAttr(f2),i,j;
@@ -60,6 +61,7 @@ Bool CopySingle(U8 *f1,U8 *f2) //Just one file
       {
         if (cnt>COPY_BUF_BLKS)
         {
+          if (yield) Yield;
           n=COPY_BUF_BLKS;
           i=n<<BLK_SIZE_BITS;
         }

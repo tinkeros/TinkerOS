@@ -22,12 +22,12 @@ U8 *rev_bits_table, //Table with U8 bits revd
 *set_bits_table; //Table with count of set bits in a U8
 CDate local_time_offset;
 F64	*pow10_I64,
-    sys_os_version=5.080;
+    sys_os_version=5.090;
 
 CAutoCompleteDictGlbls acd;
 CAutoCompleteGlbls ac;
 CBlkDevGlbls	blkdev;
-CCntsGlbls	cnts= {1,0,2676302000,2676302,2676302000,0,0,0,FALSE};
+CCntsGlbls	cnts= {1,0,2676302000,2676302,2676302000,FALSE};
 CDbgGlbls	dbg;
 CDevGlbls	dev;
 CGridGlbls	ms_grid; //See $LK,"::/Demo/Graphics/Grid.HC"$.

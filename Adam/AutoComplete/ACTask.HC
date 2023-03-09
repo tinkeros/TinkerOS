@@ -178,6 +178,8 @@ U0 ACPutChoices(CDoc *focus_l,CDocEntry *doc_e,CTask *focus_task,
     }
     else if (FileFind("::/Doc/StandBy.DD.Z"))
       Type("::/Doc/StandBy.DD.Z",0);
+    else if (FileFind("::/Doc/StandBy.DD"))
+      Type("::/Doc/StandBy.DD",0);
   }
   Free(src);
   Free(buf);

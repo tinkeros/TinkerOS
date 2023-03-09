@@ -39,7 +39,7 @@ I64 EndianI64(I64 d)
 I64 BCnt(I64 d)
 {//Count set bits in I64.
   I64 res=0,i;
-  for (i=0; i<8; i++)
+  for (i=0;i<8;i++)
     res+=set_bits_table[d.u8[i]];
   return res;
 }
@@ -50,12 +50,11 @@ U0 IntCore0TimerHndlr(CTask *)
   if (mp_cnt>1)
     while (LBts(&sys_semas[SEMA_SYS_TIMER],0))
       PAUSE
-      lock cnts.jiffies++;
+  lock cnts.jiffies++;
   cnts.timer+=SYS_TIMER0_PERIOD+1;
   LBtr(&sys_semas[SEMA_SYS_TIMER],0);
-  if (Bt(&sys_run_level,RLf_MP))
-    for (i=1; i<mp_cnt; i++)
-      MPInt(I_TIMER,i);
+  for (i=1;i<mp_cnt;i++)
+    MPInt(I_TIMER,i);
   OutU8(0x20,0x20); //Acknowledge PIC Interrupt
 }
 
@@ -67,9 +66,8 @@ I64 SysTimerRead()
   if (mp_cnt>1)
     while (LBts(&sys_semas[SEMA_SYS_TIMER],0))
       PAUSE
-      OutU8(0x43,0); //Latch Timer0
-  if ((i=InU8(0x40)+InU8(0x40)<<8)==SYS_TIMER0_PERIOD)
-  {
+  OutU8(0x43,0); //Latch Timer0
+  if ((i=InU8(0x40)+InU8(0x40)<<8)==SYS_TIMER0_PERIOD) {
     if (InU8(0x20) & 1)
       i=-1;
   }
@@ -83,16 +81,15 @@ I64 TimeCal()
 {
   static I64 time_stamp_start=0,timer_start=0;
   I64 i;
-  if (time_stamp_start)
-  {
+  if (time_stamp_start) {
     PUSHFD
     CLI
-    cnts.time_stamp_freq=SYS_TIMER_FREQ*(GetTSC-time_stamp_start);
-    i=SysTimerRead-timer_start;
+      cnts.time_stamp_freq=SYS_TIMER_FREQ*(GetTSC-time_stamp_start);
+      i=SysTimerRead-timer_start;
+
     if (!i)
       AdamErr("Timer Cal Error");
-    else
-    {
+    else {
       cnts.time_stamp_freq/=i;
       cnts.time_stamp_kHz_freq=cnts.time_stamp_freq/1000;
       cnts.time_stamp_calibrated=TRUE;
@@ -101,7 +98,7 @@ I64 TimeCal()
   }
   PUSHFD
   CLI
-  timer_start=SysTimerRead;
+    timer_start=SysTimerRead;
   time_stamp_start=GetTSC;
   POPFD
   return cnts.time_stamp_freq;
@@ -109,21 +106,20 @@ I64 TimeCal()
 
 F64 tS()
 {//Time since boot in seconds as a float.
-  return SysTimerRead/ToF64(SYS_TIMER_FREQ);
+    return SysTimerRead/ToF64(SYS_TIMER_FREQ);
 }
 
 Bool Blink(F64 Hz=2.5)
 {//Return TRUE, then FALSE, then TRUE at given frequency.
   if (!Hz) return 0;
-  if (!blink_master_flag) return 0;
   return ToI64(cnts.jiffies*2*Hz/JIFFY_FREQ)&1;
 }
 
-U0 Busy(I64 uS)
+U0 Busy(I64 æS)
 {//Loosely timed.
   I64 i;
-  for (i=0; i<uS; i++)
-    PortNop;
+    for (i=0;i<æS;i++)
+      PortNop;
 }
 
 U0 SleepUntil(I64 wake_jiffy)
@@ -163,40 +159,19 @@ U0 Snd(I8 ona=0)
   I64 period;
   CSndData *d;
   if (!Bt(&sys_semas[SEMA_MUTE],0) &&
-      !LBts(&sys_semas[SEMA_SND],0))   //Mutex. Just throw-out if in use
-  {
-    if (!ona)
-    {
+	!LBts(&sys_semas[SEMA_SND],0)) { //Mutex. Just throw-out if in use
+    if (!ona) {
       scrncast.ona=ona;
-      snd.ona=ona;
-      if (snd.fp_alt_snd_dev)
-        snd.fp_alt_snd_dev(ona);
-      else
-        OutU8(0x61,InU8(0x61)&~3);
-    }
-    else if (ona!=scrncast.ona || ona!=snd.ona)
-    {
+      OutU8(0x61,InU8(0x61)&~3);
+    } else if (ona!=scrncast.ona) {
       scrncast.ona=ona;
-      snd.ona=ona;
-      if (snd.fp_alt_snd_dev)
-        snd.fp_alt_snd_dev(ona);
-      else {
-        period=ClampI64(SYS_TIMER_FREQ/Ona2Freq(ona),1,U16_MAX);
-        OutU8(0x43,0xB6);
-        OutU8(0x42,period);
-        OutU8(0x42,period.u8[1]);
-        OutU8(0x61,3|InU8(0x61));
-      }
+      period=ClampI64(SYS_TIMER_FREQ/Ona2Freq(ona),1,U16_MAX);
+      OutU8(0x43,0xB6);
+      OutU8(0x42,period);
+      OutU8(0x42,period.u8[1]);
+      OutU8(0x61,3|InU8(0x61));
     }
-    if (!IsDbgMode && scrncast.record)
-    {
-      d=ACAlloc(sizeof(CSndData));
-      d->ona=ona;
-      d->tS=tS;
-      QueIns(d,scrncast.snd_head.last);
-    }
-    if (!IsDbgMode && snd.record)
-    {
+    if (!IsDbgMode && scrncast.record) {
       d=ACAlloc(sizeof(CSndData));
       d->ona=ona;
       d->tS=tS;
@@ -210,10 +185,8 @@ Bool ScrnCast(Bool val=ON,Bool just_audio=FALSE,U8 *print_fmt="B:/Tmp/%X.GR")
 {//WinMgr saves GR files to a dir.
   Bool old_val;
   scrncast.just_audio=just_audio;
-  if (val)
-  {
-    if (!(old_val=LBtr(&scrncast.record,0)))
-    {
+  if (val) {
+    if (!(old_val=LBtr(&scrncast.record,0))) {
       Free(scrncast.print_fmt);
       scrncast.print_fmt=AStrNew(print_fmt);
       scrncast.t0_now=Now;
@@ -221,8 +194,7 @@ Bool ScrnCast(Bool val=ON,Bool just_audio=FALSE,U8 *print_fmt="B:/Tmp/%X.GR")
       scrncast.snd_head.ona=scrncast.ona;
       LBts(&scrncast.record,0);
     }
-  }
-  else
+  } else
     old_val=LBtr(&scrncast.record,0);
   Snd;
   return old_val;
@@ -230,11 +202,9 @@ Bool ScrnCast(Bool val=ON,Bool just_audio=FALSE,U8 *print_fmt="B:/Tmp/%X.GR")
 
 U0 SndRst()
 {//Fix stuck sound.
-  if (Bt(&sys_semas[SEMA_SND],0))
-  {
+  if (Bt(&sys_semas[SEMA_SND],0)) {
     Sleep(1);
-    if (Bt(&sys_semas[SEMA_SND],0))
-    {
+    if (Bt(&sys_semas[SEMA_SND],0)) {
       Sleep(1);
       LBtr(&sys_semas[SEMA_SND],0);
     }
@@ -259,15 +229,13 @@ U0 Beep(I8 ona=62,Bool busy=FALSE)
 Bool Mute(Bool val)
 {//Turn-off sound.
   Bool res;
-  if (val)
-  {
+  if (val) {
     PUSHFD
     CLI
     Snd;
     res=LBts(&sys_semas[SEMA_MUTE],0);
     POPFD
-  }
-  else
+  } else
     res=LBtr(&sys_semas[SEMA_MUTE],0);
   return res;
 }
@@ -329,42 +297,8 @@ Bool IsDbgMode()
   return Bt(&sys_semas[SEMA_DBG_MODE],0);
 }
 
-CTask *LastTask()
-{
-  return last_init_task;
-}
-
 U0 ProgressBarsRst(U8 *path=NULL)
 {//Reset all progress bars to zero.
   CallExtStr("ProgressBarsRegTf",path);
   MemSet(sys_progresses,0,sizeof(sys_progresses));
-}
-
-U0 KeyStateRst()
-{//Clears state of all keys in key_state and sc_state
-  MemSetI64(key_state,0,16);
-  MemSetI64(sc_state,0,32);
-  sc_flags_state=0;
-}
-
-U0 BitFieldSet(U8 *bit_field, U8 offset, U8 size, U8 value)
-{//Sets values in a bit field
-  I64 i;
-  for (i=0; i<size; i++)
-    BEqu(bit_field,offset+i,value>>i);
-}
-
-
-U64 BitFieldGet(U8 *bit_field, U8 offset, U8 size)
-{//Gets values from a bit field
-  I64 i;
-  U64 val=0;
-  for (i=0; i<size; i++)
-    BEqu(&val,i,Bt(bit_field,offset+i));
-  return val;
-}
-
-U8 *HypeInfo()
-{
-  return hype_info;
 }

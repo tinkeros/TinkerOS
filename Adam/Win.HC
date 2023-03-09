@@ -6,6 +6,10 @@ CMsStateGlbls old_ms= {{-1000,-1000,0},{-1000,-1000,0},{-1000,-1000,0},
   FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE
 };
 
+#ifdef LINUX_BUILD
+public CWinMgrGlbls winmgr={0,0,0,WINMGR_FPS,tS,tS,NULL,FALSE,FALSE,FALSE};
+#endif
+
 F64 cur_tS=tS;
 SetFPS(30);
 winmgr.fps=WINMGR_FPS;

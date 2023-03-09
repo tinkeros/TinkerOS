@@ -333,6 +333,22 @@ else
 return blkdev.dvd_boot_is_good;
 }
 
+U0 MountAuto()
+{
+  Bool silent=IsSilent;
+  if (AHCIMode) 
+  {
+    try
+    {
+      MountAHCIAuto;
+    }
+    catch
+      Fs->catch_except=TRUE;
+  }
+  else MountIDEAuto;
+  Silent(silent);
+}
+
 U0 BlkDevsInitAll()
 {
   CBlkDev *bd;
@@ -348,7 +364,7 @@ U0 BlkDevsInitAll()
 };
 #exe {
 if (kernel_cfg->opts[CFG_MOUNT_IDE_AUTO])
-  StreamPrint("MountIDEAuto;");
+  StreamPrint("MountAuto;");
 StreamPrint("#exe {Option(OPTf_WARN_PAREN,OFF);}");
 StreamDoc(kernel_cfg->add_dev);
 StreamPrint("#exe {Option(OPTf_WARN_PAREN,ON);}");

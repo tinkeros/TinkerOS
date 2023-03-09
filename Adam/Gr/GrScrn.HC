@@ -636,6 +636,7 @@ U0 GrUpdateVGAGraphics()
   }
   if (gr.scrn_zoom == 1)
   {
+    MemCpy64(gr.scrn_image->body,gr.dc1->body,gr.dc1->width_internal*gr.dc1->height/8);
     if (LBtr(&sys_semas[SEMA_FLUSH_VGA_IMAGE],0))
     {
       if (gr.dc2->width_internal == GR_WIDTH)
@@ -677,6 +678,7 @@ U0 GrUpdateVGAGraphics()
   else
   {
     GrZoomInScrn;
+    MemCpy64(gr.scrn_image->body,gr.zoomed_dc->body,gr.zoomed_dc->width_internal*gr.zoomed_dc->height/8);
     src = gr.zoomed_dc->body;
     size = src + gr.dc2->height * gr.dc2->width_internal;
     while (src < size)
@@ -705,7 +707,10 @@ U0 GrUpdateScrn()
     GrUpdateTextBG;
     GrUpdateTextFG;
     GrUpdateTasks;
-    DCBlotColor8(gr.dc2,gr.dc);
+    if (!gr_alt_scrn)
+      DCBlotColor8(gr.dc2,gr.dc);
+    else
+      DCBlotColor8(gr.dc2,gr_alt_scrn);
   }
   dc=DCAlias(gr.dc2,Fs);
   dc->flags|=DCF_ON_TOP;

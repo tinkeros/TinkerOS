@@ -160,6 +160,7 @@ U0 UncachedAliasAlloc() //Make uncached alias for 4 lowest Gig.
     a+=mem_page_size;
   }
   while (a-dev.uncached_alias<1<<32);
+  WBINVD
 }
 
 I64 BIOSTotalMem()

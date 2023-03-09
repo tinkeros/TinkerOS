@@ -30,6 +30,7 @@ U0 MakeMyISO(U8 *_out_iso_filename)
   CopyTree("/Extras",	"/Distro/Extras");
   //To save space, optionally delete dictionary.
   Del("/Distro/Adam/AutoComplete/ACDefs.DATA");
+  Del("/Distro/Home/MakeHome.*");
   CopyTree("/Downloads","/Distro/Downloads");	  //You can leave this out.
   DirMk("/Distro/Tmp");
   DirMk("/Distro/Tmp/ScrnShots");

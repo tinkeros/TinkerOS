@@ -1,4 +1,4 @@
-
+// Main TempleOS header
 
 #help_index ""
 extern class CAOT;
@@ -15,8 +15,6 @@ extern class CHeapCtrl;
 extern class CIntermediateCode;
 extern class CJobCtrl;
 extern class CTask;
-extern class CUSBTD;
-extern class CUSB;
 
 #define NULL	0
 #define TRUE	1
@@ -290,46 +288,6 @@ public class CMathODE
   I64	user_data;
 };
 
-//PCI Registers, used with $LK,"PCIRead",A="MN:PCIReadU16"$ functions.
-#define PCIR_VENDOR_ID          0x00
-#define PCIR_DEVICE_ID          0x02
-#define PCIR_COMMAND            0x04
-#define PCIR_STATUS             0x06
-#define PCIR_REVISION_ID        0x08
-#define PCIR_PROG_IF            0x09
-#define PCIR_SUB_CODE           0x0A
-#define PCIR_CLASS_CODE         0x0B
-#define PCIR_CACHE_LINE_SIZE    0x0C
-#define PCIR_LATENCY_TIMER      0x0D
-#define PCIR_HEADER_TYPE        0x0E
-#define PCIR_BIST               0x0F
-#define PCIR_BASE0              0x10
-#define PCIR_BASE1              0x14
-#define PCIR_BASE2              0x18
-#define PCIR_BASE3              0x1C
-#define PCIR_BASE4              0x20
-#define PCIR_BASE5              0x24
-#define PCIR_SUBSYS_VENDOR_ID   0x2C
-#define PCIR_SUBSYS_ID          0x2E
-#define PCIR_EXPANSION_ROM      0x30
-#define PCIR_CAPABILITIES       0x34
-#define PCIR_INTERRUPT_LINE     0x3C
-#define PCIR_INTERRUPT_PIN      0x3D
-#define PCIR_MIN_GRANT          0x3E
-#define PCIR_MAX_LATENCY        0x3F
-
-//PCI class codes
-#define PCIC_STORAGE    0x1
-#define PCIC_NETWORK    0x2
-
-//PCI subclass codes
-#define PCISC_ETHERNET  0x0
-#define PCISC_AHCI      0x6
-
-//PCI I/O ports
-#define PCI_ADDR    0xCF8
-#define PCI_DATA    0xCFC
-
 #help_index "Processor"
 //IDT entry types
 #define IDTET_TASK		0x05
@@ -357,27 +315,7 @@ public class CMathODE
 
 #define MP_PROCESSORS_NUM	128
 
-//Control register flag bits
-
-#define CR0f_PE     0 //Protection Enable (Protected mode)
-#define CR0f_MP     1 //Monitor coprocessor
-#define CR0f_EM     2 //Emulation of coprocessor
-#define CR0f_TS     3 //Task switched, some irrelevant x87 task management stuff
-#define CR0f_NE     5 //Numeric error
-#define CR0f_PG     31//Enable paging
-
-#define CR0F_PE     (1 << CR0f_PE)
-#define CR0F_NE     (1 << CR0f_NE)
-
-#define CR4f_PAE    5 //Physical Address Extension, required by long mode
-#define CR4f_PGE    7 //Page-Global Enable
-#define CR4f_OSFXSR 9 //FXSAVE/FXRSTOR support enabled
-
-#define CR4F_PAE    (1 << CR4f_PAE)
-#define CR4F_PGE    (1 << CR4f_PGE)
-#define CR4F_OSFXSR (1 << CR4f_OSFXSR)
-
-#define SYS_START_CR0   (CR0F_PE | CR0F_NE)
+#define SYS_START_CR0		0x0031
 
 #define RFLAGf_CARRY		0
 #define RFLAGf_PARITY		2
@@ -489,50 +427,6 @@ class CPatchTableAbsAddr
 #define IET_MAIN		25
 
 #help_index "Boot"
-
-#help_index "Graphics/VBE"
-
-#define BLACK32	0x000000
-#define WHITE32	0xFFFFFF
-#define to_8_bits_55 0xff00ff00ff00ff
-#define to_8_bits_AA 0xff00ff00ff00ff00
-
-class CVBEInfo
-{
-	U8	signature[4];
-	U16 version;
-	U32 oem,
-		capabilities,
-		video_modes;
-	U16 total_memory,
-		software_revision;
-	U32 vendor,
-		product_name,
-		product_revision;
-	U8	reserved[222],
-		oem_data[256];
-};
-#assert sizeof(CVBEInfo) == 512
-
-class CVBEMode
-{
-	U16 attributes,
-		pad[7],
-		pitch,
-		width,
-		height;
-	U8	pad[3],
-		bpp,
-		pad,
-		memory_model,
-		pad[12];
-	U32	framebuffer;
-	U16	pad[9];
-	U32 max_pixel_clock;
-	U8	reserved[190];
-};
-#assert sizeof(CVBEMode) == 256
-
 class CKernel
 {//Must match $LK,"OSStartUp",A="FF:::/Kernel/KStart16.HC,MEM_BOOT_BASE"$
   CBinFile h;
@@ -552,9 +446,6 @@ class CKernel
   U16	sys_pci_busses;
   ;$$=($$+15)&-16;
   CGDT	sys_gdt;
-  U32  sys_frame_buffer;
-  U16  sys_vbe_mode_pitch;
-  U64  sys_smbios_entry;
 };
 
 //Run-Levels
@@ -657,6 +548,12 @@ class CAP16BitInit
   CSysLimitBase ap_gdt_ptr;
 };
 
+#help_index "Time/CPU Cycles;Time/HPET;Time/Jiffies"
+//High Performance Event Timer
+#define HPET_GCAP_ID	(0xFED00000+0x00)
+#define HPET_GEN_CONF	(0xFED00000+0x10)
+#define HPET_MAIN_CNT	(0xFED00000+0xF0)
+
 public class CCntsGlbls
 {
   I64	jiffies,	//$LK,"JIFFY_FREQ",A="MN:JIFFY_FREQ"$
@@ -664,7 +561,7 @@ public class CCntsGlbls
 	time_stamp_freq,
 	time_stamp_kHz_freq,
 	time_stamp_freq_initial; //Initial freq, sampled once at boot time.
-  Bool	time_stamp_calibrated;
+  Bool	time_stamp_calibrated;
 };
 
 #define JIFFY_FREQ		1000 // Hz
@@ -728,8 +625,7 @@ class CSema
 #define SEMA_JUST_PUMP_MSGS	18
 #define SEMA_TMBEAT		19
 #define SEMA_FIX		20
-#define SEMA_NMI		21
-#define SEMA_SEMAS_NUM		22
+#define SEMA_SEMAS_NUM		21
 
 #define CTRL_ALT_DEL		0
 #define CTRL_ALT_C		1
@@ -1584,7 +1480,7 @@ public class CWinMgrGlbls
   I64	updates;
   F64	ode_time,
 	last_ode_time,
-	fps,
+	fps,		//You can read but not write this. You have no control.
 	ideal_refresh_tS,
 	last_refresh_tS;
   CWinMgrTimingGlbls *t;
@@ -1646,12 +1542,10 @@ public class CAutoCompleteDictGlbls
 //so it takes effect earlier than you might expect.
 #define OPTf_ECHO		0x00
 #define OPTf_TRACE		0x01
-#define OPTf_DECIMAL_ONLY 0x02 //Only allow decimal numbers (no 0x or 0b prefixed numbers)
 #define OPTf_WARN_UNUSED_VAR	0x10 //Applied to funs, not stmts
 #define OPTf_WARN_PAREN		0x11 //Warn unnecessary parens
 #define OPTf_WARN_DUP_TYPES	0x12 //Warn dup local var type stmts
 #define OPTf_WARN_HEADER_MISMATCH 0x13
-#define OPTf_WARN_UNUSED_EXTERN 0x14
 #define OPTf_EXTERNS_TO_IMPORTS	0x20
 #define OPTf_KEEP_PRIVATE	0x21
 #define OPTf_NO_REG_VAR		0x22  //Applied to funs, not stmts
@@ -2351,249 +2245,6 @@ class CUAsmGlbls
 	mem_arg_mask;
 };
 
-#help_index "Devices/SMBIOS"
-//SMBIOS parsing based on SMBIOS specification 3.3.0 (document "DSP0134")
-#define SMBIOSt_BIOS                0
-#define SMBIOSt_SYSTEM              1
-#define SMBIOSt_BASEBOARD           2
-#define SMBIOSt_ENCLOSURE           3
-#define SMBIOSt_PROCESSOR           4
-#define SMBIOSt_CACHE               7
-#define SMBIOSt_CONNECTOR           8
-#define SMBIOSt_SLOT                9
-#define SMBIOSt_OEM_STRINGS         11
-#define SMBIOSt_SYS_CONFIG_OPTIONS  12
-#define SMBIOSt_PHYMEM              16
-#define SMBIOSt_MEM_DEVICE          17
-#define SMBIOSt_MAPPED_ADDR         19
-#define SMBIOSt_BATTERY             22
-#define SMBIOSt_BOOT_INFO           32
-#define SMBIOSt_ALL                 0xFF //Non-existent placeholder type
-
-class CSMBIOSHeader
-{//Section 6.1.2 line 885
-    U8  type,   //SMBIOSt_*
-        length;
-    U16 handle; //identifier for this structure.
-};
-class CSMBIOSEntryPoint
-{//Section 5.2.1 line 812
-    U8  anchor_str[4], // '_SM_'
-        checksum,
-        length,
-        major_version,
-        minor_version;
-    U16 max_structure_size;
-    U8  entry_point_revision,
-        formatted_area[5],
-        anchor_str2[5], // '_DMI_'
-        checksum2;
-    U16 table_length;
-    U32 table_address;
-    U16 structure_cnt;
-    U8  bcd_revision;
-};
-
-class CSMBIOSBIOSInfo
-{//Section 7.1 line 922
-    CSMBIOSHeader header;
-    U8  vendor,
-        version;
-    U16 start_address_segment;
-    U8  release_date,
-        rom_size;
-    U64 flags;
-    U8  extended_flags[2];
-    U8  major_release,
-        minor_release,
-        embedded_controller_firmware_major_release,
-        embedded_controller_firmware_minor_release;
-    U16 extended_rom_size;
-};
-
-class CSMBIOSSystemInfo
-{//Section 7.2 line 936
-    CSMBIOSHeader header;
-    U8  manufacturer,
-        product_name,
-        version,
-        serial_number,
-        uuid[16],
-        wakeup_type,
-        sku_number,
-        family;
-};
-
-class CSMBIOSBaseboardInfo
-{//Section 7.3 line 968
-    CSMBIOSHeader header;
-    U8  manufacturer,
-        product,
-        version,
-        serial_number,
-        asset_tag,
-        feature_flags,
-        chassis_location;
-    U16 chassis_handle;
-    U8  board_type,
-        contained_object_handles_num;
-    U16 contained_object_handles[1]; //Variable length, member above gives length
-};
-
-class CSMBIOSEnclosureInfo
-{//Section 7.4 line 984
-    CSMBIOSHeader header;
-    U8  manufacturer,
-        type,
-        version,
-        serial_number,
-        asset_tag,
-        bootup_state,
-        power_supply_state,
-        thermal_state,
-        security_status;
-    U32 oem_defined;
-    U8  height,
-        power_cord_cnt,
-        contained_element_cnt,
-        contained_element_record_length,
-        contained_elements[1]; //array length == cnt * record_length;
-};
-
-class CSMBIOSEnclosureContainedElement
-{//Section 7.4.4 line 999
-    U8  contained_element_type,
-        contained_element_minimum,
-        contained_element_maximum;
-};
-
-class CSMBIOSProcessorInfo
-{//Section 7.5 line 1010
-    CSMBIOSHeader header;
-    U8  name,
-        type,
-        family,
-        manufacturer;
-    U64 id;
-    U8  version,
-        voltage;
-    U16 external_clock,
-        max_speed,
-        current_speed;
-    U8  status,
-        upgrade;
-    U16 l1_cache_handle,
-        l2_cache_handle,
-        l3_cache_handle;
-    U8  serial_number,
-        asset_tag,
-        part_number,
-        core_cnt,
-        cores_enabled,
-        thread_cnt;
-    U16 characteristics;
-};
-
-class CSMBIOSCacheInfo
-{//Section 7.8 line 1168
-    CSMBIOSHeader header;
-    U8  name;
-    U16 config,
-        max_size,
-        installed_size,
-        supported_sram_type,
-        installed_sram_type;
-    U8  cache_speed,
-        error_correction_type,
-        cache_type,
-        associativity;
-};
-
-class CSMBIOSConnectorInfo
-{//Section 7.9 line 1198
-    CSMBIOSHeader header;
-    U8  internal_name,
-        internal_type,
-        external_name,
-        external_type,
-        port_type;
-};
-
-class CSMBIOSSlotInfo
-{//Section 7.10 line 1226
-    CSMBIOSHeader header;
-    U8  name,
-        type,
-        data_bus_width,
-        current_usage,
-        length;
-    U16 id;
-    U8  flags1,
-        flags2;
-    U16 segment_group_number;
-    U8  bus_number,
-        device_function_number;
-};
-
-class CSMBIOSMemArrayInfo
-{//Section 7.17 line 1519
-    CSMBIOSHeader header;
-    U8  location,
-        use,
-        memory_error_correction;
-    U32 max_capacity;
-    U16 memory_error_info_handle,
-        mem_device_cnt;
-    U64 extended_max_capacity;
-};
-
-class CSMBIOSMemDeviceInfo
-{//Section 7.18 line 1538
-    CSMBIOSHeader header;
-    U16 memory_array_handle,
-        memory_error_info_handle,
-        total_width,
-        data_width,
-        size;
-    U8  form_factor,
-        device_set,
-        device_locator,
-        bank_locator,
-        type;
-    U16 type_detail,
-        speed;
-    U8  manufacturer,
-        serial_number,
-        asset_tag,
-        part_number,
-        attributes;
-    U32 extended_size;
-    U16 configured_speed,
-        min_voltage,
-        max_voltage,
-        configured_voltage;
-};
-
-class CSMBIOSBatteryInfo
-{//Section 7.23 line 1723
-    CSMBIOSHeader header;
-    U8  location,
-        manufacturer,
-        manufacture_date,
-        serial_number,
-        name,
-        chemistry,
-        capacity,
-        voltage,
-        sbds_version_number,
-        max_battery_data_error,
-        sbds_serial_number,
-        sbds_manufacture_date,
-        sbds_chemistry,
-        capacity_multiplier;
-    U32 oem;
-};
-
 #help_index "Devices;PCI"
 class CPCIDev
 {
@@ -2621,13 +2272,9 @@ public class CATARep
 #define ATA_SET_MAX_EXT		0x37
 #define ATA_READ_MULTI		0xC4
 #define ATA_READ_MULTI_EXT	0x29
-#define ATA_READ_DMA_EXT    0x25
 #define ATA_WRITE_MULTI		0xC5
 #define ATA_WRITE_MULTI_EXT	0x39
-#define ATA_WRITE_DMA_EXT   0x35
 #define ATA_ID_DEV		0xEC
-#define ATA_IDENTIFY    0xEC
-#define ATA_IDENTIFY_PACKET  0xA1
 
 #define ATAS_ERR	0x01
 #define ATAS_DRQ	0x08
@@ -2652,7 +2299,7 @@ public class CATARep
 #define FILEMASK_SRC	"*.HC*;*.HH*;*.IN*;*.PRJ*"
 #define FILEMASK_DD	FILEMASK_SRC ";*.DD*"
 #define FILEMASK_TXT	FILEMASK_DD ";*.TXT*"
-#define FILEMASK_GR	"*.GR*;*.BMP*"
+#define FILEMASK_GR	"*.GR*"
 
 #help_index "File/Low Level"
 #define BLK_SIZE_BITS	9
@@ -2842,78 +2489,6 @@ class CISOPriDesc
 	pad[1166];
 };
 
-//ISO9660
-#define ISO1T_BOOT_RECORD              0
-#define ISO1T_PRI_VOL_DESC             1
-#define ISO1T_SUPPLEMENTARY_DESC       2
-#define ISO1T_VOL_DRV_DESC             3
-#define ISO1T_TERMINATOR               255
-
-
-#define ISO1_BASE_YEAR 1900
-#define ISO1_ATTR_DIR  2
-
-class CISO1Date
-{
-  U8    year,mon,day,hour,min,sec,sec100;
-};
-
-class CISO1DirEntry
-{
-  U8    len,ext_attr_len;
-  CPalindromeU32 loc;
-  CPalindromeU32 size;
-  CISO1Date date;
-  U8    flags,file_unit_size,interleave;
-  CPalindromeU16 vol_seq_num;
-  U8    name_len,name;
-};
-
-class CISO1PathEntry
-{
-  U8    name_len,zero;
-  U32   blk;
-  U16   parent_entry_num,
-        name[1]; //Aligned to U16 boundries
-};
-
-class CISO1PriDesc
-{
-  U8    type,
-        id[5],
-        version,
-        unused1,
-        system_id[32],
-        vol_id[32],
-        unused2[8];
-  CPalindromeU32 vol_space_size;
-  U8    unused3[32];
-  CPalindromeU16 vol_set_size;
-  CPalindromeU16 vol_seq_num;
-  CPalindromeU16 log_block_size;
-  CPalindromeU32 path_table_size;
-  U32   type_l_path_table,
-        opt_type_l_path_table,
-        type_m_path_table,
-        opt_type_m_path_table;
-  CISO1DirEntry root_dir_record;
-  U8    vol_set_id[128],
-        publisher_id[128],
-        preparer_id[128],
-        application_id[128],
-        copyright_file_id[37],
-        abstract_file_id[37],
-        bibliographic_file_id[37],
-        creation_date[17],
-        modification_date[17],
-        expiration_date[17],
-        effective_date[17],
-        file_structure_version,
-        unused4,
-        application_data[512],
-        unused5[653];
-};
-
 //Red Sea Attributes
 //See $LK,"ST_FILE_ATTRS",A="MN:ST_FILE_ATTRS"$
 #define RS_ATTR_READ_ONLY	0x01 //R
@@ -3018,292 +2593,6 @@ public class CDirEntry
 #define FUG_FILE_FIND	(FUF_JUST_DIRS|FUF_JUST_FILES|FUF_Z_OR_NOT_Z|\
   FUF_SCAN_PARENTS)
 
-#help_index "Devices;Disk/AHCI"
-#define AHCI_MAX_PORTS			32
-
-//Physical Region Descriptor Table
-#define AHCI_PRD_MAX_BYTES		(4 * 1024 * 1024) //Max bytes that can go in one PRD entry ($ER$4 MiB). Section 4.2.3.3 Fig. 17 (DBC) 
-#define AHCI_PRDT_MAX_BLOCKS	(U16_MAX + 1) 	  //Max blocks you can transfer in one command. 
-#define AHCI_PRDT_MAX_LEN		8 				  //Max PRD entries in one command. This is equal to (MAX_BLOCKS * BLK_SIZE) ö MAX_BYTES.
-
-//Global Host Control (Controller) flags
-#define AHCI_GHCf_HBA_RESET			0
-#define AHCI_GHCf_INTERRUPT_ENABLE	1
-#define AHCI_GHCf_AHCI_ENABLE		31
-
-#define AHCI_CAPSf_S64A		31	//Supports 64-bit Addressing
-
-#define AHCI_CAPSEXTf_BOH	0	//Supports BIOS/OS Handoff
-#define AHCI_CAPSEXTf_NVMP	1	//NVMHCI Supported & Present
-
-//BIOS/OS Handoff Control
-#define AHCI_BOHCf_BOS		0	//BIOS-Owned Semaphore (BIOS owns controller)
-#define AHCI_BOHCf_OOS		1	//OS-Owned Semaphore (OS owns controller)
-#define AHCI_BOHCf_BB		4	//BIOS Busy (polling bit while BIOS cleans up things after ownership transfer)
-
-//Command Header flags
-#define AHCI_CH_DESCf_A		5	//'ATAPI' bit. Set when ATAPI command is being sent.
-#define AHCI_CH_DESCF_A		(1 << AHCI_CH_DESCf_A)
-#define AHCI_CH_DESCf_W		6	//'Write' bit. Set when data is being written.
-#define AHCI_CH_DESCF_W		(1 << AHCI_CH_DESCf_W)
-
-//Command FIS flags
-#define AHCI_CF_DESCf_C		7	//'Command' bit. Set when FIS is an ATA command.
-#define AHCI_CF_DESCF_C		(1 << AHCI_CF_DESCF_C)
-
-//Port register flags
-//Command and Status register flags
-#define AHCI_PxCMDf_ST		0	//'Start'. Start processing commmand list. FRE must be set before.
-#define AHCI_PxCMDf_SUD		1	//'Spin-Up Device'. For devices that support Staggered Spin-up. We attempt to set it for all ports.
-#define AHCI_PxCMDf_POD		2	//'Power-On Device'. For devices that support Cold Presence. We attempt to set it for all ports.
-#define AHCI_PxCMDf_FRE		4	//'FIS Receive Enable'. Allows the processing of FISes.
-#define AHCI_PxCMDf_FR		14	//'FIS receive Running'. Status indicator for FRE.
-#define AHCI_PxCMDf_CR		15	//'Command list Running'. Status indicator for ST.
-#define AHCI_PxCMDf_ATAPI	24	//'Device is ATAPI'. When set, HBA turns on desktop LED when device is in use. For ATAPI devices.
-#define AHCI_PxCMDF_ST		(1 << AHCI_PxCMDf_ST)
-#define AHCI_PxCMDF_SUD		(1 << AHCI_PxCMDf_SUD)
-#define AHCI_PxCMDF_POD		(1 << AHCI_PxCMDf_POD)
-#define AHCI_PxCMDF_FRE		(1 << AHCI_PxCMDf_FRE)
-#define AHCI_PxCMDF_FR		(1 << AHCI_PxCMDf_FR)
-#define AHCI_PxCMDF_CR		(1 << AHCI_PxCMDf_CR)
-#define AHCI_PxCMDF_ATAPI	(1 << AHCI_PxCMDf_ATAPI)
-
-//Task File Data register flags
-#define AHCI_PxTFDf_STS_ERR	0 // Error Bit of Status register
-
-//Signature types
-#define AHCI_PxSIG_ATA		0x00000101
-#define AHCI_PxSIG_ATAPI	0xEB140101
-#define AHCI_PxSIG_SEMB		0xC33C0101 //Enclosure Management Bridge... rare to encounter in wild.
-#define AHCI_PxSIG_PM		0x96690101 //Port multiplier... not relevant to PC-type systems.
-
-//Interrupt flags (same in PxIE and PxIS)
-#define AHCI_PxIf_OFS	24	//Overflow Status
-#define AHCI_PxIf_INFS	26	//SATA Interface Non-Fatal Error
-#define AHCI_PxIf_IFS	27	//SATA Interface Fatal Error
-#define AHCI_PxIf_HBDS	28	//Host Bus Data Error
-#define AHCI_PxIf_HBFS	29	//Host Bus Fatal Error
-#define AHCI_PxIf_TFE	30	//Task File Error, see $LK,"ATAS_ERR",A="MN:ATAS_ERR"$.
-#define AHCI_PxIf_CPDS	31	//Cold Port Detect Status
-
-//COMRESET flags
-//SATA Control register flags
-#define AHCI_PxSCTLf_DET_INIT		1
-#define AHCI_PxSCTLF_DET_INIT		(1 << AHCI_PxSCTLf_DET_INIT)
-//SATA Status register flags
-#define AHCI_PxSSTSF_DET_PRESENT	3
-
-//SATA Error register flags
-#define AHCI_PxSERR_ERR_I	0	// Recovered Data Integrity Error
-#define AHCI_PxSERR_ERR_M	1	// Recovered Communication Error
-#define AHCI_PxSERR_ERR_T	8	// Transient Data Integrity Error
-#define AHCI_PxSERR_ERR_C	9	// Persistent Communication Error
-#define AHCI_PxSERR_ERR_P	10	// SATA Protocol Error
-#define AHCI_PxSERR_ERR_E	11	// Internal Error
-#define AHCI_PxSERR_DIAG_I	17	// Phy Internal Error
-#define AHCI_PxSERR_DIAG_C	21	// Link Layer CRC Error
-#define AHCI_PxSERR_DIAG_H	22	// Handshake Error
-#define AHCI_PxSERR_DIAG_S	23	// Link Sequence Error
-#define AHCI_PxSERR_DIAG_T	24	// Transport State Transition Error
-
-class CAHCIPort
-{//Port register layout
-	U32	cmd_lst_base,
-		cmd_lst_base_upper,
-		fis_base,
-		fis_base_upper,
-		interrupt_status,
-		interrupt_enable,
-		command,
-		reserved,
-		task_file_data,
-		signature,
-		sata_status,
-		sata_ctrl,
-		sata_error,
-		sata_active,
-		cmd_issue,
-		sata_notif,
-		fis_switch_ctrl,
-		device_sleep;
-	U8	reserved[40],
-		vendor[16];
-};
-
-class CAHCIHba
-{//HBA register layout
-	U32			caps,
-				ghc,		//Global Host Control
-				interrupt_status,
-				ports_implemented,
-				version,
-				ccc_ctrl,	//Command Completion Coalescing
-				ccc_ports,
-				em_location,//Enclosure Management
-				em_ctrl,
-				caps_ext,
-				bohc;
-	U8			reserved[116],
-				vendor[96];
-	CAHCIPort	ports[32];
-};
-
-#define FISt_H2D	0x27
-
-class CFisH2D
-{//Host To Device
-	U8	type,
-		desc,	//We are concerned with bit #7 ($LK,"AHCI_CF_DESCf_C",A="MN:AHCI_CF_DESCf_C"$) 1=command, 0=control.
-		command,
-		feature_low,
-		lba0,
-		lba1,
-		lba2,
-		device,
-		lba3,
-		lba4,
-		lba5,
-		feature_high;
-	U16	cnt;
-	U8	icc,
-		ctrl;
-	U32	reserved;
-};
-
-class CFisReceived
-{
-	U8	dma_fis[28],
-		reserved[4],
-		pio_fis[20],
-		reserved[12],
-		r_fis[20],
-		reserved[4],
-		devbits_fis[8],
-		unknown_fis[64],
-		reserved[96];
-};
-
-class CPrdtEntry
-{
-	U32	data_base,
-		data_base_upper,
-		reserved,
-		data_byte_cnt; //bit 31 is "Interrupt on Completion". bits 21:0 are the actual count.
-};
-
-/*
-Bits of first U32:
-	4:0 - Command FIS Length, in U32s
-	  5 - ATAPI bit (A) for ATAPI command
-	  6 - Write bit (W) for write commands $LK,"AHCI_CH_DESCf_W",A="MN:AHCI_CH_DESCf_W"$ 1=write 0=read
-	  7 - Prefetchable (P)
-	  8 - Reset (R)
-	  9 - Built-in Self Test (BIST)
-	 10 - Clear busy upon R_OK
-	 11 - Reserved
-  15:12 - Port Multiplier Port (PMP)
-  31:16 - Physical Region Descriptor Table Length (PRDTL)
-*/
-class CPortCmdHeader
-{//What the CAHCIPort.cmd_list consists of.
-	U16	desc,
-		prdt_len;
-	U32	prd_byte_cnt,
-		cmd_table_base,
-		cmd_table_base_upper,
-		reserved[4];
-};
-
-class CPortCmdTable
-{
-	U8			cmd_fis[64],
-				acmd[16],
-				reserved[48];
-	CPrdtEntry	prdt[8];
-};
-
-class CAtapiReadCmd
-{
-	U8	command,
-		reserved;
-	U32 lba,
-		cnt;
-	U8	reserved,
-		ctrl,
-		zero[4];
-};
-
-class CAtapiWriteCmd
-{
-	U8	command,
-		reserved;
-	U32 lba;
-	U8	reserved;
-	U16	cnt;
-};
-
-class CAtapiCloseCmd
-{
-	U8	command,
-		reserved,
-		code,
-		reserved;
-	U16	track_num;
-};
-
-class CAtapiModeHeader
-{
-	U16	data_length;
-	U8	reserved[4];
-	U16	block_desc_len;
-};
-
-class CAtapiModeWritePage
-{
-	U8	code,	//0
-		length,
-		type,
-		mode,
-		block_type,
-		link_size,
-		reserved,
-		host_app_code,
-		session_format,
-		reserved; // 9
-	U32	packet_size; // 10-13
-	U16	audio_pause_length;// 14-15
-	U8	media_catalog_num[16],//16-31
-		recording_code[16],//32-47
-		sub_0,
-		sub_1,
-		sub_2,
-		sub_3;
-};
-
-class CAtapiModeWriteList
-{
-	CAtapiModeHeader	header;
-	CAtapiModeWritePage	page;
-};
-
-
-//ATA_IDENTIFY command array indexes (array of U16s)
-#define ATA_IDENT_SERIAL_NUM        10
-#define ATA_IDENT_MODEL_NUM         27
-#define ATA_IDENT_LBA48_CAPACITY    100
-
-#define ATAPI_FORMAT_UNIT           0x0400
-#define ATAPI_START_STOP_UNIT       0x1B00
-#define ATAPI_READ_CAPACITY         0x2500
-#define ATAPI_SEEK                  0x2B00
-#define ATAPI_SYNC_CACHE            0x3500
-#define ATAPI_MODE_SELECT           0x5500
-#define ATAPI_CLOSE_TRACK_SESSION   0x5B00
-#define ATAPI_BLANK                 0xA100
-#define ATAPI_READ                  0xA800
-#define ATAPI_WRITE                 0x2A00
-#define ATAPI_SET_CD_SPEED          0xBB00
-
 #help_index "File/Low Level"
 //See $LK,"ST_BLKDEV_TYPES",A="MN:ST_BLKDEV_TYPES"$
 #define BDT_NULL		0
@@ -3312,13 +2601,7 @@ class CAtapiModeWriteList
 #define BDT_ISO_FILE_READ	3
 #define BDT_ISO_FILE_WRITE	4
 #define BDT_ATAPI		5
-#define BDT_HOSTFS		6
-#define BDT_AHCI_SATA		7
-#define BDT_AHCI_SATAPI	8
-#define BDT_OTHER		9
-#define BDT_SERIAL		10
-#define BDT_VIRTUAL		11
-#define BDT_TYPES_NUM	12	
+#define BDT_TYPES_NUM		6
 
 #define BDF_REMOVABLE		0x001
 #define BDF_INITIALIZED		0x002
@@ -3339,18 +2622,6 @@ class CAtapiModeWriteList
 #define BDf_FMT			6
 #define BDf_INIT_IN_PROGRESS	7
 #define BDf_EXT_SIZE		8
-#define BDf_INTERNAL_BUF        9
-
-#define BDF_REMOVABLE           (1 << BDf_REMOVABLE)
-#define BDF_INITIALIZED         (1 << BDf_INITIALIZED)
-#define BDF_READ_ONLY           (1 << BDf_READ_ONLY)
-#define BDF_READ_ONLY_OVERRIDE  (1 << BDf_READ_ONLY_OVERRIDE)
-#define BDF_LAST_WAS_WRITE      (1 << BDf_LAST_WAS_WRITE)
-#define BDF_READ_CACHE          (1 << BDf_READ_CACHE)
-#define BDF_FORMAT              (1 << BDf_FORMAT)
-#define BDF_INIT_IN_PROGRESS    (1 << BDf_INIT_IN_PROGRESS)
-#define BDF_EXT_SIZE            (1 << BDf_EXT_SIZE)
-#define BDF_INTERNAL_BUF        (1 << BDf_INTERNAL_BUF)
 
 //locked flags
 #define BDlf_LOCKED		0
@@ -3360,19 +2631,17 @@ class CAtapiModeWriteList
 public class CBlkDev
 {
   CBlkDev *lock_fwding; //If two blkdevs on same controller, use just one lock
-  CAHCIPort       *ahci_port;
   I64	locked_flags;
-  U32	bd_signature, type,flags;
-  U8	first_drv_let,unit,pad[2],port;
+  U32	bd_signature,
+	type,flags;
+  U8	first_drv_let,unit,pad[2];
   U32	base0,base1,
 	blk_size;
   I64	drv_offset,init_root_dir_blks,
-	max_blk, port_num;
+	max_blk;
   U16	*dev_id_record;
-  U8	*RAM_dsk, *file_dsk_name, *prd_buf;
-  Bool (*init_func)(), (*deinit_func)(),
-  (*read_func)(U8* buf, I64 blk, I64 cnt), (*write_func)(U8* buf, I64 blk, I64 cnt);
-  I64 (*max_func)();
+  U8	*RAM_dsk,
+	*file_dsk_name;
   CFile *file_dsk;
   CTask *owning_task;
   F64	last_time;
@@ -3386,11 +2655,10 @@ public class CBlkDev
 #define FSt_NULL	0
 #define FSt_REDSEA	1 //Supported
 #define FSt_FAT32	2 //Supported except for short names, to some degree
-#define FSt_ISO9660	3 //Supported (CD/DVD)
+#define FSt_ISO9660	3 //Not Supported
 #define FSt_NTFS	4 //Not Supported
-#define FSt_HOSTFS	5
-#define FSt_UNKNOWN	6
-#define FSt_TYPES_NUM	7
+#define FSt_UNKNOWN	5
+#define FSt_TYPES_NUM	6
 #define FSG_TYPE_MASK	0x7FFF
 //File system type flags
 #define FStf_DISABLE	15
@@ -3459,7 +2727,6 @@ class CCacheBlk
 public class CBlkDevGlbls
 {
   CBlkDev *blkdevs;
-  CAHCIHba   *ahci_hba;
   U8	*dft_iso_filename;	//$TX,"\"::/Tmp/CDDVD.ISO\"",D="DFT_ISO_FILENAME"$
   U8	*dft_iso_c_filename;	//$TX,"\"::/Tmp/CDDVD.ISO.C\"",D="DFT_ISO_C_FILENAME"$
   U8	*tmp_filename;
@@ -3467,7 +2734,8 @@ public class CBlkDevGlbls
   CCacheBlk *cache_base,*cache_ctrl,**cache_hash_table;
   I64	cache_size,read_cnt,write_cnt;
   CDrv	*drvs,*let_to_drv[32];
-  I64	mount_ide_auto_cnt, ins_base0,ins_base1, cmd_slot_cnt;
+  I64	mount_ide_auto_cnt,
+	ins_base0,ins_base1;	//Install cd/dvd controller.
   U8	boot_drv_let,first_hd_drv_let,first_dvd_drv_let;
   Bool	dvd_boot_is_good,ins_unit,pad[3];
 };
@@ -3566,10 +2834,10 @@ class CMemRange
 //We add 2 pags, so a request is not rounded-up to next power of two.
 #define MEM_EXTRA_HASH2_PAGS	2
 
-#define MEM_ADAM_STK		(MEM_PAG_SIZE*1024) //Like 16384*MEM_PAG_SIZE
-#define MEM_SETH_STK		(MEM_PAG_SIZE*1024)
-#define MEM_INTERRUPT_STK	(MEM_PAG_SIZE*1024)
-#define MEM_DFT_STK		(MEM_PAG_SIZE*1024)
+#define MEM_ADAM_STK		(MEM_PAG_SIZE*512) //Like 16384*MEM_PAG_SIZE
+#define MEM_SETH_STK		(MEM_PAG_SIZE*512)
+#define MEM_INTERRUPT_STK	(MEM_PAG_SIZE*512)
+#define MEM_DFT_STK		(MEM_PAG_SIZE*512)
 
 #define TASK_HASH_TABLE_SIZE	(1<<10)
 
@@ -3658,7 +2926,6 @@ public class CDevGlbls
 #define WHITE			15
 
 #define COLORS_NUM		16
-#define PAL_COLORS_NUM		256
 #define COLOR_INVALID		16
 #define COLOR_MONO		0xFF
 
@@ -3709,8 +2976,7 @@ public class CKbdStateGlbls
 public class CMsHardStateGlbls
 {
   CD3I64 pos,		//Position in pixels
-	prescale,
-        raw_data;
+	prescale;
   CD3	scale;
   F64	speed;		//Output: How fast the user is moving it.
   I64	timestamp,	//Output: GetTSC when event.
@@ -3718,8 +2984,6 @@ public class CMsHardStateGlbls
 	pkt_size;	//Private
   CFifoU8 *fifo,*fifo2; //Private
   Bool	bttns[5],
-        raw_bttns[5],
-        raw_mode,
 	has_wheel,
 	has_ext_bttns,
 	evt,		//Private
@@ -4081,8 +3345,6 @@ public class CTask //The Fs segment reg points to current CTask.
 	*dbg_task;
   CWinScroll horz_scroll,vert_scroll;
 
-  CDate start_time;
-
   I64	user_data;
 #assert !($$&7)
 };
@@ -4143,7 +3405,7 @@ public class CCPU //The Gs segment reg points to current CCPU.
 };
 
 #help_index "Memory/Page Tables"
-#define MEM_MIN_MEG		1024 //1024 Meg minimum.
+#define MEM_MIN_MEG		512 //512 Meg minimum.
 
 #define SYS_FIXED_AREA		0x100000
 #define SYS_16MEG_AREA_LIMIT	0x1000000
@@ -4261,18 +3523,6 @@ public class CSysFixedArea
 #define SC_F10		0x44
 #define SC_F11		0x57
 #define SC_F12		0x58
-#define SC_F13		0x64
-#define SC_F14		0x65
-#define SC_F15		0x66
-#define SC_F16		0x67
-#define SC_F17		0x68
-#define SC_F18		0x69
-#define SC_F19		0x6A
-#define SC_F20		0x6B
-#define SC_F21		0x6C
-#define SC_F22		0x6D
-#define SC_F23		0x6E
-#define SC_F24		0x76
 #define SC_PAUSE	0x61
 #define SC_GUI		0xDB
 #define SC_PRTSCRN1	0xAA
@@ -4288,9 +3538,9 @@ public class CSysFixedArea
 public class CTextGlbls
 {
   I64	raw_col,raw_flags;
-  U32   *raw_scrn_image, *fb_alias;
+  U8	*raw_scrn_image;
   I64	rows,cols;		//Use TEXT_ROWS,TEXT_COLS
-  U64	*font,*aux_font,screen_size, buffer_size;
+  U64	*font,*aux_font;
   U8	*vga_alias,*vga_text_alias;
   U8	border_chars[16];
 };
@@ -4299,6 +3549,8 @@ public class CTextGlbls
 #define FONT_HEIGHT	8
 
 #help_index "Graphics"
+#define GR_WIDTH	640
+#define GR_HEIGHT	480
 
 //z-vals less than zero are in front of scrn and not drawn.
 //we want to shift all Z-vals into a drawable range.
@@ -4515,6 +3767,7 @@ class CKeyDevGlbls
 	*hndlr;
 };
 
+#help_index "Snd"
 #help_index "ScrnCast;Snd/AU Files"
 public class CAUData
 {//Fmt of AU files
@@ -4522,22 +3775,11 @@ public class CAUData
   I8	ona;
 };
 
-#help_index "Snd"
-#define ONA_REST    0
 class CSndData
 {//Fmt recorded in mem
   CSndData *next,*last;
   F64	tS;
-  F64   time;
   I8	ona;
-};
-
-public class CSndGlbls
-{
-  CSndData record_head;
-  I8    ona;
-  Bool  record;
-  U0  (*fp_alt_snd_dev)(I64 ona);
 };
 
 public class CScrnCastGlbls
@@ -4659,103 +3901,4 @@ public class CInsReg
 			"$$DA-TRM,A=\"This Machine Num (Choose Any):%d\"$$\n";
 };
 
-public class CGrGlbls
-{
-  I64	pitch,*to_8_bits,*to_8_colors;
-  CDC	*scrn_image,	//Read only.
-	*dc,		//Persistent
-	*dc1,
-	*dc2,		//Updated every refresh
-	*ss,		//Screen Saver
-	*dc_cache,
-	*zoomed_dc;
-  U32	*text_base;	//See $LK,"TextBase Layer",A="HI:TextBase Layer"$. (Similar to 0xB8000 but 32 bits)
-  U16	*win_z_buf;
-
-  #define SPHT_ELEM_CODE	1
-  CHashTable *sprite_hash;
-
-  U16	*win_uncovered_bitmap;
-  I64	highest_uncovered;
-  U16	*vga_text_cache;
-  I64	pan_text_x,pan_text_y;	//[-7,7]
-  U0	(*fp_final_scrn_update)(CDC *dc);//Mouse cursor is handled here.
-  U0	(*fp_wall_paper)(CTask *task);
-  U0	(*fp_draw_ms)(CDC *dc,I64 x,I64 y);
-  U0	(*fp_draw_ss)(CDC *dc,I64 x);
-  U0	(*fp_draw_grab_ms)(CDC *dc,I64 x,I64 y,Bool closed);
-  U8	*empty_sprite; //Gets assigned $LK,"gr.empty_sprite",A="FF:::/Adam/AMouse.HC,empty_sprite"$
-  U8    *screen_cache;
-
-  #define GR_PEN_BRUSHES_NUM 64
-  CDC	*pen_brushes[GR_PEN_BRUSHES_NUM],
-	*collision_pen_brushes[GR_PEN_BRUSHES_NUM],
-	*even_pen_brushes[GR_PEN_BRUSHES_NUM],
-	*odd_pen_brushes[GR_PEN_BRUSHES_NUM];
-  I8	circle_lo[GR_PEN_BRUSHES_NUM][GR_PEN_BRUSHES_NUM],
-	circle_hi[GR_PEN_BRUSHES_NUM][GR_PEN_BRUSHES_NUM];
-
-  #define GR_SCRN_ZOOM_MAX	16
-  I64	scrn_zoom,sx,sy,scrn_saver_cnts,scrn_saver_timeout;
-  CTask *scrn_saver_task;
-
-  //When zoomed, this keeps the mouse centered.
-  Bool	continuous_scroll,
-	hide_row,hide_col,scrn_saver;
-};
-
-#help_index "USB"
-
-#define USBP_CMD        0x00
-#define USBP_STS        0x02
-#define USBP_INTR       0x04
-#define USBP_FRNUM      0x06
-#define USBP_FRBASEADD  0x08
-#define USBP_SOFMOD     0x0C
-#define USBP_PORTSC0    0x10
-#define USBP_PORTSC1    0x12
-#define USB_NUM 16
-
-//USB Pkt ID's
-#define PID_OUT         0xE1
-#define PID_IN          0x69
-#define PID_SOF         0xA5
-#define PID_SETUP       0x2D
-#define PID_DATA0       0xC3
-#define PID_DATA1       0x4B
-#define PID_DATA2       0x87
-#define PID_MDATA       0x0F
-#define PID_ACK         0xD2
-#define PID_NAK         0x5A
-#define PID_STALL       0x1E
-#define PID_NYET        0x96
-#define PID_PRE         0x3C
-#define PID_ERR         0x3C
-#define PID_SPLIT       0x78
-#define PID_PING        0xB4
-
-//USB Std Rqsts
-#define RQ_GET_STAT     0x0
-#define RQ_CLR_FEAT     0x1
-#define RQ_SET_FEAT     0x3
-#define RQ_SET_ADDR     0x5
-#define RQ_SET_DESC     0x7
-#define RQ_GET_CFG      0x8
-#define RQ_SET_CFG      0x9
-#define RQ_GET_INTERFACE 0xA
-#define RQ_SET_INTERFACE 0xB
-#define RQ_SYNC_FRAME   0xC
-
-class CUSBTD //Not implemented
-{
-  U32 td[4];
-};
-
-class CUSB //Not implemented
-{
-  U8 num, //USB dev num
-        bus,dev,fun;
-  U16 ports,pad;
-  U32 *frame_lst;
-};
-
+#help_index ""

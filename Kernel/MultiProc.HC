@@ -172,24 +172,16 @@ U0 MPAPICInit()
 {//Called by adam during start-up
 //and other cores during initialization
   //after $LK,"Core0StartMP",A="MN:Core0StartMP"$().
-  U32 tmp;
-  //*(dev.uncached_alias+LAPIC_SVR)(U32 *)|=LAPICF_APIC_ENABLED;
-  // TODO check this bigtime
-  tmp=*(dev.uncached_alias+LAPIC_SVR)(U32 *);
-  tmp|=0x1F8;
-  *(dev.uncached_alias+LAPIC_SVR)(U32 *)=tmp;
+  *(dev.uncached_alias+LAPIC_SVR)(U32 *)|=LAPICF_APIC_ENABLED;
   dev.mp_apic_ids[Gs->num]=*(dev.uncached_alias+LAPIC_APIC_ID)(U32 *)>>24;
   *(dev.uncached_alias+LAPIC_LDR)(U32 *)=dev.mp_apic_ids[Gs->num]<<24;
   *(dev.uncached_alias+LAPIC_DFR)(U32 *)=0xF0000000;
-  //  MemSet(dev.uncached_alias+LAPIC_IRR,0,0x20);
-  //  MemSet(dev.uncached_alias+LAPIC_ISR,0,0x20);
-  //  MemSet(dev.uncached_alias+LAPIC_TMR,0,0x20);
-  // Is assumption Gs0->num != 0 below wrong for AP which call this?
   SetRAX(Gs->tss->tr);
   LTR	AX
   if (Gs->num)
   {
     IntInit1;
+    Busy(10);
     SetRFlags(RFLAGG_NORMAL);
   }
 }
@@ -282,6 +274,11 @@ CTask *SpawnQue(U0 (*fp_addr)(U8 *data),U8 *data=NULL,U8 *task_name=NULL,
 U0 CoreAPSethInit()
 {//Called by multicore's seth task after $LK,"Core0StartMP",A="MN:Core0StartMP"$()
 //as the first thing a CPU does before waiting for jobs.
+  InvlPg(&dev);
+  CLFlush(&dev);
+  InvlPg(&dev.uncached_alias);
+  CLFlush(&dev.uncached_alias);
+  Busy(10);
   MPAPICInit;
   Fs->rip=&CoreAPSethTask;
   TaskContextRestore;
@@ -339,16 +336,15 @@ U0 Core0StartMP()
   *(dev.uncached_alias+LAPIC_LVT_ERR)(U32 *)&0xFFFFFF00+MPN_VECT;
   WBINVD //Not sure why this is needed.	Might just need delay. $LK,"MemCpy",A="MN:MemCpy"$ above?
   Busy(10000);
-  // TODO make Terry's CPU bring up actually work on modern Ryzen boards
   *(dev.uncached_alias+LAPIC_ICR_LOW)(U32 *)=0xC4500; //assert init IPI
   Busy(10000);
   *(dev.uncached_alias+LAPIC_ICR_LOW)(U32 *)=0xC4600+MPN_VECT; //start-up
-  Busy(1000000); // try delaying longer for more cores which take more time
+  Busy(200);
+  *(dev.uncached_alias+LAPIC_ICR_LOW)(U32 *)=0xC4600+MPN_VECT; //start-up
+  Busy(200000); // try delaying longer for more cores which take more time
   // This seems sketchy?
   for (i=0; i<10000; i++)
     LBts(&mp_cnt_lock,0); //Don't let more through
-  // TODO try sending SIPI again and/or other bring up techinuqe
-  // if we found we didn't get any more CPUs, but know we should have.
   Busy(200);
   if (mp_cnt_initial==1)
   {
@@ -371,7 +367,7 @@ U0 Core0StartMP()
     while (!Bt(&cpu_structs[i].seth_task->task_flags,TASKf_AWAITING_MSG))
       PAUSE;
   POPFD
-  mp_cnt=my_mp_cnt; //Finalize cnt
+  lock mp_cnt=my_mp_cnt; //Finalize cnt
 }
 
 U0 Core0Init()

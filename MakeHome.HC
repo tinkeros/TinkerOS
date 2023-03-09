@@ -19,7 +19,7 @@ Silent(OFF); //no output to scrn
 // Misc helper functions
 U0 AutoHome()
 {
-    MountIDEAuto;
+    MountAuto;
     Cdd("C:/Home");
 }
 

@@ -1,6 +1,10 @@
+#help_index ""
+CDC *gr_alt_scrn=NULL;
+
 #help_index "Graphics"
 
 public CBGR24 gr_palette[PAL_COLORS_NUM];
+
 
 //See $LK,"RLf_VGA",A="FF:::/Kernel/KStart16.HC,RLf_VGA"$
 //See $LK,"SysGrInit",A="MN:SysGrInit"$()
@@ -13,3 +17,4 @@ DefinePrint("TEXT_ROWS","%d",text.rows);;;
 HashPublic("TEXT_ROWS",HTT_DEFINE_STR);;;
 DefinePrint("TEXT_COLS","%d",text.cols);;;
 HashPublic("TEXT_COLS",HTT_DEFINE_STR);;;
+

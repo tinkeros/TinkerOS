@@ -112,8 +112,8 @@ U0 KCfgOptions(CKCfg *c)
           "Widely supported resolutions:\n\n"
           "640 x 480 (default 4:3)\n"
           "800 x 600 (alt 4:3, some games may not look right)\n\n";
-          c->fb_width=GetI64("Enter width (min 640, max 1920):",640,640,1920);
-          c->fb_height=GetI64("Enter height (min 480, max 1080):",480,480,1080);
+          c->fb_width=GetI64("Enter width (min 640, max 3440):",640,640,3440);
+          c->fb_height=GetI64("Enter height (min 480, max 1440):",480,480,1440);
           c->gr_width=c->fb_width;
           c->gr_height=c->fb_height;
           c->gr_scale=0;
@@ -282,6 +282,7 @@ U0 KCfgOptions(CKCfg *c)
   DocPrint(cfgdoc,"#define SCREEN_SAVER_TIMEOUT %d\n",c->screen_saver_timeout);
   DocPrint(cfgdoc,"#define LETTER_BOX_BAR_WIDTH %d\n",c->letter_box_bar_width);
   DocPrint(cfgdoc,"#define GR_TEXT_MODE %d\n",c->opts[CFG_TEXT_MODE]);
+  DocPrint(cfgdoc,"#define NOMP_MODE %d\n",c->opts[CFG_NO_MP]);
   DocWrite(cfgdoc);
   DocDel(cfgdoc);
 }
@@ -297,18 +298,26 @@ CKCfg *KCfgNew()
                         "($$PURPLE$$<ENTER>$$FG$$ will use default.):",
                         "Scale2Mem(0x80000,0x8000000)");
   c->screen_saver_timeout=300;
-  c->gr_width=640;
-  c->gr_height=480;
-  c->fb_width=640;
-  c->fb_height=480;
-  c->x_scale=1;
-  c->y_scale=1;
+  c->gr_width=GR_WIDTH;
+  c->gr_height=GR_HEIGHT;
+  c->fb_width=FB_WIDTH;
+  c->fb_height=FB_HEIGHT;
+  c->x_scale=WIDTH_SCALE;
+  c->y_scale=HEIGHT_SCALE;
+  c->letter_box=LETTER_BOX;
+  c->letter_box_bar_width=LETTER_BOX_BAR_WIDTH;
   c->gr_scale=0;
+  if (WIDTH_SCALE>1||HEIGHT_SCALE>1)
+    c->gr_scale=1;
   c->opts[CFG_TEXT_MODE]=0;
   c->opts[CFG_AHCI_MODE]=0;
   if (HashFind("AHCIMode",adam_task->hash_table,HTT_GLBL_VAR))
   {
     c->opts[CFG_AHCI_MODE]=ExePrint("AHCIMode;\n")(I64);
+  }
+  if (HashFind("NOMP_MODE",adam_task->hash_table,HTT_DEFINE_STR))
+  {
+    c->opts[CFG_NO_MP]=ExePrint("NOMP_MODE;\n")(I64);
   }
   KCfgOptions(c);
   return c;

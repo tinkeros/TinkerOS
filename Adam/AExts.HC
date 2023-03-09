@@ -100,3 +100,7 @@ extern U0 WinScrollsInit(CTask *task);
 extern I64 WinToTop(CTask *task=NULL,Bool update_z_buf=TRUE);
 extern Bool WinVert(I64 top,I64 bottom,CTask *task=NULL);
 extern CWinMgrGlbls winmgr;
+extern CDC *gr_alt_scrn;
+extern U0 InUntilKey(I64 scan_code,I64 sc_mask=0xFF|SCF_SHIFT|SCF_CTRL|SCF_ALT,I64 timeout=-1);
+extern I64 InUntilChar(...);
+

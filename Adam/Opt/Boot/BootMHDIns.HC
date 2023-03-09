@@ -88,8 +88,8 @@ public Bool BootMHDIns(U8 drv_let,U8 *drv_lst=NULL)
   CDrv *dv,*p1;
   CMasterBoot mbr;
   CDirEntry de;
-  I64 i,j,size,*_q;
-  U8 *menu_ptr,*ptr,ch,buf[STR_LEN];
+  I64 i,j,h,w,size,*_q;
+  U8 *menu_ptr,*ptr,*tmp,ch,buf[STR_LEN];
   Bool res=FALSE;
   try
   {
@@ -145,7 +145,13 @@ public Bool BootMHDIns(U8 drv_let,U8 *drv_lst=NULL)
           *_q=p1->drv_offset;
           "Drive %C:%16X\n"
           ,Drv2Let(p1),*_q;
-          CatPrint(menu_ptr,"%d. Drive %C\n\r",j++,Drv2Let(p1));
+          if (IsFile(tmp=MStrPrint("%C:/Kernel/KCfg.HH",Drv2Let(p1)))) {
+            w=ExePrint2("#include \"%C:/Kernel/KCfg.HH\"\n\nGR_WIDTH;\n",Drv2Let(p1));
+            h=ExePrint2("#include \"%C:/Kernel/KCfg.HH\"\n\nGR_HEIGHT;\n",Drv2Let(p1));
+            CatPrint(menu_ptr,"%d. Drive %C TinkerOS (%dx%d)\n\r",j++,Drv2Let(p1),w,h);
+          }
+          else
+            CatPrint(menu_ptr,"%d. Drive %C TempleOS\n\r",j++,Drv2Let(p1),w,h);
           _q++;
         }
       }

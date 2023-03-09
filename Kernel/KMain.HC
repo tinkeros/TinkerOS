@@ -62,6 +62,7 @@ scrncast.t0_tS=tS;
 scrncast.ona=scrncast.snd_head.ona=0;
 
 snd.ona=ONA_REST;
+snd.fp_alt_snd_dev=NULL;
 QueInit(&snd.record_head);
 snd.record_head.time=tS;
 
@@ -111,36 +112,9 @@ U0 SysGrInit()
 
 U0 TimersInit()
 {
-  I64 i,*_q;
-  U32 *_d;
   OutU8(0x43,0x34);
   OutU8(0x40,SYS_TIMER0_PERIOD);
   OutU8(0x40,SYS_TIMER0_PERIOD>>8);
-  //High Precision Event Timer
-  if (PCIReadU16(0,31,0,0)==0x8086)  //Intel?
-  {
-//D31 F0, cfg 0xF0=RCBA of PCI-LPC Bridge
-    _d=PCIReadU32(0,31,0,0xF0)(U8 *)&~0x3FFF+0x3404; //HPET cfg
-//7	enable
-    //1:0 HPET is at 0xFED00000,0xFED01000, 0xFED02000 or 0xFED03000.
-    *_d=*_d&3|0x80;
-  }
-  _q=dev.uncached_alias+HPET_GCAP_ID;
-  i=*_q; //i.u32[1]= period in femtoS (10e-15)
-  if (100000<i.u32[1]<1000000000)
-  {
-    cnts.HPET_freq    =1000000000000000/i.u32[1];
-    cnts.HPET_kHz_freq=1000000000000/i.u32[1];
-    _q=dev.uncached_alias+HPET_GEN_CONF;
-    *_q|=1; //Enable counting
-    cnts.HPET_initial=HPET;
-  }
-  else
-  {
-    cnts.HPET_freq=0;
-    cnts.HPET_kHz_freq=0;
-    cnts.HPET_initial=0;
-  }
 }
 
 U0 Reboot()
@@ -184,12 +158,14 @@ U0 KMain()
   sys_os_version,sys_compile_time,sys_compile_time;
   TimersInit;
   if (BIOSTotalMem<ToI64(0.95*MEM_MIN_MEG*0x100000))
-    RawPrint(4000,"!!! Requires $TX,"512Meg",D="DD_MEM_MIN_MEG"$ of RAM Memory !!!");
+    RawPrint(4000,"!!! Requires $TX,"1024Meg",D="DD_MEM_MIN_MEG"$ of RAM Memory !!!");
   IntsInit;
   "Enable IRQ's\n";
+  IntInit2;
+  WBINVD;
+  Busy(200);
   SetRFlags(RFLAGG_NORMAL);
   Busy(2000);
-  IntInit2;
   LBts(&sys_run_level,RLf_INTERRUPTS);
   TimeCal;
   BlkDevsInitAll;

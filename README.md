@@ -1,8 +1,8 @@
 <p align="center">
   <a href="https://tinkeros.github.io">
-  <img src="https://github.com/tinkeros/TinkerOS/raw/main/Images/theme.gif" /></a>
+  <img src="https://tinkeros.github.io/Images/theme.gif" /></a>
 </p>
-<p align="center"><a href="https://tinkeros.github.io">TinkerOS/TempleOS documentation</p>
+<p align="center"><a href="https://tinkeros.github.io">TinkerOS/TempleOS documentation</a></p>
 
 
 ### Preface
@@ -11,17 +11,15 @@ TinkerOS is essentially TempleOS renamed with some changes that allow it to run 
 ### Goals
 - Keep a TempleOS like look and feel while attempting to keep a fully TempleOS compatible API to the maximum extent possible.  TinkerOS should always be able to compile and install TempleOS.
 - Be a fun playground OS that you can run on older machines 64-bit machines and do useful things with the serial and parallel ports.
-- <a href="https://github.com/tinkeros/TinkerOS/blob/main/USBBoot/README.md">Live USB boot</a> mode to allow trying it without having to install it that also works on systems lacking legacy storage support.  This live boot version also contains utilities to help with baremetal installation on real hardware as well as the ability to boot TempleOS to a ram disk.
+- Live USB boot images allow trying TempleOS/TinkerOS without having to install it.  These also work on some systems lacking legacy storage support.  The live boot version also contains utilities to help with baremetal installation on real hardware.
 - Cleanup some unfortunate language that was left in TempleOS.
 - Bring back some old TempleOS features and add new features, popular apps, and games.
 - Make higher resolutions easy to setup.
 - Make more colors available for TinkerOS features and 3rd party apps.  The original TempleOS code that makes use of only 16 colors still works, no backward compatability has been broken.  TempleOS uses colors 16 colors 0-15 and 255=transparent.  TinkerOS and 3rd party apps can additionally use colors 16-254 for 239 more colors to work with.  These can be any 24-bit RGB color.
 - Make most apps and games work and look decent on both 4:3 and widescreen monitors using letterboxing for a 4:3 experience or scaled widescreen modes with an effective width of 640 (640x340, 640x360, 640x400)
-- Improve documentation.
+- Improve installation process.
 - Possibly new device driver support for modern storage and/or networking.
 - Document bare-metal device compatability.  Please make a pull request to update Compatibility.csv if you want to help.
-
-### <a href="https://github.com/tinkeros/TinkerOS/blob/main/ChangeLog.md">Change Log</a>
 
 ### Notes
 - TempleOS and TinkerOS have no device drivers for CPU frequency control, temperature detection, fans, or other motherboard devices.  It may be the case that you are able to boot TinkerOS bare metal, but you may be putting your machine at risk and it may crash due to thermal issues or because a watchdog timer is tripped because the operating system does not take over control of critical hardware (since there is no driver for it).  There are no plans to fix this, if you system has these issues your only option is to run it inside a virtual machine instead of bare metal or to implement the required drivers yourself.

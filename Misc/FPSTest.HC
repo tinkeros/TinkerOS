@@ -23,7 +23,7 @@ U0 DoSpyHunt()
   CTask *task=User;
   XTalkWait(task,"#include \"::/Apps/SpyHunt/Run\";\n");
   FPSProf;
-  for (i=0;i<4;i++)
+  for (i=0; i<4; i++)
   {
     Sleep(1000);
     PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SPACE,0);
@@ -58,17 +58,16 @@ U0 DoTalons()
   XTalkWait(task,"#include \"::/Demo/Games/Talons\";\n");
   Sleep(500);
   FPSProf;
-
   for (i=0; i<10; i++)
   {
     PostMsgWait(task,MSG_KEY_DOWN_UP,0,SC_CURSOR_DOWN);
     Sleep(5);
   }
   Sleep(2500);
-
-  for (j=0;j<12;j++) {
+  for (j=0; j<12; j++)
+  {
     for (i=0; i<127; i++)
-      {
+    {
       PostMsgWait(task,MSG_KEY_DOWN_UP,0,SC_CURSOR_DOWN);
       Sleep(4);
     }
@@ -83,41 +82,45 @@ U0 FPSTest(I64 targetFPS=200)
   I64 i, single_max=0, multi_max=0, old_fps_target;
   F64 *single_thread_game, *multi_thread_game, single_max_fps=0, multi_max_fps=0;
   old_fps_target=fps_master;
-  "Setting target FPS to %d for benchmark...\n",targetFPS;
+  "Setting target FPS to %d for benchmark...\n"
+  ,targetFPS;
   SetFPS(targetFPS);
   multi_thread_game=CAlloc(sizeof(F64)*mp_cnt);
   single_thread_game=CAlloc(sizeof(F64)*mp_cnt);
   ts_t0=tS;
   ts_i=0;
   FPSProfReset;
-  for (i=0;i<mp_cnt;i++) {
-      TS("Talons",i);
-      DoTalons;
-      multi_thread_game[i]=FPSProf;
-      if (multi_thread_game[i]>multi_max_fps)
-      {
-          multi_max_fps=multi_thread_game[i];
-          multi_max=i;
-      }
-      TS("Spy Hunt",i);
-      DoSpyHunt;
-      single_thread_game[i]=FPSProf;
-      if (single_thread_game[i]>single_max_fps)
-      {
-          single_max_fps=single_thread_game[i];
-          single_max=i;
-      }
+  for (i=0; i<mp_cnt; i++)
+  {
+    TS("Talons",i);
+    DoTalons;
+    multi_thread_game[i]=FPSProf;
+    if (multi_thread_game[i]>multi_max_fps)
+    {
+      multi_max_fps=multi_thread_game[i];
+      multi_max=i;
+    }
+    TS("Spy Hunt",i);
+    DoSpyHunt;
+    single_thread_game[i]=FPSProf;
+    if (single_thread_game[i]>single_max_fps)
+    {
+      single_max_fps=single_thread_game[i];
+      single_max=i;
+    }
   }
   "Elapsed Time:%5.3f\n"
   ,tS-ts_t0;
-  "Target FPS was: %d\n",targetFPS;
+  "Target FPS was: %d\n"
+  ,targetFPS;
   "Test results:\n";
-  for (i=0;i<mp_cnt;i++) {
-      "Helpers: %d Single thread game FPS: %1.2f Multi-thread game FPS: %1.2f\n",i,single_thread_game[i],multi_thread_game[i];
+  for (i=0; i<mp_cnt; i++)
+  {
+    "Helpers: %d Single thread game FPS: %1.2f Multi-thread game FPS: %1.2f\n",i,single_thread_game[i],multi_thread_game[i];
   }
   "Best single thread game FPS %1.2f with (%d Seth GFX helpers)\n",single_thread_game[single_max],single_max;
-  "Best multi thread game FPS %1.2f with (%d Seth GFX helpers)\n",multi_thread_game[multi_max],multi_max;
-
+  "Best multi thread game FPS %1.2f with (%d Seth GFX helpers)\n"
+  ,multi_thread_game[multi_max],multi_max;
 }
 
 Bool mute=Mute(1);

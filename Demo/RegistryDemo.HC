@@ -14,8 +14,10 @@ RegExe("DemoCompany/Game1");
 U0 Game()
 {
   I64 i=RegExe("DemoCompany/Game1/SimpleVal");
-  "High Score:%6.5f\n",best_score;
-  "Val:%d\n",i;
+  "High Score:%6.5f\n"
+  ,best_score;
+  "Val:%d\n"
+  ,i;
   i++;
   best_score=tS;
 //You could combine these into one write by making

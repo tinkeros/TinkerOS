@@ -24,12 +24,12 @@ U0 DrawMap(CTask *,CDC *dc)
 U0 AEMap()
 {
   I64 i=0,
-        cx=Fs->pix_width>>1,
-        cy=Fs->pix_height>>1,
-        c_min=MinI64(cx,cy),
-        *r=NULL,
-        x1=0,y1=0,z1=0,
-        x_last=x1,y_last=y1;
+      cx=Fs->pix_width>>1,
+      cy=Fs->pix_height>>1,
+      c_min=MinI64(cx,cy),
+      *r=NULL,
+       x1=0,y1=0,z1=0,
+       x_last=x1,y_last=y1;
   F64 a,a1=(AE1_MAX+AE1_MIN)/2,a2=(AE2_MAX+AE2_MIN)/2,a2_total=a2,
         x_scale=ToF64(cx)/c_min,y_scale=ToF64(cy)/c_min;
   CDC *dc=DCAlias;
@@ -37,13 +37,13 @@ U0 AEMap()
   Fs->text_attr=YELLOW<<4+BLUE;
   DocClear;
   "$$BG,YELLOW$$%h*c"
-        ,TEXT_ROWS,'\n';
+  ,TEXT_ROWS,'\n';
   BibleVerse(,"Exodus,16:35",3);
   Fs->draw_it=&DrawMap;
   try
-    {
+  {
     while (!ScanChar)
-      {
+    {
       dc->color=BLACK;
       a1=Clamp(Wrap(a1+(AE1_MAX+AE1_MIN)/5.0*(Rand-0.5)),-AE1_MAX,AE1_MAX);
       a=a1;

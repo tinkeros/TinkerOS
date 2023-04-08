@@ -124,6 +124,7 @@ CCPU *CPUStructInit(I64 num,CCPU *c,CTask *seth_task)
     LBts(&c->idle_task->task_flags,TASKf_IDLE);
     c->tss=TSSNew(num);
   }
+  WBINVD
   c->seth_task=seth_task;// It waits for this to be filled-in: $LK,"seth_task",A="FF:::/Kernel/MultiProc.HC,seth_task"$
   return c;
 }
@@ -312,6 +313,8 @@ U0 Core0StartMP()
   }
   PUSHFD
   CLI
+  while (LBts(&sys_semas[SEMA_SYS_TIMER],0))
+    PAUSE 
   if (mp_cnt>1)
   {
     my_mp_cnt=mp_cnt;
@@ -346,10 +349,6 @@ U0 Core0StartMP()
   for (i=0; i<10000; i++)
     LBts(&mp_cnt_lock,0); //Don't let more through
   Busy(200);
-  if (mp_cnt_initial==1)
-  {
-    // TODO?
-  }
   my_mp_cnt=mp_cnt_initial;
   if (my_mp_cnt>MP_PROCESSORS_NUM)
     my_mp_cnt=MP_PROCESSORS_NUM;
@@ -366,8 +365,11 @@ U0 Core0StartMP()
   for (i=1; i<my_mp_cnt; i++)
     while (!Bt(&cpu_structs[i].seth_task->task_flags,TASKf_AWAITING_MSG))
       PAUSE;
-  POPFD
+ 
   lock mp_cnt=my_mp_cnt; //Finalize cnt
+  WBINVD
+  LBtr(&sys_semas[SEMA_SYS_TIMER],0);
+  POPFD
 }
 
 U0 Core0Init()

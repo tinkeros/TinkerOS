@@ -14,7 +14,7 @@ U0 SethREPL(I64 cpu_num=mp_cnt-1)
   while (1)
   {
 //TODO get DirCur result from Seth, not here
-//cwd=DirCur;
+    //cwd=DirCur;
     tmpc=TaskExe(repl,Fs,"DirCur;",0);
     TaskWait(repl);
     cwd=StrNew(repl->answer);
@@ -33,33 +33,42 @@ U0 SethREPL(I64 cpu_num=mp_cnt-1)
       break;
     "\nWaiting...";
     tmpc=TaskExe(repl,Fs,line,0);
-    TaskWait(repl);
-    while (!JobResScan(tmpc))
+    TaskWait(repl); // TODO how to detect core reset???
+    while (TaskValidate(repl) && !JobResScan(tmpc))
     {
+      Sleep(1);
       Yield;
     }
     EdLineDel(Fs->put_doc);
     "$FG$$$FG$$$$BG$$";
-    DocPrint(repl->put_doc,"\n");
-    DocDump(repl->put_doc);
-    DocClear(repl->put_doc);
-    "$FG$$$FG$$$$BG$$";
-    if (repl->new_answer)
+    if (TaskValidate(repl))
     {
-      if (repl->answer_type&~1!=RT_I0)
+      DocPrint(repl->put_doc,"\n");
+      DocDump(repl->put_doc);
+      DocClear(repl->put_doc);
+      "$FG$$$FG$$$$BG$$";
+      if (repl->new_answer)
       {
-        if (repl->answer_type==RT_F64)
-          "%8.6fs ansf=%15.7g\n",repl->answer_time,repl->answer;
+        if (repl->answer_type&~1!=RT_I0)
+        {
+          if (repl->answer_type==RT_F64)
+            "%8.6fs ansf=%15.7g\n",repl->answer_time,repl->answer;
+          else
+            "%8.6fs ans=0x%08X=%d\n",repl->answer_time,repl->answer,repl->answer;
+        }
         else
-          "%8.6fs ans=0x%08X=%d\n",repl->answer_time,repl->answer,repl->answer;
+        {
+          "%8.6fs\n",repl->answer_time;
+          repl->answer=0;
+        }
+        repl->new_answer=FALSE;
       }
-      else
-      {
-        "%8.6fs\n",repl->answer_time;
-        repl->answer=0;
-      }
-      repl->new_answer=FALSE;
+    }
+    else
+    {
+      "Seth REPL task died!\n";
+      break;
     }
   }
-  Kill(repl);
+  if (TaskValidate(repl)) Kill(repl);
 }

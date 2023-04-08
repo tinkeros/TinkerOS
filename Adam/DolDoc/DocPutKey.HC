@@ -474,6 +474,26 @@ public U0 DocPutKey(CDoc *doc,I64 ch=0,I64 sc=0)
                 }
               }
               break;
+            case SC_F9:
+              if (sc&SCF_KEY_DESC)
+              {
+                if (sc&SCF_SHIFT)
+                  KeyDescSet("Cmd/Take Screen Clip");
+                else
+                  KeyDescSet("Cmd/Take Screenshot");
+              }
+              else
+              {
+                if (sc&SCF_SHIFT)
+                {
+                  ScrnShot(,TRUE);
+                }
+                else
+                {
+                  ScrnShot;
+                }
+              }
+              break;
             }
           }
           break;

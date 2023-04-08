@@ -1,5 +1,5 @@
 #help_index "Info;Task"
-U0 TaskRepTask(CTask *task,I64 indent, Bool detailed=FALSE)
+U0 TaskRepTask(CTask *task,I64 indent, Bool detailed=FALSE, Bool kill=FALSE)
 {
   I64 **ptr;
   CTask *task1;
@@ -8,45 +8,49 @@ U0 TaskRepTask(CTask *task,I64 indent, Bool detailed=FALSE)
     rbp=GetRBP;
   else
     rbp=task->rbp;
-  if (IsRaw)
+  if (!kill)
   {
-    "%h*c%08X - %d - %s\n",indent,CH_SPACE,task,task->task_num,
-    task->task_title;
-    "%h*c%08X%04X:%04X:%08X\n"
-    ,indent+2,CH_SPACE,TaskMemAlloced(task),
-    task->task_flags,task->display_flags,task->win_inhibit;
-  }
-  else
-  {
-    "%h*c$$MA,T=\"%08X\",LM=\"Kill(0x%X);\n\",$$ $$BLACK$$#%d$$FG$$ "
-    "$$TX,\"%$$Q...\",SCX=16$$\n",indent,CH_SPACE,task,task,task->task_num,
-    task->task_title;
-    "%h*c%08X%04X:%04X:%08X\n"
-    ,indent+2,CH_SPACE,TaskMemAlloced(task),
-    task->task_flags,task->display_flags,task->win_inhibit;
-  }
-  if (detailed)
-  {
-    while (ChkOnStk(rbp,task))
+    if (IsRaw)
     {
-      ptr=rbp+1;
-      "%h*c%08X:%08tX:%P\n"
-      ,indent+2,CH_SPACE,ptr,*ptr,*ptr;
-      if (rbp>=*rbp)
-        break;
-      rbp=*rbp;
+      "%h*c%08X - %d - %s\n",indent,CH_SPACE,task,task->task_num,
+      task->task_title;
+      "%h*c%08X%04X:%04X:%08X\n"
+      ,indent+2,CH_SPACE,TaskMemAlloced(task),
+      task->task_flags,task->display_flags,task->win_inhibit;
+    }
+    else
+    {
+      "%h*c$$MA,T=\"%08X\",LM=\"Kill(0x%X);\n\",$$ $$BLACK$$#%d$$FG$$ "
+      "$$TX,\"%$$Q...\",SCX=16$$\n",indent,CH_SPACE,task,task,task->task_num,
+      task->task_title;
+      "%h*c%08X%04X:%04X:%08X\n"
+      ,indent+2,CH_SPACE,TaskMemAlloced(task),
+      task->task_flags,task->display_flags,task->win_inhibit;
+    }
+    if (detailed)
+    {
+      while (ChkOnStk(rbp,task))
+      {
+        ptr=rbp+1;
+        "%h*c%08X:%08tX:%P\n"
+        ,indent+2,CH_SPACE,ptr,*ptr,*ptr;
+        if (rbp>=*rbp)
+          break;
+        rbp=*rbp;
+      }
     }
   }
   task1=task->next_child_task;
   while (task1!=(&task->next_child_task)(U8 *)
          -offset(CTask.next_sibling_task))
   {
-    TaskRepTask(task1,indent+2,detailed);
+    TaskRepTask(task1,indent+2,detailed,kill);
     task1=task1->next_sibling_task;
   }
+  if (kill) Kill(task);
 }
 
-public U0 TaskCoreRep(I64 core, Bool detailed=FALSE)
+public U0 TaskCoreRep(I64 core, Bool detailed=FALSE, Bool kill=FALSE)
 {//Report current tasks on a single core.
   CCPU *c;
   if (core>=mp_cnt)
@@ -57,24 +61,32 @@ public U0 TaskCoreRep(I64 core, Bool detailed=FALSE)
   PUSHFD
   CLI
   c=&cpu_structs[core];
-  if (IsRaw)
+  if (!kill)
   {
-    "CPU%02X",core;
+    if (IsRaw)
+    {
+      "CPU%02X",core;
+    }
+    else
+    {
+      "$$PURPLE$$CPU%02X$$FG$$",core;
+    }
+    if (detailed)
+    {
+      " Usage %3tf%% :\n",100.0*(1.0-c->idle_factor);
+    }
+    else
+    {
+      ":\n";
+    }
   }
-  else
-  {
-    "$$PURPLE$$CPU%02X$$FG$$",core;
-  }
-  if (detailed)
-  {
-    " Usage %3tf%% :\n",100.0*(1.0-c->idle_factor);
-  }
-  else
-  {
-    ":\n";
-  }
-  TaskRepTask(c->seth_task,2,detailed);
+  TaskRepTask(c->seth_task,2,detailed, kill);
   POPFD
+}
+
+public U0 KillSeth(I64 core)
+{
+  TaskCoreRep(core, FALSE, TRUE);
 }
 
 public U0 TaskRep(Bool detailed=FALSE)

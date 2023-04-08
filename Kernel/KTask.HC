@@ -60,7 +60,7 @@ Bool Kill(CTask *task,Bool wait=TRUE,Bool just_break=FALSE)
         Break;
       else  //TODO wait
       {
-        sys_focus_task=task;
+        SetSysFocusTask(task);
         LBts(sys_ctrl_alt_flags,CTRL_ALT_C);
         return TRUE;
       }
@@ -516,7 +516,7 @@ I64 TaskEnd()
   {
     if (!Gs->num)
       SingleUser(OFF);
-    sys_focus_task=NULL;
+    SetSysFocusTask(NULL);
     if (fp_set_std_palette)
       (*fp_set_std_palette)();
   }

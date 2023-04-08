@@ -9,7 +9,8 @@ U0 UserStartUp()
   WinToTop;
   WinZBufUpdate;
   Dir;
-  "$TX,"80,849",D="DD_TEMPLEOS_LOC"$LOC:";
+  "$TX,"
+  80,849",D="DD_TEMPLEOS_LOC"$LOC:";
   CPURep;
 }
 
@@ -29,19 +30,23 @@ U0 StartUpTasks()
   user2=User;
   WinToTop(user1);
   WinTileVert;
-  "BootTime:%7.3fs\n",tS;
+  "BootTime:%7.3fs\n"
+  ,tS;
   XTalk(user1,"Cd;#include \"Once\";\n");
   Silent;
   ACInit("/*;!*/Bible.TXT*;!*.TXT"); //No Bible, no uncompressed DD.
   Silent(OFF);
-  "AutoComplete Time:%7.3fs\n",tS;
+  "AutoComplete Time:%7.3fs\n"
+  ,tS;
 }
 
-if (DrvIsWritable(':')) {
+if (DrvIsWritable(':'))
+{
   DelTree("::/Tmp/ScrnShots");
   DirMk("::/Tmp/ScrnShots");
 }
 
 StartUpTasks;
 
-"\nTempleOS V%5.3f\t%D %T\n\n",sys_os_version,sys_compile_time,sys_compile_time;
+"\nTempleOS V%5.3f\t%D %T\n\n"
+,sys_os_version,sys_compile_time,sys_compile_time;

@@ -27,20 +27,30 @@ U0 FormDemo()
   fds.address2=NULL;	//Init to NULL if empty.
   fds.datetime=Now;
   fds.check=TRUE;
-  if (DocForm(&fds)) {
+  if (DocForm(&fds))
+  {
     "#1\t=%e\n",fds.num1;
-    "#2\t=%e\n",fds.num2;
-    "#3\t=%d\n",fds.num3;
-    "#4\t=%d\n",fds.num4;
-    "Type\t=%s\n",DefineSub(fds.type,"ST_PERSON_TYPE");
-    "Name\t=%s\n",fds.name;
-    "Address1=%s\n",fds.address1;
-    "Address2=%s\n",fds.address2;
-    "Date\t=%D\n",fds.datetime;
-    "Check\t=%d\n",fds.check;
-  } else
+    "#2\t=%e\n"
+    ,fds.num2;
+    "#3\t=%d\n"
+    ,fds.num3;
+    "#4\t=%d\n"
+    ,fds.num4;
+    "Type\t=%s\n"
+    ,DefineSub(fds.type,"ST_PERSON_TYPE");
+    "Name\t=%s\n"
+    ,fds.name;
+    "Address1=%s\n"
+    ,fds.address1;
+    "Address2=%s\n"
+    ,fds.address2;
+    "Date\t=%D\n"
+    ,fds.datetime;
+    "Check\t=%d\n"
+    ,fds.check;
+  }
+  else
     "Cancel\n";
-
   "\n\nClassRep Example\n";
   ClassRep(&fds);
   Free(fds.address1);

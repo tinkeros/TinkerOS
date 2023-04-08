@@ -32,6 +32,7 @@ class CKCfg
   U64 gr_width,gr_height,gr_scale,
       fb_width,fb_height,x_scale,y_scale,letter_box,
       letter_box_bar_width,screen_saver_timeout;
+  I64 cur_drv_hint;
 };
 
 CDoc *KCfgAddDev(CKCfg *c)
@@ -49,7 +50,7 @@ CDoc *KCfgAddDev(CKCfg *c)
     c->boot_drv_let=Drv2Let(Fs->cur_dv);
   "\n\n$$BK,1$$$$PURPLE$$Mount drives so they will be present when "
   "you boot.$$FG$$$$BK,0$$\n";
-  Mount2(c->boot_drv_let,doc,FALSE);
+  Mount2(c->boot_drv_let,doc,FALSE,FALSE,&c->cur_drv_hint);
   return doc;
 }
 
@@ -283,6 +284,8 @@ U0 KCfgOptions(CKCfg *c)
   DocPrint(cfgdoc,"#define LETTER_BOX_BAR_WIDTH %d\n",c->letter_box_bar_width);
   DocPrint(cfgdoc,"#define GR_TEXT_MODE %d\n",c->opts[CFG_TEXT_MODE]);
   DocPrint(cfgdoc,"#define NOMP_MODE %d\n",c->opts[CFG_NO_MP]);
+  if (c->cur_drv_hint >= 0)
+    DocPrint(cfgdoc,"#define CUR_DRV_HINT %d\n",c->cur_drv_hint);
   DocWrite(cfgdoc);
   DocDel(cfgdoc);
 }
@@ -290,6 +293,7 @@ U0 KCfgOptions(CKCfg *c)
 CKCfg *KCfgNew()
 {
   CKCfg *c=CAlloc(sizeof(CKCfg));
+  c->cur_drv_hint=-1;
   c->add_dev=KCfgAddDev(c);
   c->home_dir=StrNew("::/Home");
   c->dsk_cache_size_exp=GetStr(

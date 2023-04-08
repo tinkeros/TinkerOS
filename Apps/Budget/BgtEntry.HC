@@ -1,6 +1,7 @@
 U0 BgtEntryDel2(CBgtEntry *tmpb)
 {
-  if (tmpb->type!=BE_TEMPLATE_COPY) {
+  if (tmpb->type!=BE_TEMPLATE_COPY)
+  {
     Free(tmpb->credit);
     Free(tmpb->debit);
     Free(tmpb->desc);
@@ -11,7 +12,8 @@ CBgtEntry *BgtEntryCopy(CBgtEntry *tmpb,Bool periodic_copy)
 {
   CBgtEntry *res=MAlloc(sizeof(CBgtEntry));
   MemCpy(res,tmpb,sizeof(CBgtEntry));
-  if (periodic_copy) {
+  if (periodic_copy)
+  {
     res->credit=StrNew(tmpb->credit);
     res->debit =StrNew(tmpb->debit);
     res->desc  =StrNew(tmpb->desc);
@@ -49,24 +51,31 @@ CBgtEntry *BgtEntryPmt(CBgtEntry *dft=NULL)
   U8 *st;
   MemSet(&b,0,sizeof(CBgtEntryForm));
   StrCpy(&b.date,"*");
-  if (dft) {
+  if (dft)
+  {
     StrPrint(b.date,"%D",dft->date);
     b.amount=dft->amount;
     StrCpy(b.credit,dft->credit);
-    StrCpy(b.debit ,dft->debit);
-    StrCpy(b.desc  ,dft->desc);
+    StrCpy(b.debit,dft->debit);
+    StrCpy(b.desc,dft->desc);
   }
   while (TRUE)
-    if (PopUpForm(&b)) {
-      if (!*b.credit) {
+    if (PopUpForm(&b))
+    {
+      if (!*b.credit)
+      {
         st=BgtPopUpAcct("Credit Acct\n\n");
         if (st!=DOCM_CANCEL)
-	  StrCpy(b.credit,st);
-      } else if (!*b.debit) {
+          StrCpy(b.credit,st);
+      }
+      else if (!*b.debit)
+      {
         st=BgtPopUpAcct("Debit Acct\n\n");
         if (st!=DOCM_CANCEL)
-	  StrCpy(b.debit,st);
-      } else {
+          StrCpy(b.debit,st);
+      }
+      else
+      {
         tmpb=CAlloc(sizeof(CBgtEntry));
         tmpb->date  =Str2Date(b.date);
         tmpb->amount=b.amount;
@@ -78,6 +87,7 @@ CBgtEntry *BgtEntryPmt(CBgtEntry *dft=NULL)
         StrFileAdd(tmpb->debit,&accts_table_strs,accts_table);
         return tmpb;
       }
-    } else
+    }
+    else
       return NULL;
 }

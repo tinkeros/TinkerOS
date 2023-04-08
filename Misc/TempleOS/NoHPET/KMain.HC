@@ -2,64 +2,62 @@ U0 SysGlblsInit()
 {
   I64 i,j;
   CRAXRBCRCXRDX ee;
-
   CPUId(0x1,&ee);
   sys_cache_line_width=ee.rbx.u8[1]*8;
-
   sys_focus_task=Fs;
   QueInit(&sys_macro_head);
-
   blkdev.dft_iso_filename	=AStrNew(DFT_ISO_FILENAME);
   blkdev.dft_iso_c_filename	=AStrNew(DFT_ISO_C_FILENAME);
   blkdev.tmp_filename		=AStrNew("~/Tmp.DD.Z");
   blkdev.dvd_boot_is_good=TRUE;
-  #exe {
-    if (!kernel_cfg->mount_ide_auto_hd_let)
-      kernel_cfg->mount_ide_auto_hd_let='C';
-    if (!kernel_cfg->mount_ide_auto_cd_let)
-      kernel_cfg->mount_ide_auto_cd_let='T';
-    StreamPrint("blkdev.first_hd_drv_let=%d;",
-	  kernel_cfg->mount_ide_auto_hd_let);
-    StreamPrint("blkdev.first_dvd_drv_let=%d;",
-	  kernel_cfg->mount_ide_auto_cd_let);
+#exe {
+  if (!kernel_cfg->mount_ide_auto_hd_let)
+    kernel_cfg->mount_ide_auto_hd_let='C';
+  if (!kernel_cfg->mount_ide_auto_cd_let)
+    kernel_cfg->mount_ide_auto_cd_let='T';
+  StreamPrint("blkdev.first_hd_drv_let=%d;",
+              kernel_cfg->mount_ide_auto_hd_let);
+  StreamPrint("blkdev.first_dvd_drv_let=%d;",
+              kernel_cfg->mount_ide_auto_cd_let);
+}
+
+DbgMode(ON);
+rev_bits_table=CAlloc(256);
+set_bits_table=CAlloc(256);
+for (i=0; i<256; i++)
+  for (j=0; j<8; j++)
+  {
+    if (Bt(&i,7-j))	LBts(rev_bits_table+i,j);
+    if (Bt(&i,j))	set_bits_table[i]++;
   }
 
-  DbgMode(ON);
-  rev_bits_table=CAlloc(256);
-  set_bits_table=CAlloc(256);
-  for (i=0;i<256;i++)
-    for (j=0;j<8;j++) {
-      if (Bt(&i,7-j))	LBts(rev_bits_table+i,j);
-      if (Bt(&i,j))	set_bits_table[i]++;
-    }
+ext=CAlloc(EXT_EXTS_NUM*sizeof(U8 *));
+fp_getstr2=&SysGetStr2;
+KeyDevInit;
 
-  ext=CAlloc(EXT_EXTS_NUM*sizeof(U8 *));
-  fp_getstr2=&SysGetStr2;
-  KeyDevInit;
+#exe {
+StreamPrint("blkdev.boot_drv_let='%C';",kernel_cfg->boot_drv_let);
+StreamPrint("#exe{Option(OPTf_WARN_PAREN,OFF);}");
+StreamPrint("DskCacheInit(%s);",kernel_cfg->dsk_cache_size_exp);
+StreamPrint("#exe{Option(OPTf_WARN_PAREN,ON);}");
+};
 
-  #exe {
-    StreamPrint("blkdev.boot_drv_let='%C';",kernel_cfg->boot_drv_let);
-    StreamPrint("#exe{Option(OPTf_WARN_PAREN,OFF);}");
-    StreamPrint("DskCacheInit(%s);",kernel_cfg->dsk_cache_size_exp);
-    StreamPrint("#exe{Option(OPTf_WARN_PAREN,ON);}");
-  };
+pow10_I64=CAlloc(sizeof(F64)*(308+308+1));
+for (i=-308; i<309; i++)
+  pow10_I64[i+309]=Pow10(i);
 
-  pow10_I64=CAlloc(sizeof(F64)*(308+308+1));
-  for (i=-308;i<309;i++)
-    pow10_I64[i+309]=Pow10(i);
+QueInit(&scrncast.snd_head);
+scrncast.t0_now=Now;
+scrncast.t0_tS=tS;
+scrncast.ona=scrncast.snd_head.ona=0;
 
-  QueInit(&scrncast.snd_head);
-  scrncast.t0_now=Now;
-  scrncast.t0_tS=tS;
-  scrncast.ona=scrncast.snd_head.ona=0;
+ProgressBarsRst;
 
-  ProgressBarsRst;
+QueInit(&dev.pci_head);
+dev.mem64_ptr=mem_mapped_space;
 
-  QueInit(&dev.pci_head);
-  dev.mem64_ptr=mem_mapped_space;
-
-  dbg.fun_seg_cache=CAlloc(FUN_SEG_CACHE_SIZE*sizeof(CFunSegCache));
-  dbg.int_fault_code=IntFaultHndlrsNew;
+dbg.fun_seg_cache=CAlloc(FUN_SEG_CACHE_SIZE*sizeof(CFunSegCache));
+dbg.int_fault_code=IntFaultHndlrsNew;
 }
 
 U0 SysGrInit()
@@ -68,13 +66,16 @@ U0 SysGrInit()
   text.aux_font=sys_font_cyrillic;
   text.vga_alias	=dev.uncached_alias+VGAM_GRAPHICS;
   text.vga_text_alias	=dev.uncached_alias+VGAM_TEXT;
-  if (!Bt(&sys_run_level,RLf_VGA)) { //if text mode
+  if (!Bt(&sys_run_level,RLf_VGA))   //if text mode
+  {
     text.cols=80;
     text.rows=25;
     MemSet(text.vga_text_alias,0,text.rows*text.cols<<1);
     text.border_chars[2] (I64)='ÄÍ³ºÚÉ¿»';
     text.border_chars[10](U32)='ÀÈÙ¼';
-  } else { //if 640x480 16 color
+  }
+  else     //if 640x480 16 color
+  {
     text.cols=GR_WIDTH/FONT_WIDTH;
     text.rows=GR_HEIGHT/FONT_HEIGHT;
     OutU8(VGAP_IDX,VGAR_MAP_MASK);
@@ -88,7 +89,7 @@ U0 SysGrInit()
 
 U0 TimersInit()
 {
-  OutU8(0x43,0x34);
+  OutU8(0x43,0x34);
   OutU8(0x40,SYS_TIMER0_PERIOD);
   OutU8(0x40,SYS_TIMER0_PERIOD>>8);
 }
@@ -123,90 +124,89 @@ U0 KMain()
   Fs->win_right=text.cols-2;
   Fs->win_top++;
   TaskDerivedValsUpdate;
-
   SysDefinesLoad;
   Core0Init;
   IntInit1;
-
   //Before this point use $LK,"Snd",A="MN:Snd"$() and $LK,"Busy",A="MN:Busy"$()
   //to debug.After this point, use $LK,"RawPrint",A="MN:RawPrint"$()
   LBts(&sys_run_level,RLf_RAW);
-  "TempleOS V%5.3f\t%D %T\n\n",
-	sys_os_version,sys_compile_time,sys_compile_time;
-
+  "TempleOS V%5.3f\t%D %T\n\n"
+  ,
+  sys_os_version,sys_compile_time,sys_compile_time;
   TimersInit;
   if (BIOSTotalMem<ToI64(0.95*MEM_MIN_MEG*0x100000))
     RawPrint(4000,"!!! Requires $TX,"512Meg",D="DD_MEM_MIN_MEG"$ of RAM Memory !!!");
-
   IntsInit;
   "Enable IRQ's\n";
   SetRFlags(RFLAGG_NORMAL);
   Busy(2000);
   IntInit2;
   LBts(&sys_run_level,RLf_INTERRUPTS);
-
   TimeCal;
   BlkDevsInitAll;
   "DskChg(':');\n";
   DskChg(':');
-  #exe {
-    StreamPrint("HomeSet(\"%s\");\n"
-	  "blkdev.ins_base0=%d;blkdev.ins_base1=%d;blkdev.ins_unit =%d;\n",
-	  kernel_cfg->home_dir,
-	  blkdev.ins_base0,blkdev.ins_base1,blkdev.ins_unit);
+#exe {
+  StreamPrint("HomeSet(\"%s\");\n"
+              "blkdev.ins_base0=%d;blkdev.ins_base1=%d;blkdev.ins_unit =%d;\n",
+              kernel_cfg->home_dir,
+              blkdev.ins_base0,blkdev.ins_base1,blkdev.ins_unit);
+}
+Gs->idle_task->cur_dv=blkdev.let_to_drv[*blkdev.home_dir-'A'];
+DrvRep;
+if (blkdev.dvd_boot_is_good)
+{
+  bd=Let2BlkDev(':');
+  if (bd->type==BDT_ATAPI)
+  {
+    blkdev.ins_base0=bd->base0;
+    blkdev.ins_base1=bd->base1;
+    blkdev.ins_unit =bd->unit;
   }
-  Gs->idle_task->cur_dv=blkdev.let_to_drv[*blkdev.home_dir-'A'];
-  DrvRep;
-  if (blkdev.dvd_boot_is_good) {
-    bd=Let2BlkDev(':');
-    if (bd->type==BDT_ATAPI) {
-      blkdev.ins_base0=bd->base0;
-      blkdev.ins_base1=bd->base1;
-      blkdev.ins_unit =bd->unit;
-    }
-  }
-  LBts(&sys_run_level,RLf_BLKDEV);
+}
+LBts(&sys_run_level,RLf_BLKDEV);
 
-  #exe {
-    if (!kernel_cfg->opts[CFG_NO_MP])
-      StreamPrint("\"MultiCore Start\\n\\n\";"
-	    "Core0StartMP;"
-	    "LBts(&sys_run_level,RLf_MP);");
-  };
+#exe {
+if (!kernel_cfg->opts[CFG_NO_MP])
+  StreamPrint("\"MultiCore Start\\n\\n\";"
+              "Core0StartMP;"
+              "LBts(&sys_run_level,RLf_MP);");
+};
 
-  KbdMsInit;
-  MsInit;
-  KbdInit;
-  Spawn(&MsHardDrvrInstall);
+KbdMsInit;
+MsInit;
+KbdInit;
+Spawn(&MsHardDrvrInstall);
 
-  "Loading Compiler\n";
-  Cd("/Compiler");
-  Load("Compiler",LDF_SILENT);
-  LBts(&sys_run_level,RLf_COMPILER);
+"Loading Compiler\n";
+Cd("/Compiler");
+Load("Compiler",LDF_SILENT);
+LBts(&sys_run_level,RLf_COMPILER);
 
-  DbgMode(OFF);
-  cnts.time_stamp_freq_initial=TimeCal;
-  Cd("/");
-  try ExeFile("StartOS"); //Continues $LK,"/StartOS.HC",A="FL:/StartOS.HC,1"$
-  catch {
-    Raw(ON);
-    Silent(OFF);
-    GetOutOfDollar;
-    PutExcept;
-    Dbg;
-  }
+DbgMode(OFF);
+cnts.time_stamp_freq_initial=TimeCal;
+Cd("/");
+try ExeFile("StartOS"); //Continues $LK,"/StartOS.HC",A="FL:/StartOS.HC,1"$
+catch
+{
+  Raw(ON);
+  Silent(OFF);
+  GetOutOfDollar;
+  PutExcept;
+  Dbg;
+}
 
-  LBts(&sys_run_level,RLf_ADAM_SERVER);
-  SrvTaskCont; //Never to return
+LBts(&sys_run_level,RLf_ADAM_SERVER);
+SrvTaskCont; //Never to return
 }
 
 asm {	ALIGN	16,OC_NOP
-SYS_KERNEL_END::
+  SYS_KERNEL_END::
 #exe {
   if (kernel_cfg->opts[CFG_DBG_DISTRO])
     StreamPrint("DU8 0x%X-(SYS_KERNEL_END-SYS_KERNEL+"
-	"BOOT_RAM_BASE+sizeof(CBinFile)) DUP (0);"
-	"BINFILE \"%s\";",kernel_cfg->dbg_distro_start,
-			  kernel_cfg->dbg_distro_file);
+                "BOOT_RAM_BASE+sizeof(CBinFile)) DUP (0);"
+                "BINFILE \"%s\";",kernel_cfg->dbg_distro_start,
+                kernel_cfg->dbg_distro_file);
 };
 }

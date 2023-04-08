@@ -6,7 +6,7 @@ U0 NetOfDots()
   CDC *dc=DCAlias;
   DocClear;
   dc->color=RED;
-  for (i=0;i<480;i+=20)
+  for (i=0; i<480; i+=20)
     GrLine(dc,i,0,0,480-i,3);
   DCDel(dc);
   PressAKey;

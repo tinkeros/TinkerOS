@@ -1,5 +1,4 @@
 #help_index ""
-CDC *gr_alt_scrn=NULL;
 
 #help_index "Graphics"
 

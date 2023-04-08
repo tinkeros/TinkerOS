@@ -1,28 +1,29 @@
 U0 Toward(I64 *_row,I64 *_col,I64 direction)
 {
-  switch (direction) {
-    case 0:
-      *_row-=2;
-      break;
-    case 1:
-      if (*_row&1) *_col+=1;
-      *_row-=1;
-      break;
-    case 2:
-      if (*_row&1) *_col+=1;
-      *_row+=1;
-      break;
-    case 3:
-      *_row+=2;
-      break;
-    case 4:
-      if (!(*_row&1)) *_col-=1;
-      *_row+=1;
-      break;
-    case 5:
-      if (!(*_row&1)) *_col-=1;
-      *_row-=1;
-      break;
+  switch (direction)
+  {
+  case 0:
+    *_row-=2;
+    break;
+  case 1:
+    if (*_row&1) *_col+=1;
+    *_row-=1;
+    break;
+  case 2:
+    if (*_row&1) *_col+=1;
+    *_row+=1;
+    break;
+  case 3:
+    *_row+=2;
+    break;
+  case 4:
+    if (!(*_row&1)) *_col-=1;
+    *_row+=1;
+    break;
+  case 5:
+    if (!(*_row&1)) *_col-=1;
+    *_row-=1;
+    break;
   }
 }
 
@@ -60,11 +61,11 @@ U0 XY2RowCol(I64 *_row,I64 *_col,F64 x,F64 y)
 Unit *UnitFind(I64 row,I64 col)
 {//Finds unit in a hexagon.
   I64 i,j;
-  for (j=0;j<2;j++)
-    for (i=0;i<UNITS_NUM;i++)
+  for (j=0; j<2; j++)
+    for (i=0; i<UNITS_NUM; i++)
       if (units[j][i].life>0 &&
-	    units[j][i].row==row &&
-	    units[j][i].col==col)
+          units[j][i].row==row &&
+          units[j][i].col==col)
         return &units[j][i];
   return NULL;
 }
@@ -72,7 +73,7 @@ Unit *UnitFind(I64 row,I64 col)
 Bool CursorInWin(CTask *task,I64 x,I64 y)
 {
   if (0<=x+task->scroll_x<task->pix_width &&
-        0<=y+task->scroll_y<task->pix_height)
+      0<=y+task->scroll_y<task->pix_height)
     return TRUE;
   else
     return FALSE;
@@ -94,15 +95,20 @@ Bool LOSPlot(LOSCtrl *l,I64 x,I64 y,I64 z)
   I64 row,col;
   XY2RowCol(&row,&col,x,y);
   if ((row!=l->r1 || col!=l->c1) &&
-        (row!=l->r2 || col!=l->c2) &&
-        terrain[row][col]!=PLAINS) {
-    if (terrain[l->r1][l->c1]==MOUNTAINS) {
+      (row!=l->r2 || col!=l->c2) &&
+      terrain[row][col]!=PLAINS)
+  {
+    if (terrain[l->r1][l->c1]==MOUNTAINS)
+    {
       if (terrain[row][col]==MOUNTAINS || z>l->distance>>1)
         return FALSE;
-    } else if (terrain[l->r2][l->c2]==MOUNTAINS) {
+    }
+    else if (terrain[l->r2][l->c2]==MOUNTAINS)
+    {
       if (terrain[row][col]==MOUNTAINS || z<=l->distance>>1)
         return FALSE;
-    } else
+    }
+    else
       return FALSE;
   }
   return TRUE;
@@ -114,8 +120,10 @@ Bool LOS(I64 r1,I64 c1,I64 r2,I64 c2)
   LOSCtrl l;
   RowCol2XY(&x1,&y1,r1,c1);
   RowCol2XY(&x2,&y2,r2,c2);
-  l.r1=r1; l.c1=c1;
-  l.r2=r2; l.c2=c2;
+  l.r1=r1;
+  l.c1=c1;
+  l.r2=r2;
+  l.c2=c2;
   l.distance=Sqrt(SqrI64(x1-x2)+SqrI64(y1-y2));
   return Line(&l,x1,y1,0,x2,y2,l.distance,&LOSPlot);
 }

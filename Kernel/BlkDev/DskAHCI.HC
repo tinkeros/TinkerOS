@@ -888,10 +888,10 @@ U0 AHCIHbaReset()
 
 
 U0 AHCIInit(I64 addr=NULL)
- {
+{
   CAHCIHba     *hba = NULL;
-   CAHCIPort    *port;
-   I64                   i, bdf;
+  CAHCIPort    *port;
+  I64                   i, bdf;
   "______________________\n\n";
   if (blkdev.ahci_hba)
     return;

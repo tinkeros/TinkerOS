@@ -22,34 +22,29 @@ U0 DoIt()
 {
   CDoc *bdoc=DocBorder,*pdoc=DocPut;
   CDocEntry *doc_e;
-
   DocLock(bdoc);
   DocBottom(bdoc);  //Ins at the bottom
   DocPrint(bdoc,"$$RED$$$$CM+BY+LX,5,-3$$");
 //The $LK,"DocPrint",A="MN:DocPrint"$() routine returns the addr of the last entry.
   doc_e=DocPrint(bdoc,"$$TX+TC,\" \"$$");
 //The TC flag is "has tag callback".
-
   //Flags are explained here:
   //$LK,"::/Doc/DolDocOverview.DD"$	$LK,"::/Doc/Widget.DD"$
   //$LK,"Dollar Flags",A="MN:DOCEf_TAG"$		$LK,"ST_DOC_FLAGS",A="FF:::/Adam/DolDoc/DocInit.HC,ST_DOC_FLAGS"$
   doc_e->tag_cb=&tSCB;
   DocPrint(bdoc,"$$FG$$");
   DocUnlock(bdoc);
-
   //$BK,1$WARNING:$BK,0$ If you use the put_doc you
   //run the risk of the user pressing
   //<CTRL-t> or using the clip, both
   //of which will crash.	So, you might want
   //to use the border_doc.
-
   DocLock(pdoc);
   DocPrint(pdoc,"$$LTRED$$");
   doc_e=DocPrint(pdoc,"$$TX+TC,\" \"$$");
   doc_e->tag_cb=&CurTimeCB;
   DocPrint(pdoc,"$$FG$$");
   DocUnlock(pdoc);
-
   //Send carriage return, new line, so
   //that the timer string is not part
   //of the next cmd on the cmd line.

@@ -452,7 +452,7 @@ U0 EdRenumAsm(CDoc *doc)
     DocUnlock(doc);
 }
 
-U0 EdCodeTools2(CDoc *doc,I64 tool_action,Bool beep=TRUE)
+U0 EdCodeTools2(CDoc *doc,I64 tool_action,Bool beep=FALSE)
 {
   Bool okay,unlock=DocLock(doc),start_of_line=TRUE;
   CDocEntry *doc_e,*doc_ne;

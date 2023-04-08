@@ -22,7 +22,7 @@ U8 *rev_bits_table, //Table with U8 bits revd
 *set_bits_table; //Table with count of set bits in a U8
 CDate local_time_offset;
 F64	*pow10_I64,
-    sys_os_version=5.090;
+    sys_os_version=5.100;
 
 CAutoCompleteDictGlbls acd;
 CAutoCompleteGlbls ac;
@@ -38,6 +38,8 @@ CMsHardStateGlbls ms_hard,ms_hard_last;
 CScrnCastGlbls	scrncast;
 CSndGlbls   snd;
 CTextGlbls	text;
+
+ms_hard.installed=FALSE;
 
 U8  *(*fp_getstr2)(I64 flags=0);
 U0 (*fp_update_ctrls)(CTask *task);
@@ -66,4 +68,6 @@ Bool (*fp_virtual_blkdev_deinit)()=NULL;
 Bool (*fp_virtual_blkdev_read)(U8* buf, I64 blk, I64 cnt)=NULL;
 Bool (*fp_virtual_blkdev_write)(U8* buf, I64 blk, I64 cnt)=NULL;
 I64 (*fp_virtual_blkdev_get_max)()=NULL;
+
+CDC *gr_alt_scrn=NULL;
 

@@ -76,7 +76,7 @@ class CRandHex5Form
 {
   I64	timestamp;
   U8	rnd0[512]	format "$$DA-P-TRM,LEN=5,"
-        "A=\"Line (5-Digit Hex):%5s\"$$\n";
+  "A=\"Line (5-Digit Hex):%5s\"$$\n";
   U8	rnd1[512];
   U8	rnd2[512];
   U8	rnd3[512];
@@ -95,7 +95,7 @@ class CRandHex8Form
 {
   I64	timestamp;
   U8	rnd0[512]	format "$$DA-P-TRM,LEN=8,"
-        "A=\"Line (8-Digit Hex):%8s\"$$\n";
+  "A=\"Line (8-Digit Hex):%8s\"$$\n";
   U8	rnd1[512];
   U8	rnd2[512];
   U8	rnd3[512];
@@ -114,7 +114,7 @@ class CMoviesForm
 {
   I64	timestamp;
   U8	rnd0[512]	format "$$DA-P,"
-        "A=\"Movie#1-100 (2 Decimal Digits from Hex):%s\"$$\n";
+  "A=\"Movie#1-100 (2 Decimal Digits from Hex):%s\"$$\n";
   U8	rnd1[512];
   U8	rnd2[512];
   U8	rnd3[512];
@@ -133,7 +133,7 @@ class CPaintings100Form
 {
   I64	timestamp;
   U8	rnd0[512]	format "$$DA-P,"
-        "A=\"Painting#00-99 (2 Decimal Digits from Hex):%s\"$$\n";
+  "A=\"Painting#00-99 (2 Decimal Digits from Hex):%s\"$$\n";
   U8	rnd1[512];
   U8	rnd2[512];
   U8	rnd3[512];
@@ -152,7 +152,7 @@ class CPaintings1000Form
 {
   I64	timestamp;
   U8	rnd0[512]	format "$$DA-P,"
-        "A=\"Painting#000-999 (3 Decimal Digits from Hex):%s\"$$\n";
+  "A=\"Painting#000-999 (3 Decimal Digits from Hex):%s\"$$\n";
   U8	rnd1[512];
   U8	rnd2[512];
   U8	rnd3[512];
@@ -171,7 +171,7 @@ class CPoems100Form
 {
   I64	timestamp;
   U8	rnd0[512]	format "$$DA-P,"
-        "A=\"Poems#00-99 (2 Decimal Digits from Hex):%s\"$$\n";
+  "A=\"Poems#00-99 (2 Decimal Digits from Hex):%s\"$$\n";
   U8	rnd1[512];
   U8	rnd2[512];
   U8	rnd3[512];
@@ -190,7 +190,7 @@ class CMetallicaForm
 {
   I64	timestamp;
   U8	rnd0[512]	format "$$DA-P,"
-        "A=\"Song#1-99 (2 Decimal Digits from Hex):%s\"$$\n";
+  "A=\"Song#1-99 (2 Decimal Digits from Hex):%s\"$$\n";
   U8	rnd1[512];
   U8	rnd2[512];
   U8	rnd3[512];
@@ -272,7 +272,7 @@ class CWebBookMarkForm
 };
 
 DefineLstLoad("ST_FAMLY_PHOTOS","Family1_58-78\0Family2_78-86\0"
-	"Family3_86-99\0Family4_99\0");
+              "Family3_86-99\0Family4_99\0");
 
 class CFamilyPhotoForm
 {
@@ -280,7 +280,7 @@ class CFamilyPhotoForm
   I64	part		format	"$$DA,A=\"Part:%d\"$$\n";
   U8	picture[STR_LEN] format	"$$DA-P,A=\"Picture:%s\"$$\n";
   I64	width		format	"$$GREEN$$640x427 or 640x960$$FG$$\n"
-        "$$DA,A=\"Width:%d\"$$\n";
+  "$$DA,A=\"Width:%d\"$$\n";
   I64	height		format	"$$DA,A=\"Height:%d\"$$\n";
 };
 
@@ -299,12 +299,12 @@ class CBlogVideoForm
 
 extern U0 FreshenBlog();
 extern U0 GodBooksPassageU32(U32 rand_u32,U8 *files_find_mask,
-	U8 *file_mask="*",I64 len=512,I64 verbosity=GBP_MEDIUM);
+                             U8 *file_mask="*",I64 len=512,I64 verbosity=GBP_MEDIUM);
 extern I64 GodHeaderIns(U8 *type=NULL);
 extern U0 GodVideoDigits(U8 *title,U8 *webpage,U8 *rnd,I64 digits,U8 *filename);
 extern U0 GodVideoU32(U32 rand_u32,U8 *filename);
 extern U0 GodWebIdx(U8 *title,U8 *webpage,U8 *rnd,I64 digits,U8 *filename)
 extern U0 GodWordBatch(CHexWordForm *gm,I64 radix,I64 digits);
 extern U0 TOSBookLines(U8 *book_filename,I64 book_lines,U8 *st,I64 num_lines,
-	I64 radix,Bool modulo,Bool plus_one);
+                       I64 radix,Bool modulo,Bool plus_one);
 extern U0 TOSGodDoodle(I64 god_src,CNISTBeaconHexWordForm *gm=NULL);

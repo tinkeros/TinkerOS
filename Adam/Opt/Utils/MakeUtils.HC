@@ -1,4 +1,5 @@
 Cd(__DIR__);;
+#include "BitOps"
 #include "Diff"
 #include "TaskRep"
 #include "Reindent"
@@ -14,9 +15,9 @@ Cd(__DIR__);;
 #include "ToTXT"
 #include "FileBMP"
 #include "CPURep"
-#include "FileXfr"
 #include "MD5"
 #include "TOSClient"
 #include "SethUtil"
 #include "SysRep"
+#include "SysSurvey"
 Cd("..");;

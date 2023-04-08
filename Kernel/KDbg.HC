@@ -611,6 +611,7 @@ U0 Dbg2()
   old_win_inhibit=Fs->win_inhibit;
   Fs->win_inhibit=WIG_USER_TASK_DFT;
   sys_focus_task=Fs;
+  SetAltScrn;
   kbd.scan_code=0;
   old_getstr2=fp_getstr2;
   fp_getstr2=&SysGetStr2;
@@ -668,6 +669,7 @@ U0 Fault2(I64 fault_num,I64 fault_err_code)
   if (!IsDbgMode)
     dbg.focus_task=sys_focus_task;
   sys_focus_task=NULL;
+  SetAltScrn;
   if (fault_num==I_BPT)
     Fs->rip--;
   if (Fs->dbg_task)

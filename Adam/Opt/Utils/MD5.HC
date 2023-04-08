@@ -35,7 +35,7 @@ I32
 leftrotate (U32 x, U32 y)
 {
   U32 steps = y % 32;
-  return (x << steps) | (x >> (32 - steps));
+  return x << steps | x >> (32 - steps);
 }
 
 U0
@@ -52,29 +52,29 @@ md5_process_words (U32 *words,
   {
     if (i < 16)
     {
-      f = (xb & xc) | ((~xb) & xd);
+      f = xb & xc | ~xb & xd;
       g = i;
     }
     else if (i < 32)
     {
-      f = (xd & xb) | ((~xd) & xc);
-      g = ((i * 5) + 1) % 16;
+      f = xd & xb | ~xd & xc;
+      g = (i * 5 + 1) % 16;
     }
     else if (i < 48)
     {
       f = xb ^ xc ^ xd;
-      g = ((i * 3) + 5) % 16;
+      g = (i * 3 + 5) % 16;
     }
     else
     {
-      f = xc ^ (xb | (~xd));
-      g = (i * 7) % 16;
+      f = xc ^ (xb | ~xd);
+      g = i * 7 % 16;
     }
     f += xa + CONSTANTS[i] + words[g];
     xa = xd;
     xd = xc;
     xc = xb;
-    xb += leftrotate (f, SHIFT_ROUNDS[i]);
+    xb += leftrotate(f, SHIFT_ROUNDS[i]);
   }
   *a += xa;
   *b += xb;
@@ -102,7 +102,7 @@ public U0 md5buf(U8 *bytes, I64 len, U8 **res=NULL)
   U8 *msg;
   I32 i,msg_len;
   U32 a, b, c, d;
-  msg_len = 56 - (len % 64);
+  msg_len = 56 - len % 64;
   if (msg_len < 1)
     msg_len += 64;
   msg_len += len + 8;

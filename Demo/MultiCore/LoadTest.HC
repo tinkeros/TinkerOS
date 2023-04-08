@@ -4,7 +4,8 @@ I64 app_done_ack;
 U0 Job1(I64)
 {//Compile Compiler
   Silent;
-  while (!app_done) {
+  while (!app_done)
+  {
     Cd("::/Compiler");
     Cmp("Compiler");
   }
@@ -13,7 +14,8 @@ U0 Job1(I64)
 
 U0 Job2(I64)
 {//Log a file
-  while (!app_done) {
+  while (!app_done)
+  {
     AdamLog("%F","::/Demo/MultiCore/LoadTest.HC");
     Yield;
   }
@@ -22,7 +24,8 @@ U0 Job2(I64)
 
 U0 Job3(I64)
 {//Log a file
-  while (!app_done) {
+  while (!app_done)
+  {
     Cd("::/Compiler");
     AdamLog("%F","Compiler.PRJ.Z");
     Yield;

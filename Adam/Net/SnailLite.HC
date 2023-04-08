@@ -146,7 +146,7 @@ probe_end:
 /*
 if (!HashFind("SocketInit",adam_task->hash_table,HTT_FUN))
 {
- 
+
  Adam("I64 SocketInit(){if (SNAIL_COM>0) SocketInitComm;}\n");
 }
 */

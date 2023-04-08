@@ -15,7 +15,7 @@ U0 ShowKeysDown()
   //
   // Check for modifier keys such as ALT with if (SCF_ALT&sc_flags_state)
   do
-    {
+  {
 // Call to GetMsg below is not to get the state
     // of the keys (since multiple may be down, but
     // this message may only contain one change), but
@@ -34,27 +34,27 @@ U0 ShowKeysDown()
     DocClear;
 // specific examples
     "The state of 'a' is: %B\n"
-	  ,key_state['a'];
+    ,key_state['a'];
     "The state of 'b' is: %B\n"
-	  ,key_state['b'];
+    ,key_state['b'];
     "The state of 'c' is: %B\n"
-	  ,key_state['c'];
+    ,key_state['c'];
     "The state of 'A' is: %B\n"
-	  ,key_state['A'];
+    ,key_state['A'];
     "The state of 'B' is: %B\n"
-	  ,key_state['B'];
+    ,key_state['B'];
     "The state of 'C' is: %B\n"
-	  ,key_state['C'];
+    ,key_state['C'];
     "The state of the down arrow key is: %B\n"
-	  ,sc_state[SC_CURSOR_DOWN];
+    ,sc_state[SC_CURSOR_DOWN];
     "The state of the up arrow key is: %B\n"
-	  ,sc_state[SC_CURSOR_UP];
+    ,sc_state[SC_CURSOR_UP];
     "The state of the ALT key is: %B\n"
-	  ,sc_flags_state&SCF_ALT!=0;
+    ,sc_flags_state&SCF_ALT!=0;
     "The state of the CTRL key is: %B\n"
-	  ,sc_flags_state&SCF_CTRL!=0;
+    ,sc_flags_state&SCF_CTRL!=0;
     "The state of the SHIFT key is: %B\n"
-	  ,sc_flags_state&SCF_SHIFT!=0;
+    ,sc_flags_state&SCF_SHIFT!=0;
     "\n";
 // Output all keys down as well as modifiers CTRL, ALT, and SHIFT
     "Keys down: \n\n";
@@ -66,7 +66,7 @@ U0 ShowKeysDown()
     if (SCF_ALT&sc_flags_state)
       "ALT ";
     if (SCF_SHIFT&sc_flags_state)
-      {
+    {
       "SHIFT ";
       if (sc_state[SC_ESC])
         return;

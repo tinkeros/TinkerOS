@@ -67,14 +67,15 @@ Main4;
 WinBorder(ON);
 PressAKey;
 
-asm {
-_PROGRESS_DEMO::
-	MOV	RCX,12000000
-@@05:	MOV	U64 [&progress1],RCX
-	CALL	&Yield
-	LOOP	@@05
-	MOV	U64 [&progress1],RCX
-	RET
+asm
+{
+  _PROGRESS_DEMO::
+  MOV	RCX,12000000
+  @@05:	MOV	U64 [&progress1],RCX
+  CALL	&Yield
+  LOOP	@@05
+  MOV	U64 [&progress1],RCX
+  RET
 }
 _extern _PROGRESS_DEMO U0 AsmProgressDemo();
 AsmProgressDemo;

@@ -1,0 +1,180 @@
+CTCPSocket      *tcp = TCPSocket(AF_INET);
+CTCPTreeQue *connections = CAlloc(sizeof(CTCPTreeQue)); // head
+U8              *buffer = CAlloc(ETHERNET_FRAME_SIZE);
+
+QueInit(connections);
+
+U0 ChatServerKill()
+{
+  CTCPTreeQue   *conn = connections->next;
+  CTCPTreeQue   *next_conn;
+  while (conn != connections)
+  {
+    "\nClosing socket @ 0x%0X\n", conn->socket;
+    TCPSocketClose(conn->socket);
+    next_conn = conn->next;
+    Free(conn);
+    conn = next_conn;
+  }
+  "\nClosing listening socket.\n";
+  TCPSocketClose(tcp);
+  return;
+}
+
+U0 ChatServerBroadcast(CTCPSocket *tcp_socket, I64 length)
+{// Broadcast length bytes of msg in buffer to all but original socket.
+  CTCPTreeQue   *conn = connections->next;
+  CTCPSocket        *dest_socket;
+  U8                *ip_string;
+  CIPV4Address   addr;
+  U8                *message;
+  U8                *message_prefix;
+  while (conn != connections)
+  {
+    dest_socket = conn->socket;
+    if (dest_socket != tcp_socket)
+    {
+      addr.address = EndianU32(dest_socket->destination_address(CSocketAddressIPV4).address.address);
+      ip_string = NetworkToPresentation(AF_INET, &addr);
+      // TODO: is NetworkToPresentation backwards? or, do socket addrs store BE or LE ?
+      "\nBroacasting msg to %s.\n"
+      , ip_string;
+      addr.address = EndianU32(tcp_socket->destination_address(CSocketAddressIPV4).address.address);
+      ip_string = NetworkToPresentation(AF_INET, &addr);
+      // TODO: is NetworkToPresentation backwards? or, do socket addrs store BE or LE ?
+      message_prefix = MStrPrint("$$BG,PURPLE$$$$BLACK$$<%s>$$FG$$$$BG$$ %%0%dts", ip_string, length);
+      message = MStrPrint(message_prefix, buffer);
+      TCPSocketSendString(dest_socket, message);
+      Free(message);
+      Free(message_prefix);
+      Free(ip_string);
+    }
+    conn = conn->next;
+  }
+  return;
+}
+
+U0 ChatServerBroadcastDisconnect()
+{
+  CTCPTreeQue   *conn = connections->next;
+  CTCPSocket        *conn_socket;
+  U8                *message = MStrPrint("$$BG,LTGRAY$$$$DKGRAY$$Client disconnected. Connected clients: %d$$FG$$$$BG$$",
+                                         QueCnt(connections));
+  while (conn != connections)
+  {
+    conn_socket = conn->socket;
+    TCPSocketSendString(conn_socket, message);
+    conn = conn->next;
+  }
+  Free(message);
+}
+
+U0 ChatServerReceive()
+{
+  CTCPTreeQue   *conn = connections->next;
+  CTCPTreeQue   *next_conn;
+  CTCPSocket        *socket;
+  I64                message_len;
+  U8                *ip_string;
+  CIPV4Address   addr;
+  while (conn != connections)
+  {
+    socket = conn->socket;
+    message_len = TCPSocketReceive(socket, buffer, ETHERNET_FRAME_SIZE);
+    if (message_len == 0)
+    {
+      "\nClosing a connection.\n";
+      socket->timeout = TCP_TIMEOUT;
+      TCPSocketClose(socket);
+      next_conn = conn->next;
+      QueRem(conn);
+      Free(conn);
+      conn = next_conn;
+      ChatServerBroadcastDisconnect();
+    }
+    else if (message_len > 0)
+    {
+      addr.address = EndianU32(socket->destination_address(CSocketAddressIPV4).address.address);
+      ip_string = NetworkToPresentation(AF_INET, &addr);
+      // TODO: is NetworkToPresentation backwards? or, do socket addrs store BE or LE ?
+      "\nBroadcasting %d byte msg from %s: %Q\n"
+      , message_len, ip_string, buffer;
+      //ClassRep(socket);
+      ChatServerBroadcast(socket, message_len);
+      MemSet(buffer, 0, ETHERNET_FRAME_SIZE);
+      conn = conn->next;
+    }
+    else
+    {
+      //"\nReceived -1 [error], trying next connection.\n";
+      conn = conn->next;
+    }
+  }
+  return;
+}
+
+U0 ChatServer()
+{
+  CSocketAddressIPV4     socket_addr;
+  U8                    *port_string = GetStr("Server Port: ");
+  I64                    port = Str2I64(port_string);
+  CTCPSocket            *new_socket;
+  CTCPTreeQue       *new_conn;
+  U8                    *join_msg;
+  CTCPTreeQue       *conn;
+  CTCPSocket            *conn_socket;
+  Free(port_string);
+  socket_addr.port          = EndianU16(port);
+  socket_addr.family            = AF_INET;
+  socket_addr.address.address   = INADDR_ANY;
+  tcp->timeout = 0.3 * JIFFY_FREQ;
+  "\nTrying to bind socket.\n";
+  if (TCPSocketBind(tcp, &socket_addr) == 0)
+    "\nSocket bound.\n";
+  else
+  {
+    "\nFailed to bind socket.\n";
+    ChatServerKill;
+    return;
+  }
+  "\nTrying to listen on socket.\n";
+  if (TCPSocketLsten(tcp, 5) == 0)
+    "\nSocket now listening.\n";
+  else
+  {
+    "\nFailed to listen on socket.\n";
+    ChatServerKill;
+    return;
+  }
+  while (ScanChar != CH_SHIFT_ESC)
+  {
+    new_socket = TCPSocketAccept(tcp);
+    if (new_socket > 0)
+    {
+      "\nNew connection.\n";
+      new_conn = CAlloc(sizeof(CTCPTreeQue));
+      new_conn->socket = new_socket;
+      new_socket->timeout = 0; // Set new connection non-blocking.
+      join_msg = MStrPrint("$$BG,LTGRAY$$$$DKGRAY$$Connected clients: %d$$FG$$$$BG$$", QueCnt(connections) + 1);
+      TCPSocketSendString(new_socket, join_msg);
+      Free(join_msg);
+      join_msg = MStrPrint("$$BG,LTGRAY$$$$DKGRAY$$New connection. Connected clients: %d$$FG$$$$BG$$",
+                           QueCnt(connections) + 1);
+      conn = connections->next;
+      while (conn != connections)
+      {
+        "\nNotifying clients of new connection.\n";
+        conn_socket = conn->socket;
+        TCPSocketSendString(conn_socket, join_msg);
+        conn = conn->next;
+      }
+      Free(join_msg);
+      QueInsRev(new_conn, connections);
+    }
+    ChatServerReceive; // Receive & Broadcast
+    Sleep(50);
+  }
+  ChatServerKill;
+}
+
+ChatServer;

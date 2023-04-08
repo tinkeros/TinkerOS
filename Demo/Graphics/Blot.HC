@@ -22,7 +22,8 @@ img2->color=YELLOW;
 GrRect(img2,256-20,256-20,40,40);
 
 I64 i;
-for (i=0;i<256;i+=4) {
+for (i=0; i<256; i+=4)
+{
   Refresh;
   DCFill;
   GrBlot(dc,i-256,i-256,img2);
@@ -31,7 +32,8 @@ for (i=0;i<256;i+=4) {
 U8 *tmpg=DC2Sprite(img1);
 Sprite(tmpg);
 Free(tmpg);
-"%h9c",'\n';
+"%h9c"
+,'\n';
 
 DCDel(img1);
 DCDel(img2);

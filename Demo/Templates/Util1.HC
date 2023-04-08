@@ -5,7 +5,8 @@ U0 MyUtil(U8 *files_find_mask,U8 *fu_flags=NULL)
   ScanFlags(&fuf_flags,Define("ST_FILE_UTIL_FLAGS"),"+r+f+F");
   ScanFlags(&fuf_flags,Define("ST_FILE_UTIL_FLAGS"),fu_flags);
   tmpde=tmpde1=FilesFind(files_find_mask,fuf_flags);
-  while (tmpde) {
+  while (tmpde)
+  {
     PutFileLink(tmpde->full_name);
     '\n';
     tmpde=tmpde->next;

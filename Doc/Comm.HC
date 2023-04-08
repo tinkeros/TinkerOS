@@ -20,7 +20,7 @@ it in your start-up scripts.
 class CComm
 {
   I64	base,
-        flags;
+      flags;
   CFifoU8 *RX_fifo;
   CFifoU8 *TX_fifo;
 } comm_ports[5];
@@ -29,11 +29,13 @@ U0 CommHndlr(I64 port)
 {
   CComm *c=&comm_ports[port];
   I64 b=0,stat;
-  if (Bt(&c->flags,COMf_ENABLED)) {
+  if (Bt(&c->flags,COMf_ENABLED))
+  {
     stat=InU8(c->base+UART_IIR);
     if (stat & 4)	//RX
       FifoU8Ins(c->RX_fifo,InU8(c->base+UART_RDR));
-    if (stat & 2) {	//TX
+    if (stat & 2)  	//TX
+    {
       if (FifoU8Rem(c->TX_fifo,&b))
         OutU8(c->base+UART_THR,b);
       else
@@ -71,10 +73,10 @@ CommInit;
 public CComm *CommInit8n1(I64 port,I64 baud)
 {
   CComm *c=&comm_ports[port];
-
   PUSHFD
   CLI
-  if (LBts(&c->flags,COMf_ENABLED)) {
+  if (LBts(&c->flags,COMf_ENABLED))
+  {
     FifoU8Del(c->RX_fifo);
     FifoU8Del(c->TX_fifo);
   }
@@ -86,17 +88,14 @@ public CComm *CommInit8n1(I64 port,I64 baud)
   OutU8(c->base+UART_BRDL,(0x180/(baud/300)) & 0xFF);	//LSB
   OutU8(c->base+UART_BRDH,(0x180/(baud/300)) / 256);	//MSB
   OutU8(c->base+UART_LCR,3);	//8-none-1
-
   InU8(c->base+UART_RDR);	//read garbage
   InU8(c->base+UART_LSR);
-
   OutU8(c->base+UART_MCR,4);
   OutU8(c->base+UART_IER,0);	//Disable all IRQ
   OutU8(c->base+UART_MCR,0xA);	//out2 and rts
   OutU8(0x21,InU8(0x21) & (0xFF-0x18));	//Enable 8259 IRQ 3 & 4
   OutU8(c->base+UART_IER,1);	//RX but no THR empty
   POPFD
-
   return c;
 }
 

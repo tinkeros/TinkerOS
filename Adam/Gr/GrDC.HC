@@ -433,16 +433,14 @@ public U0 DocGR(CDoc *doc=NULL,U8 *filename)
 #help_index "Graphics/Device Contexts;Graphics/Scrn"
 public CDC *DCScrnCapture(Bool include_zoom=TRUE,CTask *task=NULL)
 {//Capture scrn to a device context.
+  no_warn include_zoom;
   CDC *dc;
   U8 *dst;
   Refresh(0,FALSE);
-  if (include_zoom && gr.scrn_zoom != 1)
-    dc=DCCopy(gr.scrn_image,task);
-  else
-    dc=DCCopy(gr.dc1,task);
+  dc=DCCopy(gr.scrn_image,task);
   dc->flags&=~DCF_SCRN_BITMAP;
   dst=MAlloc(dc->width_internal*dc->height,task);
-//Pick background color that never occurs. COLOR_INVALID
+  //Pick background color that never occurs. COLOR_INVALID
   GrBitMap4ToBitMap8(dst,dc->body,
                      (dc->width_internal*dc->height)>>1,COLOR_INVALID);
   Free(dc->body);

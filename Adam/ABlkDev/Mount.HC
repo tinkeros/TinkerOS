@@ -1,5 +1,5 @@
 #help_index "Install;File/Cmd Line (Typically);Cmd Line (Typically);"
-U8 Mount2(U8 boot_drv_let,CDoc *_doc,Bool _caller_is_prtdsk, Bool just_ide=FALSE)
+U8 Mount2(U8 boot_drv_let,CDoc *_doc,Bool _caller_is_prtdsk, Bool just_ide=FALSE,I64 *cur_drv_hint=NULL)
 {//If _doc, called by $LK,"::/Kernel/KCfg.HC"$ else called by $LK,"Mount",A="MN:Mount"$().
   I64 cnt,total=0,num_hints,drv_let,type,unit,prt_num,port;
   U8 blks_buf[STR_LEN],addr_buf[STR_LEN],base0_buf[STR_LEN],base1_buf[STR_LEN],
@@ -82,6 +82,7 @@ U8 Mount2(U8 boot_drv_let,CDoc *_doc,Bool _caller_is_prtdsk, Bool just_ide=FALSE
                  ) &&
                  (type != BDT_AHCI_SATAPI || !boot_drv_let));
           port = Str2I64(port_str);
+          if (cur_drv_hint) *cur_drv_hint=port;
           break;
         }
         else
@@ -100,6 +101,7 @@ U8 Mount2(U8 boot_drv_let,CDoc *_doc,Bool _caller_is_prtdsk, Bool just_ide=FALSE
           if (1<=Str2I64(base0_buf)<=num_hints)
           {
             tmpha=ATARepFind(head,Str2I64(base0_buf));
+            if (cur_drv_hint) *cur_drv_hint=Str2I64(base0_buf);
             StrPrint(base0_buf,"0x%X",tmpha->base0);
             StrPrint(base1_buf,"0x%X",tmpha->base1);
             unit=tmpha->unit;

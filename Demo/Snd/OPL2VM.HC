@@ -1,6 +1,22 @@
-#include "Midi.HH"
+#include "/Demo/Snd/Midi.HH"
 
-/* 
+// Pick one, then configure below
+
+// QEMU / Real ISA Adlib card
+/define ISA_OPL
+// OPT2LPT or OPL3LPT connected via a parallel port
+//#define OPL2LPT
+// Serial OPL device
+//#define SERIAL_OPL
+
+// Common OPL IO ports:
+// QEMU/ISA sound card 0x388
+// OPL2/3LPT on parallel port 0x3bc 0x378 0x278
+#define ISA_IOPORT_OPL_BASE 0x388
+#define LPT_IOPORT_OPL_BASE 0x378
+#define SERIAL_OPL_PORT 2
+
+/*
 * This is a stripped own OPL2 implementation for single instrument usage within TempleOS
 *
 * For use with qemu with -soundhw adlib
@@ -18,22 +34,82 @@ static U8 **instruments[127]= {PIANO1,PIANO2,PIANO3,HONKTONK,EP1,EP2,HARPSIC,CLA
 
 static U8 instrument_base_registers[6] = { 0x20, 0x40, 0x60, 0x80, 0xE0, 0xC0 };
 
+static I64 old_block=-1;
+
+#ifdef OPL2LPT
 static U0 Write(I64 r, U8 data)
 {
   I64 i;
-  OutU8(0x388,r);
-  for (i=0; i<4; i++)
-  {
-    PortNop;
-  }
-  OutU8(0x389,data);
-  for (i=0; i<23; i++)
-  {
-    PortNop;
-  }
+  OutU8(LPT_IOPORT_OPL_BASE,r);
+  OutU8(LPT_IOPORT_OPL_BASE+2,0x0d);
+  OutU8(LPT_IOPORT_OPL_BASE+2,0x09);
+  OutU8(LPT_IOPORT_OPL_BASE+2,0x0d);
+  for (i=0; i<4; i++) PortNop;
+  OutU8(LPT_IOPORT_OPL_BASE,data);
+  OutU8(LPT_IOPORT_OPL_BASE+2,0x0c);
+  OutU8(LPT_IOPORT_OPL_BASE+2,0x08);
+  OutU8(LPT_IOPORT_OPL_BASE+2,0x0c);
+  for (i=0; i<23; i++) PortNop;
+}
+#endif
+
+#ifdef ISA_OPL
+static U0 Write(I64 r, U8 data)
+{
+  I64 i;
+  OutU8(ISA_IOPORT_OPL_BASE,r);
+  for (i=0; i<4; i++) PortNop;
+  OutU8(ISA_IOPORT_OPL_BASE+1,data);
+  for (i=0; i<23; i++) PortNop;
+}
+#endif
+
+#ifdef SERIAL_OPL
+CommInit;
+CommInit8n1(SERIAL_OPL_PORT,115200);
+
+static Bool recording=FALSE;
+static U64 commands=0;
+
+static U0 Write(I64 r, U8 data, I64 func=0)
+{
+  U8 bytes[3];
+  bytes[0]=0x80 | ((func << 2)&0x7c)  | (r >> 6);
+  bytes[1]=((r & 0x3F) << 1) | (data >> 7)&1;
+  bytes[2]=data & 0x7f;
+  CommPutBlk(SERIAL_OPL_PORT,bytes,3);
+  PortNop;
+  commands++;
 }
 
-static U0 Reset()
+public U0 OPLRec()
+{
+  if (recording)
+  {
+    //CommPutChar(SERIAL_OPL_PORT,136);
+    Write(0,0,8);
+    "\nRecorded %d sent OPL2 commands\n"
+    ,commands;
+    commands=2;
+  }
+  else
+  {
+    commands=2;
+    //CommPutChar(SERIAL_OPL_PORT,135);
+    Write(0,0,4);
+  }
+  recording=!recording;
+  PortNop;
+}
+
+public U0 OPLReplay()
+{//CommPutChar(SERIAL_OPL_PORT,137);
+  Write(0,0,2);
+  PortNop;
+}
+#endif
+
+public U0 AdlibReset()
 {
   I64 i;
   for(i = 0; i < 256; i ++)
@@ -51,7 +127,6 @@ static U8 GetRegister(U8 r)
   return opl_registers[r];
 }
 
-
 static U8 SetRegister(U8 r, U8 val)
 {
   opl_registers[r] = val;
@@ -63,6 +138,7 @@ static U0 SetBlock(I64 block)
 {
   I64 r = 0xB0;
   SetRegister(r, (opl_registers[r] & 0xE3) | ((ClampI64(block,0,7) & 0x07) << 2));
+  old_block=block;
 }
 
 U0 SetAttack(I64 val)
@@ -87,6 +163,20 @@ U0 SetRelease(I64 val)
 {
   I64 r = 0x80;
   SetRegister(r, (opl_registers[r] & 0xF0) | (ClampI64(val,0,15)&0x0F));
+}
+
+static U0 SetVolReg(I64 val)
+{
+  I64 r = 0x40;
+  SetRegister(r, (opl_registers[r] & 0xC0) | (ClampI64(val,0,0x3F)&0x3F));
+}
+
+U0 SetVolume(I64 percent)
+{
+  if (!percent) Mute(1);
+  else Mute(0);
+  // TODO Mute and 200 divisor for QEMU
+  SetVolReg(0x3f-ClampI64(percent*0x3f/200,0,0x3f));
 }
 
 U0 SetInst(U8 *instrument)
@@ -120,7 +210,7 @@ U0 SetFreq(F64 freq)
   fnum=ToI64(freq*2`(20-block)/49716.0);
   if (0<fnum<1024)
   {
-    SetBlock(block);
+    if (block!=old_block) SetBlock(block);
     SetFnum(fnum);
   }
 }
@@ -136,6 +226,16 @@ U8 SetKeyState(Bool state)
   {
     return SetRegister(r, opl_registers[r] & 0xDF);
   }
+}
+
+public U0 SetOPLRegister(U8 r, U8 val)
+{
+  SetRegister(r,val);
+}
+
+public U8 GetOPLRegister(U8 r)
+{
+  return opl_registers[r];
 }
 
 public U0 AdlibBeep()
@@ -183,7 +283,7 @@ U64 RandInst()
 }
 
 I64 PickInst()
-{// Popup a window to pick some standard instruments 
+{// Popup a window to pick some standard instruments
   I64 ins;
   ins=PopUpPickDefineSub("ST_INSTRUMENTS");
   if (0<=ins<=127)
@@ -237,7 +337,7 @@ U0 AdlibSnd(I8 ona=0)
 
 public U0 AdlibInit()
 {
-  Reset;
+  AdlibReset;
   SetInst(SQUARWAV);
   SetAttack(0xf);
   SetDecay(0xf);

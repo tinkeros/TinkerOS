@@ -18,7 +18,7 @@ U0 ScreenSaverDefault(CDC *dc, I64 ss_cnts)
 {
   I64 rand_x, rand_y;
   if (ss_cnts % fps_master == 0)
-    {
+  {
     rand_x = RandRange(,GR_WIDTH-100);
     rand_y = RandRange(,GR_HEIGHT-FONT_HEIGHT);
     DCClear(dc);

@@ -135,7 +135,8 @@ U0 DoWordle()
       guess=god.words[RandRange(0,god.num_words-1)];
       if (StrLen(guess) == 5)
       {
-        for (j=0;j<5;j++) {
+        for (j=0; j<5; j++)
+        {
           if ('a' < guess[j] | 0x20 < 'z')
             buf[j]=guess[j] | 0x20;
           else
@@ -143,7 +144,8 @@ U0 DoWordle()
         }
       }
     }
-    for (j=0;j<5;j++) {
+    for (j=0; j<5; j++)
+    {
       Sleep(200);
       PostMsgWait(task,MSG_KEY_DOWN_UP,buf[j],0);
     }

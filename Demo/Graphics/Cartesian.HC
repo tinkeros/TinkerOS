@@ -9,13 +9,16 @@ U0 Cartesian()
   I64 ch=0,h,v;
   Bool first;
   CDC *dc=DCAlias;
-  do {
+  do
+  {
     DocClear;
     "Enter algebraic equation to graph.\n"
-	  "Example: y=2*x\n"
-	  "y=";
-    if (st=GetStr) {
-      if (*st) {
+    "Example: y=2*x\n"
+    "y=";
+    if (st=GetStr)
+    {
+      if (*st)
+      {
         h=Fs->pix_width/2;
         v=Fs->pix_height/2;
         dc->color=RED;
@@ -23,21 +26,25 @@ U0 Cartesian()
         GrLine(dc,0,v,2*h+1,v);
         first=TRUE;
         dc->color=BLACK;
-        for (x=-h;x<=h;x++) {
-	  y=-ExePrint("ToF64(%s);",st)(F64);
-	  if (!first)
-	    GrLine(dc,x-1+h,y_last+v,x+h,y+v);
-	  y_last=y;
-	  first=FALSE;
+        for (x=-h; x<=h; x++)
+        {
+          y=-ExePrint("ToF64(%s);",st)(F64);
+          if (!first)
+            GrLine(dc,x-1+h,y_last+v,x+h,y+v);
+          y_last=y;
+          first=FALSE;
         }
         ch=GetChar;
-      } else
+      }
+      else
         ch=CH_SHIFT_ESC;
       Free(st);
-    } else
+    }
+    else
       ch=CH_SHIFT_ESC;
     DCFill;
-  } while (ch!=CH_SHIFT_ESC && ch!=CH_ESC);
+  }
+  while (ch!=CH_SHIFT_ESC && ch!=CH_ESC);
   DCDel(dc);
 }
 

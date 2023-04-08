@@ -38,14 +38,14 @@ $HL,1$*/
 U0 TaskFocusNext()
 {
   CTask *task,*_task=sys_focus_task;
-  sys_focus_task=NULL;
+  SetSysFocusTask(NULL);
   if (!_task) _task=adam_task;
   task=_task->next_task;
   do
   {
     if (!Bt(&task->win_inhibit,WIf_SELF_FOCUS))
     {
-      sys_focus_task=task;
+      SetSysFocusTask(task);
       CallExtNum(EXT_WIN_TO_TOP,task,TRUE);
       return;
     }

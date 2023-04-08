@@ -1,0 +1,213 @@
+PCNet
+	PCNetPCIDevFind
+	PCNetIOBaseGet
+	PCNetReset
+	PCNet32BitModeEnable
+	PCNetRAPWrite
+	PCNetCSRWrite
+	PCNetCSRRead
+	PCNetSWStyleSet
+	PCNetMACGet
+	PCNetDescriptorEntryInit
+	PCNetBuffersAllocate
+	$FG,7$PCNetDirectInit$FG$
+	PCNetInitBlockSetup
+	PCNetInterruptCSRSet
+	PCNetTXAutoPadEnable
+	PCNetConfigModeExit
+	PCNetDriverOwns
+	PCNetTransmitPacketAllocate
+	PCNetTransmitPacketFinish
+	PCNetPacketReceive
+	PCNetReceivePacketRelease
+	PCNetIRQ
+	PCNetInterruptsSetup
+	PCNetInit
+
+	PCIInterruptsReroute
+
+	EthernetFrameFinish (driver alias of PCNetTransmitPacketFinish)
+	EthernetFrameAllocate
+	EthernetMACGet
+
+	NetStop
+	NetStart
+
+NetQueue
+	NetQueueInit
+	NetQueuePull
+	NetQueuePush
+
+Ethernet
+	EthernetGlobalsInit
+	EthernetFrameParse
+
+ARP
+	ARPCacheInit
+	ARPCacheFind
+	ARPCachePut
+
+	ARPSend
+	ARPHandler
+	ARPLocalIPV4Set
+	ARPHandler
+
+	ARPRep
+
+Sockets (just finite state modifiers)
+	AddressInfoCopy
+	AddressInfoFree
+	IPV4AddressParse
+	PresentationToNetwork
+	NetworkToPresentation
+
+	SocketStateErr
+	Socket
+	SocketAccept
+	SocketClose
+	SocketBind
+	SocketConnect
+	SocketListen
+	SocketReceive
+	SocketReceiveFrom
+	SocketSend
+	SocketSendTo
+
+IPV4
+	IPV4GlobalsInit
+	IPV4Checksum
+	IPV4AddressMACGet
+
+	IPV4PacketAllocate
+	IPV4PacketFinish (alias for EthernetFrameFinish)
+
+	IPV4AddressGet
+	IPV4AddressSet
+
+	IPV4SubnetSet
+	IPV4PacketParse
+
+ICMP
+	ICMPReplySend
+	ICMPHandler
+
+TCP
+	IsTCPStateSync
+	TCPGlobalsInit
+	TCPChecksumPartial
+	TCPChecksumFinal
+	TCPPacketAllocate
+	TCPPacketFinish
+	TCPSend
+	TCPSendFlags
+	TCPSendData
+	TCPPacketParse
+	TCPAcknowledgePacket
+	TCPCheckACKQueue
+	TCPSocket
+	TCPSocketBind
+	TCPSocketClose
+	TCPSocketConnect
+	TCPSocketListen
+	TCPSocketAccept
+	TCPSocketReceive
+	TCPSocketSend
+
+	TCPHandler
+	TCPHandleRefuse
+	TCPHandleSocket
+	TCPHandleSocketListen
+	TCPHandleReset
+	TCPHandleACK
+	TCPHandleValidSEQ
+
+	TCPTreeNodeInit
+	TCPTreeNodeAdd
+	TCPTreeNodeParamAdd
+	TCPTreeNodeParamInit
+	TCPTreeNodeFind
+	TCPTreeNodePop
+	TCPTreeNodeSinglePop
+
+	TCPTreeNodeQueueAdd
+	TCPTreeNodeQueueSocketFind
+	TCPTreeNodeQueueIPV4Find
+	TCPTreeNodeQueueSocketSinglePop
+
+UDP
+	UDPTreeNodeInit
+	UDPTreeNodeAdd
+	UDPTreeNodeParamAdd
+	UDPTreeNodeParamInit
+	UDPTreeNodeFind
+	UDPTreeNodePop
+	UDPTreeNodeSinglePop
+
+	UDPTreeNodeQueueAdd
+	UDPTreeNodeQueueSocketFind
+	UDPTreeNodeQueueIPV4Find
+	UDPTreeNodeQueueSocketSinglePop
+
+	UDPGlobalsInit
+
+	UDPPacketAllocate
+	UDPPacketFinish (alias for IPV4PacketFinish)
+	UDPPacketParse
+
+	UDPSocket
+	UDPSocketBind
+	UDPSocketClose
+	UDPSocketReceiveFrom
+	UDPSocketSendTo
+
+	UDPHandler
+
+DNS
+	DNSCacheInit
+	DNSCacheFind
+	DNSCachePut
+
+	DNSQuestionSizeCalculate
+	DNSQuestionSerialize
+	DNSQuestionSend
+	DNSQuestionParse
+	DNSQuestionBuild
+	DNSQuestionFree
+	DNSQuestionChainFree
+
+	DNSDomainNameParse
+
+	DNSRRParse
+	DNSRRFree
+	DNSRRChainFree
+
+	DNSResponseParse
+
+	DNSQueryRun
+	DNSAddressInfoGet
+	DNSResolverIPV4Set
+	Host
+
+	DNSRep
+
+DHCP
+	DHCPTransactionBegin
+	DHCPDiscoverSend
+	DHCPRequestSend
+
+	DHCPBeginParse
+	DHCPOptionParse
+	DHCPOfferParse
+	DHCPAckParse
+
+	DHCPInnerConfigure
+	DHCPConfigure
+
+	NetConfigure
+
+NetHandler
+	IPV4Handler
+	NetQueueEntryHandle
+	NetHandler
+
+	NetHandlerInit

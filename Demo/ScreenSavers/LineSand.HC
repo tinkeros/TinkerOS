@@ -14,29 +14,29 @@ U0 LineSandTask(U8 *data)
   I64 raindrops[RAINDROP_NO][3];
   CDC *dc=data;
   for (i=0; i<RAINDROP_NO; i++)
-    {
+  {
     raindrops[i][0]=RandRange(,GR_WIDTH);
     raindrops[i][1]=-RandRange(,GR_HEIGHT);
     raindrops[i][2]=BLUE;
   }
   while (TRUE)
-    {
+  {
     for (i=0; i<RAINDROP_NO; i++)
-      {
+    {
       dc->color=raindrops[i][2];
       GrCircle(dc,raindrops[i][0],raindrops[i][1],1);
       raindrops[i][0]=(raindrops[i][0]+RandRange(,4))%GR_WIDTH;
       raindrops[i][1]=(raindrops[i][1]+RandRange(2,10));
       if (raindrops[i][1]>GR_HEIGHT)
-        {
+      {
         raindrops[i][1]=raindrops[i][1]%GR_HEIGHT;
         if (raindrops[i][2]==BLUE)
-	  {
-	  raindrops[i][2]=BLACK;
+        {
+          raindrops[i][2]=BLACK;
         }
         else
-	  {
-	  raindrops[i][2]=BLUE;
+        {
+          raindrops[i][2]=BLUE;
         }
       }
     }
@@ -58,7 +58,7 @@ U0 LineSandTask(U8 *data)
 U0 ScreenSaverLineSand(CDC *dc, I64 ss_cnts)
 {
   if (!ss_cnts)
-    {
+  {
     MemCpy(dc->body,gr.dc2->body,GR_WIDTH*GR_HEIGHT);
     gr.scrn_saver_task=Spawn(&LineSandTask,dc,"Screen Saver Task");
   }

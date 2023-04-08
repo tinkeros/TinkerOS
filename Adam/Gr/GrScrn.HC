@@ -15,28 +15,34 @@ U8 *scrn_src=gr.dc2->body;
 
 public U0 SetGrSethHelperCnt(I64 cnt=-1)
 {// Set number of Seth cores to help render graphics, -1 for default
-    while (GrSethHelperSema) {
-        Yield;
+  while (GrSethHelperSema)
+  {
+    Yield;
+  }
+  PUSHFD
+  CLI
+  if (cnt<0)
+  {
+    GrSethHelperCnt=mp_cnt/2;
+    if (GR_WIDTH==640&&GrSethHelperCnt>2)
+    {
+      GrSethHelperCnt=2;
     }
-    PUSHFD
-    CLI
-    if (cnt<0) {
-        GrSethHelperCnt=mp_cnt/2;
-        if (GR_WIDTH==640&&GrSethHelperCnt>2) {
-            GrSethHelperCnt=2;
-        }
-        if (GR_WIDTH>800&&GrSethHelperCnt>3) {
-            GrSethHelperCnt=3;
-        }
+    if (GR_WIDTH>800&&GrSethHelperCnt>3)
+    {
+      GrSethHelperCnt=3;
     }
-    else {
-        GrSethHelperCnt=cnt;
-    }
-    if (GrSethHelperCnt>mp_cnt-1) {
-        GrSethHelperCnt=mp_cnt-1;
-    }
-    lock GrSethHelperSema=0;
-    POPFD
+  }
+  else
+  {
+    GrSethHelperCnt=cnt;
+  }
+  if (GrSethHelperCnt>mp_cnt-1)
+  {
+    GrSethHelperCnt=mp_cnt-1;
+  }
+  lock GrSethHelperSema=0;
+  POPFD
 }
 
 SetGrSethHelperCnt(0);  // Use default
@@ -447,7 +453,6 @@ interrupt U0 GrPartialUpdatePartIrq()
 {
   U16 *screen=scrn_src,*last_screen = gr.screen_cache;
   I64 i,j,idx,*dst;
-
   for (i=(Gs->num-1)*GR_HEIGHT/GrSethHelperCnt; i<Gs->num*GR_HEIGHT/GrSethHelperCnt; i++)
   {
     dst=text.raw_scrn_image;  //TODO size pitch fix
@@ -469,12 +474,9 @@ interrupt U0 GrPartialUpdatePartIrq()
 interrupt U0 GrUpdateCacheIrq()
 {
   I64 i,my_rows;
-
   i=(Gs->num-1)*GR_HEIGHT/GrSethHelperCnt;
   my_rows=Gs->num*GR_HEIGHT/GrSethHelperCnt-i;
-
   MemCpy(gr.screen_cache+i*GR_WIDTH, scrn_src+i*GR_WIDTH,my_rows*GR_WIDTH);
-
   lock CacheGlblCnt++;
   *(dev.uncached_alias+LAPIC_EOI)(U32 *)=0;
 }
@@ -531,60 +533,60 @@ U0 GrDoFinalScaling()
 
 U0 DCBlotColor8(CDC *dc,CDC *img)
 {
-    I64 i,*PBlotGlblCnt=&BlotGlblCnt+dev.uncached_alias;
-
-    if (GrSethHelperCnt>0&&dc==gr.dc2&&img==gr.dc)
-    { 
-      lock BlotGlblCnt=0;
-      for (i=1;i<1+GrSethHelperCnt;i++)
-       MPInt(I_BLOT,i);
-      while (*PBlotGlblCnt != GrSethHelperCnt)
-      {
-        Yield;
-      }
+  I64 i,*PBlotGlblCnt=&BlotGlblCnt+dev.uncached_alias;
+  if (GrSethHelperCnt>0&&dc==gr.dc2&&img==gr.dc)
+  {
+    lock BlotGlblCnt=0;
+    for (i=1; i<1+GrSethHelperCnt; i++)
+      MPInt(I_BLOT,i);
+    while (*PBlotGlblCnt != GrSethHelperCnt)
+    {
+      Yield;
     }
-    else {
-      DCBlotColor80(dc,img);
-    }
+  }
+  else
+  {
+    DCBlotColor80(dc,img);
+  }
 }
 
 
 U0 GrPartialUpdate(U64 *screen)
 {
   I64 i,*PDrawGlblCnt=&DrawGlblCnt+dev.uncached_alias;
-
-  if (GrSethHelperCnt>0) {
+  if (GrSethHelperCnt>0)
+  {
     lock DrawGlblCnt=0;
-    for (i=1;i<1+GrSethHelperCnt;i++)
+    for (i=1; i<1+GrSethHelperCnt; i++)
       MPInt(I_REDRAW,i);
     while (*PDrawGlblCnt != GrSethHelperCnt)
     {
       Yield;
-    }    
+    }
   }
-  else {
+  else
+  {
     GrPartialUpdate0(screen);
   }
-
   MemCpy64(text.fb_alias, text.raw_scrn_image, text.buffer_size/8);
 }
 
 U0 GrUpdateCache(U8 *src_start)
 {
   I64 i,*PCacheGlblCnt=&CacheGlblCnt+dev.uncached_alias;
-
   scrn_src=src_start;
-
-  if (GrSethHelperCnt>0) {
+  if (GrSethHelperCnt>0)
+  {
     lock CacheGlblCnt=0;
-    for (i=1;i<1+GrSethHelperCnt;i++)
+    for (i=1; i<1+GrSethHelperCnt; i++)
       MPInt(I_UPDATE_CACHE,i);
     while (*PCacheGlblCnt != GrSethHelperCnt)
     {
       Yield;
-    }    
+    }
   }
-  else {
+  else
+  {
     MemCpy64(gr.screen_cache,src_start, text.buffer_size/32);  //TODO pitch
   }
 }
@@ -722,7 +724,7 @@ U0 GrUpdateScrn()
   else
   {
     DCBlotColor4(gr.dc1->body,gr.dc2->body,gr.dc_cache->body,
-          gr.dc2->height*gr.dc2->width_internal>>3);
+                 gr.dc2->height*gr.dc2->width_internal>>3);
     GrUpdateVGAGraphics;
   }
   lock GrSethHelperSema=0;
@@ -742,11 +744,11 @@ interrupt U0 DCBlotColor8Irq()
 {
   U64 b,j,*src=gr.dc->body,*b0=gr.dc2->body;
   I64 k,d0=gr.dc->width_internal*gr.dc->height/8;
-
   for (k=(Gs->num-1)*d0/GrSethHelperCnt; k<Gs->num*d0/GrSethHelperCnt; k++)
   {
     j=*src++;
-    if (j!=0xFFFFFFFFFFFFFFFF) {
+    if (j!=0xFFFFFFFFFFFFFFFF)
+    {
       b=*b0;
       if (j.u8[0]!=TRANSPARENT) b.u8[0]=j.u8[0];
       if (j.u8[1]!=TRANSPARENT) b.u8[1]=j.u8[1];
@@ -760,11 +762,11 @@ interrupt U0 DCBlotColor8Irq()
     }
     else
     {
-     b0++;
+      b0++;
     }
   }
   lock BlotGlblCnt++;
-  *(dev.uncached_alias+LAPIC_EOI)(U32 *)=0;  
+  *(dev.uncached_alias+LAPIC_EOI)(U32 *)=0;
 }
 
 IntEntrySet(I_BLOT,&DCBlotColor8Irq);

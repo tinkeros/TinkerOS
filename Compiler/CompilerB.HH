@@ -52,7 +52,7 @@ public extern U0 LexPutToken(CCmpCtrl *cc);
 public extern U0 LexSkipEol(CCmpCtrl *cc);
 public extern U8 *LexStmt2Bin(
 	CCmpCtrl *cc,I64 *_type,I64 cmp_flags=CMPF_PRS_SEMICOLON);
-public extern U0 LexWarn(CCmpCtrl *cc,U8 *str=NULL);
+public extern U0 LexWarn(CCmpCtrl *cc,U8 *str=NULL,U8 *near=NULL);
 extern CMemberLst *MemberClassBaseFind(
 	CHashClass *needle_class,CHashClass *haystack_class);
 public extern CMemberLst *MemberFind(U8 *needle_str,CHashClass *haystack_class);

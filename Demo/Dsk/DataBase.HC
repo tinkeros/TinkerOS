@@ -10,7 +10,7 @@ class Acct
 };
 
 U0 InitDatabase()
-{ //Write new contiguous file
+{//Write new contiguous file
   CFile *f=FOpen(DB_FILENAME,"w",DB_ACCT_MAX*DB_ACCT_BLKS);
   FClose(f);
 }
@@ -20,11 +20,12 @@ U0 WriteAcct()
   CFile *f;
   Acct a;
   I64 acctnum;
-
   acctnum=GetI64("Acct #",-1);
-  if (0<=acctnum<DB_ACCT_MAX) {
+  if (0<=acctnum<DB_ACCT_MAX)
+  {
     MemSet(&a,0,BLK_SIZE);
-    if (DocForm(&a)) {
+    if (DocForm(&a))
+    {
       f=FOpen(DB_FILENAME,"w+");
       FBlkWrite(f,&a,acctnum*DB_ACCT_BLKS,DB_ACCT_BLKS);
       FClose(f);
@@ -37,9 +38,9 @@ U0 ReadAcct()
   CFile *f;
   Acct a;
   I64 acctnum;
-
   acctnum=GetI64("Acct #",-1);
-  if (0<=acctnum<DB_ACCT_MAX) {
+  if (0<=acctnum<DB_ACCT_MAX)
+  {
     f=FOpen(DB_FILENAME,"r");
     FBlkRead(f,&a,acctnum*DB_ACCT_BLKS,DB_ACCT_BLKS);
     FClose(f);
@@ -52,13 +53,15 @@ U0 DatabaseDemo()
   I64 ch;
   if (!FileFind(DB_FILENAME))
     InitDatabase;
-  do {
+  do
+  {
     "$$GREEN$$R$$FG$$ead acct, $$GREEN$$W$$FG$$rite acct or $$GREEN$$<SHIFT-ESC>$$FG$$:";
     ch=ToUpper(GetChar);
     '\n';
     if (ch=='R') ReadAcct;
     if (ch=='W') WriteAcct;
-  } while (ch!=CH_SHIFT_ESC && ch!=CH_ESC);
+  }
+  while (ch!=CH_SHIFT_ESC && ch!=CH_ESC);
 }
 
 DatabaseDemo;

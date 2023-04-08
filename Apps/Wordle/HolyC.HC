@@ -41,5 +41,4 @@ Bool U8InStr(U8 ch, U8 *str)
     }
   }
   return FALSE;
-  
 }

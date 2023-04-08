@@ -165,6 +165,9 @@ lud_done:
 public U0 PCIRep()
 {//Report description of PCI devices.
   CPCIDev *tmppci;
+  U16 d,v;
+  U32 bar;
+  I64 i;
   "PCI Busses:%d\n"
   ,sys_pci_busses;
   if (!FileFind(PCI_DEV_FILE))
@@ -176,11 +179,26 @@ public U0 PCIRep()
   tmppci=dev.pci_head.next;
   while (tmppci!=&dev.pci_head)
   {
-    "%02X:%02X:%01X %02X%02X $$GREEN$$%s $$CYAN$$%s$$FG$$\n",
+    bar=PCIReadU32(tmppci->bus,tmppci->dev,tmppci->fun,0x0);
+    v=bar.u16[0];
+    d=bar.u16[1];
+    "bs:dv:f cl:sc v_id:d_id \n";
+    "%02X:%02X:%01X %02X:%02X %04X:%04X $$GREEN$$%s $$CYAN$$%s$$FG$$\n"
+    ,
     tmppci->bus,tmppci->dev,tmppci->fun,
     tmppci->base_code,tmppci->sub_code,
+    v,d,
     tmppci->vendor_str,tmppci->dev_id_str;
     tmppci=tmppci->next;
+    for (i=0; i<6; i++)
+    {
+      bar=PCIReadU32(tmppci->bus,tmppci->dev,tmppci->fun,0x10+4*i);
+      //"%08x\n",bar;
+      if (bar&1) "       I/O : 0x%08x\n",bar&0xfffffffc;
+      else if (bar&7==0) "32-bit MMIO: 0x%08x\n",bar&0xfffffff0;
+      else if (bar&7==4) "64-bit MMIO: 0x%016x\n",(bar&0xfffffff0)(I64)+PCIReadU32(tmppci->bus,tmppci->dev,tmppci->fun,0x10+4*(i+1))(I64)<<32;
+      else if (bar&7==2) "16-bit MMIO: 0x%04x\n",(bar&0xfff0)(I64);
+    }
   }
 }
 

@@ -63,6 +63,7 @@ public U0 DocTermNew()
 #define RIGHT_MOUNT	7
 #define RIGHT_PLAIN	8
 #define RIGHT_INFILE	9
+#define RIGHT_VIEW	10
 
 I64 PopUpTermRight(U8 *header)
 {
@@ -70,7 +71,9 @@ I64 PopUpTermRight(U8 *header)
   CDoc *doc=DocNew;
   if (header) DocPrint(doc,"%s",header);
   DocPrint(doc,"\n\n"
-           "TXT=%s\nDD=%s\nJIT=%s\nGR=%s"
+           "TXT=%s\nDD=%s\nJIT=%s\nGR=%s",
+           FILEMASK_TXT,FILEMASK_DD,FILEMASK_JIT,FILEMASK_GR);
+  DocPrint(doc,
            "$$CM+LX,1,3 $$$$BT,\"IncludeJIT\",LE=RIGHT_INCLUDE$$"
            "$$CM+LX,25,0$$$$BT,\"Adam IncludeJIT\",LE=RIGHT_AINCLUDE$$"
            "$$CM+LX,1,3 $$$$BT,\"Copy\",LE=RIGHT_COPY$$"
@@ -80,9 +83,14 @@ I64 PopUpTermRight(U8 *header)
            "$$CM+LX,1,3 $$$$BT,\"DolDocEditDD\",LE=RIGHT_ED$$"
            "$$CM+LX,25,0$$$$BT,\"MountISO.C\",LE=RIGHT_MOUNT$$"
            "$$CM+LX,1,3 $$$$BT,\"PlainText EditTXT\",LE=RIGHT_PLAIN$$"
-           "$$CM+LX,25,0$$$$BT,\"InfileIN\",LE=RIGHT_INFILE$$"
-           "$$CM+LX,1,3 $$$$BT,\"Cancel\",LE=DOCM_CANCEL$$\n",
-           FILEMASK_TXT,FILEMASK_DD,FILEMASK_JIT,FILEMASK_GR);
+           "$$CM+LX,25,0$$$$BT,\"InfileIN\",LE=RIGHT_INFILE$$");
+  if (StrNCmp(".GR",FileExtDot(header),3))
+    DocPrint(doc,"$$CM+LX,1,3 $$$$BT,\"Cancel\",LE=DOCM_CANCEL$$\n");
+  else
+  {
+    DocPrint(doc,"$$CM+LX,1,3 $$$$BT,\"View\",LE=RIGHT_VIEW$$");
+    DocPrint(doc,"$$CM+LX,25,0 $$$$BT,\"Cancel\",LE=DOCM_CANCEL$$\n");
+  }
   i=PopUpMenu(doc);
   DocDel(doc);
   return i;
@@ -169,6 +177,10 @@ I64 TermRightClickLink(CDoc *doc,CDocEntry *doc_e)
           break;
         case RIGHT_TYPE:
           res=Type(st);
+          break;
+        case RIGHT_VIEW:
+          res=0;
+          GrView(st);
           break;
         case RIGHT_ED:
           if (FileExtDot(st) && !FilesFindMatch(st,FILEMASK_DD))

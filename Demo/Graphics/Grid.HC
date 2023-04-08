@@ -18,7 +18,8 @@ U0 GridDemo()
   ms_grid.y=GRID;
   old_draw_ms=gr.fp_draw_ms;
   gr.fp_draw_ms=&DrawMyMs;
-  while (!ms.lb)  {//Left bttn to exit.
+  while (!ms.lb)   //Left bttn to exit.
+  {
     GrPlot(,ms.pos.x,ms.pos.y);
     Yield;
   }

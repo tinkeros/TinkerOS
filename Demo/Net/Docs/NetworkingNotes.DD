@@ -1,0 +1,65 @@
+$BG,0$$FG,15$Zeal Networking Stack Notes$FG,0$$BG,15$
+
+Departures from Shrine:
+
+	ARP Cache is Hashtable. Keys are U32 ip addresses converted to "%X" string.
+
+	DNS Cache is Hashtable. Keys are U8 *hostname.
+
+	NetFIFO is NetQueue. If problems arise, maybe set a #define max
+	for the length of the Queue.
+
+	Not defining ntohl and friends. Using Endian functions.
+
+	Many file global variables have been condensed into global classes.
+
+	Sockets are a non-standard finite state machine.
+	Protocols extend these to create protocol-specific sockets.
+
+Stack progress: (# done, ~ WIP, . N/A)
+
+	# PCNet-II Driver
+	. Other Network Card Drivers? See $LK,"Roadmap",A="FF:C:/Home/Roadmap.DD,most common ethernet cards"$.
+
+	# NetQueue
+
+	# Ethernet
+		- double check.
+
+	# ARP (Address Resolution Protocol)
+		- double check.
+
+	# Sockets
+		- Implemented a Finite State Machine
+			through Socket function calls.
+			Sockets themselves do nothing,
+			all calls simply do/don't alter
+			socket state. Protocols will
+			need to detect socket states
+			and respond appropriately.
+		- keep eyes on verifying socket logic sanity.
+
+	# IPV4 (Internet Protocol Version 4)
+		- double check, some TODOs.
+
+	~ ICMP (Internet Control Message Protocol)
+		- needs ICMPSendRequest implemented.
+
+	~ TCP (Transmission Control Protocol)
+		- needs much testing, still many bugs/oddities.
+		- needs reviewing RFC for better compliance.
+
+	# UDP (User Datagram Protocol)
+		- double check, some TODOs.
+
+	~ DNS (Domain Name System)
+		- needs clarifying/rewriting in certain methods.
+
+	~ DHCP (Dynamic Host Configuration Protocol)
+		- needs clarifying/rewriting in certain methods.
+
+	# NetHandler
+		- Uses a switch case with packet ethertype,
+			then directly calls the appropriate handler.
+
+		- IPV4Handler was moved to NetHandler file.

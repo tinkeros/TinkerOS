@@ -7,9 +7,12 @@ F64 CompileDemo(U8 *st)
   CCmpCtrl *cc=CmpCtrlNew(st,CCF_DONT_FREE_BUF);
   F64 res=0;
   Lex(cc);  //Gotta get it started
-  "Compile \"%s\"\n",st;
-  do {
-    if (machine_code=LexExpression2Bin(cc,&type)) {
+  "Compile \"%s\"\n"
+  ,st;
+  do
+  {
+    if (machine_code=LexExpression2Bin(cc,&type))
+    {
       if (type!=RT_F64)
         res=ToF64(Call(machine_code));
       else
@@ -19,7 +22,8 @@ F64 CompileDemo(U8 *st)
     "res=%9.4f\n",res;
     if (cc->token==';')
       Lex(cc);
-  } while (cc->token!=TK_EOF);	//end of file?
+  }
+  while (cc->token!=TK_EOF);	//end of file?
   CmpCtrlDel(cc);
   return res;
 }

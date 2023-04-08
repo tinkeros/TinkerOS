@@ -17,8 +17,8 @@ class CFileSND
 #define SND_FILE_DATA_MAX	0x7FFFFF00
 
 public I64 SndFileCreate(U8 *base_filename,F64 normalized_vol=1.0,
-	F64 averaging=0.0,I64 waveform=WF_SQUARE,
-	F64 reverb_delay=0,F64 reverb_intensity=0,F64 time_shift=0)
+                         F64 averaging=0.0,I64 waveform=WF_SQUARE,
+                         F64 reverb_delay=0,F64 reverb_intensity=0,F64 time_shift=0)
 {//Use "snd.record" flag to start or stop recording, then call this routine.
 //Averaging should be a num from 0.0 to 0.999.
   //Vol should be from 0.0 to 1.0.
@@ -29,47 +29,47 @@ public I64 SndFileCreate(U8 *base_filename,F64 normalized_vol=1.0,
   CSndWaveCtrl *swc=SndWaveCtrlNew(SNDFILE_SAMPLE_RATE,16,1);
   CSndData *d,*d1;
   U8 *name,*name2;
-
   snd.record=FALSE;
-
   dt=snd.record_head.last->time-snd.record_head.next->time;
   if (!dt) return 0;
   cnt=dt*SNDFILE_SAMPLE_RATE;
   cnt++; //Terminator
-
   name=StrNew(base_filename);
   FileExtRem(name);
-
   s=CAlloc(offset(CFileSND.body)+cnt*sizeof(I16));
   s->signature=0x646e732e;
   s->offset=EndianU32(offset(CFileSND.body));
   s->coding=EndianU32(3);
   s->sample_rate=EndianU32(SNDFILE_SAMPLE_RATE);
   s->channels=EndianU32(1);
-
-  if (time_shift) {
+  if (time_shift)
+  {
     d=snd.record_head.next;
     d->time-=time_shift;
-    while (d->next!=&snd.record_head) {
+    while (d->next!=&snd.record_head)
+    {
       d1=d->next;
       dt=d1->time-d->time;
-      if (dt<0) {
-	QueRem(d1);
-	Free(d1);
-      } else
-	break;
+      if (dt<0)
+      {
+        QueRem(d1);
+        Free(d1);
+      }
+      else
+        break;
     }
   }
-
   d=snd.record_head.next;
   k=0;
   i=d->time*SNDFILE_SAMPLE_RATE;
-  while (d->next!=&snd.record_head) {
+  while (d->next!=&snd.record_head)
+  {
     d1=d->next;
     i1=d1->time*SNDFILE_SAMPLE_RATE;
-    if (i1-i) {
+    if (i1-i)
+    {
       SndWaveAddBuf(swc,&s->body[k],i1-i,
-	    Ona2Freq(d->ona),waveform,normalized_vol);
+                    Ona2Freq(d->ona),waveform,normalized_vol);
       k+=i1-i;
       i=i1;
     }
@@ -77,48 +77,46 @@ public I64 SndFileCreate(U8 *base_filename,F64 normalized_vol=1.0,
     Free(d);
     d=d1;
   }
-
   //Average
-  if (averaging) {
+  if (averaging)
+  {
     avg=0;
-    for (i=0;i<cnt-1;i++)
+    for (i=0; i<cnt-1; i++)
       s->body[i]=avg=LowPass1(averaging,avg,s->body[i],1.0);
   }
-
   //Reverb
-  if (reverb_intensity) {
+  if (reverb_intensity)
+  {
     if (dt=reverb_delay*SNDFILE_SAMPLE_RATE)
-      for (i=dt;i<cnt;i++)
-	s->body[i]+=reverb_intensity*s->body[i-dt];
+      for (i=dt; i<cnt; i++)
+        s->body[i]+=reverb_intensity*s->body[i-dt];
   }
-
   //Get rid of D.C. component
-  for (k=0;k<3;k++) {
+  for (k=0; k<3; k++)
+  {
     level=0;
-    for (i=0;i<cnt-1;i++)
+    for (i=0; i<cnt-1; i++)
       level+=s->body[i];
     level/=cnt-1;
-    for (i=0;i<cnt-1;i++)
+    for (i=0; i<cnt-1; i++)
       s->body[i]=ClampI64(s->body[i]-level,I16_MIN,I16_MAX);
   }
-
-  for (i=0;i<cnt-1;i++)
+  for (i=0; i<cnt-1; i++)
     s->body[i]=EndianU16(s->body[i]);
-
   s->body[cnt-1]=0;
-
   d=snd.record_head.next;
-  while (d!=&snd.record_head) {
+  while (d!=&snd.record_head)
+  {
     d1=d->next;
     QueRem(d);
     Free(d);
     d=d1;
   }
-
   name2=MAlloc(StrLen(name)+3+1+3+1);
   cnt2=cnt;
   file_num=0;
-  while (cnt2>0) {
+  while (cnt2>0)
+  {
     i=cnt2;
     if (i>SND_FILE_DATA_MAX)
       i=SND_FILE_DATA_MAX;
@@ -131,7 +129,6 @@ public I64 SndFileCreate(U8 *base_filename,F64 normalized_vol=1.0,
   Free(s);
   Free(name);
   Free(name2);
-
   SndWaveCtrlDel(swc);
   return cnt;
 }

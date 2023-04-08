@@ -60,8 +60,7 @@ I64 ProfCompare(U8 *i1,U8 *i2)
 public U0 ProfRep(I64 filter_cnt=1,Bool leave_it=OFF,Bool print_max=ON)
 {//Profiler report. Call $LK,"Prof",A="MN:Prof"$() first and collect data.
   I64 i,hits,rip,last_rip=0,routine_total=0;
-  F64 total_time,routine_percent;
-  F64 max_percent=0.0;
+  F64 total_time,routine_percent,max_percent=0.0;
   U8 buf[256],buf2[256],last_buf[256],max_buf[256];
   if (!LBtr(&pf_prof_active,0))
     "Profiler Not Active\n";

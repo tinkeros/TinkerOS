@@ -19,8 +19,8 @@ Silent(OFF); //no output to scrn
 // Misc helper functions
 U0 AutoHome()
 {
-    MountAuto;
-    Cdd("C:/Home");
+  MountAuto;
+  Cdd("C:/Home");
 }
 
 #include "~/HomeWrappers"

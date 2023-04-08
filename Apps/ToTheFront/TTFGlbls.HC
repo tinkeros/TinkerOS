@@ -8,13 +8,14 @@ U0 InitDefines()
   DefinePrint("DCOS",	   "%12.9f",	HEX_SIDE*Cos(60.0/180*ã));
   DefinePrint("DSIN",	   "%12.9f",	HEX_SIDE*Sin(60.0/180*ã));
   DefinePrint("HEX_RADIUS","%12.9f",	HEX_SIDE*Sin(60.0/180*ã)+0.01); //Slop
-} InitDefines;
+}
+InitDefines;
 
 I64	map_cols=(MAP_WIDTH-DCOS)/(2*HEX_SIDE+2*DCOS),
-	map_rows=ToI64((MAP_HEIGHT-DSIN)/DSIN)&~1,
-	map_width=map_cols*(2*HEX_SIDE+2*DCOS)+DCOS,
-	map_height=map_rows*DSIN+DSIN+1,
-	x0,y0;
+    map_rows=ToI64((MAP_HEIGHT-DSIN)/DSIN)&~1,
+    map_width=map_cols*(2*HEX_SIDE+2*DCOS)+DCOS,
+    map_height=map_rows*DSIN+DSIN+1,
+    x0,y0;
 
 CDC	*map_dc;
 U8	terrain[map_rows][map_cols];
@@ -28,8 +29,8 @@ Pt	hex_centers[map_rows][map_cols];
 
 I64	show_vis_row,show_vis_col;
 Bool	roads[map_rows][map_cols],
-	rivers[map_rows][map_cols],
-	vis_map[map_rows][map_cols];
+      rivers[map_rows][map_cols],
+      vis_map[map_rows][map_cols];
 
 //Other options for PLAINS are WHITE or YELLOW
 #define PLAINS		LTGREEN
@@ -54,9 +55,9 @@ class Unit
 {
   U8	*img;
   I64	num,row,col,
-        armored_attack,unarmored_attack,armor;
+      armored_attack,unarmored_attack,armor;
   I8	type,player,facing,movement,life,
-        range,remaining_movement,accuracy;
+   range,remaining_movement,accuracy;
   Bool	vis[2],fired,infantry,indirect_fire,pad[3];
 };
 
@@ -78,8 +79,8 @@ U8	vis_unit_bitmap[2][(((UNITS_NUM+7)&~7)*UNITS_NUM)>>3];
 #define PHASE_END	6
 
 I64	phase,cur_player,enemy_player,view_player,turn,
-	cursor_row,cursor_col,alive_cnt[2],
-	player_indirect[2],player_move[2],player_direct[2];
+    cursor_row,cursor_col,alive_cnt[2],
+    player_indirect[2],player_move[2],player_direct[2];
 F64	animation_delay=0.5;
 
 Bool	moving=FALSE;
@@ -103,6 +104,6 @@ Bool	target_hit;
 Bool	indirect_explosion=FALSE;
 I64	indirect_row,indirect_col;
 
-I64	row_offsets[7]={-1,-2,-1,1,2,1,0};
-I64	col_offsets_even[7]={-1, 0, 0,0,0,-1,0};
-I64	col_offsets_odd [7]={ 0, 0, 1,1,0, 0,0};
+I64	row_offsets[7]= {-1,-2,-1,1,2,1,0};
+I64	col_offsets_even[7]= {-1, 0, 0,0,0,-1,0};
+I64	col_offsets_odd [7]= { 0, 0, 1,1,0, 0,0};

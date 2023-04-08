@@ -6,7 +6,7 @@ U0 ViewComics()
   CDoc *doc=DocNew;
   DocPrint(doc,"$$LTBLUE$$");
   while (tmpde)
-    {
+  {
     st=StrNew(tmpde->name);
     FileExtRem(st);
     tmpde->user_data=DocPrint(doc,"$$MU-UL,\"%-10ts\",LE=%d$$ ",st,tmpde);
@@ -16,7 +16,7 @@ U0 ViewComics()
       DocPrint(doc,"\n");
   }
   while (TRUE)
-    {
+  {
     if ((tmpde=PopUpMenu(doc))>0)
       Ed(tmpde->full_name);
     else

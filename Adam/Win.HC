@@ -7,7 +7,7 @@ CMsStateGlbls old_ms= {{-1000,-1000,0},{-1000,-1000,0},{-1000,-1000,0},
 };
 
 #ifdef LINUX_BUILD
-public CWinMgrGlbls winmgr={0,0,0,WINMGR_FPS,tS,tS,NULL,FALSE,FALSE,FALSE};
+public CWinMgrGlbls winmgr= {0,0,0,WINMGR_FPS,tS,tS,NULL,FALSE,FALSE,FALSE};
 #endif
 
 F64 cur_tS=tS;
@@ -311,7 +311,7 @@ public CTask *WinRefocus(CTask *task=NULL)
     {
       if (!Bt(&task->win_inhibit,WIf_SELF_FOCUS))
       {
-        sys_focus_task=task;
+        SetSysFocusTask(task);
         break;
       }
       task=task->last_task;
@@ -375,7 +375,7 @@ public I64 WinToTop(CTask *task=NULL,Bool update_z_buf=TRUE)
     res++;
   }
   if (!Bt(&task->win_inhibit,WIf_SELF_FOCUS))
-    sys_focus_task=task;
+    SetSysFocusTask(task);
   if (res && !Bt(&task->display_flags,DISPLAYf_CHILDREN_NOT_ON_TOP))
   {
     task1=task->next_child_task;
@@ -405,7 +405,7 @@ public CTask *WinFocus(CTask *task=NULL)
   CLI
   if (!TaskValidate(task)||Bt(&task->win_inhibit,WIf_SELF_FOCUS))
     task=WinRefocus(sys_focus_task);
-  WinToTop(sys_focus_task=task);
+  WinToTop(SetSysFocusTask(task));
   POPFD
   return sys_focus_task;
 }

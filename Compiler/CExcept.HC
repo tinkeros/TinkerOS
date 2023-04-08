@@ -70,12 +70,15 @@ U0 LexPutPos(CCmpCtrl *cc)
   LexPutLine(cc,cc->lex_include_stk->line_start);
 }
 
-U0 LexWarn(CCmpCtrl *cc,U8 *str=NULL)
+U0 LexWarn(CCmpCtrl *cc,U8 *str=NULL, U8 *suffix=NULL)
 {//Print warn msg, then, $LK,"LexPutPos",A="MN:LexPutPos"$().
   if (str) PrintWarn(str);
   if (cc->htc.fun)
   {
-    "in fun '%s'.\n",cc->htc.fun->str;
+    if (suffix && StrLen(suffix))
+      "in fun '%s' %s.\n",cc->htc.fun->str,suffix;
+    else
+      "in fun '%s'.\n",cc->htc.fun->str;
     if (IsRaw)
       "%s\n",cc->htc.fun->src_link;
     else
@@ -124,12 +127,14 @@ U0 UnusedExternWarning(CCmpCtrl *cc,CHashClass *tmpc)
 
 U0 ParenWarning(CCmpCtrl *cc)
 {
+  U8 *str=MStrPrint("near '%s' on line %d",cc->cur_str,cc->last_line_num);
   if (Bt(&cc->opts,OPTf_WARN_PAREN) &&
       !(cc->lex_include_stk->flags&LFSF_DEFINE))
   {
-    LexWarn(cc,"Unnecessary parenthesis: ");
+    LexWarn(cc,"Unnecessary parenthesis: ",str);
     PutFileLink(cc->lex_include_stk->full_name,,cc->lex_include_stk->line_num);
   }
+  Free(str);
 }
 
 U0 ICClassPut(CHashClass *c)

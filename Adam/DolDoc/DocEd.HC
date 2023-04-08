@@ -237,6 +237,12 @@ ej_doc:
     {
       cont=TRUE;
       if (!(edf_dof_flags&EDF_BAIL) && !(LK_DOC<=i<=LK_DOC_LINE) &&
+          FilesFindMatch(filename,FILEMASK_GR))
+      {
+        GrView(filename);
+        cont=FALSE;
+      }
+      else if (!(edf_dof_flags&EDF_BAIL) && !(LK_DOC<=i<=LK_DOC_LINE) &&
           !FilesFindMatch(filename,FILEMASK_TXT) &&
           !PopUpCancelOk(ST_WARN_ST "Not Text File\n\n"))
         cont=FALSE;

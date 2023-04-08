@@ -14,7 +14,7 @@ I64 glbl;
 U0 MPUnlockedInc(I64)
 {
   I64 i;
-  for (i=0;i<CNT;i++)
+  for (i=0; i<CNT; i++)
     glbl++;
 }
 
@@ -26,15 +26,16 @@ U0 UnlockedInc()
   tmpm1=JobQue(&MPUnlockedInc,NULL,1,0);
   JobResGet(tmpm0);
   JobResGet(tmpm1);
-  "Correct Cnt:%X Actual Cnt:%X\n",CNT*2,glbl;
+  "Correct Cnt:%X Actual Cnt:%X\n"
+  ,CNT*2,glbl;
 }
 
 U0 MPLockedInc(I64)
 {
   I64 i;
-  for (i=0;i<CNT;i++)
+  for (i=0; i<CNT; i++)
     lock  //Can be used without {}
-	    glbl++;
+    glbl++;
 }
 
 U0 LockedInc()
@@ -45,7 +46,8 @@ U0 LockedInc()
   tmpm1=JobQue(&MPLockedInc,NULL,1,0);
   JobResGet(tmpm0);
   JobResGet(tmpm1);
-  "Correct Cnt:%X Actual Cnt:%X\n",CNT*2,glbl;
+  "Correct Cnt:%X Actual Cnt:%X\n"
+  ,CNT*2,glbl;
 }
 
 UnlockedInc;

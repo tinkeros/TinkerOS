@@ -22,7 +22,8 @@ U0 TimeFileRead(TimeEntry *header)
     buf=CAlloc(1);
   QueInit(header);
   ptr=buf;
-  while (type=*ptr++) {
+  while (type=*ptr++)
+  {
     tmpt=CAlloc(sizeof(TimeEntry));
     tmpt->type=type;
     tmpt->datetime=*ptr(CDate *)++;
@@ -38,17 +39,17 @@ U0 TimeFileWrite(TimeEntry *header)
   U8 *buf,*ptr;
   TimeEntry *tmpt;
   I64 size=1; //for EOF
-
   tmpt=header->next;
-  while (tmpt!=header) {
+  while (tmpt!=header)
+  {
     size+=sizeof(U8)+sizeof(CDate)+StrLen(tmpt->desc)+1;
     tmpt=tmpt->next;
   }
   buf=MAlloc(size);
-
   ptr=buf;
   tmpt=header->next;
-  while (tmpt!=header) {
+  while (tmpt!=header)
+  {
     *ptr++=tmpt->type;
     *ptr(CDate *)++=tmpt->datetime;
     StrCpy(ptr,tmpt->desc);
@@ -63,7 +64,8 @@ U0 TimeFileWrite(TimeEntry *header)
 U0 TimeEntriesDel(TimeEntry *header)
 {
   TimeEntry *tmpt=header->next,*tmpt1;
-  while (tmpt!=header) {
+  while (tmpt!=header)
+  {
     tmpt1=tmpt->next;
     Free(tmpt->desc);
     Free(tmpt);
@@ -80,24 +82,32 @@ public Bool TimeRep(TimeEntry **_header=NULL)
   if (_header) *_header=header;
   TimeFileRead(header);
   tmpt=header->next;
-  while (tmpt!=header) {
+  while (tmpt!=header)
+  {
     week=tmpt->datetime.date/7;  //TODO
-    if (week!=cur_week) {
-      if (!first) {
+    if (week!=cur_week)
+    {
+      if (!first)
+      {
         if (is_in)
-	  week_total+=Now;
-        "Week Total:%T\n",week_total-local_time_offset;
-      } else
+          week_total+=Now;
+        "Week Total:%T\n"
+        ,week_total-local_time_offset;
+      }
+      else
         first=FALSE;
       cur_week=week;
       week_total=0;
     }
-    if (tmpt->type==TET_PUNCH_IN) {
+    if (tmpt->type==TET_PUNCH_IN)
+    {
       "$$RED$$IN ";
       if (!is_in)
         week_total-=tmpt->datetime;
       is_in=TRUE;
-    } else {
+    }
+    else
+    {
       "$$RED$$OUT";
       if (is_in)
         week_total+=tmpt->datetime;
@@ -108,7 +118,8 @@ public Bool TimeRep(TimeEntry **_header=NULL)
   }
   if (is_in)
     week_total+=Now;
-  "$$RED$$Week Total:%T$$FG$$\n",week_total-local_time_offset;
+  "$$RED$$Week Total:%T$$FG$$\n"
+  ,week_total-local_time_offset;
   if (!_header)
     TimeEntriesDel(header);
   return is_in;
@@ -119,7 +130,8 @@ public U0 PunchOut()
   TimeEntry *tmpt,*header;
   if (!TimeRep(&header))
     "$$BK,1$$Already Punched-Out$$BK,0$$\n";
-  else {
+  else
+  {
     tmpt=MAlloc(sizeof(TimeEntry));
     tmpt->type=TET_PUNCH_OUT;
     tmpt->datetime=Now;
@@ -137,7 +149,8 @@ public U0 PunchIn()
   TimeEntry *tmpt,*header;
   if (TimeRep(&header))
     "$$BK,1$$Already Punched-In$$BK,0$$\n";
-  else {
+  else
+  {
     tmpt=MAlloc(sizeof(TimeEntry));
     tmpt->type=TET_PUNCH_IN;
     tmpt->datetime=Now;

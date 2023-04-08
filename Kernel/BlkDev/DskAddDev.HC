@@ -336,7 +336,7 @@ return blkdev.dvd_boot_is_good;
 U0 MountAuto()
 {
   Bool silent=IsSilent;
-  if (AHCIMode) 
+  if (AHCIMode)
   {
     try
     {

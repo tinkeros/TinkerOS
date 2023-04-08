@@ -35,7 +35,7 @@ U0 BDCorrect(BallDefineStruct *bd)
 I64 AddVertex(BallDefineStruct *,I64 x,I64 y,I64 z)
 {
   I64 i;
-  for (i=0;i<b->vertex_cnt;i++)
+  for (i=0; i<b->vertex_cnt; i++)
     if (b->v[i].x==x && b->v[i].y==y && b->v[i].z==z)
       return i;
   i=b->vertex_cnt++;
@@ -56,12 +56,11 @@ I64 AddTri(BallDefineStruct *,I64 c,I64 n0,I64 n1,I64 n2)
 }
 
 U8 *Ball2CSprite()
-{
-//See $LK,"::/Adam/Gr/GrSpritePlot.HC",A="FL:::/Adam/Gr/GrSpritePlot.HC,1"$ for how CSprite are stored.
+{//See $LK,"::/Adam/Gr/GrSpritePlot.HC",A="FL:::/Adam/Gr/GrSpritePlot.HC,1"$ for how CSprite are stored.
   U8 *res=MAlloc(sizeof(CSpriteMeshU8s)+
-        b->vertex_cnt*sizeof(CD3I32)+b->tri_cnt*sizeof(CMeshTri)
-  +sprite_elem_base_sizes[SPT_END]),
-        *dst=res;
+                 b->vertex_cnt*sizeof(CD3I32)+b->tri_cnt*sizeof(CMeshTri)
+                 +sprite_elem_base_sizes[SPT_END]),
+          *dst=res;
   *dst++ =SPT_MESH;
   *dst(I32 *)++ =b->vertex_cnt;
   *dst(I32 *)++ =b->tri_cnt;
@@ -79,30 +78,29 @@ public U8 *BallGen()
   I64 i,j,n,m,c,p1,p2,p3,p4;
   BallDefineStruct bd1,bd2;
   F64 r,r1,r2,z1,z2,d_a1,d_a2;
-
   BDInit(&bd1);
-
-  while (TRUE) {
+  while (TRUE)
+  {
     if (!DocForm(&bd1))
       return NULL;
     MemCpy(&bd2,&bd1,sizeof(BallDefineStruct));
     BDCorrect(&bd2);
-
     c=PopUpColorLighting;
     if (c<0)  return NULL;
-
     b=CAlloc(sizeof(Ball));
     r=bd2.radius;
     n=bd2.n_lattitude;
     m=bd2.n_longitude;
     d_a1=2*ã/n/4;
     d_a2=2*ã/m/2;
-    for (j=-n;j<n;j++) {
+    for (j=-n; j<n; j++)
+    {
       r1=r*Cos( j   *d_a1);
       r2=r*Cos((j+1)*d_a1);
       z1=r*Sin( j   *d_a1);
       z2=r*Sin((j+1)*d_a1);
-      for (i=0;i<m;i++) {
+      for (i=0; i<m; i++)
+      {
         p1=AddVertex(&bd2,r1*Cos((2*i  +j)*d_a2),r1*Sin((2*i  +j)*d_a2),z1);
         p2=AddVertex(&bd2,r1*Cos((2*i+2+j)*d_a2),r1*Sin((2*i+2+j)*d_a2),z1);
         p3=AddVertex(&bd2,r2*Cos((2*i+1+j)*d_a2),r2*Sin((2*i+1+j)*d_a2),z2);
@@ -111,12 +109,14 @@ public U8 *BallGen()
         AddTri(&bd2,c,p3,p2,p4);
       }
     }
-
     res=Ball2CSprite;
-    "%h7c",'\n';
+    "%h7c"
+    ,'\n';
     Sprite(res,"\t\t$$SP,\"<1>\",BI=%d$$");
-    "%h7c",'\n';
-    "Vertices:%d\n",b->vertex_cnt;
+    "%h7c"
+    ,'\n';
+    "Vertices:%d\n"
+    ,b->vertex_cnt;
     Free(b);
     "Do another";
     if (YorN)

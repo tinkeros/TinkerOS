@@ -3706,6 +3706,12 @@ public class CKbdStateGlbls
 };
 
 #help_index "Mouse"
+
+class CMsRawQue:CQue
+{
+       CTask *task;
+};
+
 public class CMsHardStateGlbls
 {
   CD3I64 pos,		//Position in pixels
@@ -3717,6 +3723,7 @@ public class CMsHardStateGlbls
 	install_attempts, //Private
 	pkt_size;	//Private
   CFifoU8 *fifo,*fifo2; //Private
+  CQue *raw_queue;
   Bool	bttns[5],
         raw_bttns[5],
         raw_mode,

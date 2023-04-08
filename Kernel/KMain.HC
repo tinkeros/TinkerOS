@@ -9,7 +9,7 @@ U0 SysGlblsInit()
   hype_info[1]=ee.rcx.u32[0];
   hype_info[2]=ee.rdx.u32[0];
   hype_info[3]=0;
-  sys_focus_task=Fs;
+  SetSysFocusTask;
   QueInit(&sys_macro_head);
   blkdev.dft_iso_filename	=AStrNew(DFT_ISO_FILENAME);
   blkdev.dft_iso_c_filename	=AStrNew(DFT_ISO_C_FILENAME);

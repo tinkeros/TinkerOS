@@ -8,7 +8,7 @@ Cd(__DIR__);;
 #include "AMem"
 #include "Training"
 #include "Snd/MakeSnd"
-#include "Device/DevInfo"
+#include "Device/MakeDev"
 #include "ABlkDev/MakeABlkDev"
 #include "Menu"
 #include "Win"
@@ -31,8 +31,6 @@ LBts(&sys_run_level,RLf_DOC);
 #include "WallPaper"
 #include "AMouse"
 #include "Host"
-#include "Device/Comm"
-//#include "Device/SerialMouse"
 //#include "Net/MakeNet"
 Cd("..");;
 SetFPS(30); // restore default FPS now

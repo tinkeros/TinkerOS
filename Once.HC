@@ -58,7 +58,8 @@ U0 Tmp()
       "This is because the video resolution\n";
       "you selected is not supported by your\n";
       "hardware (perhalps you selected the\n";
-      "wrong mode or changed your monitor\n",
+      "wrong mode or changed your monitor\n"
+      ,
       "recently?).\n\n";
       "If you are an advanced user you can\n";
       "manually re-install the kernel and\n";

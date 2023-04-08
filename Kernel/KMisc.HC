@@ -334,6 +334,43 @@ CTask *LastTask()
   return last_init_task;
 }
 
+public U0 SetAltScrn(CDC *scrn=NULL)
+{ // Sets CDC to use as alternate source writing to framebuffer
+  PUSHFD
+  CLI
+  gr_alt_scrn=scrn;
+  POPFD
+}
+
+CTask *SetSysFocusTask(CTask *task=Fs,Bool check_raw=TRUE)
+{
+  PUSHFD
+  CLI
+  SetAltScrn;  // Restore screen if full screen app loses focus
+  CMsRawQue *entry = ms_hard.raw_queue->next;
+  if (!check_raw || !ms_hard.installed || IsDbgMode || IsRaw)
+  {
+    sys_focus_task=task;
+    POPFD
+    return task;
+  }
+  ms_hard.raw_mode = MsRawQueFind(task);
+  ms.show = !ms_hard.raw_mode;
+  sys_focus_task=task;
+  while (ms_hard.installed && entry && entry != ms_hard.raw_queue)
+  {
+    if (!TaskValidate(entry->task))
+    {
+      QueRem(entry);
+      Free(entry);
+      break;
+    }
+    entry=entry->next;
+  }
+  POPFD
+  return task;
+}
+
 U0 ProgressBarsRst(U8 *path=NULL)
 {//Reset all progress bars to zero.
   CallExtStr("ProgressBarsRegTf",path);

@@ -35,7 +35,7 @@ class CBgtEntry
 #define BT_ANNUAL	5
 
 DefineLstLoad("ST_BGT_TEMPLATE_TYPES",
-	"Null\0Interval\0Monthly\0Bimonthly\0Semiannual\0Annual\0");
+              "Null\0Interval\0Monthly\0Bimonthly\0Semiannual\0Annual\0");
 
 class CBgtTemplate
 {
@@ -61,14 +61,16 @@ CDate MyStr2Date(U8 *st)
 {
   CDateStruct	ds;
   CDate		res;
-  if (st&&*st) {
+  if (st&&*st)
+  {
     if (StrOcc(st,'['))
       res=b_head.next->date;
     else if (StrOcc(st,']'))
       res=b_head.last->date;
     else
       res=Str2Date(st);
-  } else
+  }
+  else
     res=Now;
   Date2Struct(&ds,res);
   if (ds.year>2050)

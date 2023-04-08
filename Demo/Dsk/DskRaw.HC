@@ -4,16 +4,12 @@ U0 RawAccess(I64 drv_let=0)
   CBlkDev *bd=Let2BlkDev(drv_let);
   I64 blk,old_offset,old_size;
   U8 *buf=MAlloc(BLK_SIZE);
-
   DrvRep;
   PressAKey;
-
   ClassRep(dv);
   PressAKey;
-
   ClassRep(bd);
   PressAKey;
-
   //Temporarily change partition range to full device.
   //Normally, you are limited to just your partition.
   //This is obviously $BK,1$dangerous$BK,0$!
@@ -21,17 +17,16 @@ U0 RawAccess(I64 drv_let=0)
   old_size  =dv->size;
   dv->drv_offset=0;
   dv->size=bd->max_blk+1;
-
-  try {
+  try
+  {
     blk=GetI64("Blk to Read: ",old_offset,0,bd->max_blk);
     BlkRead(dv,buf,blk,1);
     D(buf,BLK_SIZE);
-  } catch
+  }
+  catch
     PutExcept;
-
   dv->drv_offset=old_offset;
   dv->size  =old_size;
-
   Free(buf);
 }
 

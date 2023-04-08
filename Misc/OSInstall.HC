@@ -14,12 +14,13 @@ class TempleOSCfg
   Bool no_hpet,text_mode;
 };
 
-TempleOSCfg tos_orig={640,480,30,0x12,FALSE,FALSE};
-TempleOSCfg tos_cfg[4]={
-{640,480,30,0x12,FALSE,FALSE},
-{640,480,30,0x12,FALSE,FALSE},
-{640,480,30,0x12,FALSE,FALSE},
-{640,480,30,0x12,FALSE,FALSE}
+TempleOSCfg tos_orig= {640,480,30,0x12,FALSE,FALSE};
+TempleOSCfg tos_cfg[4]=
+{
+  {640,480,30,0x12,FALSE,FALSE},
+  {640,480,30,0x12,FALSE,FALSE},
+  {640,480,30,0x12,FALSE,FALSE},
+  {640,480,30,0x12,FALSE,FALSE}
 };
 
 U0 InstallDrv(U8 drv_let,Bool extras=FALSE,Bool templeos=FALSE)
@@ -33,7 +34,8 @@ U0 InstallDrv(U8 drv_let,Bool extras=FALSE,Bool templeos=FALSE)
   if (drv_let == 'C')
     Sleep(1000);
   src_let=':';
-  if (templeos) {
+  if (templeos)
+  {
     if (!DrvMounted('M'))
       MountFile("::/Extras/TempleOS.ISO");
     src_let='M';
@@ -58,28 +60,34 @@ U0 InstallDrv(U8 drv_let,Bool extras=FALSE,Bool templeos=FALSE)
   ExePrint("DirMk(\"%C:/Tmp/ScrnShots\");",drv_let);
   ExePrint("DirMk(\"%C:/Home\");",drv_let);
   st=MStrPrint("%C:/Home/DoDistro.HC.Z",drv_let);
-  if (!FileFind(st)) {
+  if (!FileFind(st))
+  {
     st2=MStrPrint("%C:/Misc/DoDistro.HC.Z",src_let);
     Copy(st2,st);
     Free(st2);
   }
   Free(st);
   st=MStrPrint("%C:/Home/MakeHome.HC.Z",drv_let);
-  if (!FileFind(st)) {
+  if (!FileFind(st))
+  {
     st2=MStrPrint("%C:/MakeHome.HC.Z",src_let);
     Copy(st2,st);
     Free(st2);
   }
   Free(st);
-  if (templeos && drv_tos_cfg->no_hpet) {
+  if (templeos && drv_tos_cfg->no_hpet)
+  {
     ExePrint("CopyTree(\"::/Misc/TempleOS/NoHPET\",\"%C:/Kernel\");",drv_let);
   }
-  if (templeos && drv_tos_cfg->text_mode) {
+  if (templeos && drv_tos_cfg->text_mode)
+  {
     ExePrint("CopyTree(\"::/Misc/TempleOS/TextMode\",\"%C:/Kernel\");",drv_let);
   }
-  if (templeos && drv_tos_cfg->fps!=tos_orig.fps) {
+  if (templeos && drv_tos_cfg->fps!=tos_orig.fps)
+  {
     st=MStrPrint("%C:/Kernel/KernelA.HH.Z",drv_let);
-    "Patching file %s\n",st;
+    "Patching file %s\n"
+    ,st;
     st2=MStrPrint("#define WINMGR_FPS      (%d000.0/1001)\n",drv_tos_cfg->fps);
     DocAppendLine(st,st2);
     Free(st2);
@@ -180,9 +188,9 @@ U0 DispResOptions()
   "4: 800x600 via 960x600 (letterboxed)*\n"
   "5: 1024x768 via 1280x768 (letterboxed)*\n"
   "6: 1024x768 via 1366x768 (letterboxed)*\n"
-  "7: 640x340 via 1280x1024 (2/3 scaling)\n"
-  "8: 640x360 via 1280x720 (2/2 scaling)\n"
-  "9: 640x400 via 1280x800 (2/2 scaling)\n"
+  "7: 640x360 via 1280x720 (2/2 scaling)\n"
+  "8: 640x400 via 1280x800 (2/2 scaling)\n"
+  "9: 640x512 via 1280x1024 (2/2 scaling)\n"
   "10: 1280x1024 (5:4)\n"
   "11: 1360x768 via 1366x768 (approx 16:9)\n"
   "12: 1280x720 (HD 720p)\n"
@@ -192,12 +200,13 @@ U0 DispResOptions()
   "16: 960x600 via 1920x1200 (2x scaling)\n"
   "17: Text mode 80x60 columns, no graphics\n";
   "18: Enter custom width and height\n";
-if (!AHCIMode) {
-  "19: TempleOS standard no patches\n";
-  "20: TempleOS custom FPS, no HPET\n";
-  "21: TempleOS text mode, no HPET\n\n";
-}
-else "\n";
+  if (!AHCIMode)
+  {
+    "19: TempleOS standard no patches\n";
+    "20: TempleOS custom FPS, no HPET\n";
+    "21: TempleOS text mode, no HPET\n\n";
+  }
+  else "\n";
 }
 
 U8* ResPrompt(U8 drive)
@@ -207,17 +216,19 @@ U8* ResPrompt(U8 drive)
   TempleOSCfg *drv_tos_cfg=&tos_cfg['C'-drive];
   pmpt=MStrPrint("Select graphics mode for drive %c: ",drive);
   if (AHCIMode)
-	  res=GetI64(pmpt,0,0,18);
+    res=GetI64(pmpt,0,0,18);
   else
-	  res=GetI64(pmpt,0,0,21);
+    res=GetI64(pmpt,0,0,21);
   Free(pmpt);
-  if (res==20) {
+  if (res==20)
+  {
     pmpt=MStrPrint("Enter target FPS (1-60): ");
     drv_tos_cfg->fps=GetI64(pmpt,30,1,60);
     Free(pmpt);
     drv_tos_cfg->no_hpet=TRUE;
   }
-  if (res==21) {
+  if (res==21)
+  {
     drv_tos_cfg->text_mode=TRUE;
     drv_tos_cfg->no_hpet=TRUE;
   }
@@ -251,15 +262,15 @@ U8* ResPrompt(U8 drive)
   }
   else if (res==7)
   {
-    cfg=MStrPrint("Resolution\n1280\n1024\nYY2\n3\n\n");
+    cfg=MStrPrint("Resolution\n1280\n720\nYY2\n2\n\n");
   }
   else if (res==8)
   {
-    cfg=MStrPrint("Resolution\n1280\n720\nYY2\n2\n\n");
+    cfg=MStrPrint("Resolution\n1280\n800\nYY2\n2\n\n");
   }
   else if (res==9)
   {
-    cfg=MStrPrint("Resolution\n1280\n800\nYY2\n2\n\n");
+    cfg=MStrPrint("Resolution\n1280\n1024\nYY2\n2\n\n");
   }
   else if (res==10)
   {
@@ -439,7 +450,8 @@ U0 RegularInstallWiz()
     if (probe)
     {
       "\nIt's normal for this to freeze for a moment or two.\n";
-      if (!just_ide) {
+      if (!just_ide)
+      {
         "\nIf your system hangs reboot you can try rebooting and\n";
         "performing a limited probe.\n";
       }
@@ -529,13 +541,12 @@ U0 RegularInstallWiz()
     else
       Fmt(drv_let,,FALSE,FSt_REDSEA);
   }
- 
   "\nWould you like to also install extra supplemental ISO files in /Extras ";
   extras=YorN('n');
   DispResOptions;
   res=ResPrompt(drv_let);
   if (StrLen(res)<3)
-    templeos=TRUE; 
+    templeos=TRUE;
   InstallDrv(drv_let,extras,templeos);
   if (!base0)
   {
@@ -750,8 +761,16 @@ Bool DoInstall(Bool pmt_reboot)
   if (pmt_reboot)
   {
     "Reboot Now ";
-    if (YorN('n'))
-      Reboot;
+    if (vm_install)
+    {
+      if (YorN('y'))
+        Reboot;
+    }
+    else
+    {
+      if (YorN('n'))
+        Reboot;
+    }
   }
   return res;
 }

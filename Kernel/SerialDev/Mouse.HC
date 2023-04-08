@@ -74,11 +74,47 @@ public U0 MsRawRst()
   ms_hard.raw_bttns[4]=FALSE;
 }
 
-public Bool MsRaw(Bool val)
-{ // Places mouse in "raw" mode, button presses will not go to windows manager when true
+CMsRawQue *MsRawQueFind(CTask *task)
+{
+  CMsRawQue *entry;
+  if (ms_hard.installed)
+  {
+    entry  = ms_hard.raw_queue->next;
+    while (entry != ms_hard.raw_queue)
+    {
+      if (entry->task == task)
+        return entry;
+      entry = entry->next;
+    }
+  }
+  return NULL;
+}
+
+public Bool MsRaw(Bool val, CTask *task=NULL)
+{// Places mouse in "raw" mode, button presses will not go to windows manager when true
   Bool old_val=ms_hard.raw_mode;
+  CMsRawQue *entry;
   ms_hard.raw_mode=val;
   ms.show=!val;
+  if (!task)
+    task = Fs;
+  if (val)
+  {
+    if (!MsRawQueFind(task))
+    {
+      entry = CAlloc(sizeof(CMsRawQue));
+      entry->task = task;
+      QueInsRev(entry, ms_hard.raw_queue);
+    }
+  }
+  else
+  {
+    if (entry = MsRawQueFind(task))
+    {
+      QueRem(entry);
+      Free(entry);
+    }
+  }
   return old_val;
 }
 
@@ -296,7 +332,8 @@ public U0 MsHardHndlr(U8 *pkt=NULL)
     dz=ms_buf[3]&7-8;
   else
     dz=ms_buf[3]&7;
-  if (ms_hard.raw_mode) {
+  if (ms_hard.raw_mode)
+  {
     // buttons / position data need to by consumed by app
     // buttons stay down, positions keep accumulating until
     // consumed by app and reset with MsRawRst
@@ -309,7 +346,8 @@ public U0 MsHardHndlr(U8 *pkt=NULL)
     ms_hard.raw_data.y+=dy;
     ms_hard.raw_data.z+=dz;
   }
-  else {
+  else
+  {
     ms_hard.bttns[0] = ms_buf[0] & 1;
     ms_hard.bttns[1] = (ms_buf[0] & 2) >> 1;
     ms_hard.bttns[2] = (ms_buf[0] & 4) >> 2;
@@ -423,4 +461,6 @@ U0 KbdMsInit()
   ms_hard.pos.x=GR_WIDTH>>1;
   ms_hard.pos.y=GR_HEIGHT>>1;
   MemCpy(&ms_hard_last,&ms_hard,sizeof(CMsHardStateGlbls));
+  ms_hard.raw_queue = CAlloc(sizeof(CQue));
+  QueInit(ms_hard.raw_queue);
 }

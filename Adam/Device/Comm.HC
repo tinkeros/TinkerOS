@@ -7,7 +7,6 @@
 #define MAX_COMM_NUM 12
 #define COMM_RX_FIFO_SIZE 2048
 
-
 #define UART_THR		0
 #define UART_RDR		0
 #define UART_BRDL		0
@@ -25,7 +24,6 @@
 #define COM_DEVICE_TOS_SERVER 1
 #define COM_DEVICE_REPL 2
 #define COM_DEVICE_MOUSE 3
-
 
 class CComm
 {
@@ -84,9 +82,8 @@ interrupt U0 IRQCommPCI()
   I64 port=5;
   while (port<=MAX_COMM_NUM)
   {
-    if (comm_ports[port].base>0)
-      CommHndlr(port);
-    port++;
+    if (Bt(comm_ports[port].flags,COMf_ENABLED) && comm_ports[port].base>0)
+      CommHndlr(port++);
   }
   *(dev.uncached_alias + LAPIC_EOI)(U32*)=0;
 }
@@ -128,17 +125,13 @@ I64 AddPCIComms(I64 next_port)
   return cur_port;
 }
 
-
 public CComm *CommInit7n1(I64 port,I64 baud)
 {// Com port init function
   CComm *c=&comm_ports[port];
   PUSHFD
   CLI
-  if (LBts(&c->flags,COMf_ENABLED))
-  {
-    FifoU8Del(c->RX_fifo);
-  }
-  c->RX_fifo=FifoU8New(COMM_RX_FIFO_SIZE);
+  if (!c->RX_fifo)
+    c->RX_fifo=FifoU8New(COMM_RX_FIFO_SIZE);
   OutU8(c->base+UART_LCR,0);	//Set for IER
   OutU8(c->base+UART_IER,0);	//Disable all IRQ
   OutU8(c->base+UART_LCR,0x80);	//Enable baud rate control
@@ -152,24 +145,18 @@ public CComm *CommInit7n1(I64 port,I64 baud)
   OutU8(c->base+UART_MCR,0xA);	//out2 and rts
   OutU8(0x21,InU8(0x21) & (0xFF-0x18));	//Enable 8259 IRQ 3 & 4
   OutU8(c->base+UART_IER,1);	//RX but no THR empty
+  LBts(&c->flags,COMf_ENABLED);
   POPFD
   return c;
 }
-
-
-
-
 
 public CComm *CommInit8n1(I64 port,I64 baud)
 {// Com port init function
   CComm *c=&comm_ports[port];
   PUSHFD
   CLI
-  if (LBts(&c->flags,COMf_ENABLED))
-  {
-    FifoU8Del(c->RX_fifo);
-  }
-  c->RX_fifo=FifoU8New(COMM_RX_FIFO_SIZE);
+  if (!c->RX_fifo)
+    c->RX_fifo=FifoU8New(COMM_RX_FIFO_SIZE);
   OutU8(c->base+UART_LCR,0);	//Set for IER
   OutU8(c->base+UART_IER,0);	//Disable all IRQ
   OutU8(c->base+UART_LCR,0x80);	//Enable baud rate control
@@ -183,6 +170,7 @@ public CComm *CommInit8n1(I64 port,I64 baud)
   OutU8(c->base+UART_MCR,0xA);	//out2 and rts
   OutU8(0x21,InU8(0x21) & (0xFF-0x18));	//Enable 8259 IRQ 3 & 4
   OutU8(c->base+UART_IER,1);	//RX but no THR empty
+  LBts(&c->flags,COMf_ENABLED);
   POPFD
   return c;
 }
@@ -218,7 +206,6 @@ public Bool CommGetCharNoWait(I64 port, U8 *byte_out)
   return FALSE;
 }
 
-
 public U0 CommFlush(I64 port)
 {// Flush com port fifos
   FifoU8Flush(comm_ports[port].RX_fifo);
@@ -234,7 +221,10 @@ public U0 CommPutS(I64 port,U8 *st)
 public U0 CommPutBlk(I64 port,U8 *buf,I64 cnt)
 {// Writes a block to com port
   while (cnt--)
+  {
+    if (!(cnt%64)) Yield;
     CommPutChar(port,*buf++);
+  }
 }
 
 public U0 CommPrint(I64 port,U8 *fmt,...)
@@ -283,19 +273,24 @@ U0 EnablePCIComms()
 
 public U0 CommInit()
 {// Com port base/IRQ init function
-  I64 next_port=5;
+  I64 i,next_port=5;
   MemSet(&comm_ports,0,sizeof(comm_ports));
   comm_ports[1].base=0x3F8;
   comm_ports[2].base=0x2F8;
   comm_ports[3].base=0x3E8;
   comm_ports[4].base=0x2E8;
   next_port=AddPCIComms(next_port);
+  //TODOadd from more sources?
+  for (i=0; i<MAX_COMM_NUM; i++)
+  {
+    comm_ports[i].flags=0;
+    comm_ports[i].RX_fifo=NULL;
+  }
   IntEntrySet(0x23,&IRQComm3);
   IntEntrySet(0x24,&IRQComm4);
-  EnablePCIComms;
+  if (next_port>5) EnablePCIComms;
 }
 CommInit;
-
 
 U0 CommRep()
 {

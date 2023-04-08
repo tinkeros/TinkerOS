@@ -357,7 +357,7 @@ I64 JobRunOne(I64 run_flags,CJobCtrl *ctrl)
       }
       if (Bt(&flags,JOBf_FOCUS_MASTER) &&
           !Bt(&master->win_inhibit,WIf_SELF_FOCUS))
-        sys_focus_task=master;
+        SetSysFocusTask(master);
       if (Bt(&flags,JOBf_WAKE_MASTER))
         Suspend(master,FALSE);
     }

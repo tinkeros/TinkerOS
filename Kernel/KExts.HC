@@ -135,3 +135,6 @@ extern CHashGeneric *HashPublic(U8 *st,I64 mask,Bool val=TRUE);
 extern U0 DefinePrint(U8 *dname,U8 *src,...);
 extern U0 PortNop();
 extern U0 Busy(I64 uS);
+extern CMsRawQue *MsRawQueFind(CTask *task);
+extern CTask *SetSysFocusTask(CTask *task=Fs, Bool check_raw=TRUE);
+extern U0 SetAltScrn(CDC *scrn=NULL);

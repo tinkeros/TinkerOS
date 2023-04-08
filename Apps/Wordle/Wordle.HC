@@ -1,7 +1,7 @@
 // I use () for empty functions because I want syntax highlighting on GitHub and my code editor.
 // The Generate.ps1 script does a quick search and replace to remove those.
 
-#include "HolyC"
+#include "HolyC"
 #include "Palette"
 
 U8 *version = "v1.0.0";

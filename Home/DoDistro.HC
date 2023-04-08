@@ -18,7 +18,6 @@ U0 MakeMyISO(U8 *_out_iso_filename)
   BootDVDIns;
   Copy("/*","/Distro");
   Del("/Distro/" KERNEL_BIN_C);
-  Del("/Extras/TinkerOS.ISO.C");
   CopyTree(BOOT_DIR,	"/Distro" BOOT_DIR);
   CopyTree("/Home",	"/Distro/Home");
   CopyTree("/Adam",	"/Distro/Adam");
@@ -31,9 +30,7 @@ U0 MakeMyISO(U8 *_out_iso_filename)
   CopyTree("/Extras",	"/Distro/Extras");
   //To save space, optionally delete dictionary.
   Del("/Distro/Adam/AutoComplete/ACDefs.DATA");
-  Del("/Distro/Home/DoDistro.*");
   Del("/Distro/Home/MakeHome.*");
-  DelTree("/Distro/Home/Staff");
   CopyTree("/Downloads","/Distro/Downloads");	  //You can leave this out.
   DirMk("/Distro/Tmp");
   DirMk("/Distro/Tmp/ScrnShots");

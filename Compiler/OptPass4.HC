@@ -209,7 +209,7 @@ U0 OptPass4(CCmpCtrl *cc,COptReg *reg_offsets,I64 *_type)
       case IS_0_ARG: //nobound switch
         break;
       }
-      switch [code]
+      switch (code)
       {
       case IC_IMM_I64:
       case IC_TYPE:
@@ -659,120 +659,8 @@ p4_sib:
           }
         }
         break;
-      case IC_STR_CONST:
-      case IC_FS:
-      case IC_GS:
-      case IC_MOV_FS:
-      case IC_MOV_GS:
-      case IC_RIP:
-      case IC_RBP:
-      case IC_REG:
-      case IC_COM:
-      case IC_HOLYC_TYPECAST:
-      case IC_NOT:
-      case IC_UNARY_MINUS:
-      case IC_PUSH_CMP:
-      case IC_ADD_CONST:
-      case IC_SUB_CONST:
-      case IC_ENTER:
-      case IC_ADD_RSP:
-      case IC_ADD_RSP1:
-      case IC_CALL:
-      case IC_CALL_INDIRECT:
-      case IC_CALL_INDIRECT2:
-      case IC_CALL_EXTERN:
-      case IC_CALL_IMPORT:
-      case IC_PUSH:
-      case IC_POP:
-      case IC_INVLPG:
-      case IC_CLFLUSH:
-      case IC_GET_RFLAGS:
-      case IC_CARRY:
-      case IC_RDTSC:
-      case IC_SET_RFLAGS:
-      case IC_GET_RBP:
-      case IC_SET_RBP:
-      case IC_GET_RSP:
-      case IC_GET_RAX:
-      case IC_SET_RSP:
-      case IC_SET_RAX:
-      case IC_SHL_CONST:
-      case IC_LEA:
-      case IC_SHR_CONST:
-      case IC_POWER:
-      case IC_SHL:
-      case IC_SHR:
-      case IC_MUL:
-      case IC_DIV:
-      case IC_MOD:
-      case IC_AND:
-      case IC_OR:
-      case IC_XOR:
-      case IC_SUB:
-      case IC_EQU_EQU...IC_LESS_EQU:
-      case IC_AND_AND:
-      case IC_OR_OR:
-      case IC_XOR_XOR:
-      case IC_GET_LABEL:
-      case IC_ABS_ADDR:
-      case IC_HEAP_GLBL:
-      case IC_ADDR_IMPORT:
-      case IC_BSF:
-      case IC_BSR:
-      case IC_SIGN_I64:
-      case IC_TOUPPER:
-      case IC_TO_I64:
-      case IC_TO_F64:
-      case IC_TO_BOOL:
-      case IC_SQR:
-      case IC_ABS:
-      case IC_SQRT:
-      case IC_SIN:
-      case IC_COS:
-      case IC_TAN:
-      case IC_ATAN:
-      case IC_ABS_I64:
-      case IC_MIN_I64:
-      case IC_MAX_I64:
-      case IC_MIN_U64:
-      case IC_MAX_U64:
-      case IC_MOD_U64:
-      case IC_SQR_I64:
-      case IC_SQR_U64:
-      case IC_SWAP_U8:
-      case IC_SWAP_U16:
-      case IC_SWAP_U32:
-      case IC_SWAP_I64:
-      case IC_QUE_INIT:
-      case IC_QUE_INS:
-      case IC_QUE_INS_REV:
-      case IC_QUE_REM:
-      case IC_IN_U32:
-      case IC_IN_U16:
-      case IC_IN_U8:
-      case IC_STRLEN:
-      case IC_OUT_U32:
-      case IC_OUT_U16:
-      case IC_OUT_U8:
-      case IC_NOBOUND_SWITCH:
-      case IC_SWITCH:
-      case IC_END:
-      case IC_ADDR:
-      case IC_CALL_START:
-      case IC_LEAVE:
-      case IC_PUSH_REGS:
-      case IC_POP_REGS:
-      case IC_ASM:
-      case IC_BR_AND_NOT_ZERO:
-      case IC_BR_AND_ZERO:
-      case IC_SUB_CALL:
-      case IC_CALL_END2:
-        break;
       default:
-        "Pass:%d Missing IC hndlr\n"
-        ,cc->pass;
-        ICPut(cc,tmpi);
-        LexExcept(cc,"Compiler Optimization Error at ");
+        break;
       }
       if (tmpi)
       {

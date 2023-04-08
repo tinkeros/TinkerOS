@@ -583,7 +583,7 @@ public extern U0 KbdCmdFlush();
 public extern U0 MsHardHndlr(U8 *pkt=NULL);
 public extern Bool MsHardRst();
 public extern U0 MsRawRst();
-public extern Bool MsRaw(Bool val);
+public extern Bool MsRaw(Bool val, CTask *task=NULL);
 extern U0	KbdInit();
 public extern U0 KbdMsCmdAck(...);
 public extern I64 KbdMsEvtTime();
@@ -798,6 +798,7 @@ public extern I64 sys_num_spawned_tasks;
 extern CTask *sys_winmgr_task,*sys_task_being_scrn_updated;
 public extern CGrGlbls gr;
 public extern CWinMgrGlbls winmgr;
+public extern CTask *SetSysFocusTask(CTask *task=Fs, Bool check_raw=TRUE);
 
 #help_index "Task/Delay;Time/CPU Cycles"
 public extern U0 Busy(I64 ÊS); //Loosely timed
@@ -876,6 +877,8 @@ public _extern _TEXT_LEN_ATTR Bool TextLenAttr(CTask *task, I64 x, I64 y, I64 le
 public extern U0 TextPrint(CTask *task, I64 x, I64 y, I64 attr, U8 *fmt, ...);
 public extern U0 TextBorder(CTask *task=NULL, I64 l, I64 r, I64 t, I64 b, I64 attr, Bool solid);
 public extern U0 TextRect(I64 l, I64 r, I64 t, I64 b, I64 d);
+public extern CDC *gr_alt_scrn;
+public extern U0 SetAltScrn(CDC *scrn=NULL);
 
 #help_index "Keyboard Devices"
 public extern U8 *key_state, *sc_state;

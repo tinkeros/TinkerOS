@@ -14,12 +14,13 @@ U0 Models()
   i=DocMenu(DocPut);
   LBEqu(&(DocPut)->flags,DOCf_FORM,old_form);
   DocBottom;
-  switch (i) {
-    case T_MAN:
-      ManGen;
-      break;
-    case T_BALL:
-      BallGen;
-      break;
+  switch (i)
+  {
+  case T_MAN:
+    ManGen;
+    break;
+  case T_BALL:
+    BallGen;
+    break;
   }
 }

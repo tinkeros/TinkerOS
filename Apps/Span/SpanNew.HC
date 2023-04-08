@@ -11,7 +11,8 @@ CMathODE *SpanNew()
 
 U0 SpanDel(CMathODE *ode)
 {
-  if (ode) {
+  if (ode)
+  {
     QueRem(ode);
     QueDel(&ode->next_mass,TRUE);
     QueDel(&ode->next_spring,TRUE);
@@ -29,7 +30,6 @@ U8 *SpanSave(CMathODE *ode,I64 *_size=NULL)
   MyMass   *tmpm;
   MySpring *tmps;
   SpanHeader h;
-
   ODERenum(ode);
   h.version=SPAN_VERSION;
   if (ode->next_mass!=&ode->next_mass)
@@ -40,22 +40,20 @@ U8 *SpanSave(CMathODE *ode,I64 *_size=NULL)
     h.num_springs=ode->last_spring->num+1;
   else
     h.num_springs=0;
-
   cnt=sizeof(SpanHeader)+h.num_masses*M_SIZE+h.num_springs*S_SIZE;
-
   ptr=res=MAlloc(cnt);
   MemCpy(ptr,&h,sizeof(SpanHeader));
   ptr+=sizeof(SpanHeader);
-
   tmpm=ode->next_mass;
-  while (tmpm!=&ode->next_mass) {
+  while (tmpm!=&ode->next_mass)
+  {
     MemCpy(ptr,&tmpm->start,M_SIZE);
     ptr+=M_SIZE;
     tmpm=tmpm->next;
   }
-
   tmps=ode->next_spring;
-  while (tmps!=&ode->next_spring) {
+  while (tmps!=&ode->next_spring)
+  {
     MemCpy(ptr,&tmps->start,S_SIZE);
     ptr+=S_SIZE;
     tmps=tmps->next;
@@ -71,8 +69,10 @@ Bool SpanWrite(CMathODE *ode)
   Bool res=FALSE,old_silent=Silent;
   DirMk("~/Span");
   Silent(old_silent);
-  if (name=PopUpFileName("~/Span/Game.DATA")) {
-    if (buf=SpanSave(ode,&size)) {
+  if (name=PopUpFileName("~/Span/Game.DATA"))
+  {
+    if (buf=SpanSave(ode,&size))
+    {
       FileWrite(name,buf,size);
       Free(buf);
       res=TRUE;
@@ -88,20 +88,18 @@ U0 SpanLoad(CMathODE *ode,U8 *src)
   MyMass   *tmpm;
   MySpring *tmps;
   SpanHeader h;
-
   if (!src) return;
-
   MemCpy(&h,src,sizeof(SpanHeader));
   src+=sizeof(SpanHeader);
-
-  for (i=0;i<h.num_masses;i++) {
+  for (i=0; i<h.num_masses; i++)
+  {
     tmpm=CAlloc(sizeof(MyMass));
     MemCpy(&tmpm->start,src,M_SIZE);
     src+=M_SIZE;
     QueIns(tmpm,ode->last_mass);
   }
-
-  for (i=0;i<h.num_springs;i++) {
+  for (i=0; i<h.num_springs; i++)
+  {
     tmps=CAlloc(sizeof(MySpring));
     MemCpy(&tmps->start,src,S_SIZE);
     src+=S_SIZE;
@@ -117,7 +115,8 @@ U8 *SpanRead()
   Bool old_silent=Silent;
   DirMk("~/Span");
   Silent(old_silent);
-  if (name=PopUpPickFile("~/Span")) {
+  if (name=PopUpPickFile("~/Span"))
+  {
     src=FileRead(name);
     Free(name);
   }

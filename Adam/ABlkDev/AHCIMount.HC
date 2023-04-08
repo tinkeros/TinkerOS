@@ -107,6 +107,6 @@ public I64 SATARep(I64 bd_type=BDT_NULL, I64 *first_hdd=NULL)
   else
     "blkdev.ahci_hba is NULL !\n\n";
   if (first_hdd)
-      *first_hdd=first_hd;
+    *first_hdd=first_hd;
   return MaxI64(num,i_max);
 }

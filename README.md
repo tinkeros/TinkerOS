@@ -16,7 +16,7 @@ TinkerOS is essentially TempleOS renamed with some changes that allow it to run 
 - Bring back some old TempleOS features and add new features, popular apps, and games.
 - Make higher resolutions easy to setup.
 - Make more colors available for TinkerOS features and 3rd party apps.  The original TempleOS code that makes use of only 16 colors still works, no backward compatability has been broken.  TempleOS uses colors 16 colors 0-15 and 255=transparent.  TinkerOS and 3rd party apps can additionally use colors 16-254 for 239 more colors to work with.  These can be any 24-bit RGB color.
-- Make most apps and games work and look decent on both 4:3 and widescreen monitors using letterboxing for a 4:3 experience or scaled widescreen modes with an effective width of 640 (640x340, 640x360, 640x400)
+- Make most apps and games work and look decent on both 4:3 and widescreen monitors using letterboxing for a 4:3 experience or scaled widescreen modes with an effective width of 640 (640x360, 640x400, 640x512)
 - Improve installation process.
 - Possibly new device driver support for modern storage and/or networking.
 - Document bare-metal device compatability.  Please make a pull request to update Compatibility.csv if you want to help.

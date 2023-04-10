@@ -3,7 +3,7 @@
 // Pick one, then configure below
 
 // QEMU / Real ISA Adlib card
-/define ISA_OPL
+#define ISA_OPL
 // OPT2LPT or OPL3LPT connected via a parallel port
 //#define OPL2LPT
 // Serial OPL device

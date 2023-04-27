@@ -190,7 +190,14 @@ I64 Dir(U8 *files_find_mask="*",Bool full=FALSE)
 
 Bool IsFile(U8* filename)
 {
-  I64 old_silent=Silent, res=Dir(filename);
+  I64 old_silent=Silent, res;
+  try {
+    res=Dir(filename);
+  }
+  catch {
+    res=0;
+    Fs->catch_except=TRUE;
+  }
   Silent(old_silent);
   return res>0;
 }

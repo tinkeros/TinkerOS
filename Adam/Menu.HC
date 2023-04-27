@@ -4,7 +4,7 @@
 CTask *MenuTask()
 {
   CTask *res=sys_focus_task;
-  while (res && !res->cur_menu)
+  while (res && TaskValidate(res) && !res->cur_menu)
     res=res->parent_task;
   return res;
 }

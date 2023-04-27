@@ -1,7 +1,7 @@
 U0 SysGlblsInit()
 {
   I64 i,j;
-  CRAXRBCRCXRDX ee;
+  CRAXRBXRCXRDX ee;
   CPUId(0x1,&ee);
   sys_cache_line_width=ee.rbx.u8[1]*8;
   CPUId(0x40000000,&ee);

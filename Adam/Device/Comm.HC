@@ -94,16 +94,16 @@ interrupt U0 IRQCommPCI()
 
 I64 AddPCIComms(I64 next_port)
 {
-  I64 class_code = PCIC_COMM << 16 | PCISC_SERIAL << 8 + SERIAL_16550,
+  I64 class_code = PCIC_COMM << 8 | PCISC_SERIAL,
       ioport,bdf,cur_port=next_port,
                  b, d, f, bar;
   for (b = 0; b < sys_pci_busses; b++)
     for (d = 0; d < 32; d++)
       for (f = 0; f < 8; f++)
       {
-        if (class_code == PCIReadU32(b, d, f, PCIR_PROG_IF) & 0xFFFFFF)
+        if (class_code == PCIReadU16(b, d, f, PCIR_SUB_CODE) & 0xFFFF)
         {
-          for (bar=PCIR_BASE0; bar<PCIR_BASE5; bar+=4)
+          for (bar=PCIR_BASE0; bar<=PCIR_BASE5; bar+=4)
           {
             bdf = b << 16 | d << 8 | f;
             ioport = PCIReadU32(bdf.u8[2], bdf.u8[1], bdf.u8[0], bar);

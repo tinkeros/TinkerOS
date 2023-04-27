@@ -206,7 +206,15 @@ U0 DocUpdateTaskDocs(CTask *task)
   CDoc *doc;
   CD3I64 saved_scroll;
   if (task->border_src==BDS_CUR_DRV && task->cur_dv)
-    task->border_attr=DrvTextAttrGet(Drv2Let(task->cur_dv));
+  {
+    try {
+      task->border_attr=DrvTextAttrGet(Drv2Let(task->cur_dv));
+    }
+    catch {
+      task->border_attr=DrvTextAttrGet(blkdev.boot_drv_let);
+      Fs->catch_except=TRUE;
+    }
+  }
   if (task->title_src==TTS_TASK_NAME)
     StrCpy(task->task_title,task->task_name);
   if ((doc=DocDisplay(task)) && !(doc->flags&DOCF_DONT_SHOW))

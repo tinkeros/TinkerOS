@@ -598,15 +598,21 @@ U0 KbdInit()
   OutU8(0x21,InU8(0x21)&~2);
 }
 
-U0 KbdHndlr()
+U0 KbdHndlr(U8 *pkt=NULL)
 {
   static U8 last_raw_byte=0;
   U8  raw_byte;
-  FifoU8Rem(kbd.fifo2,&raw_byte);
+  if (pkt)
+    raw_byte = pkt[0];
+  else
+    FifoU8Rem(kbd.fifo2,&raw_byte);
   KbdBuildSC(raw_byte,FALSE,&last_raw_byte,&kbd.scan_code);
   if (raw_byte==0xE0)
   {
-    FifoU8Rem(kbd.fifo2,&raw_byte);
+    if (pkt)
+      raw_byte = pkt[1];
+    else
+      FifoU8Rem(kbd.fifo2,&raw_byte);
     KbdBuildSC(raw_byte,FALSE,&last_raw_byte,&kbd.scan_code);
   }
   if (Btr(&kbd.scan_code,SCf_NEW_KEY))
@@ -667,4 +673,13 @@ I64 KbdMsEvtTime()
     return ms_hard.timestamp;
   else
     return kbd.new_key_timestamp;
+}
+
+public U0 KbdPktInject(U8 *pkt)
+{// Inject a 1 or 2 byte keyboard packet from an external non-PS/2 source
+    PUSHFD
+    CLI
+    kbd.timestamp=GetTSC;
+    KbdHndlr(pkt);
+    POPFD
 }

@@ -135,6 +135,8 @@ U0 RunSysSurvey()
 
   "Survey and System Results:\n\n";
 
+  "OS: TinkerOS V%5.3f\t%D %T\n\n",sys_os_version,sys_compile_time,sys_compile_time;
+
   "Current graphics mode: %d x %d (%d by %d framebuffer)\n\n",GR_WIDTH,GR_HEIGHT,FB_WIDTH,FB_HEIGHT;
   "Current disk mode: ";
   if (AHCIMode) "AHCI\n\n"; else "IDE/Legacy\n\n";

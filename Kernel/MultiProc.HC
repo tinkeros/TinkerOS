@@ -305,7 +305,7 @@ U0 Core0StartMP()
   CAP16BitInit *mp=MP_VECT_ADDR;
   CCPU *c;
   I64 i,my_mp_cnt;
-  CRAXRBCRCXRDX ee;
+  CRAXRBXRCXRDX ee;
   CPUId(0x1,&ee);
   if (!Bt(&ee.rdx,9))
   {
@@ -374,7 +374,7 @@ U0 Core0StartMP()
 
 U0 Core0Init()
 {//Called by adam during start-up
-  CRAXRBCRCXRDX ee;
+  CRAXRBXRCXRDX ee;
   CPUId(0x1,&ee);
   mp_cnt_initial=mp_cnt=1;
   mp_cnt_lock=0;
@@ -401,10 +401,17 @@ interrupt U0 IntMPCrash()
 //Which calls this routine.
   *(dev.uncached_alias+LAPIC_EOI)(U32 *)=0;
   mp_cnt=1;
-  Raw(ON);
-  text.raw_flags|=RWF_SHOW_DOLLAR;
-  "MP Crash CPU%02X Task:%08X\n"
-  "RIP:%P\n"
-  ,dbg.mp_crash->cpu_num,dbg.mp_crash->task,dbg.mp_crash->rip;
-  Panic(dbg.mp_crash->msg,dbg.mp_crash->msg_num);
+  // For now ignore an MP crash during boot and
+  // try to continue with a single core since
+  // you probably can't debug it in an early
+  // boot stage anyway
+  if (Bt(&sys_run_level,RLf_DOC))
+  {
+    Raw(ON);
+    text.raw_flags|=RWF_SHOW_DOLLAR;
+    "MP Crash CPU%02X Task:%08X\n"
+    "RIP:%P\n"
+    ,dbg.mp_crash->cpu_num,dbg.mp_crash->task,dbg.mp_crash->rip;
+    Panic(dbg.mp_crash->msg,dbg.mp_crash->msg_num);
+  }
 }

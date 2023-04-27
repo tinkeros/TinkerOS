@@ -51,6 +51,7 @@ I64 ScanMsg(I64 *_arg1=NULL,I64 *_arg2=NULL,I64 mask=~1,CTask *task=NULL)
   if (!task) task=Fs;
   old_flags=GetRFlags;
   tmpc1=&task->srv_ctrl.next_waiting;
+  if (!TaskValidate(task)) return NULL;
   while (TRUE)
   {
     CLI

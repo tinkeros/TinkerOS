@@ -219,9 +219,17 @@ U0 PrsVarInit2(CCmpCtrl *cc,U8 **_dst,CHashClass *tmpc,
           PrsVarInit2(cc,_dst,tmpc,tmpad1,data_addr_rip,_base,data_heap,pass);
           if (tmpad1->cnt>1 && cc->token==',')
             Lex(cc);
+          if (cc->token=='}')
+          {
+            Lex(cc);
+            break;
+          }
         }
-        if (cc->token=='}')
-          Lex(cc);
+        if (i<tmpad1->cnt-1)
+        {
+          LexWarn(cc,"Not all array entires specified, undefined values will contain undefined data ");
+          tmpad1->cnt=i+1;
+        }
       }
     }
   }

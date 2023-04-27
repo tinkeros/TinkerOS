@@ -324,8 +324,16 @@ U8 *DirCur(CTask *task=NULL,CTask *mem_task=NULL)
   if (!task->cur_dir)
     return NULL;
   st=MAlloc(StrLen(task->cur_dir)+3,mem_task);
-  *st=Drv2Let(task->cur_dv);
   st[1]=':';
+  try {
+    *st=Drv2Let(task->cur_dv);
+  }
+  catch {
+    *st=blkdev.boot_drv_let;
+    st[2]=0;
+    Fs->catch_except=TRUE;
+    Cd(st);
+  }
   StrCpy(st+2,task->cur_dir);
   return st;
 }

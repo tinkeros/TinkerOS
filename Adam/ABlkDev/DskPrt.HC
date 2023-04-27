@@ -195,5 +195,6 @@ pd_done:
     QueRem(tmppp);
     Free(tmppp);
   }
+  Fs->user_data=1;
   return total;
 }

@@ -20,26 +20,6 @@ U0 MakeAll()
     throw;
 }
 
-U0 MakeAllDef()
-{// Try to automatically recompile both compiler and kernel
-  U8 *def_cfg;
-  I64 cur_drv_hint=-1;
-  if (HashFind("CUR_DRV_HINT",adam_task->hash_table,HTT_DEFINE_STR))
-  {
-    cur_drv_hint=ExePrint("CUR_DRV_HINT;\n")(I64);
-    if (cur_drv_hint>=0)
-    {
-      if (AHCIMode) def_cfg=MStrPrint("\nB\nScale2Mem(2048,0x40000)\n%c\n%d\n\n\n\n",blkdev.boot_drv_let,cur_drv_hint);
-      else def_cfg=MStrPrint("\nB\nScale2Mem(2048,0x40000)\n%c\np%d\n\n\n\n",blkdev.boot_drv_let,cur_drv_hint);
-      In(def_cfg);
-      MakeAll;
-      Free(def_cfg);
-      return;
-    }
-  }
-  "Cannot make default config, from this kernel, use MakeAll and set options manually!\n";
-}
-
 public U0 BootHDIns(U8 drv_let=0)
 {
   //$LK,"MakeAll",A="MN:MakeAll"$ and install new boot-loader.
@@ -89,4 +69,30 @@ public U0 BootHDIns(U8 drv_let=0)
     PutExcept;
     Beep;
   }
+}
+
+U0 MakeAllDef(Bool install=FALSE)
+{// Try to automatically recompile both compiler and kernel
+  U8 *def_cfg;
+  I64 cur_drv_hint=-1;
+  if (HashFind("CUR_DRV_HINT",adam_task->hash_table,HTT_DEFINE_STR))
+  {
+    cur_drv_hint=ExePrint("CUR_DRV_HINT;\n")(I64);
+    if (cur_drv_hint>=0)
+    {
+      if (AHCIMode) def_cfg=MStrPrint("\nB\nScale2Mem(2048,0x40000)\n%c\n%d\n\n\n\n",blkdev.boot_drv_let,cur_drv_hint);
+      else def_cfg=MStrPrint("\nB\nScale2Mem(2048,0x40000)\n%c\np%d\n\n\n\n",blkdev.boot_drv_let,cur_drv_hint);
+      In(def_cfg);
+      if (install) BootHDIns(blkdev.boot_drv_let);
+      else MakeAll;
+      Free(def_cfg);
+      return;
+    }
+  }
+  "Cannot make default config, from this kernel, use MakeAll and set options manually!\n";
+}
+
+U0 MakeAllIns()
+{
+  MakeAllDef(TRUE);
 }

@@ -598,6 +598,8 @@ public extern I64 ScanChar();
 public extern Bool ScanKey(I64 *_ch=NULL,I64 *_scan_code=NULL,Bool echo=FALSE);
 public extern Bool YorN(I64 enter_default=0);
 public extern CKbdStateGlbls	kbd;
+public extern U0 MsPktInject(U8 *pkt);
+public extern U0 KbdPktInject(U8 *pkt);
 
 #help_index "Math"
 public extern I64 CeilI64(I64 num,I64 to);

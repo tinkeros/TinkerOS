@@ -685,6 +685,12 @@ public class CCntsGlbls
 #define SF_ARG7	0x40
 #define SF_ARG8	0x48
 
+class CRAXRBXRCXRDX
+{
+  I64	rax,rbx,rcx,rdx;
+};
+
+// Copy kept just for compiling TempleOS kernel
 class CRAXRBCRCXRDX
 {
   I64	rax,rbx,rcx,rdx;

@@ -804,7 +804,7 @@ start:
       break;
     case SMBIOSt_PROCESSOR:
       CSMBIOSProcessorInfo *p_info = header;
-      CRAXRBCRCXRDX regs;
+      CRAXRBXRCXRDX regs;
       CPUId(1, &regs);
       "$$TR-C,\"Processor\"$$\n";
       "$$FD,CYAN$$";
@@ -1026,8 +1026,11 @@ start:
         "%d $MA-X+PU,"MT/s",LM="\"megatransfers per second\";View;"$$$FG$$\n", mem_info->configured_speed;
         else
           "Unknown$$FG$$\n";
+      if (!survey)
+      {
       "Serial Number:$$BLACK$$%s$$FG$$\n"
       , SMBIOSStr(header, mem_info->serial_number);
+      }
       "Part Number:$$BLACK$$%s$$FG$$\n"
       , SMBIOSStr(header, mem_info->part_number);
       "Asset Tag:$$BLACK$$%s$$FG$$\n"
@@ -1135,11 +1138,14 @@ start:
         "%d$$FG$$\n", bat_info->max_battery_data_error;
       else
         "Unknown$$FG$$\n";
+      if (!survey)
+      {
       "Serial Number:$$BLACK$$";
       if (bat_info->serial_number)
         "%s$$FG$$\n", SMBIOSStr(header, bat_info->serial_number);
       else
         "%d$$FG$$\n", bat_info->sbds_serial_number;
+      }
       "$$ID,-3$$";
       break;
     case SMBIOSt_OEM_STRINGS:

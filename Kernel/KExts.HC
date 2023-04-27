@@ -10,6 +10,7 @@ import U0 ClassRep(U8 *_d,U8 *class_name=lastclass,
 import U8 *DocSave(CDoc *doc,I64 *_size=NULL);
 import Bool DocUnlock(CDoc *doc);
 import Bool Ed(U8 *link_st,I64 edf_dof_flags=0);
+import U0 PCILookUpDev(I64 vendor, I64 dev);
 extern U0 AdamErr(U8 *fmt,...);
 extern U0 AdamLog(U8 *fmt,...);
 extern I64 BIOSTotalMem();

@@ -189,7 +189,6 @@ public U0 PCIRep()
     tmppci->base_code,tmppci->sub_code,
     v,d,
     tmppci->vendor_str,tmppci->dev_id_str;
-    tmppci=tmppci->next;
     for (i=0; i<6; i++)
     {
       bar=PCIReadU32(tmppci->bus,tmppci->dev,tmppci->fun,0x10+4*i);
@@ -199,6 +198,7 @@ public U0 PCIRep()
       else if (bar&7==4) "64-bit MMIO: 0x%016x\n",(bar&0xfffffff0)(I64)+PCIReadU32(tmppci->bus,tmppci->dev,tmppci->fun,0x10+4*(i+1))(I64)<<32;
       else if (bar&7==2) "16-bit MMIO: 0x%04x\n",(bar&0xfff0)(I64);
     }
+    tmppci=tmppci->next;
   }
 }
 
@@ -278,4 +278,14 @@ public CPCIDev *PCIDevFind(U16 class_code=NULL, U16 sub_code=NULL,
   return NULL;
 }
 
+U0 PCILookUpDev(I64 vendor, I64 dev)
+{
+  CDoc *doc;
+  U8 *vendor_str, *dev_id_str;
+  doc=DocRead(PCI_DEV_FILE,DOCF_PLAIN_TEXT|DOCF_NO_CURSOR);
+  PCILookUpSingle(doc,vendor,dev,vendor_str,dev_id_str);
+  "Vendor: %s\n",vendor_str;
+  "Device: %s\n",dev_id_str;
+  DocDel(doc);
+}
 

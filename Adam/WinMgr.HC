@@ -74,7 +74,7 @@ I64 WinQueIPMsgs(Bool que)
   F64 time=tS;
   I64 msg_code=0,arg1,arg2,single_arg1,single_arg2;
   CTask *task_focus=sys_focus_task;
-  if (task_focus && !winmgr.grab_scroll)
+  if (task_focus && TaskValidate(task_focus) && !winmgr.grab_scroll)
   {
     arg1=ms.pos.x-task_focus->pix_left-task_focus->scroll_x;
     arg2=ms.pos.y-task_focus->pix_top-task_focus->scroll_y;

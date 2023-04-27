@@ -1,3 +1,6 @@
+#define DRV_WAIT_TIMEOUT_MS 30000
+#define DRV_PART_TIMEOUT_MS 60000
+
 class InstallOptions
 {
   Bool extras;
@@ -25,15 +28,40 @@ TempleOSCfg tos_cfg[4]=
 
 U0 InstallDrv(U8 drv_let,Bool extras=FALSE,Bool templeos=FALSE)
 {
+  Bool ready=FALSE,old_silent;
   U8 *st,*st2;
-  I64 src_let;
+  I64 src_let,timeout=0;
   TempleOSCfg *drv_tos_cfg=&tos_cfg['C'-drv_let];
-  Sleep(100);
-  while (!DrvChk(blkdev.let_to_drv[drv_let - 'A'], FALSE))
-    Sleep(5);
-  if (drv_let == 'C')
-    Sleep(1000);
   src_let=':';
+  st=MStrPrint("%C:/Ready",drv_let);
+  old_silent=Silent;
+  while (!ready && timeout<DRV_WAIT_TIMEOUT_MS)
+  {
+    try {
+      DirMk(st);
+      Sleep(1);
+      if (IsDir(st))
+      {
+        Sleep(1);
+        DelTree(st);
+        ready=TRUE;
+      }
+    }
+    catch {
+      Fs->catch_except=TRUE;
+    }
+    Sleep(100);
+    timeout+=100;
+  }
+  Silent(old_silent);
+  Free(st);
+
+  if (timeout>DRV_WAIT_TIMEOUT_MS)
+  {
+     "Failed to write to drive %C, install cannot continue!\n",drv_let;
+     return;
+  }
+
   if (templeos)
   {
     if (!DrvMounted('M'))
@@ -353,7 +381,7 @@ U0 VMInstall(Bool just_std_ide=TRUE, InstallOptions *cfg)
   CATARep *head=NULL,*ata_drv=NULL,*atapi_drv=NULL;
   CATARep hd,cd;
   CTask *task;
-  I64			 i, atapi_port = -1, ata_port = -1, first_hd=-1;
+  I64 i, timeout=0, atapi_port = -1, ata_port = -1, first_hd=-1;
   CAHCIPort	*port;
   "\nReady to do install, it's normal for this to freeze for a moment or two.\n";
   PressAKey;
@@ -401,6 +429,17 @@ U0 VMInstall(Bool just_std_ide=TRUE, InstallOptions *cfg)
   }
   if ((AHCIMode && VMPrtDskAHCI(task,ata_drv->num,cfg->num)) || VMPrtDsk(task,ata_drv,cfg->num))
   {
+    while (!task->user_data && timeout < DRV_PART_TIMEOUT_MS)
+    {
+      Sleep(50);
+      timeout+=50;
+    }
+    if (timeout > DRV_PART_TIMEOUT_MS)
+    {
+      "Failed to partition drive in a timely manner!\n";
+      "Try partitioning manually with an external tool!\n";
+      goto install_end;
+    }
     for (i=0; i<cfg->num; i++)
     {
       VMInstallDrv(task,'C'+i,ata_drv,atapi_drv,cfg->res[i],cfg->extras);
@@ -408,6 +447,7 @@ U0 VMInstall(Bool just_std_ide=TRUE, InstallOptions *cfg)
     }
     BootMHDIns('C');
   }
+  install_end:
   if (!AHCIMode)
   {
     LinkedLstDel(head);

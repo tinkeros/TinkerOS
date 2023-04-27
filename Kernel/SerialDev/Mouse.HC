@@ -317,7 +317,7 @@ public U0 MsHardHndlr(U8 *pkt=NULL)
   }
   else
   {
-    for (i=0; i<4; i++)
+    for (i=0; i<ms_hard.pkt_size; i++)
       ms_buf[i]=pkt[i];
   }
   if (ms_buf[0] & 0x10)
@@ -464,3 +464,13 @@ U0 KbdMsInit()
   ms_hard.raw_queue = CAlloc(sizeof(CQue));
   QueInit(ms_hard.raw_queue);
 }
+
+public U0 MsPktInject(U8 *pkt)
+{// Inject a mouse packet from an external non-PS/2 source
+    PUSHFD
+    CLI
+    ms.timestamp=GetTSC;
+    MsHardHndlr(pkt);
+    POPFD
+}
+

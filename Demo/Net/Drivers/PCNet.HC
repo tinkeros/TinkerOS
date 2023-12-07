@@ -67,8 +67,8 @@
 #define PCNET_CTRL_IDON 8
 #define PCNET_CTRL_RINT 10
 
-#define PCNET_RX_BUFF_COUNT 32  // Linux & Shrine Driver use 32 and 8 for
-#define PCNET_TX_BUFF_COUNT 8   // these, we could allow more if wanted.
+#define PCNET_RX_BUFF_COUNT 64
+#define PCNET_TX_BUFF_COUNT 64
 
 #define PCNET_DESCRIPTORf_ENP   24
 #define PCNET_DESCRIPTORf_STP   25
@@ -372,8 +372,8 @@ U8 *PCNetInitBlockSetup()
   CPCNetBufferSetup *u_setup = setup + dev.uncached_alias;
   U32                    p_setup;
   u_setup->mode     = 0;
-  u_setup->rlen     = 5 << 4;
-  u_setup->tlen     = 3 << 4;
+  u_setup->rlen     = 6 << 4;
+  u_setup->tlen     = 6 << 4;
   MemCpy(u_setup->mac, pcnet.mac_address, 6);
   u_setup->reserved = 0;
   MemSet(u_setup->ladr, 0, 8);

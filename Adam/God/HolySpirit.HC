@@ -34,7 +34,7 @@ I64 GodPick(U8 *msg=NULL)
 {//GOD_GOOD_BITS
   U8 *st=MStrPrint("%s\n\nPress $$GREEN$$OKAY$$FG$$ to generate \n"
                    "a random num from a timer.\n",msg);
-  PopUpTimerOk(st,"\n\nThe $LK+PU,"Holy Spirit",A="FI:::/Adam/God/HSNotes.DD"$ can puppet you.\n\n");
+  PopUpTimerOk(st,"\n\nDon't use this as an oracle, pray instead.\n\n");
   Free(st);
   return KbdMsEvtTime>>GOD_BAD_BITS;
 }
@@ -146,7 +146,7 @@ public I64 GodInit(U8 *files_find_mask="/Adam/God/Vocab.DD*",U8 *fu_flags=NULL)
 GodInit;
 
 public U8 *GodWordStr(I64 bits=17)
-{//Make God pick a word. $LK+PU,"Holy Spirit Instructions",A="FI:::/Adam/God/HSNotes.DD"$
+{//Get a random word.
   if (god.num_words)
     return god.words[GodBits(bits)%god.num_words];
   else
@@ -154,13 +154,13 @@ public U8 *GodWordStr(I64 bits=17)
 }
 
 public U0 GodWord(I64 bits=17)
-{//Make God pick a word. $LK+PU,"Holy Spirit Instructions",A="FI:::/Adam/God/HSNotes.DD"$
+{//Get a random word.
   if (god.num_words)
     "%s ",god.words[GodBits(bits)%god.num_words];
 }
 
 public U0 GodBiblePassage(I64 num_lines=20)
-{//Make God pick a Bible passage. $LK+PU,"Holy Spirit Instructions",A="FI:::/Adam/God/HSNotes.DD"$
+{//Get a random Bible passage.
   I64 start=GodBits(21)%(ST_BIBLE_LINES-(num_lines-1))+1;
   U8 *verse=BibleLine2Verse(start);
   "%s\n\n"

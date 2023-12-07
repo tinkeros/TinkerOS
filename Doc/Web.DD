@@ -1,20 +1,28 @@
-$WW+H,1$$FG,5$$TX+CX,"TinkerOS V5.11",D="DD_OS_NAME_VERSION"$$FG$
+$WW+H,1$$FG,5$$TX+CX,"TinkerOS V5.12",D="DD_OS_NAME_VERSION"$$FG$
 
 $TX+CX,"Public Domain Operating System"$
 
-
-
-$LK,"Help & Index",A="FI:::/Doc/HelpIndex.DD"$, $LK,"Quick Start: Cmd line",A="FI:::/Doc/CmdLineOverview.DD"$
-
-$LK,"Introduction",A="FI:::/Doc/Welcome.DD"$, $LK,"F.A.Q.",A="FI:::/Doc/FAQ.DD"$
-
-$LK,"Features",A="FI:::/Doc/Features.DD"$, $LK,"The Charter",A="FI:::/Doc/Charter.DD"$
-
-$LK,"KeyMap (All)",A="FI:::/Doc/KeyMap.DD"$, $LK,"KeyMap (DolDoc)",A="FI:::/Doc/KeyMapDol.DD"$
-
-$LK,"KeyMap (Ed)",A="FI:::/Doc/KeyMapEd.DD"$, $LK,"KeyMap (Cmd)",A="FI:::/Doc/KeyMapCmd.DD"$
-
-$LK,"Source Code By File",A="FI:::/Home/Web/LineRep.DD"$, $LK,"Source Code By Sym",A="FI:::/Home/Web/SymsAlpha.DD"$
-
+$LK,"Introduction",A="FI:::/Doc/Welcome.DD"$
+$LK,"Help & Index",A="FI:::/Doc/HelpIndex.DD"$ 
+$LK,"HolyC",A="FI:::/Doc/HolyC.DD"$
+$LK,"F.A.Q.",A="FI:::/Doc/FAQ.DD"$
+$LK,"Quick Start: Cmd line",A="FI:::/Doc/CmdLineOverview.DD"$
+$LK,"Features",A="FI:::/Doc/Features.DD"$
+$LK,"The Charter",A="FI:::/Doc/Charter.DD"$
+$LK,"KeyMap (All)",A="FI:::/Doc/KeyMap.DD"$
+$LK,"Source Code By File",A="FI:::/Home/Web/LineRep.DD"$
+$LK,"Source Code By Sym",A="FI:::/Home/Web/SymsAlpha.DD"$
 $LK,"Source Code By Address",A="FI:::/Home/Web/SymsAddress.DD"$
 
+
+$LK,"Why Not More?",A="FI:::/Doc/WhyNotMore.DD"$
+$LK,"About TinkerOS",A="FI:::/Doc/AboutTinkerOS.DD"$
+$LK,"TinkerOS hardware requirements",A="FI:::/Doc/Requirements.DD"$
+$LK,"TinkerOS baremetal install",A="FI:::/Doc/Baremetal/Baremetal.DD"$
+$LK,"Categorized TinkerOS API Function Index",A="FI:::/Doc/FuncIndex.DD"$
+$LK,"The Tinkerer's thoughts on God",A="FI:::/Doc/God.DD"$
+
+
+$LK,"Videos",A="FI:::/Doc/Videos.DD"$
+
+

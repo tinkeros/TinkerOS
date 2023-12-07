@@ -1,18 +1,24 @@
 
 Cd(__DIR__);;
-AutoComplete(0);
 #include "Load"
-I64 retries = 5;
-NetConfigure;
-while (ipv4_globals.local_ip == 0 && retries--)  // local_ip is set if NetConfigure is successful
+I64 retries = 0;
+NetCfg;
+while (ipv4_globals.local_ip == 0 && retries<3)  // local_ip is set if NetConfigure is successful
 {
-  "\nNetConfigure unsuccessful. Retrying...\n";
-  NetConfigure;
+  retries++;
+  if (retries>0)
+    net_log_dbg=TRUE;
+  if (retries>1) {
+    net_log_warn=TRUE;
+    net_log_log=TRUE;
+  }
+  "\nNetCfg unsuccessful. Retrying...\n";
+  NetCfg;
 }
 if (ipv4_globals.local_ip == 0)
-  "\nNetConfigure unsuccessful. See Network Log for details.\n\n";
+  "\nNetCfg unsuccessful. See Network Log for details.\n\n";
 else
-  "\nNetConfigure successful!\n\n";
+  "\nNetCfg successful!\n\n";
 NetRep;
 if (ipv4_globals.local_ip != 0 && Fs != adam_task)
 {

@@ -1032,7 +1032,7 @@ I64 TCPSocketReceive(CTCPSocket *tcp_socket, U8 *buffer, I64 length)
          tcp_socket->read_position == tcp_socket->write_position)
   {
     TCPCheckACKQue(tcp_socket);
-    Sleep(1);
+    Sleep(1+tcp_socket->timeout/1000);
     if (cnts.jiffies > timeout)
       break;
   }
@@ -1042,7 +1042,7 @@ I64 TCPSocketReceive(CTCPSocket *tcp_socket, U8 *buffer, I64 length)
   if (cnts.jiffies > timeout)
   {
     if (tcp_socket->timeout != 0) // Don't flood NetLog on non-blocking receives.
-      NetErr("TCP SOCKET RECEIVE: Timed out.");
+      NetWarn("TCP SOCKET RECEIVE: Timed out.");
     return -1;
   }
   read_position = tcp_socket->read_position;

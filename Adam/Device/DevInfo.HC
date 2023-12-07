@@ -165,9 +165,9 @@ lud_done:
 public U0 PCIRep()
 {//Report description of PCI devices.
   CPCIDev *tmppci;
-  U16 d,v;
+  U16 cmd,stat,d,v;
   U32 bar;
-  I64 i;
+  I64 i,progif;
   "PCI Busses:%d\n"
   ,sys_pci_busses;
   if (!FileFind(PCI_DEV_FILE))
@@ -182,13 +182,41 @@ public U0 PCIRep()
     bar=PCIReadU32(tmppci->bus,tmppci->dev,tmppci->fun,0x0);
     v=bar.u16[0];
     d=bar.u16[1];
-    "bs:dv:f cl:sc v_id:d_id \n";
-    "%02X:%02X:%01X %02X:%02X %04X:%04X $$GREEN$$%s $$CYAN$$%s$$FG$$\n"
+    bar=PCIReadU32(tmppci->bus,tmppci->dev,tmppci->fun,0x4);
+    cmd=bar.u16[0];
+    stat=bar.u16[1];
+    "bs:dv:f cl:sc v_id:d_id  cmd\n";
+    "%02X:%02X:%01X %02X:%02X %04X:%04X %04X $$GREEN$$%s $$CYAN$$%s$$FG$$\n"
     ,
     tmppci->bus,tmppci->dev,tmppci->fun,
     tmppci->base_code,tmppci->sub_code,
-    v,d,
+    v,d,cmd,
     tmppci->vendor_str,tmppci->dev_id_str;
+
+    if (0xc == tmppci->base_code && 0x3 == tmppci->sub_code)
+    {
+      bar=PCIReadU32(tmppci->bus,tmppci->dev,tmppci->fun,0x8);
+      progif=bar.u8[1];
+      switch (progif)
+      {
+         case 0x00:
+           "USB 1.0 (UHCI)\n";
+           break;
+         case 0x10:
+           "USB 1.0 (OHCI)\n";
+           break;
+         case 0x20:
+           "USB 2.0 (EHCI)\n";
+           break;
+         case 0x30:
+           "USB 3.0 (XHCI)\n";
+           break;
+         default:
+           "USB (unknown)\n";
+           break;
+      }
+    }
+
     for (i=0; i<6; i++)
     {
       bar=PCIReadU32(tmppci->bus,tmppci->dev,tmppci->fun,0x10+4*i);

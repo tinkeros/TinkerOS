@@ -1,0 +1,52 @@
+$WW,1$$FG,5$$TX+CX,"TinkerOS and The Tinkerer"$$FG$
+
+$FG,5$Websites:$FG$
+
+* $FG,4$$TX,"TempleOS/TinkerOS documentation",HTML="https://tinkeros.github.io"$$FG$
+* $FG,4$$TX,"TinkerOS github",HTML="https://github.com/tinkeros/TinkerOS"$$FG$
+* $FG,4$$TX,"TinkerOS releases",HTML="https://github.com/tinkeros/TinkerOS/releases"$$FG$
+
+
+$FG,5$Why TinkerOS:$FG$
+The vast majority of the code is written by Terry Davis.  I forked TempleOS and restored old functionality and added apps and improvements I thought were useful.  I wanted to get it to run baremetal on more of my machines and hoped others would likewise be interested in running it baremetal.  I had hoped there would be more community interest, but after many years of lack of contributions and for other reasons stated in the next section I am mostly done working on the project.  That being said I am definitely always willing to consider integrating any useful community contributions in the future should such a pull request come my way.
+
+
+$FG,5$Why The Tinkerer:$FG$
+I go by the pseudonym "The Tinkerer" because sadly many in the "TempleOS community" enjoy harassing anyone who tries to take TempleOS seriously.  KiwiFarms and other online bullies are directly responsible for the mental decline and death of Terry and many others.  I know people who have been harassed by online, by phone, and by mail to there personal homes.  I have been harassed by numerous people numerous ways over many years.  Sadly after years of this I am to the point where I cannot even help someone new because multiple people have made fake accounts just to pretend to ask TempleOS questions for the sole purpose of trolling me for laughs.  I have had roughly 10 times as many fake trolling interactions with people than legitimate interactions with people who really want to learn HolyC and to program with the TempleOS API.
+
+$FG,5$Email:$FG$
+$HC,"<img src=\"https://tinkeros.github.io/Images/email.png\">"$
+
+$FG,5$About Me:$FG$
+
+I am Catholic and believe in God.  I do not believe it is appropriate to use TempleOS/TinkerOS as an oracle to demand instantaneous responses from God.  God hears prayers and responds to worthy prayers from worthy people.  God does not typically grant random words to be interpreted as answers to people on demand.  Look $FG,4$$TX,"here for my thoughts on God and TempleOS",HTML="https://tinkeros.github.io/WbTempleOS/Doc/God.html"$$FG$
+
+I have degrees in Mathematics and Physics.  I worked professionally as a mathematician and software engineer doing cyber security and machine learning
+for more than 20 years.  My favorite programming languages are C and Python.  I also program in Assembly, bash, C++, Perl, Matlab/Octave and HolyC.
+
+I have been a long time Linux enthusiast.  I made the switch from Windows to Linux way back in 1996 when it was actually a pain to install and you had to play the human package manager game.
+
+I have read the entire Bible (including the Catholic Bible only books that Martin Luther decided he didn't like), the Catechism of the Catholic Church and numerous Christian Apologetics books.
+
+I have almost read all 100,000 lines of Terry's code.
+
+I enjoy programming in HolyC because it reminds me of how C compilers used to be before people decided they need to hold everyone's hand and emit all kinds of annoying warnings and errors for things that are not necessarily errors in the name of improving security.
+
+I enjoy programming in TempleOS because HolyC is a magnificent language and TempleOS has a nice C like API that is easy to use and understand.
+
+I enjoy working with electronics and micro-controllers.
+
+I enjoy making my own PCBs, laser cutting and 3D printing projects.
+
+I recommend the following podcasts (even if you are not Catholic):
+* $FG,4$$TX,"The Bible in a Year",HTML="https://media.ascensionpress.com/category/ascension-podcasts/bibleinayear/"$$FG$
+* $FG,4$$TX,"The Catechism in a Year",HTML="https://ascensionpress.com/pages/catechisminayear"$$FG$
+
+Star Trek > Star Wars, though I enjoy them both.
+
+I have watched every Star Trek episode at least once, most multiple times.  (I even forced myself to suffer through the original series). 
+
+My most recent favorite sci-fi book series is:  $FG,4$$TX,"The Expeditionary Force Series by Craig Alanson",HTML="https://www.amazon.com/gp/product/B07F7T8NPK"$$FG$
+
+* See also $FG,4$$TX,"About TempleOS",HTML="https://tinkeros.github.io/WbTempleOS/Doc/AboutTempleOS.html"$$FG$
+

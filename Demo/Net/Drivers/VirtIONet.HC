@@ -315,13 +315,15 @@ U0 @virtio_net_hndlr_task()
       VirtioNet.rq->available.index += j;
       OutU16(VirtioNet.port + VIRTIO_PCI_QUEUE_NOTIFY, 0);
     }
-    CNetQueEntry *e = NetQuePull;
-    if (e)
-    {
-//      @virtio_net_handle_net_fifo_entry(e);
-    }
-    Sleep(30);
+    if (Gs->num)
+      Sleep(10);
+    else
+      Sleep(30);
   }
 }
 
-Spawn(&@virtio_net_hndlr_task,, "Virtio-net");
+if (mp_cnt>1)
+  Spawn(&@virtio_net_hndlr_task,, "Virtio-net",1);
+else
+  Spawn(&@virtio_net_hndlr_task,, "Virtio-net");
+

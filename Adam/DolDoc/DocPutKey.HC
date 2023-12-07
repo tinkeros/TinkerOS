@@ -411,13 +411,12 @@ public U0 DocPutKey(CDoc *doc,I64 ch=0,I64 sc=0)
               if (sc&SCF_KEY_DESC)
               {
                 if (sc&SCF_SHIFT)
-                  KeyDescSet("Cmd/God Doodle");
+                  KeyDescSet("Cmd/Random Doodle");
                 else
-                  KeyDescSet("Cmd/God Song");
+                  KeyDescSet("Cmd/Random Song");
               }
               else
               {
-//$LK,"::/Adam/God/HSNotes.DD"$
                 if (sc&SCF_SHIFT)
                 {
                   DocUnlock(doc);
@@ -432,13 +431,12 @@ public U0 DocPutKey(CDoc *doc,I64 ch=0,I64 sc=0)
               if (sc&SCF_KEY_DESC)
               {
                 if (sc&SCF_SHIFT)
-                  KeyDescSet("Cmd/God Passage");
+                  KeyDescSet("Cmd/Random Passage");
                 else
-                  KeyDescSet("Cmd/God Word");
+                  KeyDescSet("Cmd/Random Word");
               }
               else
               {
-//$LK,"::/Adam/God/HSNotes.DD"$
                 FifoU8Flush(god.fifo);
                 GodBitsIns(GOD_GOOD_BITS,KbdMsEvtTime>>GOD_BAD_BITS);
                 if (sc&SCF_SHIFT)

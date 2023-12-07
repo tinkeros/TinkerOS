@@ -24,12 +24,15 @@
 #define COM_DEVICE_TOS_SERVER 1
 #define COM_DEVICE_REPL 2
 #define COM_DEVICE_MOUSE 3
+#define COM_DEVICE_SERIAL_MOUSE 4
+#define COM_DEVICE_SERIAL_MS_MOUSE 5
 
 class CComm
 {
   I64   base,
         device,
-        flags;
+        flags,
+        type;
   CFifoU8 *RX_fifo;
 };
 
@@ -109,9 +112,7 @@ I64 AddPCIComms(I64 next_port)
             ioport = PCIReadU32(bdf.u8[2], bdf.u8[1], bdf.u8[0], bar);
             if (ioport&1)
             {
-              comm_ports[cur_port].base=ioport&0xfffc;
-              //"Added PCICom %d\n",cur_port;
-              //Sleep(1000);  //TODO debug remove
+              comm_ports[cur_port].base=ioport&0xfffffffc;
               cur_port++;
               if (cur_port>MAX_COMM_NUM)
               {
@@ -295,6 +296,7 @@ CommInit;
 U0 CommRep()
 {
   I64 i;
+  "COMM 1-4 are standard IO ports, the actual ports themselves may or may not exist.\n";
   for (i=1; i<=MAX_COMM_NUM; i++)
   {
     if (comm_ports[i].base)

@@ -2,6 +2,10 @@ Cd(__DIR__);;
 
 public CTask* netfifo_handler_task = NULL;
 
+Bool net_log_log=FALSE;
+Bool net_log_warn=FALSE;
+Bool net_log_dbg=FALSE;
+
 #include "Pci"
 
 #include "Utilities/Net.HH"

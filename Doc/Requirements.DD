@@ -1,30 +1,45 @@
-$WW,1$$FG,5$$TX+CX,"Requirements for TempleOS"$$FG$
+$WW,1$$FG,5$$TX+CX,"Requirements for TinkerOS"$$FG$
 
-$FG,5$User Skills Required$FG$
+$FG,5$User Skills Required to Understand HolyC$FG$
+
 * Knowledge of the $FG,2$C$FG$ programming language.
 
+* Knowledge of the how $FG,2$pointers$FG$ work in $FG,2$C$FG$
+
+* Knowledge of $FG,2$C++$FG$ classes, constexpr and structured exception handling.
+
+$FG,5$User Skills Desired$FG$
+
+* Knowledge of the $FG,2$TempleOS$FG$ operating system.
+
 $FG,5$Supported Hardware$FG$
+
 * $FG,4$$TX,"x86_64",HTML="http://en.wikipedia.org/wiki/Amd64#AMD64"$$FG$ PC compatible computer.  (Obviously, you need 64-bit hardware for a 64-bit operating system.)
 
-* 640x480 16 color VGA graphics.
+* A graphic card with a VGA BIOS that supports VBE video modes
 
-* Most$FG$ keyboards and mice.
+* PS/2 keyboards and mice (sometimes USB emulation of PS/2 works if you are lucky)
 
-* Minimum $TX,"512Meg",D="DD_MEM_MIN_MEG"$ RAM.
+* Minimum $TX,"1024Meg",D="DD_MEM_MIN_MEG"$ RAM.
 
-* Internal PC Speakers.
+* Internal PC Speaker.
 
-* CD/DVD-ROMs (not SCSI) but only RedSea file system.
+* CD/DVD-ROMs (IDE or SATA, not SCSI)
 
-* ATA and SATA hard drives.
+* ATA and SATA hard drives (not NVME)
+
+* Legacy/CSM booting
 
 $FG,5$Unsupported Hardware$FG$
+
+* UEFI / Secure Boot
+
+* USB (you can boot TOS from a ramdisk loaded into memory via USB, but once booted there is no USB support for USB devices)
+
 * No graphics acceleration.
 
 * No sound cards.
 
-* $FG,4$No networking$FG$.
+* Pretty much everything, like TempleOS, TinkerOS has no drivers for the vast majority of hardware devices.
 
-* No USB devices, except keyboard and mouse in legacy mode.  No, you can't use flash memory cards.
-
-* No printers.
+TinkerOS can run on systems $FG,4$$TX,"TempleOS",HTML="https://tinkeros.github.io/WbTempleOS/Doc/Requirements.html"$$FG$ supports.

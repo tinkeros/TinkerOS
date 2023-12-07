@@ -12,9 +12,21 @@ Cd(__DIR__);;
 // Comment these if you do not want autocomplete
 
 #include "/Adam/AutoComplete/ACInit"
-Silent;       //no output to scrn
-ACInit("/*;!*/Bible.TXT*");
-Silent(OFF); //no output to scrn
+U0 ACInitSpawn()
+{
+  Silent;       //no output to scrn
+  ACInit("/*;!*/Bible.TXT*");
+  Silent(OFF); //no output to scrn
+}
+// Run ACInit in own thread to prevent boot hang
+Spawn(&ACInitSpawn);
+
+// Uncomment these to enable networking
+
+//#include "/Demo/Net/Load"
+//NetCfg;
+//Cd;
+
 
 // Misc helper functions
 U0 AutoHome()

@@ -64,7 +64,7 @@ U8 god_complex_songs[9]= {DUR_4,DUR_4,DUR_8_8,DUR_8_8,DUR_8DOT_16,DUR_3_3_3,
                          };
 
 public U8 *GodSongStr()
-{//Make God generate 2 measures of a song. $LK+PU,"Holy Spirit Instructions",A="FI:::/Adam/God/HSNotes.DD"$
+{//Generate 2 measures of a random song.
   CMakeSongSettings mss;
   U8 *buf;
   I64 i,j=0,k,n,k2,duration,last_duration=-1,len;
@@ -171,7 +171,7 @@ public U8 *GodSongStr()
 }
 
 public U0 GodSong()
-{//Make God generate 2measuresx2+2measuresx2. $LK+PU,"Holy Spirit Instructions",A="FI:::/Adam/God/HSNotes.DD"$
+{//Generate random 2measuresx2+2measuresx2.
   U8 *st1=GodSongStr,*st2=GodSongStr;
   if (st1 && st2)
     DocPrint(DocPut,"$$SO,\"<Song>\",A=\"%s%s%s%s\"$$",st1,st1,st2,st2);

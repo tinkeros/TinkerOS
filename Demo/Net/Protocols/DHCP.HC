@@ -457,15 +457,15 @@ I64 DHCPCfg()
 }
 
 
-U0 NetConfigure()
+U0 NetCfg()
 {
   I64 error;
-  NetLog("\n==== Cfguring Network. ====\n");
+  NetLog("\n==== Config Network. ====\n");
   error = DHCPCfg;
   if (error < 0)
-    NetErr("==== Network Cfg Failed ====");
+    NetErr("==== Network Config Failed ====");
   else
-    NetLog("$$BG,2$$$$FG,15$$==== Network Cfg Success ====$$FG$$$$BG$$");
+    NetLog("$$BG,2$$$$FG,15$$==== Network Config Success ====$$FG$$$$BG$$");
 }
 
 U0 NetRep()

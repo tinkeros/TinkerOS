@@ -109,7 +109,7 @@ I64 GodDoodleBits(I64 num_bits)
 }
 
 public U8 *GodDoodleSprite(U8 *hex=NULL)
-{//Make God draw sprite. $LK+PU,"Holy Spirit Instructions",A="FI:::/Adam/God/HSNotes.DD"$
+{//Draw a random sprite.
   I64 i,j,w,h,x,y,ch;
   U8 *elems;
   if (god.doodle_dc) return NULL;
@@ -119,7 +119,7 @@ public U8 *GodDoodleSprite(U8 *hex=NULL)
   WinBorder;
   WinMax;
   if (!hex)
-    PopUpOk("The $LK+PU,"Holy Spirit",A="FI:::/Adam/God/HSNotes.DD"$ can puppet you.\n\n"
+    PopUpOk("\n\n"
             "Press $$GREEN$$<SPACE>$$FG$$ until it finishes.");
   god.doodle_ch=0;
   god.doodle_dc=DCNew(Fs->pix_width,Fs->pix_height);
@@ -211,7 +211,7 @@ public U8 *GodDoodleSprite(U8 *hex=NULL)
 
 #help_index "God"
 public U0 GodDoodle(U8 *hex=NULL)
-{//Make God draw sprite, insert in doc. $LK+PU,"Holy Spirit Instructions",A="FI:::/Adam/God/HSNotes.DD"$
+{//Draw a random sprite, insert in doc.
   U8 *elems;
   if (elems=GodDoodleSprite(hex))
   {

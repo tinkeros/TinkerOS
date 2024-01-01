@@ -1,5 +1,5 @@
 Cd(__DIR__);
-#include "Midi.HH"
+#include "/Demo/Snd/Midi.HH"
 
 // Pick one, then configure below
 
@@ -37,8 +37,39 @@ static U8 instrument_base_registers[6] = { 0x20, 0x40, 0x60, 0x80, 0xE0, 0xC0 };
 
 static I64 old_block=-1;
 
+#ifdef ISA_OPL
+public U0 WriteOPL(I64 r, U8 data, I64 port=ISA_IOPORT_OPL_BASE)
+{
+  I64 i;
+  OutU8(port,r);
+  for (i=0; i<4; i++) PortNop;
+  OutU8(port+1,data);
+  for (i=0; i<23; i++) PortNop;
+}
+
+public Bool DetectOPL(I64 port=ISA_IOPORT_OPL_BASE)
+{
+  I64 x1=0,x2=0;
+  WriteOPL(4,0x60,port);
+  WriteOPL(4,0x80,port);
+  x1=InU8(port)&0xe0;
+  WriteOPL(2,0xff,port);
+  WriteOPL(4,0x21,port);
+  x2=InU8(port)&0xe0;
+  WriteOPL(4,0x60,port);
+  WriteOPL(4,0x80,port);
+  if (x1==0 && x2==0xc0) {
+    if (InU8(port)&0x06)
+      "Found OPL2, enabling premium sound!\n";
+    else "Found OPL3, enabling premium sound!\n";
+    return TRUE;
+  }
+  return FALSE;
+}
+#endif
+
 #ifdef OPL2LPT
-static U0 Write(I64 r, U8 data)
+public U0 WriteOPL(I64 r, U8 data)
 {
   I64 i;
   OutU8(LPT_IOPORT_OPL_BASE,r);
@@ -54,36 +85,6 @@ static U0 Write(I64 r, U8 data)
 }
 #endif
 
-#ifdef ISA_OPL
-static U0 Write(I64 r, U8 data, I64 port=ISA_IOPORT_OPL_BASE)
-{
-  I64 i;
-  OutU8(port,r);
-  for (i=0; i<4; i++) PortNop;
-  OutU8(port+1,data);
-  for (i=0; i<23; i++) PortNop;
-}
-
-public U0 DetectOPL(I64 port=ISA_IOPORT_OPL_BASE)
-{
-  I64 x1=0,x2=0;
-  Write(4,0x60,port);
-  Write(4,0x80,port);
-  x1=InU8(port)&0xe0;
-  Write(2,0xff,port);
-  Write(4,0x21,port);
-  x2=InU8(port)&0xe0;
-  Write(4,0x60,port);
-  Write(4,0x80,port);
-  if (x1==0 && x2==0xc0) {
-    if (InU8(port)&0x06)
-      "Found OPL2\n";
-    else "Found OPL3\n"; 
-  }
-  else "Did not find OPL!\n";
-}
-#endif
-
 #ifdef SERIAL_OPL
 CommInit;
 CommInit8n1(SERIAL_OPL_PORT,115200);
@@ -91,7 +92,7 @@ CommInit8n1(SERIAL_OPL_PORT,115200);
 static Bool recording=FALSE;
 static U64 commands=0;
 
-static U0 Write(I64 r, U8 data, I64 func=0)
+public U0 WriteOPL(I64 r, U8 data, I64 func=0)
 {
   U8 bytes[3];
   bytes[0]=0x80 | ((func << 2)&0x7c)  | (r >> 6);
@@ -107,7 +108,7 @@ public U0 OPLRec()
   if (recording)
   {
     //CommPutChar(SERIAL_OPL_PORT,136);
-    Write(0,0,8);
+    WriteOPL(0,0,8);
     "\nRecorded %d sent OPL2 commands\n"
     ,commands;
     commands=2;
@@ -116,7 +117,7 @@ public U0 OPLRec()
   {
     commands=2;
     //CommPutChar(SERIAL_OPL_PORT,135);
-    Write(0,0,4);
+    WriteOPL(0,0,4);
   }
   recording=!recording;
   PortNop;
@@ -124,7 +125,7 @@ public U0 OPLRec()
 
 public U0 OPLReplay()
 {//CommPutChar(SERIAL_OPL_PORT,137);
-  Write(0,0,2);
+  WriteOPL(0,0,2);
   PortNop;
 }
 #endif
@@ -138,7 +139,7 @@ public U0 AdlibReset()
   }
   for(i = 0; i < 256; i ++)
   {
-    Write(i, 0x00);
+    WriteOPL(i, 0x00);
   }
 }
 
@@ -150,7 +151,7 @@ static U8 GetRegister(U8 r)
 static U8 SetRegister(U8 r, U8 val)
 {
   opl_registers[r] = val;
-  Write(r, val);
+  WriteOPL(r, val);
   return r;
 }
 
@@ -268,9 +269,9 @@ public U0 AdlibBeep()
 
 DefineLstLoad("ST_INSTRUMENTS","PIANO1\0PIANO2\0PIANO3\0HONKTONK\0EP1\0EP2\0HARPSIC\0CLAVIC\0CELESTA\0GLOCK\0MUSICBOX\0VIBES\0MARIMBA\0XYLO\0TUBEBELL\0SANTUR\0ORGAN1\0ORGAN2\0ORGAN3\0PIPEORG\0REEDORG\0ACORDIAN\0HARMONIC\0BANDNEON\0NYLONGT\0STEELGT\0JAZZGT\0CLEANGT\0MUTEGT\0OVERDGT\0DISTGT\0GTHARMS\0ACOUBASS\0FINGBASS\0PICKBASS\0FRETLESS\0SLAPBAS1\0SLAPBAS2\0SYNBASS1\0SYNBASS2\0VIOLIN\0VIOLA\0CELLO\0CONTRAB\0TREMSTR\0PIZZ\0HARP\0TIMPANI\0STRINGS\0SLOWSTR\0SYNSTR1\0SYNSTR2\0CHOIR\0OOHS\0SYNVOX\0ORCHIT\0TRUMPET\0TROMBONE\0TUBA\0MUTETRP\0FRHORN\0BRASS1\0SYNBRAS1\0SYNBRAS2\0SOPSAX\0ALTOSAX\0TENSAX\0BARISAX\0OBOE\0ENGLHORN\0BASSOON\0CLARINET\0PICCOLO\0FLUTE1\0RECORDER\0PANFLUTE\0BOTTLEB\0SHAKU\0WHISTLE\0OCARINA\0SQUARWAV\0SAWWAV\0SYNCALLI\0CHIFLEAD\0CHARANG\0SOLOVOX\0FIFTHSAW\0BASSLEAD\0FANTASIA\0WARMPAD\0POLYSYN\0SPACEVOX\0BOWEDGLS\0METALPAD\0HALOPAD\0SWEEPPAD\0ICERAIN\0SOUNDTRK\0CRYSTAL\0ATMOSPH\0BRIGHT\0GOBLIN\0ECHODROP\0STARTHEM\0SITAR\0BANJO\0SHAMISEN\0KOTO\0KALIMBA\0BAGPIPE\0FIDDLE\0SHANNAI\0TINKLBEL\0AGOGO\0STEELDRM\0WOODBLOK\0TAIKO\0MELOTOM\0SYNDRUM\0REVRSCYM\0FRETNOIS\0BRTHNOIS\0SEASHORE\0BIRDS\0TELEPHON\0HELICOPT\0APPLAUSE\0");
 
-static U8 base[11]= {20,2,111,21,0,0,6,0,86,15,0};
-static U8 mod1[11]= {128,64,128,128,16,2,128,32,128,128,2};
-static U8 mod2[11]= {1,  1, 1,  1,  1, 1,1,  1, 1,  32, 1};
+static U8 opl_inst_base[11]= {20,2,111,21,0,0,6,0,86,15,0};
+static U8 opl_inst_mod1[11]= {128,64,128,128,16,2,128,32,128,128,2};
+static U8 opl_inst_mod2[11]= {1,  1, 1,  1,  1, 1,1,  1, 1,  32, 1};
 
 // 64-bit instrument is factored into an instrument as follows:
 // 2^64 = 128*64*128*128*16*2*128*32*128*128*2
@@ -283,11 +284,11 @@ U0 U64Inst(U64 inst)
   opl2inst[0]=0;
   for (i=0; i<11; i++)
   {
-    opl2inst[i+1]=base[i];
-    opl2inst[i+1]+=inst%mod1[i];
-    inst/=mod1[i];
-    opl2inst[i+1]+=inst%mod2[i];
-    inst/=mod2[i];
+    opl2inst[i+1]=opl_inst_base[i];
+    opl2inst[i+1]+=inst%opl_inst_mod1[i];
+    inst/=opl_inst_mod1[i];
+    opl2inst[i+1]+=inst%opl_inst_mod2[i];
+    inst/=opl_inst_mod2[i];
   }
   SetInst(opl2inst);
 }
@@ -365,16 +366,25 @@ public U0 AdlibInit()
   SetRelease(0xf);
 }
 
-AdlibInit;
+#ifdef ISA_OPL
+U0 EnableISAOPL()
+{
+  if (DetectOPL)
+  {
+    AdlibInit;
+    
+    // Patch hook into sound system
+    Snd(0);
+    Mute(1);
+    LBts(&sys_semas[SEMA_SND],0);
+    Yield;
+    *(&Snd(U8*))=0xe9;
+    *((&Snd+1)(U32*))=&AdlibSnd-&Snd-5;
+    LBtr(&sys_semas[SEMA_SND],0);
+    Mute(0);
+  }
+}
 
-// Patch hook into sound system
-Snd(0);
-Mute(1);
-LBts(&sys_semas[SEMA_SND],0);
-Yield;
-*(&Snd(U8*))=0xe9;
-*((&Snd+1)(U32*))=&AdlibSnd-&Snd-5;
-LBtr(&sys_semas[SEMA_SND],0);
-Mute(0);
-
-
+EnableISAOPL;
+#endif
+    

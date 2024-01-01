@@ -33,6 +33,7 @@ Bool Mem32DevIns(CMemRange *tmpmr)
 
 U0 Mem32DevInit()
 {
+  I64 *pte;
   CMemRange *tmpmr;
   CMemE820 *m20=MEM_E820;
   QueInit(&dev.mem32_head);
@@ -57,6 +58,11 @@ U0 Mem32DevInit()
       m20++;
     }
   }
+  pte=MemPageTable(IOAPIC_REG);
+  *pte=*pte&~0x18 |0x11;
+  pte=MemPageTable(LAPIC_BASE);
+  *pte=*pte&~0x18 |0x11;
+  WBINVD
 }
 
 U8 *Mem32DevAlloc(I64 size,I64 alignment)

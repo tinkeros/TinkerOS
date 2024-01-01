@@ -140,10 +140,10 @@ U0 MPInt(U8 num,I64 cpu_num=1)
   }
   PUSHFD
   CLI //Multitasking safe because each core has a local apic and IRQ's are off
-  while (*(dev.uncached_alias+LAPIC_ICR_LOW)(U32 *)&0x1000)
+  while (*(LAPIC_ICR_LOW)(U32 *)&0x1000)
     PAUSE
-    *(dev.uncached_alias+LAPIC_ICR_HIGH)(U32 *)=dev.mp_apic_ids[cpu_num]<<24;
-  *(dev.uncached_alias+LAPIC_ICR_LOW)(U32 *)=0x4000+num;
+    *(LAPIC_ICR_HIGH)(U32 *)=dev.mp_apic_ids[cpu_num]<<24;
+  *(LAPIC_ICR_LOW)(U32 *)=0x4000+num;
   POPFD
 }
 
@@ -151,15 +151,15 @@ U0 MPIntAll(U8 num)
 {//Generate interrupt for all but own core.
   PUSHFD
   CLI //Multitasking safe because each core has a local apic and IRQ's are off
-  while (*(dev.uncached_alias+LAPIC_ICR_LOW)(U32 *)&0x1000)
+  while (*(LAPIC_ICR_LOW)(U32 *)&0x1000)
     PAUSE
-    *(dev.uncached_alias+LAPIC_ICR_LOW)(U32 *)=0xC4800+num;
+    *(LAPIC_ICR_LOW)(U32 *)=0xC4800+num;
   POPFD
 }
 
 U0 MPNMInt()
 {//Generate nonmaskable interrupt.
-  *(dev.uncached_alias+LAPIC_ICR_LOW)(U32 *)=0xC4400;
+  *(LAPIC_ICR_LOW)(U32 *)=0xC4400;
 }
 
 U0 MPHalt()
@@ -173,10 +173,10 @@ U0 MPAPICInit()
 {//Called by adam during start-up
 //and other cores during initialization
   //after $LK,"Core0StartMP",A="MN:Core0StartMP"$().
-  *(dev.uncached_alias+LAPIC_SVR)(U32 *)|=LAPICF_APIC_ENABLED;
-  dev.mp_apic_ids[Gs->num]=*(dev.uncached_alias+LAPIC_APIC_ID)(U32 *)>>24;
-  *(dev.uncached_alias+LAPIC_LDR)(U32 *)=dev.mp_apic_ids[Gs->num]<<24;
-  *(dev.uncached_alias+LAPIC_DFR)(U32 *)=0xF0000000;
+  *(LAPIC_SVR)(U32 *)|=LAPICF_APIC_ENABLED;
+  dev.mp_apic_ids[Gs->num]=*(LAPIC_APIC_ID)(U32 *)>>24;
+  *(LAPIC_LDR)(U32 *)=dev.mp_apic_ids[Gs->num]<<24;
+  *(LAPIC_DFR)(U32 *)=0xF0000000;
   SetRAX(Gs->tss->tr);
   LTR	AX
   if (Gs->num)
@@ -275,10 +275,6 @@ CTask *SpawnQue(U0 (*fp_addr)(U8 *data),U8 *data=NULL,U8 *task_name=NULL,
 U0 CoreAPSethInit()
 {//Called by multicore's seth task after $LK,"Core0StartMP",A="MN:Core0StartMP"$()
 //as the first thing a CPU does before waiting for jobs.
-  InvlPg(&dev);
-  CLFlush(&dev);
-  InvlPg(&dev.uncached_alias);
-  CLFlush(&dev.uncached_alias);
   Busy(10);
   MPAPICInit;
   Fs->rip=&CoreAPSethTask;
@@ -335,15 +331,15 @@ U0 Core0StartMP()
   MemCpy(&mp->ap_gdt_ptr,SYS_GDT_PTR,sizeof(CSysLimitBase));
   mp_cnt_initial=mp_cnt=1;
   mp_cnt_lock=0;
-  *(dev.uncached_alias+LAPIC_LVT_ERR)(U32 *)=
-  *(dev.uncached_alias+LAPIC_LVT_ERR)(U32 *)&0xFFFFFF00+MPN_VECT;
+  *(LAPIC_LVT_ERR)(U32 *)=
+  *(LAPIC_LVT_ERR)(U32 *)&0xFFFFFF00+MPN_VECT;
   WBINVD //Not sure why this is needed.	Might just need delay. $LK,"MemCpy",A="MN:MemCpy"$ above?
   Busy(10000);
-  *(dev.uncached_alias+LAPIC_ICR_LOW)(U32 *)=0xC4500; //assert init IPI
+  *(LAPIC_ICR_LOW)(U32 *)=0xC4500; //assert init IPI
   Busy(10000);
-  *(dev.uncached_alias+LAPIC_ICR_LOW)(U32 *)=0xC4600+MPN_VECT; //start-up
+  *(LAPIC_ICR_LOW)(U32 *)=0xC4600+MPN_VECT; //start-up
   Busy(200);
-  *(dev.uncached_alias+LAPIC_ICR_LOW)(U32 *)=0xC4600+MPN_VECT; //start-up
+  *(LAPIC_ICR_LOW)(U32 *)=0xC4600+MPN_VECT; //start-up
   Busy(200000); // try delaying longer for more cores which take more time
   // This seems sketchy?
   for (i=0; i<10000; i++)
@@ -390,8 +386,6 @@ U0 Core0Init()
   }
   if (Bt(&ee.rdx,9))
   {
-//Unnecessary?
-    //	  SetMSR(IA32_LAPIC_BASE,dev.uncached_alias+LAPIC_BASE+0x900);
     MPAPICInit;
   }
 }
@@ -399,7 +393,7 @@ U0 Core0Init()
 interrupt U0 IntMPCrash()
 {//Entering the debugger from another core causes an interrupt on Core0
 //Which calls this routine.
-  *(dev.uncached_alias+LAPIC_EOI)(U32 *)=0;
+  *(LAPIC_EOI)(U32 *)=0;
   mp_cnt=1;
   // For now ignore an MP crash during boot and
   // try to continue with a single core since

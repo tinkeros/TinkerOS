@@ -5,10 +5,8 @@ asm {
   INT_WAKE::
   PUSH	RDX
   PUSH	RAX
-  MOV	EAX,&dev
-  MOV	EDX,U32 LAPIC_EOI
-  MOV	RAX,U64 CDevGlbls.uncached_alias[RAX]
-  MOV	U32 [RAX+RDX],0
+  MOV	EAX,U32 LAPIC_EOI
+  MOV	U32 [RAX],0
   POP	RAX
   POP	RDX
   IRET
@@ -46,10 +44,8 @@ MOV	RDI,U64 GS:CCPU.addr[RAX]
   TEST	RAX,RAX
   JZ	@@20
 
-  MOV	EAX,&dev
-  MOV	EDX,U32 LAPIC_EOI
-  MOV	RAX,U64 CDevGlbls.uncached_alias[RAX]
-  MOV	U32 [RAX+RDX],0
+  MOV	EAX,U32 LAPIC_EOI
+  MOV	U32 [RAX],0
   JMP	@@25
 
 @@20:	CALL	&IntCore0TimerHndlr	//Only Core 0 calls this.
@@ -144,7 +140,7 @@ interrupt U0 IntNop()
 {//Make unplanned IRQs stop by all means!
   OutU8(0xA0,0x20);
   OutU8(0x20,0x20);
-  *(dev.uncached_alias+LAPIC_EOI)(U32 *)=0;
+  *(LAPIC_EOI)(U32 *)=0;
 }
 
 interrupt U0 IntDivZero()
@@ -181,8 +177,8 @@ U8 *IntFaultHndlrsNew()
 
 public U0 RouteIrq(I64 irq, I64 cpu=0)
 {
-  U8 *da = dev.uncached_alias + IOAPIC_REG;
-  U32 *_d = dev.uncached_alias + IOAPIC_DATA;
+  U8 *da = IOAPIC_REG;
+  U32 *_d =IOAPIC_DATA;
   *da=IOREDTAB+irq*2+1;
   *_d=dev.mp_apic_ids[cpu] << 24;
   *da=IOREDTAB+irq*2;
@@ -191,8 +187,8 @@ public U0 RouteIrq(I64 irq, I64 cpu=0)
 
 public U0 MaskIrq(I64 irq, I64 cpu=0)
 {
-  U8 *da = dev.uncached_alias + IOAPIC_REG;
-  U32 *_d = dev.uncached_alias + IOAPIC_DATA;
+  U8 *da = IOAPIC_REG;
+  U32 *_d = IOAPIC_DATA;
   *da=IOREDTAB+irq*2+1;
   *_d=dev.mp_apic_ids[cpu] << 24;
   *da=IOREDTAB+irq*2;

@@ -35,6 +35,9 @@ U0 AutoHome()
   Cdd("C:/Home");
 }
 
+// Enable ISA OPL sounds if detected
+#include "/Demo/Snd/OPL2"
+
 #include "~/HomeWrappers"
 MapFileLoad("::/Kernel/Kernel");
 MapFileLoad("::/Compiler/Compiler");

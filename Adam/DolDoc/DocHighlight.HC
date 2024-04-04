@@ -1,9 +1,9 @@
 #help_index "DolDoc/Misc"
 
 CColorROPU32 highlight_hash_type_colors[HTt_TYPES_NUM]=
-DOC_COLOR_EXPORT_SYS_SYM,0,DOC_COLOR_DEFINE_STR,DOC_COLOR_GLBL_VAR,
-DOC_COLOR_CLASS,DOC_COLOR_KEYWORD,DOC_COLOR_FUN,0,0,DOC_COLOR_KEYWORD,
-DOC_COLOR_KEYWORD,DOC_COLOR_KEYWORD,DOC_COLOR_REG,0,0,0,0
+    DOC_COLOR_EXPORT_SYS_SYM,0,DOC_COLOR_DEFINE_STR,DOC_COLOR_GLBL_VAR,
+    DOC_COLOR_CLASS,DOC_COLOR_KEYWORD,DOC_COLOR_FUN,0,0,DOC_COLOR_KEYWORD,
+    DOC_COLOR_KEYWORD,DOC_COLOR_KEYWORD,DOC_COLOR_REG,0,0,0,0
 };
 
 U32 *DocHighlight(CDocEntry *doc_e,U8 *src,I64 len,I64 _tmp_u32_attr)
@@ -12,7 +12,7 @@ U32 *DocHighlight(CDocEntry *doc_e,U8 *src,I64 len,I64 _tmp_u32_attr)
   U8 *ptr;
   CDocSettings *s=&doc_e->settings;
   I64 ch,ch1,last_ch,tmp_u32_attr,mask_tmp_u32_attr=_tmp_u32_attr&0xFFFFF000,
-                                  comment_depth,brace_depth=s->brace_depth,paren_depth=s->paren_depth;
+      comment_depth,brace_depth=s->brace_depth,paren_depth=s->paren_depth;
   CHash *tmph;
   switch [s->state]
   {
@@ -87,11 +87,11 @@ hl_normal:
       ch=*src;
       *src=0;
       if (tmph=HashFind(ptr,adam_task->hash_table,
-                        HTT_EXPORT_SYS_SYM|HTT_DEFINE_STR|HTT_GLBL_VAR|HTT_CLASS|
-                        HTT_INTERNAL_TYPE|HTT_FUN|HTT_KEYWORD|HTT_ASM_KEYWORD|
-                        HTT_OPCODE|HTT_REG))
+                  HTT_EXPORT_SYS_SYM|HTT_DEFINE_STR|HTT_GLBL_VAR|HTT_CLASS|
+                  HTT_INTERNAL_TYPE|HTT_FUN|HTT_KEYWORD|HTT_ASM_KEYWORD|
+                  HTT_OPCODE|HTT_REG))
         tmp_u32_attr=highlight_hash_type_colors[HashTypeNum(tmph)]<<8|
-                     mask_tmp_u32_attr;
+            mask_tmp_u32_attr;
       else
         tmp_u32_attr=_tmp_u32_attr;
       while (ch1=*ptr++)

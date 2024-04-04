@@ -113,7 +113,7 @@ extern U0 TaskWait(CTask *task=NULL,Bool cmd_line_pmt=FALSE);
 extern CTask *User(U8 *fmt=NULL,...);
 extern U0 UserTaskCont();
 extern U0 XTalk(CTask *task,U8 *fmt,...);
-extern U0 throw(I64 ch=0,Bool no_log=FALSE);
+extern U0 throw(I64 ch=0,Bool no_log=FALSE,Bool exit_unhandled=FALSE);
 extern U8 *DBlk(I64 blk,Bool write=FALSE);
 extern U8 *DClus(I64 c,Bool write=FALSE,I64 num=0);
 extern U8 *Dump(U8 *filename,Bool write=FALSE);

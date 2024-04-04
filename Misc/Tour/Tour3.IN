@@ -95,4 +95,4 @@ TourPut(
 "You'll find it on your menu.It's arranged by difficulty."
 "Hit $$GREEN$$<SPACE>$$FG$$ on a demo index listing "
 "and $$GREEN$$<F5>$$FG$$ to run from the editor.\n",TRUE);
- 
+ 

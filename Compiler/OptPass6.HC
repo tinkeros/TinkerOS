@@ -4,7 +4,7 @@ Bool OptIC6(CIntermediateCode *tmpi)
   if (tmpi->ic_code<IC_IMM_I64 || !(tmpil1=OptLag1(tmpi)))
     return FALSE;
   if (tmpil1->ic_code==IC_ADD_CONST && tmpi->ic_code==IC_DEREF &&
-      tmpi->ic_flags&ICF_ARG1_WAS_STK	&&  tmpi->arg1.type&MDF_REG &&
+      tmpi->ic_flags&ICF_ARG1_WAS_STK	&& tmpi->arg1.type&MDF_REG &&
       tmpil1->res.type&MDF_REG && I32_MIN<=tmpil1->ic_data<=I32_MAX &&
       !Bt(&cmp.non_ptr_vars_mask,tmpil1->arg1.reg))
   {
@@ -30,7 +30,7 @@ Bool OptIC6(CIntermediateCode *tmpi)
 }
 
 U0 OptPass6Lag(CCmpCtrl *cc,CPrsStk *ps,CIntermediateCode *tmpi,
-               I64 *_stk_ptr,I64 reg_stk_size,I64 *_clobbered_reg_mask)
+    I64 *_stk_ptr,I64 reg_stk_size,I64 *_clobbered_reg_mask)
 {
   I64 stk_ptr=*_stk_ptr,code,
       clobbered_stk_tmp_mask,clobbered_reg_mask=*_clobbered_reg_mask;
@@ -147,12 +147,12 @@ U0 OptPass6(CCmpCtrl *cc)
               !(tmpil2->ic_flags&(ICF_RES_TO_F64|ICF_RES_TO_INT)))
           {
             tmpil2->res.type =tmpi->arg1.type&MDG_MASK+
-                              tmpi->arg1_type_pointed_to;
-            tmpil2->res.reg  =tmpi->arg1.reg;
+                tmpi->arg1_type_pointed_to;
+            tmpil2->res.reg =tmpi->arg1.reg;
             tmpil2->res.disp =tmpi->arg1.disp;
             tmpil2->ic_flags=tmpil2->ic_flags
-                             &~(ICF_RES_NOT_USED|ICF_RES_WAS_STK)
-                             |tmpi->ic_flags&~(ICF_BY_VAL|ICF_ARG1_WAS_STK|ICF_ARG2_WAS_STK);
+                &~(ICF_RES_NOT_USED|ICF_RES_WAS_STK)
+                |tmpi->ic_flags&~(ICF_BY_VAL|ICF_ARG1_WAS_STK|ICF_ARG2_WAS_STK);
             old_tmpil2=NULL;
             OptSetNOP1(tmpi);
           }
@@ -168,7 +168,7 @@ U0 OptPass6(CCmpCtrl *cc)
         }
       }
       else if (tmpi->arg1.type&MDF_STK && tmpil2->res.type&MDF_STK &&
-               !(tmpil2->ic_flags&ICF_PUSH_RES))
+          !(tmpil2->ic_flags&ICF_PUSH_RES))
       {
         tmpi->arg1.type=MDF_REG+tmpi->arg1.type.raw_type;
         tmpi->arg1.disp=0;

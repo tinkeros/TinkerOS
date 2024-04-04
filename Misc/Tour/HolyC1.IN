@@ -1,0 +1,63 @@
+//Puts the cursor at the bottom.
+Msg(MSG_KEY_DOWN,0,SC_CURSOR_DOWN|SCF_CTRL);
+"\n";
+
+
+TourPut(
+"You are now at the command line which is "
+"simply a front end for the HolyC compiler.\n"
+"\n"
+"The syntax is like $$GREEN$$C/C++$$FG$$ except you don't need $$GREEN$$()$$FG$$ "
+"if there are no args.\n"
+"\n"
+,TRUE);
+
+TourPut(
+"Also instead of having to type printf you simply "
+"just put what you want in quotes and the format string "
+"parameters after it.\n"
+,TRUE);
+
+
+
+TourPut(
+"Type the following simple program:\n\n"
+"$$DKGREEN$$I64 i=5;$$FG$$\n"
+"$$DKGREEN$$i++;$$FG$$\n"
+"$$DKGREEN$$\"i=%d\\n\",i;$$FG$$\n"
+"\n"
+"The equivalent C code is:\n\n"
+"$$DKGREEN$$int i=5;$$FG$$\n"
+"$$DKGREEN$$i++;$$FG$$\n"
+"$$DKGREEN$$printf(\"i=%d\\n\",i);$$FG$$\n"
+);
+
+InGetStr("I64 i=5;\ni++;\n\"i=%d\\n\",i;\n");
+
+TourPut(
+"Notice how after each statement line there is an "
+"intermediate result as either a $$GREEN$$ans$$FG$$ or "
+"a string output.  This happens because every statement "
+"is compiled and executed in \"JIT\" (just-in-time) by "
+"fashion the HolyC compiler!  Also notice how it is preceeded "
+"by a time value.  This is how long in seconds it took to both "
+"compile and execute that statement.\n"
+,TRUE);
+
+/*
+InPrint(10,"Ed(\"/Doc/HolyC.DD.Z\");\n");
+
+TourPut(
+"Now look over the HolyC documentation.\n\n"
+"Press $$GREEN$$<SHIFT-ESC>$$FG$$ to abort saving changes "
+"and exit this file when done.\n"
+);
+
+InUntilChar(CH_SHIFT_ESC);
+
+
+TourPut(
+"You've finished this tour!"
+,TRUE);
+
+*/

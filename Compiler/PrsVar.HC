@@ -1,5 +1,5 @@
 U0 PrsVarInit(CCmpCtrl *cc,U8 **_dst,CHashClass *tmpc,CArrayDim *tmpad,
-              U8 *data_addr_rip,U8 **_base,Bool data_heap,I64 pass)
+    U8 *data_addr_rip,U8 **_base,Bool data_heap,I64 pass)
 {
   U8 *dst=*_dst,*machine_code;
   I64 i,j,r,old_flags,type,size;
@@ -20,7 +20,7 @@ U0 PrsVarInit(CCmpCtrl *cc,U8 **_dst,CHashClass *tmpc,CArrayDim *tmpad,
     while (tmpm)
     {
       PrsVarInit2(cc,&dst,tmpm->member_class,&tmpm->dim,
-                  data_addr_rip,_base,data_heap,pass);
+          data_addr_rip,_base,data_heap,pass);
       if (cc->token==',')
         Lex(cc);
       tmpm=tmpm->next;
@@ -59,7 +59,7 @@ U0 PrsVarInit(CCmpCtrl *cc,U8 **_dst,CHashClass *tmpc,CArrayDim *tmpad,
     {
       old_flags=cc->flags;
       cc->flags=CCF_NO_ABSS | cc->flags &
-                ~(CCF_AOT_COMPILE|CCF_HAS_MISC_DATA|CCF_NOT_CONST);
+          ~(CCF_AOT_COMPILE|CCF_HAS_MISC_DATA|CCF_NOT_CONST);
       machine_code=LexExpression2Bin(cc,&type);
       if (old_flags&CCF_AOT_COMPILE &&
           cc->flags&CCF_NOT_CONST &&
@@ -115,14 +115,14 @@ U0 PrsVarInit(CCmpCtrl *cc,U8 **_dst,CHashClass *tmpc,CArrayDim *tmpad,
             tmpc->raw_type!=RT_F64)
           r=r(F64);
         else if (type!=RT_F64 &&
-                 tmpc->raw_type==RT_F64)
+            tmpc->raw_type==RT_F64)
           r(F64)=r;
         MemCpy(dst,&r,tmpc->size);
       }
     }
     dst+=tmpc->size;
     cc->flags=cc->flags&
-              ~CCF_NO_ABSS|old_flags&(CCF_HAS_MISC_DATA|CCF_AOT_COMPILE);
+        ~CCF_NO_ABSS|old_flags&(CCF_HAS_MISC_DATA|CCF_AOT_COMPILE);
   }
   *_dst=dst;
 }
@@ -134,7 +134,7 @@ class CVI2
 };
 
 U0 PrsVarInit2(CCmpCtrl *cc,U8 **_dst,CHashClass *tmpc,
-               CArrayDim *tmpad,U8 *data_addr_rip,U8 **_base,Bool data_heap,I64 pass)
+    CArrayDim *tmpad,U8 *data_addr_rip,U8 **_base,Bool data_heap,I64 pass)
 {
   I64 i,j,cnt;
   U8 *st,*_b;
@@ -149,7 +149,7 @@ U0 PrsVarInit2(CCmpCtrl *cc,U8 **_dst,CHashClass *tmpc,
     {
       LexPopNoRestore(cc);
       st=LexExtStr(cc,&i);
-      if (tmpad1->cnt<0)  //[]
+      if (tmpad1->cnt<0) //[]
       {
         tmpad1->cnt=i;
         tmpad->total_cnt=i*tmpad1->total_cnt;
@@ -177,7 +177,7 @@ U0 PrsVarInit2(CCmpCtrl *cc,U8 **_dst,CHashClass *tmpc,
         LexPush(cc);
         Lex(cc);
       }
-      if (tmpad1->cnt<0)  //[]
+      if (tmpad1->cnt<0) //[]
       {
         QueInit(&head);
         cnt=0;
@@ -227,7 +227,8 @@ U0 PrsVarInit2(CCmpCtrl *cc,U8 **_dst,CHashClass *tmpc,
         }
         if (i<tmpad1->cnt-1)
         {
-          LexWarn(cc,"Not all array entires specified, undefined values will contain undefined data ");
+          LexWarn(cc,
+            "Not all array entires defined, undefined values will have undefined data ");
           tmpad1->cnt=i+1;
         }
       }
@@ -244,9 +245,9 @@ U0 PrsGlblInit(CCmpCtrl *cc,CHashGlblVar *tmpg,I64 pass)
 {
   U8 *dst=tmpg->data_addr;
   PrsVarInit2(cc,&dst,tmpg->var_class,&tmpg->dim,
-              tmpg->data_addr_rip,&tmpg->data_addr,
-              Bt(&cc->opts,OPTf_GLBLS_ON_DATA_HEAP)||
-              Bt(&cc->flags,CCf_AOT_COMPILE),pass);
+      tmpg->data_addr_rip,&tmpg->data_addr,
+      Bt(&cc->opts,OPTf_GLBLS_ON_DATA_HEAP)||
+      Bt(&cc->flags,CCf_AOT_COMPILE),pass);
 }
 
 U0 PrsStaticInit(CCmpCtrl *cc,CMemberLst *tmpm,I64 pass)
@@ -261,7 +262,7 @@ U0 PrsStaticInit(CCmpCtrl *cc,CMemberLst *tmpm,I64 pass)
     COCInit(cc);
   }
   PrsVarInit2(cc,&dst,tmpc,&tmpm->dim,tmpm->static_data_rip,
-              &tmpm->static_data,Bt(&cc->flags,CCf_AOT_COMPILE),pass);
+      &tmpm->static_data,Bt(&cc->flags,CCf_AOT_COMPILE),pass);
   if (cc->flags&CCF_AOT_COMPILE && pass==2)
   {
     if (cc->coc.coc_head.next!=&cc->coc.coc_head)
@@ -331,8 +332,8 @@ U0 PrsArrayDims(CCmpCtrl *cc,I64 mode,CArrayDim *dim)
 }
 
 CHashClass *PrsType(CCmpCtrl *cc,CHashClass **_tmpc1,
-                    I64 *_mode,CMemberLst *tmpm,U8 **_ident,CHashFun **_fun_ptr,
-                    CHashExport **_tmpex,CArrayDim *tmpad,I64 fsp_flags)
+    I64 *_mode,CMemberLst *tmpm,U8 **_ident,CHashFun **_fun_ptr,
+    CHashExport **_tmpex,CArrayDim *tmpad,I64 fsp_flags)
 {
   I64 k,ptr_stars_cnt,mode=*_mode;
   CHashClass *tmpc1=*_tmpc1,*tmpc2;
@@ -400,7 +401,7 @@ pt_start:
         LexExcept(cc,"Expecting identifier at ");
     }
   }
-  if (ptr_stars_cnt>=0)   //fun_ptr
+  if (ptr_stars_cnt>=0) //fun_ptr
   {
     if (cc->token!=')')
       LexExcept(cc,"Missing ')' at ");
@@ -467,7 +468,7 @@ U0 PrsVarLst(CCmpCtrl *cc,CHashClass *tmpc,I64 mode,I64 union_base=0)
   if (mode.u8[1]==PRS1B_CLASS)
     cc->flags|=CCF_CLASS_DOL_OFFSET;
   if ((mode.u8[1]!=PRS1B_LOCAL_VAR && mode.u8[1]!=PRS1B_STATIC_LOCAL_VAR ||
-       mode&PRSF_UNION) && (cc->token=='(' || cc->token=='{'))
+          mode&PRSF_UNION) && (cc->token=='(' || cc->token=='{'))
     Lex(cc);
   while (TRUE)
   {
@@ -582,7 +583,7 @@ pvl_restart3:
         }
       }
       tmpm->member_class=PrsType(cc,&tmpc1,&mode,tmpm,&tmpm->str,
-                                 &tmpm->fun_ptr,NULL,&tmpm->dim,0);
+              &tmpm->fun_ptr,NULL,&tmpm->dim,0);
       if (tmpm->fun_ptr)
         tmpm->flags|=MLF_FUN;
       if (first)
@@ -622,7 +623,7 @@ pvl_restart3:
         if (cc->token=='=')
         {
           cc->flags=cc->flags&
-                    ~CCF_DONT_MAKE_RES|old_flags&CCF_DONT_MAKE_RES;
+              ~CCF_DONT_MAKE_RES|old_flags&CCF_DONT_MAKE_RES;
           if (undef_array_size)
           {
             LexPush(cc);
@@ -649,7 +650,7 @@ pvl_restart3:
           if (cc->flags&CCF_AOT_COMPILE)
             for (k=0; k<i; k++)
               AOTStoreCodeU8At(cc,tmpm->static_data_rip+k,
-                               tmpm->static_data[k]);
+                  tmpm->static_data[k]);
           tmpm->use_cnt=0;
           cc->flags|=CCF_DONT_MAKE_RES;
         }
@@ -677,7 +678,7 @@ pvl_restart3:
         if (cc->token=='=')
         {
           cc->flags=cc->flags&~CCF_DONT_MAKE_RES|
-                    old_flags&CCF_DONT_MAKE_RES;
+              old_flags&CCF_DONT_MAKE_RES;
           LexPopRestore(cc);
           Lex(cc);
           if (!PrsExpression(cc,NULL,TRUE))
@@ -793,11 +794,11 @@ pvl_restart3:
         goto pvl_done;
       case ';':
         cc->flags=cc->flags&~CCF_DONT_MAKE_RES|
-                  old_flags&CCF_DONT_MAKE_RES;
+            old_flags&CCF_DONT_MAKE_RES;
         Lex(cc);
         cc->flags|=CCF_DONT_MAKE_RES;
         if ((mode.u8[1]==PRS1B_LOCAL_VAR||mode.u8[1]==
-             PRS1B_STATIC_LOCAL_VAR) && !(mode&PRSF_UNION))
+                PRS1B_STATIC_LOCAL_VAR) && !(mode&PRSF_UNION))
           goto pvl_done;
         break;
       default:
@@ -807,5 +808,5 @@ pvl_restart3:
   }
 pvl_done:
   cc->flags=cc->flags&~(CCF_CLASS_DOL_OFFSET|CCF_DONT_MAKE_RES)|
-            old_flags&(CCF_CLASS_DOL_OFFSET|CCF_DONT_MAKE_RES);
+      old_flags&(CCF_CLASS_DOL_OFFSET|CCF_DONT_MAKE_RES);
 }

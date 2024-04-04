@@ -9,7 +9,7 @@ U0 TS(U8 *desc, I64 i)
   else
     progress3_max=0;
   StrPrint(progress3_desc,"%*hc%s",
-           (PROGRESS_DESC_LEN-StrLen(st))>>1,CH_SPACE,st);
+      (PROGRESS_DESC_LEN-StrLen(st))>>1,CH_SPACE,st);
   Free(st);
   progress4=ts_i++;
   progress4_max=2*mp_cnt;
@@ -116,9 +116,11 @@ U0 FPSTest(I64 targetFPS=200)
   "Test results:\n";
   for (i=0; i<mp_cnt; i++)
   {
-    "Helpers: %d Single thread game FPS: %1.2f Multi-thread game FPS: %1.2f\n",i,single_thread_game[i],multi_thread_game[i];
+    "Helpers: %d Single thread game FPS: %1.2f Multi-thread game FPS: %1.2f\n",
+      i,single_thread_game[i],multi_thread_game[i];
   }
-  "Best single thread game FPS %1.2f with (%d Seth GFX helpers)\n",single_thread_game[single_max],single_max;
+  "Best single thread game FPS %1.2f with (%d Seth GFX helpers)\n",
+    single_thread_game[single_max],single_max;
   "Best multi thread game FPS %1.2f with (%d Seth GFX helpers)\n"
   ,multi_thread_game[multi_max],multi_max;
 }

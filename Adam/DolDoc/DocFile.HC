@@ -96,7 +96,7 @@ public U8 *DocSave(CDoc *doc,I64 *_size=NULL)
         break;
       case DOCT_TEXT:
         if (!(doc_e->de_flags & ~(DOCEF_TAG|DOCG_BL_IV_UL|DOCEF_WORD_WRAP|
-                                  DOCEF_HIGHLIGHT|DOCEF_SKIP|DOCEF_FILTER_SKIP))&&
+                    DOCEF_HIGHLIGHT|DOCEF_SKIP|DOCEF_FILTER_SKIP))&&
             !(doc_e->type&DOCG_BL_IV_UL))
         {
           cnt+=StrLen(doc_e->tag);
@@ -140,7 +140,7 @@ public U8 *DocSave(CDoc *doc,I64 *_size=NULL)
         break;
       case DOCT_TEXT:
         if (!(doc_e->de_flags & ~(DOCEF_TAG|DOCG_BL_IV_UL|DOCEF_WORD_WRAP|
-                                  DOCEF_HIGHLIGHT|DOCEF_SKIP|DOCEF_FILTER_SKIP)) &&
+                    DOCEF_HIGHLIGHT|DOCEF_SKIP|DOCEF_FILTER_SKIP)) &&
             !(doc_e->type&DOCG_BL_IV_UL))
         {
           src=doc_e->tag;
@@ -148,7 +148,7 @@ public U8 *DocSave(CDoc *doc,I64 *_size=NULL)
           {
             *dst++=ch;
             if (ch=='$$' && (!(doc->flags & (DOCF_PLAIN_TEXT|
-                                             DOCF_PLAIN_TEXT_TABS)) || doc->flags&DOCF_DBL_DOLLARS))
+                            DOCF_PLAIN_TEXT_TABS)) || doc->flags&DOCF_DBL_DOLLARS))
               *dst++=ch;
           }
           break;
@@ -194,7 +194,7 @@ public Bool DocWrite(CDoc *doc,Bool prompt=FALSE)
   U8 *buf;
   if (prompt && !DocForm(&doc->filename) ||
       doc->filename.name[0]=='A' && doc->filename.name[2]==':')
-    return FALSE;  //CANCEL || LK_DOC,LK_DOC_ANCHOR,LK_DOC_FIND,LK_DOC_LINE?
+    return FALSE; //CANCEL || LK_DOC,LK_DOC_ANCHOR,LK_DOC_FIND,LK_DOC_LINE?
   buf=DocSave(doc,&size);
   FileWrite(doc->filename.name,buf,size,0,doc->file_attr);
   Free(buf);
@@ -398,22 +398,3 @@ public U8 *DocLineWrite(U8 *filename,I64 line,U8 *st)
   DocDel(doc);
   return res;
 }
-
-public U0 DocAppendLine(U8 *filename, U8 *line)
-{//Append a line to a doc file.
-  CDoc *doc=DocRead(filename);
-  DocBottom(doc);
-  DocPrint(doc,line);
-  DocWrite(doc);
-  DocDel(doc);
-}
-
-public U0 DocPrependLine(U8 *filename, U8 *line)
-{//Append a line to a doc file.
-  CDoc *doc=DocRead(filename);
-  DocTop(doc);
-  DocPrint(doc,line);
-  DocWrite(doc);
-  DocDel(doc);
-}
-

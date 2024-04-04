@@ -1,8 +1,8 @@
 #help_index "DolDoc"
 
 I64 DocWordWrapDel(CDoc *doc,CDocEntry *doc_e,
-                   Bool full_refresh,Bool same_win,I64 left_margin,I64 right_margin,
-                   CDocEntry **_best_doc_e,I64 *_best_col)
+    Bool full_refresh,Bool same_win,I64 left_margin,I64 right_margin,
+    CDocEntry **_best_doc_e,I64 *_best_col)
 {
   CDocEntry *doc_e2;
   U8 *ptr;
@@ -30,7 +30,7 @@ I64 DocWordWrapDel(CDoc *doc,CDocEntry *doc_e,
         DocEntryDel(doc,doc_e2);
       }
       else if (IsEditableText(doc_e) &&
-               doc_e->de_flags==doc_e2->de_flags && doc_e->type==doc_e2->type)
+          doc_e->de_flags==doc_e2->de_flags && doc_e->type==doc_e2->type)
       {
         j=StrLen(doc_e2->tag);
         ptr=MAlloc(k+j+1,doc->mem_task);
@@ -62,8 +62,8 @@ I64 DocWordWrapDel(CDoc *doc,CDocEntry *doc_e,
 }
 
 U0 DocRecalcXY(CDoc *doc,CDocEntry *doc_e,
-               I64 k,I64 left,I64 width,I64 height,I64 left_margin,I64 right_margin,
-               I64 x0,I64 y0,I64 *_x,I64 *_y)
+    I64 k,I64 left,I64 width,I64 height,I64 left_margin,I64 right_margin,
+    I64 x0,I64 y0,I64 *_x,I64 *_y)
 {
   I64 i,x=*_x,y=*_y;
   if (doc_e->de_flags & DOCEF_MARGIN_REL_X)
@@ -110,7 +110,7 @@ U0 DocRecalcXY(CDoc *doc,CDocEntry *doc_e,
     doc->page_line_num+=y-i;
     if (doc->page_line_num<0)
       doc->page_line_num=doc_e->settings.page_len+
-                         doc->page_line_num%doc_e->settings.page_len;
+          doc->page_line_num%doc_e->settings.page_len;
     else
       doc->page_line_num=doc->page_line_num%doc_e->settings.page_len;
     if (doc_e->settings.header!=DOC_DFT &&
@@ -178,17 +178,17 @@ CDocEntry *DocSplitTag(CDoc *doc,CDocEntry *doc_e,I64 i,I64 x,I64 y,I64 type_u8)
   else
     doc_e=doc_e->last;
   doc_e2=DocEntryNewBase(doc,type_u8|doc_e->type & 0xFFFFFF00,
-                         doc_e->de_flags&~DOCEG_HAS_ARG,x,y,doc_e->page_line_num);
+          doc_e->de_flags&~DOCEG_HAS_ARG,x,y,doc_e->page_line_num);
   MemCpy64(&doc_e2->settings,&doc_e->settings,sizeof(CDocSettings)/8);
   QueIns(doc_e2,doc_e);
   return doc_e2;
 }
 
 CDocEntry *DocWordWrapAdd(CDoc *doc,CDocEntry *doc_e,
-                          I64 *_k,I64 left,I64 right_margin,I64 x,I64 y)
+    I64 *_k,I64 left,I64 right_margin,I64 x,I64 y)
 {
   CDocEntry *doc_e2;
-  I64 j,i=right_margin+1-(x+left),  //Space left on line
+  I64 j,i=right_margin+1-(x+left), //Space left on line
         ii=x+1-doc_e->settings.left_margin;
   if (IsEditableText(doc_e))
   {
@@ -228,8 +228,8 @@ CDocEntry *DocWordWrapAdd(CDoc *doc,CDocEntry *doc_e,
         doc_e2->type_u8!=DOCT_CURSOR_MOVEMENT)
     {
       doc_e2=DocEntryNewBase(doc,DOCT_SOFT_NEW_LINE|doc_e->type&0xFFFFFF00,
-                             DOCEF_WORD_WRAP|doc_e->de_flags&(DOCEF_HIGHLIGHT|DOCG_BL_IV_UL|
-                                 DOCEF_SKIP|DOCEF_FILTER_SKIP),x,y,doc_e->last->page_line_num);
+              DOCEF_WORD_WRAP|doc_e->de_flags&(DOCEF_HIGHLIGHT|DOCG_BL_IV_UL|
+                  DOCEF_SKIP|DOCEF_FILTER_SKIP),x,y,doc_e->last->page_line_num);
       MemCpy64(&doc_e2->settings,&doc_e->settings,sizeof(CDocSettings)/8);
       QueIns(doc_e2,doc_e->last);
       return doc_e2;
@@ -242,10 +242,10 @@ I64 DocTmpAttr(CDoc *doc,CDocEntry *doc_e,I64 cur_u8_attr)
 {
   I64 tmp_u32_attr;
   doc_e->de_flags=doc->flags& (DOCG_BL_IV_UL|DOCEF_WORD_WRAP|DOCEF_HIGHLIGHT) |
-                  doc_e->de_flags&~(DOCG_BL_IV_UL|DOCEF_WORD_WRAP|DOCEF_HIGHLIGHT);
+      doc_e->de_flags&~(DOCG_BL_IV_UL|DOCEF_WORD_WRAP|DOCEF_HIGHLIGHT);
   tmp_u32_attr=(cur_u8_attr&0xF0)<<8|
-               doc->flags&DOCG_BL_IV_UL|(doc_e->settings.shifted_x&0x1F)<<16|
-               (doc_e->settings.shifted_y&0x1F)<<21;
+      doc->flags&DOCG_BL_IV_UL|(doc_e->settings.shifted_x&0x1F)<<16|
+      (doc_e->settings.shifted_y&0x1F)<<21;
   if (doc_e->de_flags & DOCEF_HAS_BIN && *doc_e->tag=='<')
     tmp_u32_attr.u8[1]|=DOC_COLOR_BIN;
   else
@@ -294,15 +294,15 @@ I64 DocTmpAttr(CDoc *doc,CDocEntry *doc_e,I64 cur_u8_attr)
 public Bool DocRecalc(CDoc *doc,I64 recalc_flags=RECALCt_NORMAL)
 {//Recalc and fmt.  Also used by WinMgr to draw on scrn.
   I64 i,ii,j,k,x,x0,y,y0,D,d2,col,col2,best_col=0,best_d=I64_MAX,xx,yy,zz,
-                                       num_entries=0,i_jif,cur_u8_attr,tmp_u32_attr,
-                                       cursor_y=I64_MIN,left_margin,right_margin,y_plot_top,y_plot_bottom,
-                                       top,left,bottom,right,width,height,scroll_x,scroll_y,pix_top,pix_left;
+        num_entries=0,i_jif,cur_u8_attr,tmp_u32_attr,
+        cursor_y=I64_MIN,left_margin,right_margin,y_plot_top,y_plot_bottom,
+        top,left,bottom,right,width,height,scroll_x,scroll_y,pix_top,pix_left;
   CDocEntry reg *doc_e,reg *doc_e2,*best_doc_e,*next_clear_found=NULL,
                                                 *added_cursor=NULL;
   CDocBin *tmpb;
   CDocSettings *s;
   Bool del_doc_e,skipped_update,tree_collapsed,same_win,more=FALSE,
-                                                        find_cursor=FALSE,blink_flag,full_refresh=TRUE,unlock,clear_holds;
+         find_cursor=FALSE,blink_flag,full_refresh=TRUE,unlock,clear_holds;
   CTask *win_task,*mem_task;
   CDC *dc;
   U8 *bptr,*ptr,buf[STR_LEN],ch;
@@ -359,8 +359,8 @@ public Bool DocRecalc(CDoc *doc,I64 recalc_flags=RECALCt_NORMAL)
   top	=win_task->win_top;
   bottom=win_task->win_bottom;
   height=win_task->win_height;
-  pix_left  =win_task->pix_left;
-  pix_top   =win_task->pix_top;
+  pix_left =win_task->pix_left;
+  pix_top =win_task->pix_top;
   left_margin=left;
   right_margin=right;
   POPFD
@@ -391,7 +391,7 @@ public Bool DocRecalc(CDoc *doc,I64 recalc_flags=RECALCt_NORMAL)
     recalc_flags&=~RECALCF_HAS_CURSOR;
     if (recalc_flags&RECALCG_MASK==RECALCt_TO_SCRN)
       doc->settings_head.cur_text_attr=
-      doc->settings_head.dft_text_attr=win_task->border_attr;
+          doc->settings_head.dft_text_attr=win_task->border_attr;
   }
   else
   {
@@ -419,16 +419,16 @@ public Bool DocRecalc(CDoc *doc,I64 recalc_flags=RECALCt_NORMAL)
     }
     if (recalc_flags&RECALCG_MASK==RECALCt_TO_SCRN)
       doc->settings_head.cur_text_attr=
-      doc->settings_head.dft_text_attr=win_task->text_attr;
+          doc->settings_head.dft_text_attr=win_task->text_attr;
   }
   x0=doc->line_start_col;
   y0=doc->top_line_num;
-  same_win=top	 ==doc->old_win_top &&
-           bottom==doc->old_win_bottom &&
-           left  ==doc->old_win_left &&
-           right ==doc->old_win_right &&
-           doc->cur_entry==doc->old_cur_entry &&
-           doc->cur_col==doc->old_cur_col;
+  same_win=top ==doc->old_win_top &&
+      bottom==doc->old_win_bottom &&
+      left ==doc->old_win_left &&
+      right ==doc->old_win_right &&
+      doc->cur_entry==doc->old_cur_entry &&
+      doc->cur_col==doc->old_cur_col;
   if (recalc_flags&RECALCG_MASK==RECALCt_TO_SCRN)
   {
     y_plot_top=y0-scroll_y/FONT_HEIGHT;
@@ -446,7 +446,7 @@ public Bool DocRecalc(CDoc *doc,I64 recalc_flags=RECALCt_NORMAL)
   else
     s=&doc_e->last->settings;
   doc->flags=doc_e->de_flags& (DOCG_BL_IV_UL|DOCEF_WORD_WRAP) |
-             doc->flags&~(DOCG_BL_IV_UL|DOCEF_WORD_WRAP);
+      doc->flags&~(DOCG_BL_IV_UL|DOCEF_WORD_WRAP);
   cur_u8_attr=s->cur_text_attr;
   if (doc_e==doc->head.next)
   {
@@ -456,7 +456,7 @@ public Bool DocRecalc(CDoc *doc,I64 recalc_flags=RECALCt_NORMAL)
   }
   else
     doc->flags=doc_e->de_flags& DOCEF_HIGHLIGHT |
-               doc->flags&~DOCEF_HIGHLIGHT;
+        doc->flags&~DOCEF_HIGHLIGHT;
   if (doc->head.next==doc)
   {
     best_doc_e=doc;
@@ -499,7 +499,7 @@ public Bool DocRecalc(CDoc *doc,I64 recalc_flags=RECALCt_NORMAL)
         else
         {
           if (tmph=HashFind(doc_e->define_str,
-                            win_task->hash_table,HTT_DEFINE_STR))
+                      win_task->hash_table,HTT_DEFINE_STR))
             doc_e->tag=StrNew(tmph->data,mem_task);
           else
             doc_e->tag=CAlloc(1,mem_task);
@@ -514,11 +514,11 @@ public Bool DocRecalc(CDoc *doc,I64 recalc_flags=RECALCt_NORMAL)
         }
       }
       k=DocWordWrapDel(doc,doc_e,full_refresh,same_win,
-                       left_margin,right_margin,&best_doc_e,&best_col);
+              left_margin,right_margin,&best_doc_e,&best_col);
       if (doc_e->de_flags & (DOCEF_LEFT_X|DOCEF_RIGHT_X|DOCEF_CENTER_X|
-                             DOCEF_TOP_Y|DOCEF_BOTTOM_Y|DOCEF_CENTER_Y))
+              DOCEF_TOP_Y|DOCEF_BOTTOM_Y|DOCEF_CENTER_Y))
         DocRecalcXY(doc,doc_e,k,
-                    left,width,height,left_margin,right_margin,x0,y0,&x,&y);
+            left,width,height,left_margin,right_margin,x0,y0,&x,&y);
       if (full_refresh && k>0 && doc->flags & DOCF_WORD_WRAP &&
           (doc_e2=DocWordWrapAdd(doc,doc_e,&k,left,right_margin,x,y)))
         doc_e=doc_e2;
@@ -547,7 +547,7 @@ public Bool DocRecalc(CDoc *doc,I64 recalc_flags=RECALCt_NORMAL)
       {
         if (doc_e->type_u8==DOCT_TEXT && 0<doc->cur_col<k &&
             !(doc_e->de_flags & ~(DOCEF_TAG|DOCG_BL_IV_UL|DOCEF_WORD_WRAP|
-                                  DOCEF_HIGHLIGHT|DOCEF_SKIP|DOCEF_FILTER_SKIP)) &&
+                    DOCEF_HIGHLIGHT|DOCEF_SKIP|DOCEF_FILTER_SKIP)) &&
             !(doc_e->type&DOCG_BL_IV_UL))
         {
           added_cursor=DocSplitTag(doc,doc_e,doc->cur_col,x,y,DOCT_CURSOR);
@@ -556,8 +556,8 @@ public Bool DocRecalc(CDoc *doc,I64 recalc_flags=RECALCt_NORMAL)
         else
         {
           added_cursor=doc_e2=DocEntryNewBase(doc,
-                                              DOCT_CURSOR|doc_e->type&0xFFFFFF00,
-                                              doc_e->de_flags&~DOCEG_HAS_ARG,x,y,doc->page_line_num);
+                      DOCT_CURSOR|doc_e->type&0xFFFFFF00,
+                      doc_e->de_flags&~DOCEG_HAS_ARG,x,y,doc->page_line_num);
           MemCpy64(&doc_e2->settings,&doc_e->settings,sizeof(CDocSettings)/8);
           if (doc_e->type_u8==DOCT_TEXT && doc->cur_col>=k)
             QueIns(doc_e2,doc_e);
@@ -568,7 +568,7 @@ public Bool DocRecalc(CDoc *doc,I64 recalc_flags=RECALCt_NORMAL)
     }
     if (doc_e->de_flags & DOCEF_REFRESH_DATA &&
         (doc_e->type_u8==DOCT_DATA || doc_e->type_u8==DOCT_CHECK_BOX ||
-         doc_e->de_flags & DOCEF_LST))
+            doc_e->de_flags & DOCEF_LST))
     {
       DocDataFmt(doc,doc_e);
       k=StrLen(doc_e->tag);
@@ -624,7 +624,7 @@ public Bool DocRecalc(CDoc *doc,I64 recalc_flags=RECALCt_NORMAL)
             i_jif=0;
           }
           tmp_u32_attr=tmp_u32_attr & 0xFFE0FF00|
-                       (FONT_WIDTH-1-i_jif&(FONT_WIDTH-1))<<16;
+              (FONT_WIDTH-1-i_jif&(FONT_WIDTH-1))<<16;
 #assert FONT_WIDTH==8
           i_jif>>=3;
           for (k=0; k<doc_e->scroll_len; k++)
@@ -725,8 +725,8 @@ public Bool DocRecalc(CDoc *doc,I64 recalc_flags=RECALCt_NORMAL)
     {
     case DOCT_TEXT:
       if (!col2 && !(doc_e->de_flags
-                     &(DOCEF_TREE|DOCEF_LST|DOCEF_TAG_CB|DOCEF_DEFINE|
-                       DOCEF_AUX_STR|DOCEF_HTML_LINK|DOCEF_BIN_PTR_LINK)))
+              &(DOCEF_TREE|DOCEF_LST|DOCEF_TAG_CB|DOCEF_DEFINE|
+                  DOCEF_AUX_STR|DOCEF_HTML_LINK|DOCEF_BIN_PTR_LINK)))
         del_doc_e=TRUE;
       break;
     case DOCT_HEX_ED:
@@ -1197,7 +1197,7 @@ rc_adjust_xy:
     }
     if (doc_e->de_flags & DOCEF_HAS_BORDER)
       TextBorder(win_task,doc_e->x-x0,x-x0-1,doc_e->y-y0,y-y0,
-                 tmp_u32_attr.u8[1],ToBool(doc_e->de_flags & DOCEF_SOLID_BORDER));
+          tmp_u32_attr.u8[1],ToBool(doc_e->de_flags & DOCEF_SOLID_BORDER));
     if (full_refresh)
     {
       switch (doc_e->type_u8)
@@ -1235,7 +1235,7 @@ rc_adjust_xy:
           tree_collapsed=FALSE;
         doc_e2=doc_e->next;
         while (doc_e2!=doc && doc_e2->type_u8!=DOCT_INDENT &&
-               !(doc_e2->de_flags & DOCEF_TREE))
+            !(doc_e2->de_flags & DOCEF_TREE))
           doc_e2=doc_e2->next;
         if (doc_e2->type_u8==DOCT_INDENT)
         {
@@ -1276,8 +1276,8 @@ rc_skip:
         MemCpy64(&doc_e2->settings,s,sizeof(CDocSettings)/8);
         doc_e2->type.u8[1]=cur_u8_attr;
         doc_e2->de_flags=doc->flags
-                         &(DOCG_BL_IV_UL|DOCEF_WORD_WRAP|DOCEF_HIGHLIGHT) |
-                         doc_e2->de_flags&~(DOCG_BL_IV_UL|DOCEF_WORD_WRAP|DOCEF_HIGHLIGHT);
+            &(DOCG_BL_IV_UL|DOCEF_WORD_WRAP|DOCEF_HIGHLIGHT) |
+            doc_e2->de_flags&~(DOCG_BL_IV_UL|DOCEF_WORD_WRAP|DOCEF_HIGHLIGHT);
       }
       doc_e2=doc_e2->next;
     }
@@ -1295,7 +1295,7 @@ rc_skip:
           if (best_doc_e==doc_e)
           {
             best_doc_e=doc_e2;
-            best_col=doc_e2->min_col;  //TODO: might be bug
+            best_col=doc_e2->min_col; //TODO: might be bug
           }
           DocEntryDel(doc,doc_e);
         }
@@ -1401,7 +1401,7 @@ rc_skip:
         doc->x+=x>>1*3+x&1;
       else
         doc->x+=doc->cur_entry->hex_ed_width*3+
-                (x-doc->cur_entry->hex_ed_width<<1);
+            (x-doc->cur_entry->hex_ed_width<<1);
     }
     doc->line=doc->y+1;
     doc->col=doc->x+1;

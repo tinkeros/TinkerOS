@@ -91,9 +91,6 @@ public _extern _REP_OUT_U32 U0 RepOutU32(
 public _extern _REP_OUT_U8  U0 RepOutU8(
 	U8 *buf,I64 cnt,I64 port); //Repeated write U8 to I/O port.
 
-#help_index "Processor/SMBIOS"
-public _extern SYS_SMBIOS_ENTRY U8  *sys_smbios_entry;
-
 #help_index "Math"
 public _intern IC_ATAN F64 ATan(F64 d); //Arc Tan (Inverse Tan).
 public _intern IC_ABS F64 Abs(F64 d); //Absolute F64.
@@ -299,5 +296,9 @@ public _intern IC_RDTSC I64 GetTSC(); //Get time stamp counter.
 #help_index "Graphics"
 public _extern SYS_FRAME_BUFFER U32 sys_frame_buffer;
 public _extern SYS_VBE_MODE_PITCH U16 sys_vbe_mode_pitch;
+
+#help_index "Ramdisk"
+public _extern SYS_INITRAMFS_PTR U8* sys_initramfs_ptr;
+public _extern SYS_INITRAMFS_SIZE U32 sys_initramfs_size;
 
 #help_index ""

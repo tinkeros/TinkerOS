@@ -17,7 +17,7 @@ Bool DrvTypeSet(U8 drv_let,I64 type=FSt_REDSEA)
     ext_base=INVALID_CLUS;
     while (TRUE)
     {
-      if ( bd->type>=BDT_OTHER)
+      if (bd->type>=BDT_OTHER)
       {
         if (bd->read_func)
           (*bd->read_func)(&mbr, offset, 1);
@@ -50,7 +50,7 @@ Bool DrvTypeSet(U8 drv_let,I64 type=FSt_REDSEA)
                 throw('Drv');
               }
               mbr.p[i].active=0x80;
-              if ( bd->type>=BDT_OTHER)
+              if (bd->type>=BDT_OTHER)
               {
                 if (bd->write_func)
                   (*bd->write_func)(&mbr, offset, 1);
@@ -111,7 +111,7 @@ U0 Fmt(I64 drv_let,Bool quick=TRUE,Bool confirm=TRUE,I64 type=FSt_FAT32)
     }
     else
     {
-      "Error: Formating only supported for block device types BDT_ATA and BDT_AHCI_SATA at this time.\n";
+      "Error: Formating only supported for types BDT_ATA and BDT_AHCI_SATA.\n";
       return;
     }
   case FSt_REDSEA:

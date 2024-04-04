@@ -472,7 +472,8 @@ I64 Dput2(CDirEntry *tmpde,I64 src_dir_len,I64 dst_dir_len,U8 *dst_dir, Bool syn
       else
       {
         // TODO remove this cleanup in Linux instead eventually?
-        if (StrMatch(".HC",tmpde->full_name) || StrMatch(".DD",tmpde->full_name) || StrMatch(".IN",tmpde->full_name))
+        if (StrMatch(".HC",tmpde->full_name) || StrMatch(".DD",tmpde->full_name)
+            || StrMatch(".IN",tmpde->full_name))
           CursorRemFile(tmpde->full_name);
         if (0==FCmpHash(tmpde->full_name,st))
         {
@@ -490,7 +491,8 @@ I64 Dput2(CDirEntry *tmpde,I64 src_dir_len,I64 dst_dir_len,U8 *dst_dir, Bool syn
 }
 
 
-public I64 Dput(U8 *src_files_find_mask,U8 *remote_dir=NULL, Bool no_mask=TRUE, Bool sync=FALSE)
+public I64 Dput(U8 *src_files_find_mask,U8 *remote_dir=NULL, Bool no_mask=TRUE,
+    Bool sync=FALSE)
 {//Copy directory tree.
 //Returns the count of copied files (not dirs).
   CDirContext *dirc;
@@ -614,7 +616,7 @@ U8 *GetBaseDir(U8 *filename)
   if (!cnt)
     return StrNew("");
   res=StrNew(filename);
-  for(i=1; i<StrLen(res); i++)
+  for (i=1; i<StrLen(res); i++)
   {
     if (StrOcc(&res[i],'/')==0)
     {

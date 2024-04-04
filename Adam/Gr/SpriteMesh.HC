@@ -60,7 +60,7 @@ CMeshEdVertex *MeshVertexNew(CMeshFrame *e,I64 x,I64 y,I64 z)
 }
 
 CMeshEdTri *MeshTriNew(CMeshFrame *e,CColorROPU32 color,
-                       CMeshEdVertex *v1,CMeshEdVertex *v2,CMeshEdVertex *v3)
+    CMeshEdVertex *v1,CMeshEdVertex *v2,CMeshEdVertex *v3)
 {
   static I64 cpu_num=0;
   CMeshEdTri *tmpt=CAlloc(sizeof(CMeshEdTri));
@@ -531,15 +531,15 @@ U0 MPDrawIt(CMeshFrame *e)
   {
     dc->color=RED;	//Y-Axis red
     GrLine3(dc,0,0,0,0,500,0);
-    dc->color=ROPF_DITHER+RED;	 //Y-Axis red
+    dc->color=ROPF_DITHER+RED; //Y-Axis red
     GrLine3(dc,0,-500,0,0,0,0);
     dc->color=YELLOW;	//X-Axis yellow
     GrLine3(dc,0,0,0,500,0,0);
-    dc->color=ROPF_DITHER+YELLOW;	 //X-Axis yellow
+    dc->color=ROPF_DITHER+YELLOW; //X-Axis yellow
     GrLine3(dc,-500,0,0,0,0,0);
     dc->color=GREEN;	//Z-Axis green
     GrLine3(dc,0,0,0,0,0,500);
-    dc->color=ROPF_DITHER+GREEN;	 //Z-Axis green
+    dc->color=ROPF_DITHER+GREEN; //Z-Axis green
     GrLine3(dc,0,0,-500,0,0,0);
   }
   while (tmpt!=&e->tri_head)
@@ -557,7 +557,7 @@ U0 MPDrawIt(CMeshFrame *e)
       else
       {
         (*dc->lighting)(dc,&tmpt->t[0]->pt,&tmpt->t[1]->pt,
-                        &tmpt->t[2]->pt,tmpt->mt.color);
+            &tmpt->t[2]->pt,tmpt->mt.color);
         GrFillTri0(dc,&tmpt->t[0]->pt,&tmpt->t[1]->pt,&tmpt->t[2]->pt);
       }
     }
@@ -759,7 +759,7 @@ U0 MeshClipPaste(CMeshFrame *e)
   while (tmpt2!=&sys_clip_tri_head)
   {
     tmpt=MeshTriNew(e,tmpt2->mt.color,tmpt2->t[0]->copy,
-                    tmpt2->t[1]->copy,tmpt2->t[2]->copy);
+            tmpt2->t[1]->copy,tmpt2->t[2]->copy);
     tmpt->flags|=TF_SEL;
     tmpt2=tmpt2->next;
   }
@@ -837,10 +837,10 @@ U0 DrawIt(CTask *task,CDC *dc)
       {
         if (Blink(10)) //This blinks at 10 Hz.
           dc->color=ROPF_DITHER+e->cur_color.c0.color<<16+
-                    e->cur_color.c0.color^8;
+              e->cur_color.c0.color^8;
         else
           dc->color=ROPF_DITHER+(e->cur_color.c0.color^8)<<16+
-                    e->cur_color.c0.color;
+              e->cur_color.c0.color;
       }
       else
       {
@@ -862,7 +862,7 @@ U0 DrawIt(CTask *task,CDC *dc)
   {
     MeshCurSnap(e);
     task->win_inhibit=WIG_TASK_DFT|WIF_SELF_DOC-WIF_SELF_FOCUS-WIF_SELF_BORDER
-                      -WIF_SELF_CTRLS-WIF_FOCUS_TASK_MENU-WIF_SELF_GRAB_SCROLL;
+        -WIF_SELF_CTRLS-WIF_FOCUS_TASK_MENU-WIF_SELF_GRAB_SCROLL;
   }
   MeshCursorW(e,task,&x,&y,&z);
   if (z<0)
@@ -920,7 +920,7 @@ U0 MeshLoad(CMeshFrame *e,U8 *src)
   CMeshEdVertex *tmpv,*va[3];
   QueInit(&e->vertex_head);
   QueInit(&e->tri_head);
-  e->vertex_cnt  =*src(I32 *)++;
+  e->vertex_cnt =*src(I32 *)++;
   e->tri_cnt=*src(I32 *)++;
   for (i=0; i<e->vertex_cnt; i++)
   {
@@ -959,8 +959,8 @@ I64 MeshSize(CMeshFrame *e)
     tmpt=tmpt->next;
   }
   return sizeof(I32)*2+
-         (offset(CMeshEdVertex.end)-offset(CMeshEdVertex.start))*e->vertex_cnt+
-         (offset(CMeshEdTri.end)-offset(CMeshEdTri.start))*e->tri_cnt;
+      (offset(CMeshEdVertex.end)-offset(CMeshEdVertex.start))*e->vertex_cnt+
+      (offset(CMeshEdTri.end)-offset(CMeshEdTri.start))*e->tri_cnt;
 }
 
 I32 *MeshSave(CMeshFrame *e,I64 *_size=NULL)
@@ -975,7 +975,7 @@ I32 *MeshSave(CMeshFrame *e,I64 *_size=NULL)
   while (tmpv!=&e->vertex_head)
   {
     MemCpy(dst,&tmpv->start,offset(CMeshEdVertex.end)
-           -offset(CMeshEdVertex.start));
+        -offset(CMeshEdVertex.start));
     dst+=offset(CMeshEdVertex.end)-offset(CMeshEdVertex.start);
     tmpv=tmpv->next;
   }
@@ -1037,7 +1037,7 @@ I32 *SpriteMeshEd(I32 *head=NULL,I64 *_size=NULL,Bool flip_y=FALSE)
 
   Returns a newly malloced mesh or NULL.
 
-  See $LK,"::/Demo/Graphics/SpritePlot3D.HC"$.
+See $LK,"::/Demo/Graphics/SpritePlot3D.HC"$.
   $WW,0$*/
   CCtrl *c=CtrlFindUnique(Fs,CTRLT_VIEWING_ANGLES);
   CViewAngles *s,*old_s;
@@ -1064,56 +1064,56 @@ I32 *SpriteMeshEd(I32 *head=NULL,I64 *_size=NULL,Bool flip_y=FALSE)
   s->cy=RED;
   s->cz=GREEN;
   MenuPush(
-  "File {"
-  "  Abort(,CH_SHIFT_ESC);"
-  "  Exit(,CH_ESC);"
-  "}"
-  "Edit {"
-  "  Delete(,,SC_DELETE);"
-  "  DelLast(,CH_BACKSPACE);"
-  "  Cut(,CH_CTRLX);"
-  "  Copy(,CH_CTRLC);"
-  "  Paste(,CH_CTRLV);"
-  "  SelectAll(,'A');"
-  "  UnSelectAll(,'U');"
-  "  SelectRect(,'a');"
-  "  UnSelectRect(,'u');"
-  "  OrSelectRect(,'o');"
-  "  JumpToZ(,'j');"
-  "  ResetColor(,'C');"
-  "  ReverseTri(,'r');"
-  "}"
-  "Mode {"
-  "  PlaceVertex(,'v');"
-  "  MoveVertex(,'m');"
-  "  MoveVertexZ(,'M');"
-  "  Triangle(,'t');"
-  "  Polygon(,'n');"
-  "  Fence(,'f');"
-  "  Prism(,'p');"
-  "}"
-  "Settings {"
-  "  Color(,'c');"
-  "  Snap(,'s');"
-  "}"
-  "View {"
-  "  ZoomIn(,'z');"
-  "  ZoomOut(,'Z');"
-  "  NullAngles(,'N');"
-  "  FlipY(,'y');"
-  "  Grid(,'g');"
-  "  Vertex(,'V');"
-  "  ToggleBorder(,CH_CTRLB);"
-  "}"
-  "Transforms {"
-  "  Transform(,'T');"
-  "  SwapXY(,'1');"
-  "  SwapXZ(,'2');"
-  "  SwapYZ(,'3');"
-  "  InvertX(,'4');"
-  "  InvertY(,'5');"
-  "  InvertZ(,'6');"
-  "  ReverseTri(,'R');"
+      "File {"
+      "  Abort(,CH_SHIFT_ESC);"
+      "  Exit(,CH_ESC);"
+      "}"
+      "Edit {"
+      "  Delete(,,SC_DELETE);"
+      "  DelLast(,CH_BACKSPACE);"
+      "  Cut(,CH_CTRLX);"
+      "  Copy(,CH_CTRLC);"
+      "  Paste(,CH_CTRLV);"
+      "  SelectAll(,'A');"
+      "  UnSelectAll(,'U');"
+      "  SelectRect(,'a');"
+      "  UnSelectRect(,'u');"
+      "  OrSelectRect(,'o');"
+      "  JumpToZ(,'j');"
+      "  ResetColor(,'C');"
+      "  ReverseTri(,'r');"
+      "}"
+      "Mode {"
+      "  PlaceVertex(,'v');"
+      "  MoveVertex(,'m');"
+      "  MoveVertexZ(,'M');"
+      "  Triangle(,'t');"
+      "  Polygon(,'n');"
+      "  Fence(,'f');"
+      "  Prism(,'p');"
+      "}"
+      "Settings {"
+      "  Color(,'c');"
+      "  Snap(,'s');"
+      "}"
+      "View {"
+      "  ZoomIn(,'z');"
+      "  ZoomOut(,'Z');"
+      "  NullAngles(,'N');"
+      "  FlipY(,'y');"
+      "  Grid(,'g');"
+      "  Vertex(,'V');"
+      "  ToggleBorder(,CH_CTRLB);"
+      "}"
+      "Transforms {"
+      "  Transform(,'T');"
+      "  SwapXY(,'1');"
+      "  SwapXZ(,'2');"
+      "  SwapYZ(,'3');"
+      "  InvertX(,'4');"
+      "  InvertY(,'5');"
+      "  InvertZ(,'6');"
+      "  ReverseTri(,'R');"
   "}");
   SettingsPush; //See $LK,"SettingsPush",A="MN:SettingsPush"$
   AutoComplete;
@@ -1131,7 +1131,7 @@ I32 *SpriteMeshEd(I32 *head=NULL,I64 *_size=NULL,Bool flip_y=FALSE)
                   "$$GREEN$$'s'$$FG$$: Set snap\n"
                   "\nSee menu at top of scrn for more.\n");
   Fs->win_inhibit=WIG_TASK_DFT|WIF_SELF_DOC-WIF_SELF_FOCUS-WIF_SELF_BORDER
-                  -WIF_SELF_CTRLS-WIF_FOCUS_TASK_MENU-WIF_SELF_GRAB_SCROLL;
+      -WIF_SELF_CTRLS-WIF_FOCUS_TASK_MENU-WIF_SELF_GRAB_SCROLL;
   Fs->horz_scroll.pos=0;
   Fs->vert_scroll.pos=0;
   MeshInit(&e,flip_y);
@@ -1141,14 +1141,14 @@ I32 *SpriteMeshEd(I32 *head=NULL,I64 *_size=NULL,Bool flip_y=FALSE)
   Fs->draw_it=&DrawIt;
   MeshCurSnap(&e);
   MeshRecalcCxCy(Fs,&e);
-  try  //In case of <CTRL-ALT-c>
+  try //In case of <CTRL-ALT-c>
   {
     while (TRUE)
     {
       MeshUpdateMenu(&e);
       msg_code=GetMsg(&arg1,&arg2,
-                      1<<MSG_MS_MOVE|1<<MSG_KEY_DOWN|1<<MSG_MS_L_DOWN|
-                      1<<MSG_MS_L_UP|1<<MSG_MS_R_DOWN|1<<MSG_MS_R_UP);
+              1<<MSG_MS_MOVE|1<<MSG_KEY_DOWN|1<<MSG_MS_L_DOWN|
+              1<<MSG_MS_L_UP|1<<MSG_MS_R_DOWN|1<<MSG_MS_R_UP);
 me_restart:
       switch (msg_code)
       {
@@ -1167,8 +1167,8 @@ me_restart:
                 MeshClipDel(&e);
               else if (e.ed_mode!='t')
                 MeshVertexDel(&e,MeshVertexFindScrPt(&e,
-                                                     ms.presnap.x-Fs->pix_left-Fs->scroll_x,
-                                                     ms.presnap.y-Fs->pix_top-Fs->scroll_y));
+                        ms.presnap.x-Fs->pix_left-Fs->scroll_x,
+                        ms.presnap.y-Fs->pix_top-Fs->scroll_y));
               MeshVertexSelAll(&e,FALSE);
               MeshTriSelAll(&e,FALSE);
               make_tri_vertex_num=0;
@@ -1250,7 +1250,7 @@ me_chain:
           else
             sel_mode=SEL_MESH_OR;
           if ((msg_code=GetMsg(&arg1,&arg2,1<<MSG_KEY_DOWN|1<<MSG_MS_L_DOWN|
-                               1<<MSG_MS_L_UP|1<<MSG_MS_R_DOWN|1<<MSG_MS_R_UP))
+                          1<<MSG_MS_L_UP|1<<MSG_MS_R_DOWN|1<<MSG_MS_R_UP))
               !=MSG_MS_L_DOWN)
           {
             Beep;
@@ -1265,8 +1265,8 @@ me_chain:
           while (TRUE)
           {
             msg_code=GetMsg(&arg1,&arg2,1<<MSG_MS_MOVE|1<<MSG_KEY_DOWN|
-                            1<<MSG_MS_L_DOWN|1<<MSG_MS_L_UP|1<<MSG_MS_R_DOWN|
-                            1<<MSG_MS_R_UP);
+                    1<<MSG_MS_L_DOWN|1<<MSG_MS_L_UP|1<<MSG_MS_R_DOWN|
+                    1<<MSG_MS_R_UP);
             if (msg_code==MSG_MS_MOVE)
             {
               e.x2=arg1;
@@ -1368,8 +1368,8 @@ me_clip_cut:
           if (moving)
             MeshVertexIgnoreSet(&e,TRUE);
           if (tmpv=MeshVertexFindScrPt(&e,
-                                       ms.pos.x-Fs->pix_left-Fs->scroll_x,
-                                       ms.pos.y-Fs->pix_top-Fs->scroll_y))
+                      ms.pos.x-Fs->pix_left-Fs->scroll_x,
+                      ms.pos.y-Fs->pix_top-Fs->scroll_y))
           {
             Noise(25,86,110);
             e.ms_z=RoundI64(tmpv->p.z,e.cur_snap);
@@ -1492,8 +1492,8 @@ me_clip_cut:
             if (adjusting_z)
             {
               e.ms_z=RoundI64(Sign(p0b.y-ms.presnap.y)
-                              *Sqrt(Sqr(p0b.x-ms.presnap.x)+Sqr(p0b.y-ms.presnap.y))
-                              +p0b.z,e.cur_snap);
+                      *Sqrt(Sqr(p0b.x-ms.presnap.x)+Sqr(p0b.y-ms.presnap.y))
+                      +p0b.z,e.cur_snap);
               Snd;
               adjusting_z=FALSE;
               MeshCursorW(&e,Fs,&x,&y,&z);
@@ -1539,7 +1539,7 @@ me_clip_cut:
       case MSG_MS_R_DOWN:
         if (!adjusting_z && e.ed_mode!='M' &&
             (e.chain_pred==e.vertex_head.last ||
-             e.ed_mode!='n' && e.ed_mode!='f' && e.ed_mode!='p'))
+                e.ed_mode!='n' && e.ed_mode!='f' && e.ed_mode!='p'))
         {
           if (moving)
           {
@@ -1561,8 +1561,8 @@ me_clip_cut:
         if (adjusting_z)
         {
           e.ms_z=RoundI64(Sign(p0b.y-ms.presnap.y)
-                          *Sqrt(Sqr(p0b.x-ms.presnap.x)+Sqr(p0b.y-ms.presnap.y))
-                          +p0b.z,e.cur_snap);
+                  *Sqrt(Sqr(p0b.x-ms.presnap.x)+Sqr(p0b.y-ms.presnap.y))
+                  +p0b.z,e.cur_snap);
           Snd;
           adjusting_z=FALSE;
           if (moving)
@@ -1575,7 +1575,7 @@ me_clip_cut:
             MeshP0Capture(&e);
           }
         }
-        else  if (e.ed_mode=='n')
+        else if (e.ed_mode=='n')
         {
           if (e.chain_pred && e.chain_pred!=e.vertex_head.last)
             MeshPolygon(&e,e.chain_pred->next,e.vertex_head.last,FALSE);
@@ -1601,8 +1601,8 @@ me_clip_cut:
         if (adjusting_z)
         {
           e.ms_z=RoundI64(Sign(p0b.y-ms.presnap.y)
-                          *Sqrt(Sqr(p0b.x-ms.presnap.x)+Sqr(p0b.y-ms.presnap.y))
-                          +p0b.z,e.cur_snap);
+                  *Sqrt(Sqr(p0b.x-ms.presnap.x)+Sqr(p0b.y-ms.presnap.y))
+                  +p0b.z,e.cur_snap);
           Snd(ClampI64(Freq2Ona(3*e.ms_z+1500),0,I8_MAX));
         }
         if (moving)

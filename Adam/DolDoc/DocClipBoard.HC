@@ -1,7 +1,21 @@
-#help_index "DolDoc/Clip"
-
 sys_clip_doc=DocNew;
 
+public U0 ClipCopyCB()
+{
+  // Override me!
+}
+
+public U0 ClipCutCB()
+{
+  // Override me!
+}
+
+public U0 ClipPasteCB()
+{
+  // Override me!
+}
+
+#help_index "DolDoc/Clip"
 public U0 ClipDel()
 {//Delete everything on clip.
   DocRst(sys_clip_doc,TRUE);
@@ -29,6 +43,7 @@ public U0 ClipCopy(CDoc *doc)
   }
   if (unlock_doc2)
     DocUnlock(doc2);
+  ClipCopyCB;
   if (unlock_doc)
     DocUnlock(doc);
 }
@@ -65,12 +80,14 @@ public U0 ClipCut(CDoc *doc)
   DocRemSoftNewLines(doc,NULL);
   if (unlock_doc2)
     DocUnlock(doc2);
+  ClipCutCB;
   if (unlock_doc)
     DocUnlock(doc);
 }
 
 public U0 ClipPaste(CDoc *doc)
 {//Insert copy of clip at insert pt, cur_entry.
+  ClipPasteCB;
   CDoc *doc2=sys_clip_doc;
   Bool unlock_doc=DocLock(doc),
        unlock_doc2=DocLock(doc2);

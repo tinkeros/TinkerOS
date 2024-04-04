@@ -214,8 +214,10 @@ public I64 RamDiskToFile(U8 drv_let='B',U8 *filename)
   CBlkDev *ram_disk=Let2BlkDev(drv_let);
   if (ram_disk)
   {
-    "Attempting to write %d blocks from drive %c to file %s\n",ram_disk->max_blk,drv_let,filename;
-    cnt=FileWrite(filename,ram_disk->RAM_dsk,BLK_SIZE*ram_disk->max_blk,,RS_ATTR_CONTIGUOUS);
+    "Attempting to write %d blocks from drive %c to file %s\n",ram_disk->max_blk,
+      drv_let,filename;
+    cnt=FileWrite(filename,ram_disk->RAM_dsk,BLK_SIZE*ram_disk->max_blk
+      ,,RS_ATTR_CONTIGUOUS);
   }
   return cnt;
 }
@@ -227,7 +229,8 @@ public I64 FileToRamDisk(U8 drv_let='B', U8 *filename)
   CBlkDev *ram_disk=Let2BlkDev(drv_let);
   if (ram_disk)
   {
-    "Attempting to read %d blocks to drive %c from file %s\n",ram_disk->max_blk,drv_let,filename;
+    "Attempting to read %d blocks to drive %c from file %s\n",
+      ram_disk->max_blk,drv_let,filename;
     buf=FileRead(filename,&cnt);
     if (cnt == BLK_SIZE*ram_disk->max_blk)
     {

@@ -1,10 +1,9 @@
-
 I64 YNorU(I64 enter_default=0)
 {//Wait for user to answer Y or N.
   I64 ch;
   if (ToLower(enter_default)=='y'
-  || ToLower(enter_default)=='n'
-  || ToLower(enter_default)=='u')
+      || ToLower(enter_default)=='n'
+      || ToLower(enter_default)=='u')
     "(y or n, default: %c)? ",ToLower(enter_default);
   else
     "(y,n or u)? ";
@@ -40,31 +39,33 @@ I64 AskQuestion(U8 *q)
 
 #define NUM_INS_SURVEY_QUESTIONS 3
 
-static U8 *ins_questions[NUM_INS_SURVEY_QUESTIONS]={
-"Did the automatic installer work\0u",
-"Did you manually partition and format the drive\0u",
-"Did you manually have to enter IO port numbers\0u",
+static U8 *ins_questions[NUM_INS_SURVEY_QUESTIONS]=
+{
+  "Did the automatic installer work\0u",
+  "Did you manually partition and format the drive\0u",
+  "Did you manually have to enter IO port numbers\0u",
 };
 
 #define NUM_STD_SURVEY_QUESTIONS 9
 
-static U8 *std_questions[NUM_STD_SURVEY_QUESTIONS]={
-"Is AHCI mode supported in BIOS\0u",
-"Is Legacy/IDE mode supported in BIOS\0u",
-"Does PS/2 emulation of a USB keyboard work\0u",
-"Does PS/2 emulation of a USB mouse work\0u",
-"Does your system have a PS/2 mouse or combo port\0u",
-"Does your system have a serial port\0u",
-"Does your system have a parallel port\0u",
-"Can you install and run TempleOS bare metal\0u",
-"Can you install and run TinkerOS bare metal\0u",
+static U8 *std_questions[NUM_STD_SURVEY_QUESTIONS]=
+{
+  "Is AHCI mode supported in BIOS\0u",
+  "Is Legacy/IDE mode supported in BIOS\0u",
+  "Does PS/2 emulation of a USB keyboard work\0u",
+  "Does PS/2 emulation of a USB mouse work\0u",
+  "Does your system have a PS/2 mouse or combo port\0u",
+  "Does your system have a serial port\0u",
+  "Does your system have a parallel port\0u",
+  "Can you install and run TempleOS bare metal\0u",
+  "Can you install and run TinkerOS bare metal\0u",
 };
 
 
 U0 SetDefaultResp(U8 *q, I64 resp)
 {
- q[StrLen(q)+1]=resp;
-} 
+  q[StrLen(q)+1]=resp;
+}
 
 
 U0 RunSysSurvey()
@@ -78,7 +79,7 @@ U0 RunSysSurvey()
   DocMax;
   AutoComplete(0);
 
-  if(blkdev.boot_drv_let != 'B' && blkdev.boot_drv_let !='T') installed=TRUE;
+  if (blkdev.boot_drv_let != 'B' && blkdev.boot_drv_let !='T') installed=TRUE;
 
   if (AHCIMode) SetDefaultResp(std_questions[0],'y');
   else SetDefaultResp(std_questions[0],'n');
@@ -86,7 +87,7 @@ U0 RunSysSurvey()
   if (!AHCIMode) SetDefaultResp(std_questions[1],'y');
 
   DefineLstLoad("ST_SYS_SURVEY","No\0Yes\0Unknown\0NA\0");
-  for (i=0;i<NUM_STD_SURVEY_QUESTIONS;i++)
+  for (i=0; i<NUM_STD_SURVEY_QUESTIONS; i++)
   {
     resp[i]=AskQuestion(std_questions[i]);
     "\n";
@@ -105,9 +106,9 @@ U0 RunSysSurvey()
 
   if (installed)
   {
-    for (i=0;i<NUM_INS_SURVEY_QUESTIONS;i++)
+    for (i=0; i<NUM_INS_SURVEY_QUESTIONS; i++)
     {
-      resp_ins[i]=AskQuestion(ins_questions[i]);  
+      resp_ins[i]=AskQuestion(ins_questions[i]);
       "\n";
     }
   }
@@ -127,7 +128,7 @@ U0 RunSysSurvey()
   "Any extra notes you would like to share ";
 
   if (YorN)
-    {
+  {
     notes=PopUpGetStr("Please enter extra notes, then press ESC\n");
   }
 
@@ -135,11 +136,17 @@ U0 RunSysSurvey()
 
   "Survey and System Results:\n\n";
 
+#ifdef SCREEN_SAVER_TIMEOUT
   "OS: TinkerOS V%5.3f\t%D %T\n\n",sys_os_version,sys_compile_time,sys_compile_time;
+#else
+  "OS: TempleOS V%5.3f\t%D %T\n\n",sys_os_version,sys_compile_time,sys_compile_time;
+#endif
 
-  "Current graphics mode: %d x %d (%d by %d framebuffer)\n\n",GR_WIDTH,GR_HEIGHT,FB_WIDTH,FB_HEIGHT;
+  "Current graphics mode: %d x %d (%d by %d framebuffer)\n\n",
+    GR_WIDTH,GR_HEIGHT,FB_WIDTH,FB_HEIGHT;
   "Current disk mode: ";
-  if (AHCIMode) "AHCI\n\n"; else "IDE/Legacy\n\n";
+  if (AHCIMode) "AHCI\n\n";
+  else "IDE/Legacy\n\n";
   "Current boot drive: %C\n\n",blkdev.boot_drv_let;
 
 
@@ -147,22 +154,22 @@ U0 RunSysSurvey()
   if (is_laptop && have_dock)
     "Dock with useful ports available: %s\n\n",DefineSub(have_dock,"ST_SYS_SURVEY");
 
-  for (i=0;i<NUM_STD_SURVEY_QUESTIONS;i++)
-    {
+  for (i=0; i<NUM_STD_SURVEY_QUESTIONS; i++)
+  {
     "%s: %s\n\n",std_questions[i],DefineSub(resp[i],"ST_SYS_SURVEY");
   }
 
   if (installed)
+  {
+    for (i=0; i<NUM_INS_SURVEY_QUESTIONS; i++)
     {
-    for (i=0;i<NUM_INS_SURVEY_QUESTIONS;i++)
-      {
       "%s: %s\n\n",ins_questions[i],DefineSub(resp_ins[i],"ST_SYS_SURVEY");
     }
   }
 
   if (extra_notes) "Extra notes: \n\n%s\n\n",notes;
 
-  if (sysrep) 
+  if (sysrep)
   {
     "Results from SysRepSurvey:\n\n";
     SysRepSurvey;
@@ -170,7 +177,7 @@ U0 RunSysSurvey()
 
   if (installed)
     survey_file=MStrPrint("%C:/Home/Survey.DD",blkdev.boot_drv_let);
-  else 
+  else
     survey_file=MStrPrint("B:/Home/Survey.DD");
 
   StrCpy(Fs->put_doc->filename.name,survey_file);
@@ -180,7 +187,8 @@ U0 RunSysSurvey()
   "and make a github pull request to add your system! This\n";
   "will help others know what systems are TOS compatible!\n\n";
 
-  if (SNAIL_COM>0) {
+  if (SNAIL_COM>0)
+  {
     "Attempt to automatically send survey to TOS server over serial port ";
     if (YorN('y'))
       Fput(survey_file,"Survey.DD");

@@ -26,11 +26,25 @@ U0 BlkPoolInit(CBlkPool *bp,I64 pags)
   BlkPoolAdd(bp,m,num);
 }
 
+static Bool first_heap_init=TRUE;
+
+U0 InitHeapRange(I64 lo,I64 hi)
+{
+  if (first_heap_init)
+  {
+    BlkPoolInit(lo,(hi-lo)>>MEM_PAG_BITS);
+    sys_data_bp=lo;
+    Fs->data_heap=HeapCtrlInit(,Fs,sys_data_bp);
+    first_heap_init=FALSE;
+  }
+  else
+    BlkPoolAdd(sys_data_bp,lo,(hi-lo)>>MEM_PAG_BITS);
+}
+
 U0 BlkPoolsInit()
 {
-  I64 i,total,lo,hi,code_heap_limit;
+  I64 i,total,lo,hi,code_heap_limit,new_lo1,new_lo2,new_hi1,new_hi2;
   CMemE820 *m20=MEM_E820;
-  Bool first=TRUE;
   total=BIOSTotalMem;
   if (total<=0x80000000)
     code_heap_limit=total;
@@ -58,15 +72,27 @@ U0 BlkPoolsInit()
         }
         if (code_heap_limit<=lo<hi)
         {
-          if (first)
-          {
-            BlkPoolInit(lo,(hi-lo)>>MEM_PAG_BITS);
-            sys_data_bp=lo;
-            Fs->data_heap=HeapCtrlInit(,Fs,sys_data_bp);
-            first=FALSE;
-          }
+          if (sys_initramfs_ptr && sys_initramfs_ptr > hi)
+            InitHeapRange(lo,hi);
+          else if (sys_initramfs_ptr && sys_initramfs_ptr + sys_initramfs_size < lo)
+            InitHeapRange(lo,hi);
           else
-            BlkPoolAdd(sys_data_bp,lo,(hi-lo)>>MEM_PAG_BITS);
+          {
+            new_lo1=lo;
+            new_hi1=sys_initramfs_ptr;
+            new_lo2=sys_initramfs_ptr+sys_initramfs_size;
+            new_hi2=hi;
+            if (new_hi1-new_lo1>65536) {
+              new_hi1=new_hi1-new_hi1%8192;
+              InitHeapRange(new_lo1,new_hi1);
+            }
+            if (new_hi2-new_lo2>65536) {
+              new_lo2+=8192;
+              new_lo2-=new_lo2%8192;
+              InitHeapRange(new_lo2,new_hi2);
+            }
+          }
+
         }
       }
       m20++;

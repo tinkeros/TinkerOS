@@ -82,7 +82,7 @@ U0 SysUntry()
   Free(tmpt);
 }
 
-U0 throw(I64 ch=0,Bool no_log=FALSE)
+U0 throw(I64 ch=0,Bool no_log=FALSE,Bool exit_unhandled=FALSE)
 {//ch can be up to 8 chars like $LK,"PutChars",A="MN:PutChars"$().
 //In the catcher, fetch ch from Fs->except_ch.
   CExcept *tmpt=Fs->last_except;
@@ -108,6 +108,7 @@ U0 throw(I64 ch=0,Bool no_log=FALSE)
     QueRem(tmpt);
     Free(tmpt);
   }
+  if (exit_unhandled) Exit;
   was_raw=Raw(ON);
   PutExcept(FALSE);
   Panic("Unhandled Exception");

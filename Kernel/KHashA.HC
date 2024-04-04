@@ -262,4 +262,4 @@ _extern _HASH_BUCKET_FIND CHash **HashBucketFind(U8 *needle_str,
 _extern _HASH_ADD U0 HashAdd(CHash *tmph,
                              CHashTable *table); //Add entry to hash table.
 _extern _HASH_REM_DEL Bool HashRemDel(CHash *tmph,CHashTable *table,
-                                      I64 instance=1);//Remove hash entry and del. Instance must match.
+                      I64 instance=1);//Remove hash entry and del. Instance must match.

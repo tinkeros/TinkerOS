@@ -127,6 +127,12 @@ public U8 *DC2Sprite(CDC *tmpb)
   return tmpg(U8 *)+offset(CSprite.start);
 }
 
+public U0 UpdateSpriteDC(CSprite *tmpg, CDC *tmpb)
+{//Update sprite from device context.
+  tmpg=tmpg(U8 *)-offset(CSprite.start);
+  MemCpy(&tmpg->pwhu.u,tmpb->body,tmpb->width_internal*tmpb->height);
+}
+
 public U8 *SpriteElem2Summary(CSprite *tmpg)
 {//Study $LK,"::/Demo/Graphics/SpriteText.HC"$.
   U8 buf[STR_LEN],buf2[STR_LEN];

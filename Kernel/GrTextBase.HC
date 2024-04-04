@@ -310,7 +310,7 @@ asm
   RET1	40
 }
 public _extern _TEXT_CHAR Bool TextChar(CTask *task,Bool allow_border=FALSE,
-                                        I64 x,I64 y,I64 d); //Plot char. 30fps in Fs->draw_it() callback.
+                       I64 x,I64 y,I64 d); //Plot char. 30fps in Fs->draw_it() callback.
 public _extern _TEXT_LEN_STR Bool TextLenStr(CTask *task,I64 x,I64 y,I64 len,
     I64 attr,U8 *s); //Plot str with len.  30fps in Fs->draw_it() callback.
 public _extern _TEXT_LEN_ATTR_STR Bool TextLenAttrStr(CTask *task,I64 x,I64 y,

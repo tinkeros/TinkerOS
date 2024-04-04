@@ -29,7 +29,8 @@ U0 SethREPL(I64 cpu_num=mp_cnt-1)
       pmpt=MStrPrint("Seth %d > ",cpu_num);
     line=GetStr(pmpt);
     Free(pmpt);
-    if (!line || StrLen(line)<=6 && (!StrNICmp(line,"exit",4) || !StrNICmp(line,"quit",4)))
+    if (!line || StrLen(line)<=6 && (!StrNICmp(line,"exit",4) ||
+      !StrNICmp(line,"quit",4)))
       break;
     "\nWaiting...";
     tmpc=TaskExe(repl,Fs,line,0);

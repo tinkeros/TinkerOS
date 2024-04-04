@@ -62,7 +62,7 @@ U8 *Doc2PlainText(CDoc *doc,CDocEntry *doc_e)
     f1=doldoc.dft_de_flags[doc_e->type_u8];
     t1=doc_e->type_u8|doldoc.dft_type_flags[doc_e->type_u8];
     de_flags=doc_e->de_flags&~(DOCG_BL_IV_UL|DOCEF_SEL|
-                               DOCEF_HIGHLIGHT|DOCEF_WORD_WRAP|DOCEF_SKIP|DOCEF_FILTER_SKIP);
+            DOCEF_HIGHLIGHT|DOCEF_WORD_WRAP|DOCEF_SKIP|DOCEF_FILTER_SKIP);
     for (i=0; i<DOCEf_FLAGS_NUM; i++)
       if (Bt(&f1,i)!=Bt(&de_flags,i))
       {
@@ -149,9 +149,9 @@ U8 *Doc2PlainText(CDoc *doc,CDocEntry *doc_e)
       case DOCEf_TAG:
         if (doc_e->type_u8==DOCT_DATA || doc_e->type_u8==DOCT_MACRO &&
             (doc_e->de_flags&DOCEF_LEFT_MACRO &&
-             !StrCmp(doc_e->tag,doc_e->left_macro) ||
-             doc_e->de_flags&DOCEF_RIGHT_MACRO &&
-             !StrCmp(doc_e->tag,doc_e->right_macro)) ||
+                !StrCmp(doc_e->tag,doc_e->left_macro) ||
+                doc_e->de_flags&DOCEF_RIGHT_MACRO &&
+                !StrCmp(doc_e->tag,doc_e->right_macro)) ||
             doc_e->de_flags&DOCEF_LST && !StrCmp(doc_e->tag,"[]") &&
             doc_e->de_flags&DOCEF_DEFINE)
         {
@@ -239,7 +239,7 @@ U8 *Doc2PlainText(CDoc *doc,CDocEntry *doc_e)
       Free(buf);
       buf=buf2;
     }
-    buf[StrLen(buf)-1]=0;  //Kill last comma
+    buf[StrLen(buf)-1]=0; //Kill last comma
   }
   buf2=StrNew(buf,doc->mem_task); //exact allocation
   Free(buf);
@@ -263,7 +263,7 @@ CDocEntry *PrsDollarCmd(CDoc *doc,U8 *st)
       {
         if (tmph->type&DHT_DOC_CMD)
           i=tmph->user_data0;
-        else  //DHT_COLOR
+        else //DHT_COLOR
         {
           i=DOCT_FOREGROUND;
           attr=tmph->user_data0;
@@ -343,7 +343,7 @@ CDocEntry *PrsDollarCmd(CDoc *doc,U8 *st)
           j=Bsf(de_flags);
         if (j<0 || Bts(&processed_flags,j))
           goto pd_err;
-        switch [j]  //TODO: Might check for expression errors
+        switch [j] //TODO: Might check for expression errors
         {
         case DOCEf_TAG:
           if (!doc_e->tag)
@@ -408,7 +408,7 @@ CDocEntry *PrsDollarCmd(CDoc *doc,U8 *st)
               if (ptr=StrMatch(":",doc_e->aux_str))
                 doc_e->min_col=ptr-doc_e->aux_str+1;
               doc_e->tag=MAlloc(doc_e->len+doc_e->min_col+2,
-                                doc->mem_task); //+2 because "_\0"
+                  doc->mem_task); //+2 because "_\0"
             }
           }
           else
@@ -541,7 +541,7 @@ pd_err:
       doc_e->de_flags=0;
     }
     if (doc_e->de_flags&DOCEF_LST && (doc_e->de_flags&DOCEF_REMALLOC_DATA ||
-                                      !(doc_e->de_flags&DOCEF_DEREF_DATA)))
+            !(doc_e->de_flags&DOCEF_DEREF_DATA)))
     {
       DocDataScan(doc,doc_e);
       DocDataFmt(doc,doc_e);
@@ -569,8 +569,8 @@ U0 DocEntryToggle(CDoc *doc)
       !(doc->flags&(DOCF_PLAIN_TEXT|DOCF_PLAIN_TEXT_TABS)))
   {
     if (doc_ce->type_u8==DOCT_TEXT && !(doc_ce->de_flags &
-                                        ~(DOCEF_TAG|DOCG_BL_IV_UL|DOCEF_WORD_WRAP|DOCEF_HIGHLIGHT|
-                                          DOCEF_SKIP|DOCEF_FILTER_SKIP)) &&
+            ~(DOCEF_TAG|DOCG_BL_IV_UL|DOCEF_WORD_WRAP|DOCEF_HIGHLIGHT|
+                DOCEF_SKIP|DOCEF_FILTER_SKIP)) &&
         !(doc_ce->type&DOCG_BL_IV_UL))
     {
       doc_ce2=doc_ce->last;

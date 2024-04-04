@@ -220,8 +220,9 @@ U0 AOTGlblsResolve(CCmpCtrl *cc,CAOT *tmpaot)
 }
 
 U0 AsmUnresolvedAdd(CCmpCtrl *cc,U8 *machine_code,I64 type,I64 rip,I64 rel_rip,
-                    CAsmUndefHash *local_asm_undef_hash,CAsmUndefHash *glbl_asm_undef_hash,
-                    I64 line_num,Bool U8_avail)
+                    CAsmUndefHash *local_asm_undef_hash,
+                    CAsmUndefHash *glbl_asm_undef_hash, I64 line_num,
+                    Bool U8_avail)
 {
   CAsmUnresolvedRef *tmpu=MAlloc(sizeof(CAsmUnresolvedRef));
   tmpu->machine_code=machine_code;

@@ -67,8 +67,8 @@ Bool OptIC4(CIntermediateCode *tmpi)
             tmpil1->ic_flags|=ICF_ARG2_TO_F64;
         }
         tmpil1->arg2.type=tmpil2->arg1.type&MDG_MASK+
-                          MinI64(tmpil1->arg2.type.raw_type,
-                                 MinI64(tmpil2->res.type.raw_type,tmpil2->arg1.type.raw_type));
+            MinI64(tmpil1->arg2.type.raw_type,
+                MinI64(tmpil2->res.type.raw_type,tmpil2->arg1.type.raw_type));
         tmpil1->arg2.reg=tmpil2->arg1.reg;
         tmpil1->arg2.disp=tmpil2->arg1.disp;
         tmpil1->ic_flags|=tmpil2->ic_flags&ICG_NO_CVT_MASK;
@@ -97,8 +97,8 @@ Bool OptIC4(CIntermediateCode *tmpi)
             tmpil1->ic_flags|=ICF_ARG1_TO_F64;
         }
         tmpil1->arg1.type=tmpil2->arg1.type&MDG_MASK+
-                          MinI64(tmpil1->arg1.type.raw_type,
-                                 MinI64(tmpil2->res.type.raw_type,tmpil2->arg1.type.raw_type));
+            MinI64(tmpil1->arg1.type.raw_type,
+                MinI64(tmpil2->res.type.raw_type,tmpil2->arg1.type.raw_type));
         CmpMinTypePointed(tmpil1,tmpil2->arg1_type_pointed_to);
         tmpil1->arg1.reg=tmpil2->arg1.reg;
         tmpil1->arg1.disp=tmpil2->arg1.disp;
@@ -130,7 +130,7 @@ Bool OptIC4(CIntermediateCode *tmpi)
         tmpil1->ic_flags|=tmpil2->ic_flags;
         tmpil1->ic_code=IC_MOV;
         tmpil1->arg1.type=tmpil2->arg1.type&MDG_MASK+
-                          tmpil1->arg1_type_pointed_to;
+            tmpil1->arg1_type_pointed_to;
         tmpil1->arg1.reg=tmpil2->arg1.reg;
         tmpil1->arg1.disp=tmpil2->arg1.disp;
         OptFree(tmpil2);
@@ -253,9 +253,9 @@ U0 OptPass4(CCmpCtrl *cc,COptReg *reg_offsets,I64 *_type)
           }
         }
         else if ((tmpi1->ic_code==IC_ABS_ADDR ||
-                  tmpi1->ic_code==IC_MOV &&
-                  tmpi1->arg1.type==MDF_IMM+RT_I64 &&
-                  0<=tmpi1->arg1.disp<=I32_MAX)&& !(tmpi1->ic_flags&ICF_NO_RIP))
+                tmpi1->ic_code==IC_MOV &&
+                tmpi1->arg1.type==MDF_IMM+RT_I64 &&
+                0<=tmpi1->arg1.disp<=I32_MAX)&& !(tmpi1->ic_flags&ICF_NO_RIP))
         {
           if (tmpi1->ic_code==IC_ABS_ADDR)
             tmpi->arg1.disp=tmpi1->ic_data;
@@ -306,8 +306,8 @@ p4_lea_gone:
           }
         }
         else if ((tmpi1->ic_code==IC_ABS_ADDR || tmpi1->ic_code==IC_MOV &&
-                  tmpi1->arg1.type==MDF_IMM+RT_I64 &&
-                  0<=tmpi1->arg1.disp<=I32_MAX)&& !(tmpi1->ic_flags&ICF_NO_RIP))
+                tmpi1->arg1.type==MDF_IMM+RT_I64 &&
+                0<=tmpi1->arg1.disp<=I32_MAX)&& !(tmpi1->ic_flags&ICF_NO_RIP))
         {
           tmpi->ic_flags|=tmpi1->ic_flags;
           if (tmpi1->ic_code==IC_ABS_ADDR)
@@ -339,7 +339,7 @@ p4_lea_gone:
               tmpi->arg1.reg=tmpi2->arg1.reg+tmpi1->arg1.reg<<8;
 p4_sib:
               tmpi->ic_flags|=(tmpi1->ic_flags|tmpi2->ic_flags)
-                              &ICG_NO_CVT_MASK;
+                  &ICG_NO_CVT_MASK;
               OptSetNOP2(tmpi1);
               OptFree(tmpi2);
               tmpi->ic_code=IC_LEA;
@@ -349,7 +349,7 @@ p4_sib:
             }
           }
           else if (tmpi2->ic_code==IC_SHL_CONST &&
-                   tmpi2->arg1.type==MDF_REG+RT_I64 && tmpi2->ic_data<=3)
+              tmpi2->arg1.type==MDF_REG+RT_I64 && tmpi2->ic_data<=3)
           {
             if (tmpi2->arg1.reg!=REG_RSP)
             {
@@ -366,7 +366,7 @@ p4_sib:
           }
         }
         else if (tmpi1->ic_code==IC_LEA &&
-                 tmpi1->arg1.type&MDF_DISP)
+            tmpi1->arg1.type&MDF_DISP)
         {
           if (tmpi1->arg1.reg==REG_RBP &&
               CmpOffset2Reg(tmpi1->arg1.disp,reg_offsets)>=0)
@@ -388,7 +388,7 @@ p4_sib:
             }
           }
           else if (tmpi2->ic_code==IC_SHL_CONST &&
-                   tmpi2->arg1.type==MDF_REG+RT_I64 && tmpi2->ic_data<=3)
+              tmpi2->arg1.type==MDF_REG+RT_I64 && tmpi2->ic_data<=3)
           {
             if (tmpi2->arg1.reg!=REG_RSP)
             {
@@ -449,7 +449,7 @@ p4_sib:
             {
               tmpi->ic_flags|=tmpi1->ic_flags;
               tmpi->arg1.type=tmpi1->arg1.type&MDG_MASK+
-                              tmpi->arg1.type.raw_type;
+                  tmpi->arg1.type.raw_type;
               tmpi->arg1.reg=tmpi1->arg1.reg;
               tmpi->arg1.disp=tmpi1->arg1.disp;
               OptSetNOP2(tmpi1);
@@ -469,8 +469,8 @@ p4_sib:
           }
         }
         else if ((tmpi1->ic_code==IC_ABS_ADDR ||
-                  tmpi1->ic_code==IC_MOV && tmpi1->arg1.type==MDF_IMM+RT_I64 &&
-                  0<=tmpi1->arg1.disp<=I32_MAX)&& !(tmpi1->ic_flags&ICF_NO_RIP))
+                tmpi1->ic_code==IC_MOV && tmpi1->arg1.type==MDF_IMM+RT_I64 &&
+                0<=tmpi1->arg1.disp<=I32_MAX)&& !(tmpi1->ic_flags&ICF_NO_RIP))
         {
           tmpi->ic_flags|=tmpi1->ic_flags;
           if (tmpi1->ic_code==IC_ABS_ADDR)
@@ -552,10 +552,10 @@ p4_sib:
                   break;
                 }
                 else if (tmpil2->ic_code!=IC_ABS_ADDR &&
-                         !(tmpil2->ic_code==IC_MOV &&
-                           tmpil2->arg1.type==MDF_IMM+RT_I64 &&
-                           0<=tmpil2->arg1.disp<=I32_MAX) ||
-                         tmpil2->ic_flags&ICF_NO_RIP)
+                    !(tmpil2->ic_code==IC_MOV &&
+                        tmpil2->arg1.type==MDF_IMM+RT_I64 &&
+                        0<=tmpil2->arg1.disp<=I32_MAX) ||
+                    tmpil2->ic_flags&ICF_NO_RIP)
                   tmpil2=NULL;
                 else
                 {
@@ -593,9 +593,9 @@ p4_sib:
             }
           }
           else if (tmpi2->ic_code==IC_MOV && tmpi2->res.type&MDF_STK &&
-                   tmpi2->arg1.type==MDF_IMM+RT_I64 &&
-                   0<=tmpi2->arg1.disp<=I32_MAX &&
-                   !(tmpi2->ic_flags&ICF_NO_RIP))
+              tmpi2->arg1.type==MDF_IMM+RT_I64 &&
+              0<=tmpi2->arg1.disp<=I32_MAX &&
+              !(tmpi2->ic_flags&ICF_NO_RIP))
           {
             tmpi->arg2.disp=tmpi2->arg1.disp;
             tmpi->ic_flags|=tmpi2->ic_flags|ICF_BY_VAL;
@@ -640,7 +640,7 @@ p4_sib:
             tmpil1->res.type=MDF_NULL+tmpil1->res.type.raw_type;
           }
           else if (tmpi->arg1.type&MDF_STK &&
-                   tmpil1->res.type&MDF_STK)
+              tmpil1->res.type&MDF_STK)
           {
             tmpi->arg1.type=MDF_REG+tmpi->arg1.type.raw_type;
             tmpi->arg1.disp=0;

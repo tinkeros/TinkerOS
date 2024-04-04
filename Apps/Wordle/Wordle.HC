@@ -1,5 +1,5 @@
-// I use () for empty functions because I want syntax highlighting on GitHub and my code editor.
-// The Generate.ps1 script does a quick search and replace to remove those.
+// I use () for empty functions because I want syntax highlighting on GitHub and my code
+// editor. The Generate.ps1 script does a quick search and replace to remove those.
 
 #include "HolyC"
 #include "Palette"
@@ -103,7 +103,7 @@ I64 WordInit(U8 *file="Vocab.TXT")
 U0 DrawLetter(CDC *dc=gr.dc, U8 ch, I64 type, I64 x, I64 y)
 {
   I64 pcol=dc->color;
-  switch(type)
+  switch (type)
   {
   case LT_OK:
     dc->color = GREEN;
@@ -131,23 +131,26 @@ U0 DrawWin(CDC *dc)
   I64 pcol=dc->color;
   dc->color=BLACK;
   GrRndRect(dc, dc->width/2-DIALOGW/2, dc->height/2-DIALOGH/2,
-            DIALOGW, DIALOGH, FONT_WIDTH);
+      DIALOGW, DIALOGH, FONT_WIDTH);
   dc->color=WHITE;
   GrRndRect(dc, dc->width/2-DIALOGW/2, dc->height/2-DIALOGH/2,
-            DIALOGW, DIALOGH, FONT_WIDTH/2);
+      DIALOGW, DIALOGH, FONT_WIDTH/2);
   switch (win)
   {
   case W_WIN:
     dc->color=GREEN;
-    GrPrint(dc, dc->width/2-4*FONT_WIDTH, dc->height/2-FONT_HEIGHT/2-FONT_HEIGHT, "You win!");
+    GrPrint(dc, dc->width/2-4*FONT_WIDTH, dc->height/2-FONT_HEIGHT/2-FONT_HEIGHT,
+      "You win!");
     break;
   case W_FAIL:
     dc->color=RED;
-    GrPrint(dc, dc->width/2-4.5*FONT_WIDTH, dc->height/2-FONT_HEIGHT/2-FONT_HEIGHT, "You lose!");
+    GrPrint(dc, dc->width/2-4.5*FONT_WIDTH, dc->height/2-FONT_HEIGHT/2-FONT_HEIGHT,
+        "You lose!");
     break;
   }
   dc->color=BLACK;
-  GrPrint(dc, dc->width/2-13*FONT_WIDTH, dc->height/2-FONT_HEIGHT/2+FONT_HEIGHT, "Press ENTER to play again!");
+  GrPrint(dc, dc->width/2-13*FONT_WIDTH, dc->height/2-FONT_HEIGHT/2+FONT_HEIGHT,
+      "Press ENTER to play again!");
   dc->color=pcol;
 }
 
@@ -182,10 +185,12 @@ U0 DrawTable(CDC *dc=gr.dc)
         goto draw_table_next;
       }
 draw_table_next:
-      DrawLetter(dc, ch, type, j*(LT_SZ+LT_SPACING+LT_RAD*2)+offx, i*(LT_SZ+LT_SPACING+LT_RAD*2)+offy);
+      DrawLetter(dc, ch, type, j*(LT_SZ+LT_SPACING+LT_RAD*2)+offx,
+          i*(LT_SZ+LT_SPACING+LT_RAD*2)+offy);
     }
     if (cdepth == i && win == W_NONE)
-      GrArrow3(dc, w+LT_RAD*2+offx, LT_CY+(LT_SZ+LT_SPACING+LT_RAD*2)*i+offy, 0, w+LT_RAD+offx, LT_CY+(LT_SZ+LT_SPACING+LT_RAD*2)*i+offy, 0);
+      GrArrow3(dc, w+LT_RAD*2+offx, LT_CY+(LT_SZ+LT_SPACING+LT_RAD*2)*i+offy, 0,
+        w+LT_RAD+offx,LT_CY+(LT_SZ+LT_SPACING+LT_RAD*2)*i+offy, 0);
   }
 }
 
@@ -204,8 +209,10 @@ U0 WordleDrawIt(CTask *, CDC *dc)
   {
     GrPrint(dc, FONT_WIDTH, FONT_HEIGHT, "Cheats ON!\nWord: %s", word);
   }
-  GrPrint(dc, dc->width-FONT_WIDTH*21, FONT_HEIGHT, "Toggle theme: CTRL-T\n  Quit: CTRL-Q | ESC");
-  GrPrint(dc, dc->width-FONT_WIDTH*(StrLen(version)+1), dc->height-(FONT_HEIGHT*3), version);
+  GrPrint(dc, dc->width-FONT_WIDTH*21, FONT_HEIGHT,
+      "Toggle theme: CTRL-T\n  Quit: CTRL-Q | ESC");
+  GrPrint(dc, dc->width-FONT_WIDTH*(StrLen(version)+1), dc->height-(FONT_HEIGHT*3),
+      version);
   DrawWin(dc);
 }
 
@@ -254,7 +261,7 @@ U0 Wordle()
       wbase=cdepth*WLEN;
       len=StrLen(gameTable+wbase);
       U8 key = GetKey(&sc);
-      switch (key)   // FIXME: This can probably be optimized further
+      switch (key) // FIXME: This can probably be optimized further
       {
       case 'a'...'z':
         if (key == cheatCode[cheatIdx])

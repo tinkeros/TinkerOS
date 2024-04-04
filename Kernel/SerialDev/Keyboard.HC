@@ -156,7 +156,13 @@ U8 ScanCode2Char(I64 sc)
 {//Scan code to ASCII val.
   U8 *table=NORMAL_KEY_SCAN_DECODE_TABLE;
   if (sc&SCF_E0_PREFIX)
+  {
+    sc &= 0xff;
+    if (sc == SC_VOL_MUTE) Mute(!IsMute);
+    if (sc == SC_VOL_UP) VolumeUp;
+    if (sc == SC_VOL_DOWN) VolumeDown;
     return 0;
+  }
   if (sc&SCF_CTRL)
     table=CTRL_KEY_SCAN_DECODE_TABLE;
   else if (sc&SCF_SHIFT)
@@ -221,6 +227,16 @@ U8 num_lock_map[0x100]=
   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 };
+
+public U8 GetScanCodeEntry(U8 idx)
+{
+  return scan_code_map[idx];
+}
+
+public U0 SetScanCodeEntry(U8 idx, U8 scan_code)
+{
+  scan_code_map[idx]=scan_code;
+}
 
 U8 *Char2KeyName(I64 ch,Bool include_ctrl=TRUE)
 {//ASCII val to key name.
@@ -420,6 +436,18 @@ U8 *ScanCode2KeyName(I64 sc)
     case SC_PRTSCRN2:
       CatPrint(buf,"PRTSCRN2");
       break;
+    case SC_APPS:
+      CatPrint(buf,"APPS");
+      break;
+    case SC_VOL_MUTE:
+      CatPrint(buf,"VOL_MUTE");
+      break;
+    case SC_VOL_UP:
+      CatPrint(buf,"VOL_UP");
+      break;
+    case SC_VOL_DOWN:
+      CatPrint(buf,"VOL_DOWN");
+      break;
     }
   }
   return StrNew(buf);
@@ -456,6 +484,7 @@ U0 KbdBuildSC(U8 raw_byte,Bool in_irq,U8 *_last_raw_byte,I64 *_last_sc)
     switch (sc&~SCF_KEY_UP)
     {
     case SC_SHIFT:
+    case SC_RSHIFT:
       sc_flags&=~SCF_SHIFT;
       break;
     case SC_CTRL:
@@ -487,6 +516,7 @@ U0 KbdBuildSC(U8 raw_byte,Bool in_irq,U8 *_last_raw_byte,I64 *_last_sc)
     switch (sc)
     {
     case SC_SHIFT:
+    case SC_RSHIFT:
       if (Bts(&sc_flags,SCf_SHIFT)) new_key_f=0;
       break;
     case SC_CTRL:

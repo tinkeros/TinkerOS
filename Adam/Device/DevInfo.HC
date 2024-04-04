@@ -5,6 +5,8 @@
 
 #define PCI_DEV_FILE "::/Misc/PCIDevices.DD.Z"
 
+DefineLstLoad("ST_PCI_CLASS_NAMES","Unclassified\0Mass Storage Controller\0Network Controller\0Display Controller\0Multimedia Controller\0Memory Controller\0Bridge\0Simple Communication Controller\0Base System Peripheral\0Input Device Controller\0Docking Station\0Processor\0Serial Bus Controller\0Wireless Controller\0");
+
 /****
 //1) Download http://www.pcidatabase.com/reports.php?type=tab-delimeted
 //2) Rename to ::/Misc/PCIDevices.DD.Z
@@ -128,6 +130,28 @@ U0 PCILookUpSingle(CDoc *doc,I64 m,I64 d,U8 **_vendor,U8 **_dev)
     *_dev=AStrNew("Unknown");
 }
 
+public CPCIDev *GetPCIDevInfo(I64 b, I64 d, I64 f)
+{
+  CPCIDev *tmppci=ACAlloc(sizeof(CPCIDev));
+  tmppci->bus=b;
+  tmppci->dev=d;
+  tmppci->fun=f;
+  tmppci->vendor=PCIReadU16(b,d,f,0);
+  tmppci->dev_id=PCIReadU16(b,d,f,2);
+  tmppci->progif=PCIReadU8(b,d,f,0x9);
+  tmppci->header_type=PCIReadU8(b,d,f,0xe);
+  tmppci->sub_code=PCIReadU8(b,d,f,0xA);
+  tmppci->base_code=PCIReadU8(b,d,f,0xB);
+  if (tmppci->header_type==1)
+  {
+    tmppci->secondary_bus=PCIReadU8(b,d,f,0x19);
+    tmppci->sub_bus=PCIReadU8(b,d,f,0x20);
+    tmppci->bridge_io_base=PCIReadU8(b,d,f,0x1c);
+    tmppci->bridge_upper_io_base=PCIReadU16(b,d,f,0x30);
+  }
+  return tmppci;
+}
+
 U0 PCILookUpDevs()
 {
   CPCIDev *tmppci;
@@ -143,14 +167,8 @@ U0 PCILookUpDevs()
         w1=PCIReadU16(b,d,f,0);
         if (w1!=0xFFFF)
         {
-          tmppci=ACAlloc(sizeof(CPCIDev));
-          tmppci->bus=b;
-          tmppci->dev=d;
-          tmppci->fun=f;
-          tmppci->vendor=w1;
-          tmppci->dev_id=w2=PCIReadU16(b,d,f,2);
-          tmppci->sub_code=PCIReadU8(b,d,f,0xA);
-          tmppci->base_code=PCIReadU8(b,d,f,0xB);
+          tmppci=GetPCIDevInfo(b, d, f);
+          w2=tmppci->dev_id;
           PCILookUpSingle(doc,w1,w2,&tmppci->vendor_str,&tmppci->dev_id_str);
           QueIns(tmppci,dev.pci_head.last);
           timeout=32*8*2;
@@ -162,22 +180,68 @@ lud_done:
   DocDel(doc);
 }
 
-public U0 PCIRep()
+public CPCIDev *PCIScanBus(I64 b)
+{// Returns a queue of PCI devices attached to a single bus
+  CPCIDev *tmppci,*pci_bus_head=ACAlloc(sizeof(CPCIDev));
+  QueInit(pci_bus_head);
+  I64 w1,w2,d,f;
+  CDoc *doc;
+  doc=DocRead(PCI_DEV_FILE,DOCF_PLAIN_TEXT|DOCF_NO_CURSOR);
+  for (d=0; d<32; d++)
+    for (f=0; f<8; f++)
+    {
+      w1=PCIReadU16(b,d,f,0);
+      if (w1!=0xFFFF)
+      {
+        tmppci=GetPCIDevInfo(b, d, f);
+        w2=tmppci->dev_id;
+        PCILookUpSingle(doc,w1,w2,&tmppci->vendor_str,&tmppci->dev_id_str);
+        QueIns(tmppci,pci_bus_head->last);
+      }
+    }
+  DocDel(doc);
+  return pci_bus_head;
+}
+
+U0 PCIDumpCmdBits(I64 b, I64 d, I64 f)
+{
+  U16 command_reg=PCIReadU16(b,d,f,0x4);
+    "PCI Command Register Bits:\n";
+    "Bit 0 - I/O Space: %d\n", command_reg & 0x1>0;
+    "Bit 1 - Memory Space: %d\n", command_reg & 0x2>0;
+    "Bit 2 - Bus Master: %d\n", command_reg & 0x4>0;
+    "Bit 3 - Special Cycles: %d\n", command_reg & 0x8>0;
+    "Bit 4 - Memory Write and Invalidate: %d\n", command_reg & 0x10>0;
+    "Bit 5 - VGA Palette Snoop: %d\n", command_reg & 0x20>0;
+    "Bit 6 - Parity Error Response: %d\n", command_reg & 0x40>0;
+    "Bit 7 - SERR# Enable: %d\n", command_reg & 0x80>0;
+    "Bit 8 - Fast Back-to-Back Enable: %d\n", command_reg & 0x100>0;
+}
+
+public U0 PCIRep(CPCIDev *pci_dev_queue=0)
 {//Report description of PCI devices.
-  CPCIDev *tmppci;
+  CPCIDev *tmppci, *pci_queue_head;
   U16 cmd,stat,d,v;
   U32 bar;
-  I64 i,progif;
-  "PCI Busses:%d\n"
-  ,sys_pci_busses;
+  I64 i, bar_max;
   if (!FileFind(PCI_DEV_FILE))
   {
     "You don't have the PCI device file.\n";
     return;
   }
-  PCILookUpDevs;
-  tmppci=dev.pci_head.next;
-  while (tmppci!=&dev.pci_head)
+  if (!pci_dev_queue)
+  {
+    "PCI Busses:%d\n",sys_pci_busses;
+    PCILookUpDevs;
+    tmppci=dev.pci_head.next;
+    pci_queue_head=&dev.pci_head;
+  }
+  else
+  {
+    tmppci=pci_dev_queue->next;
+    pci_queue_head=pci_dev_queue;
+  }
+  while (tmppci!=pci_queue_head)
   {
     bar=PCIReadU32(tmppci->bus,tmppci->dev,tmppci->fun,0x0);
     v=bar.u16[0];
@@ -185,6 +249,8 @@ public U0 PCIRep()
     bar=PCIReadU32(tmppci->bus,tmppci->dev,tmppci->fun,0x4);
     cmd=bar.u16[0];
     stat=bar.u16[1];
+    if (0<tmppci->base_code<=0x0d)
+      "%s\n", DefineSub(tmppci->base_code,"ST_PCI_CLASS_NAMES");
     "bs:dv:f cl:sc v_id:d_id  cmd\n";
     "%02X:%02X:%01X %02X:%02X %04X:%04X %04X $$GREEN$$%s $$CYAN$$%s$$FG$$\n"
     ,
@@ -193,47 +259,59 @@ public U0 PCIRep()
     v,d,cmd,
     tmppci->vendor_str,tmppci->dev_id_str;
 
-    if (0xc == tmppci->base_code && 0x3 == tmppci->sub_code)
+    if (PCIC_SERIAL_BUS == tmppci->base_code && 0x3 == tmppci->sub_code)
     {
-      bar=PCIReadU32(tmppci->bus,tmppci->dev,tmppci->fun,0x8);
-      progif=bar.u8[1];
-      switch (progif)
+      switch (tmppci->progif)
       {
-         case 0x00:
+      case 0x00:
            "USB 1.0 (UHCI)\n";
-           break;
-         case 0x10:
+        break;
+      case 0x10:
            "USB 1.0 (OHCI)\n";
-           break;
-         case 0x20:
+        break;
+      case 0x20:
            "USB 2.0 (EHCI)\n";
-           break;
-         case 0x30:
+        break;
+      case 0x30:
            "USB 3.0 (XHCI)\n";
-           break;
-         default:
+        break;
+      default:
            "USB (unknown)\n";
-           break;
+        break;
       }
     }
 
-    for (i=0; i<6; i++)
+    bar_max=6;
+    if (tmppci->header_type == 1)
+    {
+     "PCI Bridge (sec bus %d, sub bus %d)\n",tmppci->secondary_bus,tmppci->sub_bus;
+      bar_max=2;
+    }
+
+    for (i=0; i<bar_max; i++)
     {
       bar=PCIReadU32(tmppci->bus,tmppci->dev,tmppci->fun,0x10+4*i);
-      //"%08x\n",bar;
       if (bar&1) "       I/O : 0x%08x\n",bar&0xfffffffc;
       else if (bar&7==0) "32-bit MMIO: 0x%08x\n",bar&0xfffffff0;
-      else if (bar&7==4) "64-bit MMIO: 0x%016x\n",(bar&0xfffffff0)(I64)+PCIReadU32(tmppci->bus,tmppci->dev,tmppci->fun,0x10+4*(i+1))(I64)<<32;
+      else if (bar&7==4) "64-bit MMIO: 0x%016x\n",(bar&0xfffffff0)(I64)+
+        PCIReadU32(tmppci->bus,tmppci->dev,tmppci->fun,0x10+4*(i+1))(I64)<<32;
       else if (bar&7==2) "16-bit MMIO: 0x%04x\n",(bar&0xfff0)(I64);
     }
     tmppci=tmppci->next;
   }
 }
 
+U0 PCIRescan()
+{
+  QueInit(&dev.pci_head);
+  PCIRep;
+}
+
+
 #help_index "Info;Memory/Info"
 public U0 MemBIOSRep()
 {//Report the memory ranges reported by the BIOS at boot.
-  U16		*m01=MEM_E801;
+  U16	*m01=MEM_E801;
   CMemE820	*m20=MEM_E820;
   CMemRange	*tmpmr;
   "Standard Addresses\n"
@@ -290,9 +368,9 @@ public U0 MemPageRep()
 }
 
 public CPCIDev *PCIDevFind(U16 class_code=NULL, U16 sub_code=NULL,
-                           U16 vendor_id=NULL, U16 device_id=NULL,
-                           U8 _bus=0xFF, U8 _dev=0xFF, U8 _fun=0xFF)
-{//return first device with matching class & subcode, vendor & device id, or a specific device.
+    U16 vendor_id=NULL, U16 device_id=NULL,
+    U8 _bus=0xFF, U8 _dev=0xFF, U8 _fun=0xFF)
+{//return first device matching class & subcode, vendor & device id, or a specific device.
   PCILookUpDevs;
   CPCIDev *p = dev.pci_head.next;
   while (p != &dev.pci_head)
@@ -317,3 +395,104 @@ U0 PCILookUpDev(I64 vendor, I64 dev)
   DocDel(doc);
 }
 
+U0 PciDumpInfo(CPciDevInfo* info)
+{
+  I64 i;
+  "vendor_id=%04Xh\tdevice_id=%04Xh\n"
+  , info->vendor_id, info->device_id;
+  "command=%04Xh\tstatus=%04Xh\n"
+  , info->command, info->status;
+  "revision_id=%02Xh\tprog_if=%02Xh\n"
+  , info->revision_id, info->prog_if;
+  "subclass=%02Xh\tclass_=%02Xh\n"
+  , info->subclass, info->class_;
+  "cache_line_size=%02Xh\tlatency_timer=%02Xh\n"
+  , info->cache_line_size, info->latency_timer;
+  "header_type=%02Xh\tbist=%02Xh\n"
+  , info->header_type, info->bist;
+  for (i = 0; i < 6; i++)
+    "BAR[%d]=%08X\n", i, info->bar[i];
+  "interrupt_line=%02Xh\n"
+  , info->interrupt_line;
+}
+
+Bool PciFindByID(U16 vendor_id, U16 device_id, U16 class_code=NULL, U16 sub_code=NULL, I64* bus_out, I64* dev_out, I64* fun_out)
+{
+  I64 vendor, device, cl, sub, b, d, f, timeout = 32 * 8 * 2;
+  for (b = 0; b < sys_pci_busses; b++)
+  {
+    for (d = 0; d < 32; d++)
+    {
+      for (f = 0; f < 8; f++)
+      {
+        vendor = PCIReadU16(b, d, f, PCIR_VENDOR_ID);
+        cl = PCIReadU8(b, d, f, PCIR_CLASS_CODE);
+        sub = PCIReadU8(b, d, f, PCIR_SUB_CODE);
+        if (vendor != 0xFFFF)
+        {
+          if (class_code && cl!=class_code || sub_code && sub!=sub_code)
+            device = 0xffffffff;
+          else
+            device = PCIReadU16(b, d, f, PCIR_DEVICE_ID);
+          if (vendor == vendor_id && device == device_id)
+          {
+            *bus_out = b;
+            *dev_out = d;
+            *fun_out = f;
+            return TRUE;
+          }
+          if (vendor == vendor_id && 0 == device_id)
+          {
+            *bus_out = b;
+            *dev_out = d;
+            *fun_out = f;
+            return TRUE;
+          }
+          timeout = 32 * 8 * 2;
+        }
+        else if (sys_pci_busses == 256 && --timeout <= 0)
+        {
+          break;
+        }
+      }
+    }
+  }
+  return FALSE;
+}
+
+U0 PciGetDevInfo(CPciDevInfo* info_out, I64 bus, I64 dev, I64 fun)
+{
+  info_out->vendor_id =       PCIReadU16(bus, dev, fun, PCIR_VENDOR_ID);
+  info_out->device_id =       PCIReadU16(bus, dev, fun, PCIR_DEVICE_ID);
+  info_out->command =         PCIReadU16(bus, dev, fun, PCIR_COMMAND);
+  info_out->status =          PCIReadU16(bus, dev, fun, PCIR_STATUS);
+  info_out->revision_id =     PCIReadU8(bus, dev, fun, PCIR_REVISION_ID);
+  info_out->prog_if =         PCIReadU8(bus, dev, fun, PCIR_PROG_IF);
+  info_out->subclass =        PCIReadU8(bus, dev, fun, PCIR_SUB_CODE);
+  info_out->class_ =          PCIReadU8(bus, dev, fun, PCIR_CLASS_CODE);
+  info_out->cache_line_size = PCIReadU8(bus, dev, fun, PCIR_CACHE_LINE_SIZE);
+  info_out->latency_timer =   PCIReadU8(bus, dev, fun, PCIR_LATENCY_TIMER);
+  info_out->header_type =     PCIReadU8(bus, dev, fun, PCIR_HEADER_TYPE);
+  info_out->bist =            PCIReadU8(bus, dev, fun, PCIR_BIST);
+  info_out->bar[0] =          PCIReadU32(bus, dev, fun, PCIR_BASE0);
+  info_out->bar[1] =          PCIReadU32(bus, dev, fun, PCIR_BASE1);
+  info_out->bar[2] =          PCIReadU32(bus, dev, fun, PCIR_BASE2);
+  info_out->bar[3] =          PCIReadU32(bus, dev, fun, PCIR_BASE3);
+  info_out->bar[4] =          PCIReadU32(bus, dev, fun, PCIR_BASE4);
+  info_out->bar[5] =          PCIReadU32(bus, dev, fun, PCIR_BASE5);
+  info_out->interrupt_line =  PCIReadU8(bus, dev, fun, PCIR_INTERRUPT_LINE);
+  info_out->bus=bus;
+  info_out->dev=dev;
+  info_out->fun=fun;
+}
+
+U32 PCIGetFirstIOBar(CPciDevInfo* info)
+{
+  I64 i, bar;
+  for (i=0;i<6;i++)
+  {
+    bar=info->bar[i];
+    if (bar&1) return bar&0xfffffffc;
+  }
+  return 0;
+}

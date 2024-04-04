@@ -45,6 +45,7 @@ MemSet(&doldoc,0,sizeof(CDolDocGlbls));
 #include "DocRecalcLib"
 #include "DocRecalc"
 #include "DocFile"
+#include "DocFileB"
 #include "DocClipBoard"
 #include "DocRun"
 #include "DocGet"

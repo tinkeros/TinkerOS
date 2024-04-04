@@ -41,7 +41,7 @@ CCmpCtrl *CmpCtrlNew(U8 *buf=NULL,I64 flags=0,U8 *filename=NULL)
   cc->opts=1<<OPTf_WARN_UNUSED_VAR|1<<OPTf_WARN_HEADER_MISMATCH;
   cc->htc.hash_mask=HTG_TYPE_MASK-HTT_IMPORT_SYS_SYM;
   cc->htc.define_hash_table=cc->htc.hash_table_lst=
-                            cc->htc.glbl_hash_table=cc->htc.local_hash_table=Fs->hash_table;
+          cc->htc.glbl_hash_table=cc->htc.local_hash_table=Fs->hash_table;
   if (flags&CCF_KEEP_AT_SIGN)
     cc->char_bmp_alpha_numeric=char_bmp_alpha_numeric_no_at;
   else
@@ -146,8 +146,8 @@ lgc_start2:
           {
           case DOCT_TEXT:
             if (doc_e->de_flags & ~(DOCEF_TAG|DOCEF_DEFINE|DOCEF_TAG_CB|
-                                    DOCG_BL_IV_UL|DOCEF_WORD_WRAP|DOCEF_HIGHLIGHT|
-                                    DOCEF_SKIP|DOCEF_FILTER_SKIP) &&
+                    DOCG_BL_IV_UL|DOCEF_WORD_WRAP|DOCEF_HIGHLIGHT|
+                    DOCEF_SKIP|DOCEF_FILTER_SKIP) &&
                 LexDollar(cc,doc,doc_e) && *(src=cc->dollar_buf))
             {
               tmpf->line_num=doc_e->y+1;
@@ -361,7 +361,7 @@ I64 cmp_type_flags_src_code[(DOCT_TYPES_NUM+63)/64]=
 };
 
 U0 LexAttachDoc(CCmpCtrl *cc,CLexFile *tmpf=NULL,
-                CDoc *doc=NULL,U8 *abs_filename=NULL,CDocEntry *doc_e=NULL,I64 col=0)
+    CDoc *doc=NULL,U8 *abs_filename=NULL,CDocEntry *doc_e=NULL,I64 col=0)
 {//Start lexing doc. Give either doc or abs_filename.
   if (!doc)
     doc=LexDocRead(abs_filename,DOCF_DBL_DOLLARS);
@@ -399,7 +399,7 @@ U0 LexAttachDoc(CCmpCtrl *cc,CLexFile *tmpf=NULL,
     }
     tmpf->flags=LFSF_DOC;
   }
-  else    //TODO: DocDel(doc)?
+  else //TODO: DocDel(doc)?
   {
     col=0;
     tmpf->buf=tmpf->buf_ptr=tmpf->line_start=CAlloc(1);
@@ -568,7 +568,7 @@ lex_ident:
       if (j & HTT_DEFINE_STR && !(cc->flags & CCF_NO_DEFINES))
       {
         LexIncludeStr(cc,
-                      tmph->str,StrNew(tmph(CHashDefineStr *)->data),FALSE);
+            tmph->str,StrNew(tmph(CHashDefineStr *)->data),FALSE);
         cc->lex_include_stk->flags|=LFSF_DEFINE;
       }
       else
@@ -918,7 +918,7 @@ lex_float_start:
                 }
                 else
                   break;
-                if (j>=STR_LEN-4)  //Spot for ['\'][ch],[ch],[0]
+                if (j>=STR_LEN-4) //Spot for ['\'][ch],[ch],[0]
                 {
                   buf[j++]=0;
                   buf3=MAlloc(i+j);
@@ -1354,7 +1354,7 @@ lex_dot_dot:
         if (i.u16[0]==j)
         {
           i>>=16;
-          if (!i)  // "/*"
+          if (!i) // "/*"
           {
             j=1;
             do
@@ -1395,7 +1395,7 @@ lex_check_comment:
           if (i.u16[0]==j)
           {
             i>>=16;
-            if (!i)  // "//"
+            if (!i) // "//"
             {
               LexSkipEol(cc);
               if (cc->flags&CCF_KEEP_NEW_LINES)

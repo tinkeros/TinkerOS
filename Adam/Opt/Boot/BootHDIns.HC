@@ -71,19 +71,73 @@ public U0 BootHDIns(U8 drv_let=0)
   }
 }
 
-U0 MakeAllDef(Bool install=FALSE)
+U0 MakeAllDef(Bool install=FALSE, I64 width=-1, I64 height=-1)
 {// Try to automatically recompile both compiler and kernel
-  U8 *def_cfg;
+  U8 *def_cfg, *res_str;
   I64 cur_drv_hint=-1;
+  Bool res_ok=TRUE;
+  res_str=MStrPrint("");
+  CBlkDev *boot_blkdev=Let2BlkDev(blkdev.boot_drv_let,0);
   if (HashFind("CUR_DRV_HINT",adam_task->hash_table,HTT_DEFINE_STR))
   {
-    cur_drv_hint=ExePrint("CUR_DRV_HINT;\n")(I64);
+    if (!(width == 640 && height == 480) &&
+        !(width == 800 && height == 600) &&
+        !(width == 1024 && height == 768))
+    {
+      res_ok=FALSE;
+    }
+    if (FB_WIDTH!=GR_WIDTH || FB_HEIGHT!=GR_HEIGHT || DO_SCALING
+      || LETTER_BOX || WIDTH_SCALE>1 || HEIGHT_SCALE>1)
+      res_ok=FALSE;
+
+    if (AHCIMode)
+    {
+      if (boot_blkdev)
+        cur_drv_hint=boot_blkdev->port_num;
+      else
+        cur_drv_hint=ExePrint("CUR_DRV_HINT;\n")(I64);
+    }
+    else {
+      ATARep;
+      cur_drv_hint=blkdev.boot_hint;
+      if (cur_drv_hint<0)
+        cur_drv_hint=ExePrint("CUR_DRV_HINT;\n")(I64);
+    }
+
+    if (res_ok && width>0 && height>0)
+    {
+      Free(res_str);
+      res_str=MStrPrint("Resolution\n%d\n%d\nn");
+    }
+    else {
+      "Resolution settings might not be preserved, continue anyway ";
+      if (!YorN('n')) return;
+    }
     if (cur_drv_hint>=0)
     {
-      if (AHCIMode) def_cfg=MStrPrint("\nB\nScale2Mem(2048,0x40000)\n%c\n%d\n\n\n\n",blkdev.boot_drv_let,cur_drv_hint);
-      else def_cfg=MStrPrint("\nB\nScale2Mem(2048,0x40000)\n%c\np%d\n\n\n\n",blkdev.boot_drv_let,cur_drv_hint);
+      if (AHCIMode)
+      {
+        def_cfg=MStrPrint("\nB\nScale2Mem(2048,0x40000)\n%c\n%d\n\n\n%s\n",
+          'C',cur_drv_hint,res_str);
+      }
+      else
+      {
+        def_cfg=MStrPrint("\nB\nScale2Mem(2048,0x40000)\n%c\np%d\n\n\n%s\n",
+          'C',cur_drv_hint,res_str);
+      }
       In(def_cfg);
-      if (install) BootHDIns(blkdev.boot_drv_let);
+      if (install)
+      {
+        BootHDIns(blkdev.boot_drv_let);
+       "$$RED$$Re-install Master Boot loader to drive C?$$FG$$";
+        if (YorN('y'))
+        {
+          '\n';
+          BootMHDIns('C');
+        }
+       "$$RED$$Reboot?$$FG$$\n";
+        if (YorN('y')) Reboot;
+      }
       else MakeAll;
       Free(def_cfg);
       return;
@@ -92,7 +146,22 @@ U0 MakeAllDef(Bool install=FALSE)
   "Cannot make default config, from this kernel, use MakeAll and set options manually!\n";
 }
 
-U0 MakeAllIns()
+U0 MakeAllIns(I64 width=-1, I64 height=-1)
 {
-  MakeAllDef(TRUE);
+  MakeAllDef(TRUE,width,height);
+}
+
+U0 MakeDef1024x768()
+{
+  MakeAllDef(TRUE,1024,768);
+}
+
+U0 MakeDef800x600()
+{
+  MakeAllDef(TRUE,800,600);
+}
+
+U0 MakeDef640x480()
+{
+  MakeAllDef(TRUE,640,480);
 }

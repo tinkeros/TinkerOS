@@ -1,6 +1,6 @@
 
 F64 SinPhaseCont(F64 last_y,F64 last_dydt,
-                 F64 current_amp,F64 phase_offset)
+    F64 current_amp,F64 phase_offset)
 {//Next sample of sin waveform.
   F64 phase;
   phase=last_y/current_amp;
@@ -14,7 +14,7 @@ F64 SinPhaseCont(F64 last_y,F64 last_dydt,
 }
 
 public CSndWaveCtrl *SndWaveCtrlNew(I64 sample_rate=8000,I64 sample_bits=24,
-                                    I64 channels=2,CTask *mem_task=NULL)
+    I64 channels=2,CTask *mem_task=NULL)
 {//MAlloc ctrl struct for generating waveforms.
   CSndWaveCtrl *swc=CAlloc(sizeof(CSndWaveCtrl),mem_task);
   swc->freq_multiplier=1.0;
@@ -40,7 +40,7 @@ public U0 SndWaveCtrlDel(CSndWaveCtrl *swc)
 #define WF_WAVEFORMS_NUM	6
 
 public U0 SndWaveAddBuf(CSndWaveCtrl *swc,U8 *buf,I64 num_samples,
-                        F64 _freq,I64 _waveform=WF_SQUARE,F64 _amp=1.0,F64 _left=1.0, F64 _right=1.0)
+    F64 _freq,I64 _waveform=WF_SQUARE,F64 _amp=1.0,F64 _left=1.0, F64 _right=1.0)
 {//Add waveform to buffer.
 //num_samples is multiplied by channels to get buf_len.
   //left,right range from 0.0-1.0

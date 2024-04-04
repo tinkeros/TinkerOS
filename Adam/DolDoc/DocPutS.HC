@@ -301,6 +301,34 @@ U0 DocDump(CDoc *doc,I64 uS_delay=0)
     DocUnlock(doc);
 }
 
+U8 *DocDumpToStr(CDoc *doc)
+{
+  U8 *st,*out_prev,*out=NULL;
+  CDocEntry *doc_e,*doc_e2;
+  Bool unlock=DocLock(doc);
+  doc_e=doc->head.next;
+  out_prev=MStrPrint("");
+  while (doc_e!=doc)
+  {
+    st=DocScanLine(doc,doc_e,NULL,&doc_e2);
+    out=MStrPrint("%s%s",out_prev,st);
+    Free(out_prev);
+    Free(st);
+    out_prev=out;
+    doc_e=doc_e2;
+    if (doc_e->type_u8==DOCT_NEW_LINE)
+    {
+      out=MStrPrint("%s\n",out_prev,st);
+      Free(out_prev);
+      out_prev=out;
+      doc_e=doc_e->next;
+    }
+  }
+  if (unlock)
+    DocUnlock(doc);
+  return out_prev;
+}
+
 public CDocEntry *DocPutLine(CDoc *doc=NULL,CDocEntry *doc_e)
 {//Send line from other doc to StdOut $LK,"DocPut",A="MN:DocPut"$.
   I64 ch;

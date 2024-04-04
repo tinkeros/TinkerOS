@@ -2,11 +2,11 @@
 
 public I64 SATARep(I64 bd_type=BDT_NULL, I64 *first_hdd=NULL)
 {// Report ATA and ATAPI drives implemented by SATA controller.
-  I64			 i, j, i_max=0, num = 0, first_hd=-1;
+  I64 i, j, i_max=0, num = 0, first_hd=-1;
   CAHCIPort	*port;
-  CBlkDev		*temp_blkdev;
-  U16			*st, *model, *serial;
-  Bool		 show_atapi = FALSE, show_ata = FALSE;
+  CBlkDev	*temp_blkdev;
+  U16	*st, *model, *serial;
+  Bool show_atapi = FALSE, show_ata = FALSE;
   switch (bd_type)
   {
   case BDT_NULL:
@@ -21,10 +21,12 @@ public I64 SATARep(I64 bd_type=BDT_NULL, I64 *first_hdd=NULL)
   }
   if (!IsRaw)
     "\n$$LTBLUE$$AHCI version %X.%1X%1X$$FG$$\n\n",
-    blkdev.ahci_hba->version >> 16, (blkdev.ahci_hba->version & 0xFF00) >> 8, blkdev.ahci_hba->version & 0xFF;
+    blkdev.ahci_hba->version >> 16, (blkdev.ahci_hba->version & 0xFF00) >> 8,
+        blkdev.ahci_hba->version & 0xFF;
   else
     "\nAHCI version %X.%1X%1X\n\n",
-    blkdev.ahci_hba->version >> 16, (blkdev.ahci_hba->version & 0xFF00) >> 8, blkdev.ahci_hba->version & 0xFF;
+    blkdev.ahci_hba->version >> 16, (blkdev.ahci_hba->version & 0xFF00) >> 8,
+        blkdev.ahci_hba->version & 0xFF;
   if (blkdev.ahci_hba)
   {
     "\n";

@@ -175,12 +175,14 @@ Bool BootDVDProbeAll(CBlkDev *bd)
 }
 
 U0 ATARepEntry(I64 base0,I64 base1,I64 unit,U8 *msg,
-               CATARep **_head,I64 *num_hints, I64 *_type=NULL)
+    CATARep **_head,I64 *num_hints, I64 *_type=NULL)
 {
   I64 type;
   base0&=-8;
   base1&=-4;
   CATARep *tmpha;
+  CBlkDev *boot_blkdev=Let2BlkDev(blkdev.boot_drv_let,0);
+
   if (type=ATAProbe(base0,base1,unit))
   {
     *num_hints+=1;
@@ -194,6 +196,14 @@ U0 ATARepEntry(I64 base0,I64 base1,I64 unit,U8 *msg,
     ,msg;
     if (base0==blkdev.ins_base0 && unit==blkdev.ins_unit)
       "$$PURPLE$$(Drive originally installed from.)$$FG$$\n";
+    if (boot_blkdev)
+    {
+      if (base0==boot_blkdev->base0 && unit==boot_blkdev->unit)
+      {
+        "$$PURPLE$$(Drive booted from.)$$FG$$\n";
+        blkdev.boot_hint=*num_hints;
+      }
+    }
     "Base0:0x%04XBase1:0x%04XUnit:%d$$LM,0$$\n"
     ,
     base0,base1,unit;
@@ -228,13 +238,14 @@ public I64 ATARep(Bool pmt=TRUE,Bool just_ide=FALSE,CATARep **_head=NULL)
 {//Report possible ATA devices by probing.  Hard disks and CD/DVDs.
   I64 d1,d2,i,j,k,type,old_hints,hd_cnt=0,cnt=0,unlock_flags=0,num_hints=0;
 #assert BLKDEVS_NUM<=64
+  blkdev.boot_hint=-1;
   if (_head) *_head=NULL;
   if (pmt && ATARepExitAllApplications)
     return 0;
   for (i=0; i<BLKDEVS_NUM; i++)
     if (blkdev.blkdevs[i].bd_signature==BD_SIGNATURE_VAL)
       BEqu(&unlock_flags,i,
-           BlkDevLock(&blkdev.blkdevs[i]));
+          BlkDevLock(&blkdev.blkdevs[i]));
   if (!just_ide)
     for (k=0; k<256; k++)
     {
@@ -360,7 +371,7 @@ CATARep *ATAIDDrvs(CATARep *head,CATARep **_ata_drv,CATARep **_atapi_drv)
             bd->base0==tmpha->base0 && bd->unit==tmpha->unit)
           res=atapi_drv=tmpha;
         else if (bd->type==BDT_ATA && bd->base0==tmpha->base0 &&
-                 bd->base1==tmpha->base1 && bd->unit==tmpha->unit)
+            bd->base1==tmpha->base1 && bd->unit==tmpha->unit)
           res=ata_drv=tmpha;
       }
       if (!res || res->type!=tmpha->type)
@@ -374,7 +385,7 @@ CATARep *ATAIDDrvs(CATARep *head,CATARep **_ata_drv,CATARep **_atapi_drv)
         else if (tmpha->type==BDT_ATAPI)
         {
           if (!atapi_drv || !ins_found && (tmpha->unit<atapi_drv->unit ||
-                                           tmpha->unit==atapi_drv->unit && tmpha->num<atapi_drv->num))
+                  tmpha->unit==atapi_drv->unit && tmpha->num<atapi_drv->num))
             atapi_drv=tmpha;
         }
       }
@@ -390,7 +401,7 @@ CATARep *ATAIDDrvs(CATARep *head,CATARep **_ata_drv,CATARep **_atapi_drv)
     }
     tmpha=tmpha->next;
   }
-  if (_ata_drv)   *_ata_drv  =ata_drv;
+  if (_ata_drv) *_ata_drv =ata_drv;
   if (_atapi_drv) *_atapi_drv=atapi_drv;
   return res;
 }
@@ -414,12 +425,14 @@ CBlkDev *ATAMount(U8 first_drv_let,I64 type,I64 base0,I64 base1,I64 unit)
 CBlkDev *AHCIMount(U8 first_drv_let, I64 type, I64 port_num)
 {
   CBlkDev *res;
-  if (0 <= first_drv_let - 'A' < DRVS_NUM && (type == BDT_AHCI_SATA || type == BDT_AHCI_SATAPI) && 0 <= port_num <= AHCI_MAX_PORTS)
+  if (0 <= first_drv_let - 'A' < DRVS_NUM && (type == BDT_AHCI_SATA
+          || type == BDT_AHCI_SATAPI) && 0 <= port_num <= AHCI_MAX_PORTS)
   {
     res = BlkDevNextFreeSlot(first_drv_let, type);
     res->port_num = port_num;
     res->ahci_port = &blkdev.ahci_hba->ports[port_num];
-    res->ahci_port->cmd_lst_base = NULL; // See $LK+PU,"AHCIAtaInit",A="FF:::/Kernel/BlkDev/DiskAHCI.CC,if (bd->ahci_port->cmd_lst_base)"$ ...
+    // See $LK+PU,"AHCIAtaInit",A="FF:::/Kernel/BlkDev/DiskAHCI.CC,if (bd->ahci_port->cmd_lst_base)"$ ...
+    res->ahci_port->cmd_lst_base = NULL;
     if (BlkDevAdd(res,, FALSE, FALSE))
       return res;
   }
@@ -432,9 +445,9 @@ I64 MountAHCIAuto()
 {//Try to mount hard drives and CD/DVD drives automatically. (Kernel.Config option).
 //It uses 'C' and 'T' as first drive letters or whatever you set
 //in config when compiling Kernel.BIN.
-  CBlkDev     *bd     = Let2BlkDev(':', FALSE);
-  I64          res    = 0, i, ata_port = -1, atapi_port = -1;
-  CAHCIPort   *port;
+  CBlkDev *bd = Let2BlkDev(':', FALSE);
+  I64 res = 0, i, ata_port = -1, atapi_port = -1;
+  CAHCIPort *port;
   "MountAHCIAuto;\n";
   if (bd)
   {
@@ -446,14 +459,16 @@ I64 MountAHCIAuto()
         port = &blkdev.ahci_hba->ports[i];
         if (bd->port_num == i)
         {
-          if (ata_port == -1 && bd->type == BDT_AHCI_SATA && port->signature == AHCI_PxSIG_ATA)
+          if (ata_port == -1 && bd->type == BDT_AHCI_SATA &&
+            port->signature == AHCI_PxSIG_ATA)
           {
             "AHCIMount(%C, BDT_AHCI_SATA, %d);\n", blkdev.first_hd_drv_let, i;
             AHCIMount(blkdev.first_hd_drv_let, BDT_AHCI_SATA, i);
             ata_port = i;
             res++;
           }
-          else if (atapi_port == -1 && bd->type == BDT_AHCI_SATAPI && port->signature == AHCI_PxSIG_ATAPI)
+          else if (atapi_port == -1 && bd->type == BDT_AHCI_SATAPI
+              && port->signature == AHCI_PxSIG_ATAPI)
           {
             "AHCIMount(%C, BDT_AHCI_SATAPI, %d);\n", blkdev.first_dvd_drv_let, i;
             AHCIMount(blkdev.first_dvd_drv_let, BDT_AHCI_SATAPI, i);
@@ -464,7 +479,7 @@ I64 MountAHCIAuto()
       }
   }
   // do a 2nd iteration to mount remaining drives
-  // (we will end up trying to boot off whichever drive/partition ends up at chosen letter)
+  // (we end up trying to boot off whichever drive/partition ends up at chosen letter)
   for (i = 0; i < AHCI_MAX_PORTS; i++)
     if (i != ata_port && i != atapi_port && Bt(&blkdev.ahci_hba->ports_implemented, i))
     {
@@ -501,11 +516,11 @@ I64 MountIDEAuto(Bool ATAPIOnly=FALSE)
   ATARep(FALSE,TRUE,&head);
   ATAIDDrvs(head,&ata_drv,&atapi_drv);
   if (ata_drv && !ATAPIOnly)
-    if(ATAMount(blkdev.first_hd_drv_let,BDT_ATA,
-                ata_drv->base0,ata_drv->base1,ata_drv->unit))
+    if (ATAMount(blkdev.first_hd_drv_let,BDT_ATA,
+            ata_drv->base0,ata_drv->base1,ata_drv->unit))
       res++;
   if (atapi_drv && ATAMount(blkdev.first_dvd_drv_let,BDT_ATAPI,
-                            atapi_drv->base0,atapi_drv->base1,atapi_drv->unit))
+          atapi_drv->base0,atapi_drv->base1,atapi_drv->unit))
     res++;
   tmpha=head;
   while (tmpha)
@@ -514,11 +529,11 @@ I64 MountIDEAuto(Bool ATAPIOnly=FALSE)
     {
       if (tmpha->type==BDT_ATA && !ATAPIOnly)
         if (ATAMount(blkdev.first_hd_drv_let,BDT_ATA,
-                     tmpha->base0,tmpha->base1,tmpha->unit))
+                tmpha->base0,tmpha->base1,tmpha->unit))
           res++;
         else if (tmpha->type==BDT_ATAPI &&
-                 ATAMount(blkdev.first_dvd_drv_let,BDT_ATAPI,
-                          tmpha->base0,tmpha->base1,tmpha->unit))
+            ATAMount(blkdev.first_dvd_drv_let,BDT_ATAPI,
+                tmpha->base0,tmpha->base1,tmpha->unit))
           res++;
     }
     tmpha=tmpha->next;
@@ -527,5 +542,4 @@ I64 MountIDEAuto(Bool ATAPIOnly=FALSE)
   blkdev.mount_ide_auto_cnt=res;
   return res;
 }
-
 

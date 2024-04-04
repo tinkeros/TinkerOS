@@ -705,7 +705,7 @@ U8 *StrFind(U8 *needle,U8 *haystack_str,I64 flags=0)
 }
 
 U8 *StrReplace(U8 *str, U8 *old, U8 *new, I64 sff_flags=0, Bool free_str=FALSE)
-{//Replace all instances of old with new in str. New MAlloc()ed string. free_str aids in chain replacement.
+{//Replace all instances of old with new in str. free_str aids in chain replacement.
   U8 *str_start, *str_end = str, *str_loc, *tmpm = NULL;
   if (!*old)
   {
@@ -718,7 +718,8 @@ U8 *StrReplace(U8 *str, U8 *old, U8 *new, I64 sff_flags=0, Bool free_str=FALSE)
   {
     str_start = str;
     str_end += StrLen(old); //Move start marker past old str, cutting it out
-    str_start[StrLen(str_start) - StrLen(str_loc)] = '\0'; //End str_start right before where old was
+    //End str_start right before where old was
+    str_start[StrLen(str_start) - StrLen(str_loc)] = '\0';
     Free(tmpm);
     tmpm = MStrPrint("%s%s%s", str_start, new, str_end);
     str = tmpm;

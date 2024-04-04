@@ -7,7 +7,7 @@
 #define SPT_EXIT	-6
 
 I64 PopUpSpriteMain(CSprite **_head,I64 *_cur_elem_num,
-                    CDoc *_doc,CDocEntry *_doc_e)
+    CDoc *_doc,CDocEntry *_doc_e)
 {
   CTask	*pu_task;
   I64	res;
@@ -42,18 +42,18 @@ I64 PopUpSpriteMain(CSprite **_head,I64 *_cur_elem_num,
            "$$MU-UL,\"BSpline2 Closed\",LE=SPT_BSPLINE2_CLOSED$$\n"
            "$$MU-UL,\"BSpline3 Closed\",LE=SPT_BSPLINE3_CLOSED$$\n"
            "$$MU-UL,\"Insert Scrn-Captured BitMap\",LE=SPT_INS_SCRN_BITMAP$$\n"
-           "$$MU-UL,\"Insert Transparent Scrn-Captured BitMap\","
-           "LE=SPT_INS_TRANSPARENT_SCRN_BITMAP$$\n"
+      "$$MU-UL,\"Insert Transparent Scrn-Captured BitMap\","
+      "LE=SPT_INS_TRANSPARENT_SCRN_BITMAP$$\n"
            "$$PURPLE$$$$MU-UL,\"+] Create or Edit 3D Mesh\",LE=SPT_MESH$$\n"
-           "$$MU-UL,\"+] Create or Edit Shiftable 3D Mesh\","
-           "LE=SPT_SHIFTABLE_MESH$$\n"
-           "$$MU-UL,\"+] Convert to BitMap or Edit BitMap\","
+      "$$MU-UL,\"+] Create or Edit Shiftable 3D Mesh\","
+      "LE=SPT_SHIFTABLE_MESH$$\n"
+      "$$MU-UL,\"+] Convert to BitMap or Edit BitMap\","
            "LE=SPT_BITMAP$$$$LTBLUE$$\n"
-           "\n$$MU-UL,\"Transform On(for use with 3D icons)\","
-           "LE=SPT_TRANSFORM_ON$$\n"
-           "$$MU-UL,\"Transform Off(for use with 3D icons)\","
-           "LE=SPT_TRANSFORM_OFF$$\n"
-           "\n"
+      "\n$$MU-UL,\"Transform On(for use with 3D icons)\","
+      "LE=SPT_TRANSFORM_ON$$\n"
+      "$$MU-UL,\"Transform Off(for use with 3D icons)\","
+      "LE=SPT_TRANSFORM_OFF$$\n"
+      "\n"
            "$$PURPLE$$$$MU-UL,\"+] Sprite Edit Menu\",LE=SPT_ED_MENU$$$$LTBLUE$$\n"
            "$$MU-UL,\"ExitSprite\",LE=SPT_EXIT$$\n"
            "$$MU-UL,\"Abort Sprite\",LE=DOCM_CANCEL$$\n"
@@ -113,13 +113,13 @@ U0 SpriteScrnInit(CDC *dc,I64,I64)
     yy=-dc->sym.snx*8192;
     dc->color=RED;
     GrLine3(dc,dc->sym.sx-xx.i32[1],dc->sym.sy-yy.i32[1],0,
-            dc->sym.sx+xx.i32[1],dc->sym.sy+yy.i32[1],0,3,0);
+        dc->sym.sx+xx.i32[1],dc->sym.sy+yy.i32[1],0,3,0);
     dc->color=WHITE;
     GrLine3(dc,dc->sym.sx-xx.i32[1],dc->sym.sy-yy.i32[1],0,
-            dc->sym.sx+xx.i32[1],dc->sym.sy+yy.i32[1],0,3,1);
+        dc->sym.sx+xx.i32[1],dc->sym.sy+yy.i32[1],0,3,1);
     dc->color=BLACK;
     GrLine3(dc,dc->sym.sx-xx.i32[1],dc->sym.sy-yy.i32[1],0,
-            dc->sym.sx+xx.i32[1],dc->sym.sy+yy.i32[1],0,3,2);
+        dc->sym.sx+xx.i32[1],dc->sym.sy+yy.i32[1],0,3,2);
     dc->flags|=DCF_SYMMETRY;
   }
   dc->color=old_color;
@@ -252,7 +252,7 @@ CSprite *SMRect(CDC *dc,I64 x,I64 y,I64 arg1,I64 arg2,CColorROPU32 color)
 }
 
 CSprite *SMScrnBitMap(I64 eletype,CDC *dc,CDC *dc2,I64 x,I64 y,
-                      I64 arg1,I64 arg2,CColorROPU32 bm_bkcolor)
+    I64 arg1,I64 arg2,CColorROPU32 bm_bkcolor)
 {
   I64 i,msg_code,x1=arg1,y1=arg2,x2=arg1,y2=arg2,
                  xx1=arg1,yy1=arg2,xx2=arg1,yy2=arg2,old_width;
@@ -264,7 +264,7 @@ CSprite *SMScrnBitMap(I64 eletype,CDC *dc,CDC *dc2,I64 x,I64 y,
   {
     dc2->color=ROPF_DITHER+WHITE<<16+BLACK;
     GrBorder(dc2,xx1+Fs->pix_left+Fs->scroll_x,yy1+Fs->pix_top+Fs->scroll_y,
-             xx2+Fs->pix_left+Fs->scroll_x,yy2+Fs->pix_top+Fs->scroll_y);
+        xx2+Fs->pix_left+Fs->scroll_x,yy2+Fs->pix_top+Fs->scroll_y);
     msg_code=GetMsg(&arg1,&arg2,1<<MSG_MS_L_UP+1<<MSG_MS_MOVE);
     SpriteScrnInit(dc,x,y);
     x2=arg1;
@@ -306,7 +306,7 @@ CSprite *SMScrnBitMap(I64 eletype,CDC *dc,CDC *dc2,I64 x,I64 y,
   Refresh(2,TRUE);
   dc3=DCScrnCapture;
   img=DCExt(dc3,Fs->pix_left+Fs->scroll_x+xx1,Fs->pix_top+Fs->scroll_y+yy1,
-            Fs->pix_left+Fs->scroll_x+xx2-1,Fs->pix_top+Fs->scroll_y+yy2-1);
+          Fs->pix_left+Fs->scroll_x+xx2-1,Fs->pix_top+Fs->scroll_y+yy2-1);
   if (eletype==SPT_INS_TRANSPARENT_SCRN_BITMAP)
     DCColorChg(img,bm_bkcolor);
   GrScaleZoom(i);
@@ -316,7 +316,7 @@ CSprite *SMScrnBitMap(I64 eletype,CDC *dc,CDC *dc2,I64 x,I64 y,
   dc2->thick=old_width;
   ms.show=TRUE;
   Fs->win_inhibit=WIG_TASK_DFT-WIF_SELF_FOCUS
-                  -WIF_SELF_BORDER-WIF_SELF_GRAB_SCROLL;
+      -WIF_SELF_BORDER-WIF_SELF_GRAB_SCROLL;
   return res;
 }
 
@@ -377,7 +377,7 @@ CSprite *SMEllipse(CDC *dc,I64 x,I64 y,I64 arg1,I64 arg2,CColorROPU32 color)
       res->pwha.angle=-(angle1-angle2)+ã/2.0;
     dc->color=color&COLORROP_NO_ROP0_MASK;
     GrEllipse3(dc,res->pwha.x1+x,res->pwha.y1+y,0,
-               res->pwha.width,res->pwha.height,res->pwha.angle);
+        res->pwha.width,res->pwha.height,res->pwha.angle);
     msg_code=GetMsg(&arg1,&arg2,1<<MSG_MS_L_UP+1<<MSG_MS_MOVE);
     SpriteScrnInit(dc,x,y);
     x2=arg1;
@@ -391,12 +391,12 @@ CSprite *SMEllipse(CDC *dc,I64 x,I64 y,I64 arg1,I64 arg2,CColorROPU32 color)
     res->pwha.angle=-(angle1-angle2)+ã/2.0;
   dc->color=color&COLORROP_NO_ROP0_MASK;
   GrEllipse3(dc,res->pwha.x1+x,res->pwha.y1+y,0,
-             res->pwha.width,res->pwha.height,res->pwha.angle);
+      res->pwha.width,res->pwha.height,res->pwha.angle);
   return res;
 }
 
 CSprite *SMPolygon(CDC *dc,I64 x,I64 y,I64 arg1,I64 arg2,I64 sides,
-                   CColorROPU32 color)
+    CColorROPU32 color)
 {
   I64 msg_code,x1=arg1,y1=arg2,x2=arg1,y2=arg2;
   F64 angle1,angle2;
@@ -405,7 +405,7 @@ CSprite *SMPolygon(CDC *dc,I64 x,I64 y,I64 arg1,I64 arg2,I64 sides,
   {
     dc->color=color&COLORROP_NO_ROP0_MASK;
     GrRegPoly3(dc,(x1+x2)>>1,(y1+y2)>>1,0,
-               AbsI64(x1-x2)>>1,AbsI64(y1-y2)>>1,sides);
+        AbsI64(x1-x2)>>1,AbsI64(y1-y2)>>1,sides);
     msg_code=GetMsg(&arg1,&arg2,1<<MSG_MS_L_UP+1<<MSG_MS_MOVE);
     SpriteScrnInit(dc,x,y);
     x2=arg1;
@@ -431,8 +431,8 @@ CSprite *SMPolygon(CDC *dc,I64 x,I64 y,I64 arg1,I64 arg2,I64 sides,
       res->pwhas.angle=-(angle1-angle2)+ã/2.0;
     dc->color=color&COLORROP_NO_ROP0_MASK;
     GrRegPoly3(dc,res->pwhas.x1+x,res->pwhas.y1+y,0,
-               res->pwhas.width,res->pwhas.height,
-               res->pwhas.sides,res->pwhas.angle);
+        res->pwhas.width,res->pwhas.height,
+        res->pwhas.sides,res->pwhas.angle);
     msg_code=GetMsg(&arg1,&arg2,1<<MSG_MS_L_UP+1<<MSG_MS_MOVE);
     SpriteScrnInit(dc,x,y);
     x2=arg1;
@@ -446,13 +446,13 @@ CSprite *SMPolygon(CDC *dc,I64 x,I64 y,I64 arg1,I64 arg2,I64 sides,
     res->pwhas.angle=-(angle1-angle2)+ã/2.0;
   dc->color=color&COLORROP_NO_ROP0_MASK;
   GrRegPoly3(dc,res->pwhas.x1+x,res->pwhas.y1+y,0,
-             res->pwhas.width,res->pwhas.height,res->pwhas.sides,
-             res->pwhas.angle);
+      res->pwhas.width,res->pwhas.height,res->pwhas.sides,
+      res->pwhas.angle);
   return res;
 }
 
 CSprite *SMPolyLineFamily(I64 eletype,CDC *dc,I64 x,I64 y,I64 arg1,I64 arg2,
-                          CColorROPU32 color)
+    CColorROPU32 color)
 {
   I64 i,num=0,msg_code,x1=arg1,y1=arg2,x2=arg1,y2=arg2;
   I32 *ptr;
@@ -467,7 +467,7 @@ CSprite *SMPolyLineFamily(I64 eletype,CDC *dc,I64 x,I64 y,I64 arg1,I64 arg2,
       if (num)
         GrLine3(dc,x1,y1,0,x2,y2,0);
       msg_code=GetMsg(&arg1,&arg2,
-                      1<<MSG_MS_L_UP+1<<MSG_MS_MOVE+1<<MSG_MS_R_UP);
+              1<<MSG_MS_L_UP+1<<MSG_MS_MOVE+1<<MSG_MS_R_UP);
       dc->color=TRANSPARENT;
       if (num)
         GrLine3(dc,x1,y1,0,x2,y2,0);
@@ -610,7 +610,7 @@ CSprite *SMPolyPoint(CDC *dc,I64 x,I64 y,I64 arg1,I64 arg2,CColorROPU32 color)
   {
     tmpg=tmpg1->next;
     BFieldOrU32(ptr,i,polypt_map[SignI64(tmpg1->p.x1-x1)+1+
-                                 3*(SignI64(tmpg1->p.y1-y1)+1)]);
+            3*(SignI64(tmpg1->p.y1-y1)+1)]);
     i+=3;
     x1=tmpg1->p.x1;
     y1=tmpg1->p.y1;
@@ -624,8 +624,8 @@ CSprite *SMPolyPoint(CDC *dc,I64 x,I64 y,I64 arg1,I64 arg2,CColorROPU32 color)
 }
 
 U0 SMTextFamily(I64 eletype,CDoc *doc,CDocEntry *doc_ce,CSprite *head,CDC *dc,
-                I64 x,I64 y,I64 arg1,I64 arg2,CColorROPU32 color,I64 *_cur_elem_num,
-                I64 old_de_flags)
+    I64 x,I64 y,I64 arg1,I64 arg2,CColorROPU32 color,I64 *_cur_elem_num,
+    I64 old_de_flags)
 {
   CSprite *tmpg,*insert_pt=SpriteSetSettings(,head,*_cur_elem_num);
   I64 msg_code,x1,y1;
@@ -671,8 +671,8 @@ U0 SMTextFamily(I64 eletype,CDoc *doc,CDocEntry *doc_ce,CSprite *head,CDC *dc,
 }
 
 I64 SMBitMap(I64 eletype,CDoc *doc,CDocEntry *doc_ce,CSprite *head,
-             CDC *dc,I64 xx,I64 yy,I64 arg1,I64 arg2,CColorROPU32 bm_bkcolor,
-             Bool sel,I64 xx1=0,I64 yy1=0,I64 xx2=0,I64 yy2=0,I64 *_cur_elem_num)
+    CDC *dc,I64 xx,I64 yy,I64 arg1,I64 arg2,CColorROPU32 bm_bkcolor,
+    Bool sel,I64 xx1=0,I64 yy1=0,I64 xx2=0,I64 yy2=0,I64 *_cur_elem_num)
 {
   I64 i,msg_code,x=xx,y=yy,x1=arg1,y1=arg2,x2=arg1,y2=arg2,old_width;
   CSprite *tmpg,*tmpg1,*insert_pt;
@@ -723,7 +723,7 @@ I64 SMBitMap(I64 eletype,CDoc *doc,CDocEntry *doc_ce,CSprite *head,
   xx2++;
   yy2++;
   tmpg=CAlloc(SpriteElemQuedBaseSize(SPT_BITMAP)+
-              ((xx2-xx1+7)&~7)*(yy2-yy1));
+          ((xx2-xx1+7)&~7)*(yy2-yy1));
   tmpg->type=SPT_BITMAP;
   tmpg->pwhu.width=xx2-xx1;
   tmpg->pwhu.height=yy2-yy1;
@@ -753,13 +753,13 @@ I64 SMBitMap(I64 eletype,CDoc *doc,CDocEntry *doc_ce,CSprite *head,
   }
   MemCpy(&tmpg->pwhu.u,img->body,((xx2-xx1+7)&~7)*(yy2-yy1));
   switch (i=SpriteBitMapEd(doc,doc_ce,dc,&xx1,&yy1,
-                           &xx2,&yy2,&img,bm_bkcolor))
+              &xx2,&yy2,&img,bm_bkcolor))
   {
   case SPE_EXIT:
   case SPE_CONT:
     Free(tmpg);
     tmpg=CAlloc(SpriteElemQuedBaseSize(SPT_BITMAP)+
-                ((xx2-xx1+7)&~7)*(yy2-yy1));
+            ((xx2-xx1+7)&~7)*(yy2-yy1));
     tmpg->type=eletype;
     tmpg->pwhu.width=xx2-xx1;
     tmpg->pwhu.height=yy2-yy1;
@@ -833,7 +833,7 @@ U0 SMMesh(CDoc *doc,CDocEntry *doc_ce,CSprite *head,I64 *_cur_elem_num)
 }
 
 U0 SMShiftableMesh(CDoc *doc,CDocEntry *doc_ce,CSprite *head,
-                   I64 x,I64 y,I64 arg1,I64 arg2,I64 *_cur_elem_num)
+    I64 x,I64 y,I64 arg1,I64 arg2,I64 *_cur_elem_num)
 {
   CSprite *tmpg,*insert_pt=SpriteSetSettings(,head,*_cur_elem_num),
                  *tmpg1=insert_pt;
@@ -946,8 +946,8 @@ I64 SpriteMainEd(CDoc *doc)
 {
   CDocEntry *doc_ce=doc->cur_entry;
   I64 res,i,x,y,arg1,arg2,xx,yy,xx1,yy1,xx2,yy2,thick,eletype=SPT_MENU,
-                                                      cur_elem_num,old_border_src=Fs->border_src,old_title_src=Fs->title_src,
-                                                                   old_de_flags=doc_ce->de_flags;
+      cur_elem_num,old_border_src=Fs->border_src,old_title_src=Fs->title_src,
+      old_de_flags=doc_ce->de_flags;
   CColorROPU32 bm_bkcolor,color;
   CSprite *head,*tmpg,*insert_pt;
   CDC *dc=DCAlias(,Fs),*dc2=DCAlias(,sys_winmgr_task),*dc3;
@@ -963,14 +963,14 @@ I64 SpriteMainEd(CDoc *doc)
   while (TRUE)
   {
     insert_pt=SpriteSetSettings(dc,head,cur_elem_num,xx,yy,
-                                &color,&thick,&x,&y);
+            &color,&thick,&x,&y);
     x+=xx;
     y+=yy;
     DCFill;
     if (eletype==SPT_MENU)
     {
       Fs->win_inhibit=WIG_TASK_DFT-WIF_SELF_FOCUS
-                      -WIF_SELF_BORDER-WIF_SELF_GRAB_SCROLL;
+          -WIF_SELF_BORDER-WIF_SELF_GRAB_SCROLL;
       if (winmgr.fps<10)
         doc_ce->de_flags|=DOCEF_DONT_DRAW;
       StrCpy(Fs->task_title,old_task_title);
@@ -980,7 +980,7 @@ I64 SpriteMainEd(CDoc *doc)
       eletype=PopUpSpriteMain(&head,&cur_elem_num,doc,doc_ce);
       xx+=StrLen(doc_ce->tag)*FONT_WIDTH;
       insert_pt=SpriteSetSettings(dc,head,cur_elem_num,x,y,
-                                  &color,&thick,&x,&y);
+              &color,&thick,&x,&y);
       x+=xx;
       y+=yy;
       SpriteEdUpdate(doc,doc_ce,head);
@@ -989,11 +989,11 @@ I64 SpriteMainEd(CDoc *doc)
       case SPT_FLOOD_FILL:
       case SPT_FLOOD_FILL_NOT:
         RegOneTimePopUp(ARf_FLOODFILL,
-                        ST_WARN_ST "This is affected by what's underneath\n"
-                        "when it is drawn.You will probably want to\n"
-                        "convert it to a bitmap.\n\n"
-                        "A tip on artistry you might consider\n"
-                        "is using lines to fill regions because\n"
+            ST_WARN_ST "This is affected by what's underneath\n"
+            "when it is drawn.You will probably want to\n"
+            "convert it to a bitmap.\n\n"
+            "A tip on artistry you might consider\n"
+            "is using lines to fill regions because\n"
                         "brush strokes look cool.\n");
         break;
       case SPT_PLANAR_SYMMETRY:
@@ -1061,18 +1061,18 @@ I64 SpriteMainEd(CDoc *doc)
     case SPT_SHIFTABLE_MESH:
       doc_ce->de_flags|=DOCEF_DONT_DRAW;
       if (PopUpNoYes("Study the $$LK,\"X-Caliber\","
-                     "A=\"FF:::/PersonalMenu.DD.Z,X-Caliber\"$$ icon.\n\n"
-                     "It has black rectangle background with stars.The\n"
-                     "mesh is in front and rotates.To keep the background\n"
-                     "rectangle from rotating, "
+              "A=\"FF:::/PersonalMenu.DD.Z,X-Caliber\"$$ icon.\n\n"
+              "It has black rectangle background with stars.The\n"
+              "mesh is in front and rotates.To keep the background\n"
+              "rectangle from rotating, "
                      "$$GREEN$$TRANSFORM OFF$$FG$$ has been used.\n\n"
-                     "The X-Caliber mesh has a different origin for rotation.\n"
-                     "To avoid clipping, it also has also been moved in the\n"
-                     "negative Z direction by editing the sprite as text\n"
-                     "and changing the first vector.\n\n"
-                     "For the mesh you are creating, use same origin as\n"
+              "The X-Caliber mesh has a different origin for rotation.\n"
+              "To avoid clipping, it also has also been moved in the\n"
+              "negative Z direction by editing the sprite as text\n"
+              "and changing the first vector.\n\n"
+              "For the mesh you are creating, use same origin as\n"
                      "the rest of the sprite?If $$GREEN$$YES$$FG$$, you can always\n"
-                     "shift the mesh origin point in the sprite edit menu.\n"))
+              "shift the mesh origin point in the sprite edit menu.\n"))
       {
         doc_ce->de_flags=old_de_flags;
         arg1=x;
@@ -1089,7 +1089,7 @@ I64 SpriteMainEd(CDoc *doc)
       PopUpOk("Drag-out a rect for the extents of the\nbitmap.\n");
       doc_ce->de_flags=old_de_flags;
       Fs->win_inhibit=WIG_TASK_DFT|WIF_FOCUS_TASK_MS_L|WIF_FOCUS_TASK_MS_R|
-                      WIF_FOCUS_TASK_BORDER-WIF_SELF_FOCUS-WIF_SELF_GRAB_SCROLL;
+          WIF_FOCUS_TASK_BORDER-WIF_SELF_FOCUS-WIF_SELF_GRAB_SCROLL;
       break;
     case SPT_BITMAP:
       doc_ce->de_flags|=DOCEF_DONT_DRAW;
@@ -1111,7 +1111,7 @@ I64 SpriteMainEd(CDoc *doc)
           xx2+=xx;
           yy2+=yy;
           if (SMBitMap(eletype,doc,doc_ce,head,dc,xx,yy,arg1,arg2,bm_bkcolor,
-                       FALSE,xx1,yy1,xx2,yy2,&cur_elem_num)==SPE_EXIT)
+                  FALSE,xx1,yy1,xx2,yy2,&cur_elem_num)==SPE_EXIT)
           {
             res=SPE_EXIT;
             goto ei_done;
@@ -1133,7 +1133,7 @@ I64 SpriteMainEd(CDoc *doc)
       }
       doc_ce->de_flags=old_de_flags;
       Fs->win_inhibit=WIG_TASK_DFT|WIF_FOCUS_TASK_MS_L|WIF_FOCUS_TASK_MS_R|
-                      WIF_FOCUS_TASK_BORDER-WIF_SELF_FOCUS-WIF_SELF_GRAB_SCROLL;
+          WIF_FOCUS_TASK_BORDER-WIF_SELF_FOCUS-WIF_SELF_GRAB_SCROLL;
       break;
     case SPT_THICK:
       doc_ce->de_flags|=DOCEF_DONT_DRAW;
@@ -1174,14 +1174,14 @@ I64 SpriteMainEd(CDoc *doc)
     case SPT_TEXT_BOX:
     case SPT_TEXT_DIAMOND:
       SMTextFamily(eletype,doc,doc_ce,head,dc,xx,yy,arg1,arg2,
-                   color,&cur_elem_num,old_de_flags);
+          color,&cur_elem_num,old_de_flags);
       eletype=SPT_MENU;
       break;
     }
     if (eletype!=SPT_MENU)
     {
       insert_pt=SpriteSetSettings(dc,head,cur_elem_num,xx,yy,
-                                  &color,&thick,&x,&y);
+              &color,&thick,&x,&y);
       x+=xx;
       y+=yy;
       SpriteScrnInit(dc,x,y);
@@ -1196,7 +1196,7 @@ I64 SpriteMainEd(CDoc *doc)
         goto ei_done;
       }
       switch (GetMsg(&arg1,&arg2,
-                     1<<MSG_KEY_DOWN|1<<MSG_MS_R_UP|1<<MSG_MS_L_DOWN))
+              1<<MSG_KEY_DOWN|1<<MSG_MS_R_UP|1<<MSG_MS_L_DOWN))
       {
       case MSG_KEY_DOWN:
         switch (arg1)
@@ -1301,7 +1301,7 @@ end:
           break;
         case SPT_BITMAP:
           if (SMBitMap(eletype,doc,doc_ce,head,dc,xx,yy,
-                       arg1,arg2,bm_bkcolor,TRUE,,,,,&cur_elem_num)==SPE_EXIT)
+                  arg1,arg2,bm_bkcolor,TRUE,,,,,&cur_elem_num)==SPE_EXIT)
           {
             res=SPE_EXIT;
             goto ei_done;

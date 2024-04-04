@@ -1,9 +1,9 @@
 U32 SHIFT_ROUNDS[64] =
 {
-  7, 12, 17, 22,  7, 12, 17, 22,  7, 12, 17, 22,  7, 12, 17, 22,
-  5,  9, 14, 20,  5,  9, 14, 20,  5,  9, 14, 20,  5,  9, 14, 20,
-  4, 11, 16, 23,  4, 11, 16, 23,  4, 11, 16, 23,  4, 11, 16, 23,
-  6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21
+  7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
+  5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20,
+  4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
+  6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21
 };
 
 U32 CONSTANTS[64] =
@@ -32,16 +32,16 @@ U32 INITIAL_C = 0x98badcfe;
 U32 INITIAL_D = 0x10325476;
 
 I32
-leftrotate (U32 x, U32 y)
+leftrotate(U32 x, U32 y)
 {
   U32 steps = y % 32;
   return x << steps | x >> (32 - steps);
 }
 
 U0
-md5_process_words (U32 *words,
-                   U32 *a, U32 *b,
-                   U32 *c, U32 *d)
+md5_process_words(U32 *words,
+    U32 *a, U32 *b,
+    U32 *c, U32 *d)
 {
   U32 f, g, i, xa, xb, xc, xd;
   xa = *a;
@@ -83,16 +83,16 @@ md5_process_words (U32 *words,
 }
 
 U0
-md5_process_chunk (U8 *chunk,
-                   U32 *a, U32 *b,
-                   U32 *c, U32 *d)
+md5_process_chunk(U8 *chunk,
+    U32 *a, U32 *b,
+    U32 *c, U32 *d)
 {
   U32 *words = chunk;
-  md5_process_words (words, a, b, c, d);
+  md5_process_words(words, a, b, c, d);
 }
 
 U0
-md5_print (U32 part)
+md5_print(U32 part)
 {
   "%02x%02x%02x%02x", part.u8[0], part.u8[1], part.u8[2], part.u8[3];
 }
@@ -110,7 +110,7 @@ public U0 md5buf(U8 *bytes, I64 len, U8 **res=NULL)
   MemCpy(msg, bytes, len);
   msg[len] = 0x80;
   a = len << 3;
-  MemCpy (&msg[msg_len - 8], &a, 4);
+  MemCpy(&msg[msg_len - 8], &a, 4);
   a = INITIAL_A;
   b = INITIAL_B;
   c = INITIAL_C;
@@ -119,15 +119,19 @@ public U0 md5buf(U8 *bytes, I64 len, U8 **res=NULL)
     md5_process_chunk(&msg[i], &a, &b, &c, &d);
   if (!res)
   {
-    md5_print (a);
-    md5_print (b);
-    md5_print (c);
-    md5_print (d);
+    md5_print(a);
+    md5_print(b);
+    md5_print(c);
+    md5_print(d);
     "\n";
   }
   else
   {
-    *res = MStrPrint("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x", a.u8[0],a.u8[1],a.u8[2],a.u8[3],b.u8[0],b.u8[1],b.u8[2],b.u8[3],c.u8[0],c.u8[1],c.u8[2],c.u8[3],d.u8[0],d.u8[1],d.u8[2],d.u8[3]);
+    *res = MStrPrint("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+            a.u8[0],a.u8[1],a.u8[2],a.u8[3],
+            b.u8[0],b.u8[1],b.u8[2],b.u8[3],
+            c.u8[0],c.u8[1],c.u8[2],c.u8[3],
+            d.u8[0],d.u8[1],d.u8[2],d.u8[3]);
   }
   Free(msg);
 }

@@ -16,12 +16,12 @@ You will need to recompile Kernel by calling $LK,"BootHDIns",A="MN:BootHDIns"$()
 
 See $LK,"::/Demo/ExtChars.HC"$, $LK,"::/Demo/Games/CharDemo.HC"$,
 $LK,"::/Demo/Graphics/CharAnimation.HC"$ and $LK,"::/Demo/ScrnCodes.HC"$.
-*/
+    */
 
 #define BLOW_UP_CHAR_X	(18*FONT_WIDTH)
 #define BLOW_UP_CHAR_Y	(4*FONT_HEIGHT)
 
-U8 cur_ch;
+    U8 cur_ch;
 
 U0 DrawIt(CTask *task,CDC *dc)
 {
@@ -51,8 +51,8 @@ U0 DrawIt(CTask *task,CDC *dc)
       else
         dc->color=BLUE;
       GrRect(dc,BLOW_UP_CHAR_X+j*FONT_WIDTH,
-             BLOW_UP_CHAR_Y+i*FONT_HEIGHT,
-             FONT_WIDTH,FONT_HEIGHT);
+          BLOW_UP_CHAR_Y+i*FONT_HEIGHT,
+          FONT_WIDTH,FONT_HEIGHT);
     }
 }
 
@@ -81,10 +81,10 @@ U0 FontEd()
   I64 msg_code,arg1,arg2,k;
   SettingsPush; //See $LK,"SettingsPush",A="MN:SettingsPush"$
   MenuPush(
-  "File {"
-  "  SaveAs(,CH_CTRLA);"
-  "  Abort(,CH_SHIFT_ESC);"
-  "  Exit(,CH_ESC);"
+      "File {"
+      "  SaveAs(,CH_CTRLA);"
+      "  Abort(,CH_SHIFT_ESC);"
+      "  Exit(,CH_ESC);"
   "}");
   AutoComplete;
   DocCursor;
@@ -97,7 +97,7 @@ U0 FontEd()
     while (TRUE)
     {
       switch (msg_code=GetMsg(&arg1,&arg2,
-                              1<<MSG_KEY_DOWN|1<<MSG_MS_L_DOWN|1<<MSG_MS_R_DOWN|1<<MSG_MS_MOVE))
+                  1<<MSG_KEY_DOWN|1<<MSG_MS_L_DOWN|1<<MSG_MS_R_DOWN|1<<MSG_MS_MOVE))
       {
       case MSG_KEY_DOWN:
         switch (arg1)
@@ -140,7 +140,7 @@ U0 FontEd()
         } //fall through
       case MSG_MS_MOVE:
         k=((arg2-BLOW_UP_CHAR_Y)/FONT_HEIGHT)*FONT_WIDTH+
-          (arg1-BLOW_UP_CHAR_X)/FONT_WIDTH;
+            (arg1-BLOW_UP_CHAR_X)/FONT_WIDTH;
         if (0<=k<FONT_WIDTH*FONT_HEIGHT)
         {
           if (ms.lb||msg_code==MSG_MS_L_DOWN)

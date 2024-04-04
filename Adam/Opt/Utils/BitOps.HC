@@ -149,7 +149,8 @@ asm
 
 
 _extern _ANDN I64 Andn(I64 val, I64 val2); // Returns val & ~val2
-_extern _BEXTR I64 Bextr(I64 src, U8 start, U8 len); // Bit extract, returns (src >> start) & ((1 << len) - 1)
+// Bit extract, returns (src >> start) & ((1 << len) - 1)
+_extern _BEXTR I64 Bextr(I64 src, U8 start, U8 len);
 _extern _BLSI I64 Blsi(I64 val); // Extracts lowest set isolated bit
 _extern _BLSR I64 Blsr(I64 val); // Returns val with the lowest set bit unset
 _extern _BLSMSK I64 Blsmsk(I64 val); // Returns a mask up to the lowest set bit
@@ -158,5 +159,7 @@ _extern _LZCNT I64 LzCnt(I64 val); // Returns number of leading zeros in 64-bit 
 _extern _TZCNT I64 TzCnt(I64 val); // Returns number of trailing zeros in 64-bit value
 _extern _RDRAND I64 RDRand(); // Returns a random 64-bit value using RDRAND
 _extern _RDSEED I64 RDSeed(); // Returns a random 64-bit value using RDSEED
-_extern _CRC32 U32 Crc32(U32 a, U32 val); // Returns 32-bit accumulated CRC32 accumulating 32-bit val into a
-_extern _CRC64 U32 Crc64(U64 a, U64 val); // Returns 32-bit accumulated CRC32 accumulating 64-bit val into a.
+// Returns 32-bit accumulated CRC32 accumulating 32-bit val into a
+_extern _CRC32 U32 Crc32(U32 a, U32 val);
+// Returns 32-bit accumulated CRC32 accumulating 64-bit val into a.
+_extern _CRC64 U32 Crc64(U64 a, U64 val);

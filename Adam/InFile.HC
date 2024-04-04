@@ -50,7 +50,7 @@ public U0 InGetKey(I64 scan_code,I64 sc_mask=0xFF|SCF_SHIFT|SCF_CTRL|SCF_ALT)
     if (sc.u8[0]!=SC_PRTSCRN1 &&
         !(sc.u8[0]==SC_SHIFT && scan_code&SCF_SHIFT) &&
         !(sc.u8[0]==SC_CTRL && scan_code&SCF_CTRL) &&
-        !(sc.u8[0]==SC_ALT && scan_code&SCF_ALT) )
+        !(sc.u8[0]==SC_ALT && scan_code&SCF_ALT))
     {
       if (sc&sc_mask!=scan_code&sc_mask)
       {
@@ -98,7 +98,8 @@ public I64 InGetChar(...)
   }
 }
 
-public U0 InUntilKey(I64 scan_code,I64 sc_mask=0xFF|SCF_SHIFT|SCF_CTRL|SCF_ALT,I64 timeout=-1)
+public U0 InUntilKey(I64 scan_code,I64 sc_mask=0xFF|SCF_SHIFT|SCF_CTRL|SCF_ALT,
+    I64 timeout=-1)
 {//Let user type until he presses certain key.
   I64 sc,ch;
   F64 t0=tS;
@@ -142,7 +143,7 @@ Bool InSetMsPlot(I64 mS,I64 x,I64 y,I64 z)
 }
 
 public U0 InSetMs(I64 mS=7,I64 x=I64_MAX,I64 y=I64_MAX,I64 z=I64_MAX,
-                  I64 l=I64_MAX,I64 r=I64_MAX)
+    I64 l=I64_MAX,I64 r=I64_MAX)
 {//Move mouse to spot at certain speed.
   if (!(0<=x<GR_WIDTH))
     x=ms.pos.x;

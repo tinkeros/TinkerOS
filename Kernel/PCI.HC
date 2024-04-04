@@ -7,10 +7,10 @@ U32 PCIReadU32(I64 bus, I64 dev, I64 fun, I64 rg)
   else
   {
     addr =	bus << 16	|
-            dev << 11	|
-            fun << 8	|
-            rg & 0xFC	|
-            0x80000000;
+        dev << 11	|
+        fun << 8	|
+        rg & 0xFC	|
+        0x80000000;
     offset = rg - rg & 0xFC;
     OutU32(PCI_ADDR, addr);
     res = InU32(PCI_DATA) >> (offset * 8);
@@ -50,10 +50,10 @@ U0 PCIWriteU32(I64 bus, I64 dev, I64 fun, I64 rg, I64 val)
   else
   {
     addr =	bus << 16	|
-            dev << 11	|
-            fun << 8	|
-            rg & 0xFC	|
-            0x80000000;
+        dev << 11	|
+        fun << 8	|
+        rg & 0xFC	|
+        0x80000000;
     offset = rg - rg & 0xFC;
     OutU32(PCI_ADDR, addr);
     OutU32(PCI_DATA, val << (offset * 8));
@@ -116,31 +116,31 @@ pci_end:
 }
 
 Bool PCIBt(U8 reg RBX *bit_field, I64 reg RDX bit)
-{ // MOV-based Bt for use in PCI device memory-mapped IO areas.  See $LK+PU,"Bt()",A="FF:::/Kernel/KernelB.HH,Bt("$.
-    bit_field += bit / 8;
-    bit &= 7;
-    return (*bit_field & 1 << bit) >> bit;
+{ // MOV-based Bt for use in PCI device MMIO areas.  See $LK+PU,"Bt()",A="FF:::/Kernel/KernelB.HH,Bt("$.
+  bit_field += bit / 8;
+  bit &= 7;
+  return (*bit_field & 1 << bit) >> bit;
 }
 
 Bool PCIBtr(U8 reg RDX *bit_field, I64 reg RBX bit)
-{ // MOV-based Btr for use in PCI device memory-mapped IO areas.  See $LK+PU,"Btr()",A="FF:::/Kernel/KernelB.HH,Btr("$.
-    U64 reg R9 chunk_mod = bit & 31, chunk_bit = 1 << chunk_mod;
-    bit_field(U32 *) += bit / 32;
-    Bool reg R8 result = (*bit_field(U32 *) & chunk_bit) >> chunk_mod;
+{ // MOV-based Btr for use in PCI device MMIO areas.  See $LK+PU,"Btr()",A="FF:::/Kernel/KernelB.HH,Btr("$.
+  U64 reg R9 chunk_mod = bit & 31, chunk_bit = 1 << chunk_mod;
+  bit_field(U32 *) += bit / 32;
+  Bool reg R8 result = (*bit_field(U32 *) & chunk_bit) >> chunk_mod;
 
-    *bit_field(U32 *) &= ~chunk_bit;
+  *bit_field(U32 *) &= ~chunk_bit;
 
-    return result;
+  return result;
 }
 
 Bool PCIBts(U8 reg RDX *bit_field, I64 reg RBX bit)
-{ // MOV-based Bts for use in PCI device memory-mapped IO areas.  See $LK+PU,"Bts()",A="FF:::/Kernel/KernelB.HH,Bts("$.
-    U64 reg R9 chunk_mod = bit & 31, chunk_bit = 1 << chunk_mod;
-    bit_field(U32 *) += bit / 32;
-    Bool reg R8 result = (*bit_field(U32 *) & chunk_bit) >> chunk_mod;
+{ // MOV-based Bts for use in PCI device MMIO areas.  See $LK+PU,"Bts()",A="FF:::/Kernel/KernelB.HH,Bts("$.
+  U64 reg R9 chunk_mod = bit & 31, chunk_bit = 1 << chunk_mod;
+  bit_field(U32 *) += bit / 32;
+  Bool reg R8 result = (*bit_field(U32 *) & chunk_bit) >> chunk_mod;
 
-    *bit_field(U32 *) |= chunk_bit;
+  *bit_field(U32 *) |= chunk_bit;
 
-    return result;
+  return result;
 }
 

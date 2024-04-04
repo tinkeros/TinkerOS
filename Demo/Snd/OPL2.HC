@@ -13,7 +13,15 @@ Cd(__DIR__);
 // Common OPL IO ports:
 // QEMU/ISA sound card 0x388
 // OPL2/3LPT on parallel port 0x3bc 0x378 0x278
+// For FM801 after initialization base I/O port + 0x68
+
+#ifdef FM801_OPL_BASE
+#define ISA_IOPORT_OPL_BASE FM801_OPL_BASE
+"Attempting to use alternate OPL IO port 0x%08x\n", ISA_IOPORT_OPL_BASE;
+#else
 #define ISA_IOPORT_OPL_BASE 0x388
+#endif
+
 #define LPT_IOPORT_OPL_BASE 0x378
 #define SERIAL_OPL_PORT 2
 
@@ -387,4 +395,3 @@ U0 EnableISAOPL()
 
 EnableISAOPL;
 #endif
-    

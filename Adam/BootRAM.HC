@@ -32,9 +32,10 @@ _extern _HI_CALL I64 HiCall(U8 *machine_code);
 _extern _HI_MEMCPY U8 *HiMemCpy(U8 *dst,U8 *src,I64 cnt);
 
 #help_index "Boot"
-public U0 BootRAM(U8 *filename=NULL)
+public U0 BootRAM(U8 *filename=NULL,Bool keep_ram_drv=TRUE)
 {//Softboot Kernel.BIN file. No hardware reset.
   I64 size;
+  CBlkDev *bdrd;
   CKernel *hi_image,*lo_image=mem_boot_base-sizeof(CBinFile),
 	reg *sys_ram_reboot;
   if (!filename)
@@ -51,6 +52,15 @@ public U0 BootRAM(U8 *filename=NULL)
   hi_image->sys_run_level =lo_image->sys_run_level&(RLF_VGA|RLF_16BIT);
   hi_image->sys_frame_buffer = sys_frame_buffer;
   hi_image->sys_vbe_mode_pitch = sys_vbe_mode_pitch;
+  if (DrvMounted('B'))
+  {
+    if (keep_ram_drv)
+    {
+      bdrd=Let2BlkDev('B');
+      hi_image->sys_initramfs_ptr=bdrd->RAM_dsk;
+      hi_image->sys_initramfs_size=(bdrd->max_blk+1)<<BLK_SIZE_BITS;
+    }
+  }
 
   MemCpy(&hi_image->start,&lo_image->start,
 	sizeof(CKernel)-offset(CKernel.start));

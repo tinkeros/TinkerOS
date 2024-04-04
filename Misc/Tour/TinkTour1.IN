@@ -1,0 +1,59 @@
+//Puts the cursor at the bottom.
+Msg(MSG_KEY_DOWN,0,SC_CURSOR_DOWN|SCF_CTRL);
+"\n";
+
+TourPut(
+"You are now at the command line.\n"
+"\n"
+"The syntax is like $$GREEN$$C/C++$$FG$$ except you don't need $$GREEN$$()$$FG$$ "
+"if there are no args.\n"
+"\n"
+"Type \"$$GREEN$$Cdd;$$FG$$\" and press $$GREEN$$<ENTER>$$FG$$.\n\n"
+"You must remember the semicolon.\n"
+"This will change to and list your home directory\n");
+
+InGetStr("Cdd;\n");
+
+TourPut(
+"The \"$$GREEN$$Cdd$$FG$$\" function is a TinkerOS "
+"shortcut for running \"$$GREEN$$Cd;Dir;$$FG$$\"\n\n"
+"This shortcut was added since "
+"frequently when working on the "
+"command line as soon as you change "
+"directories, you usually want to list "
+"the files inside it.\n\n"
+"You may optionally pass in a directory "
+"too.\n\n"
+"Press $$GREEN$$<SPACE>$$FG$$ or click OK.",TRUE);
+
+TourPut(
+"You can change the target frame rate in "
+"TinkerOS with the \"$$GREEN$$SetFPS$$FG$$\" function.\n\n"
+"Try running: \"$$GREEN$$SetFPS(60);$$FG$$\"\n");
+
+InGetStr("SetFPS(60);\n");
+
+InPrint(25,"Cdd(\"/Demo/ScreenSavers\");\n");
+
+TourPut(
+"There are no display drivers to sleep your monitor "
+"so TinkerOS has some screen savers available.\n\n"
+"You can Adam Include these to replace the default.\n\n"
+"You can set the screen saver timeout in seconds with the "
+"\"$$GREEN$$SetScreenSaverTimeout$$FG$$\" function.\n",TRUE);
+
+InPrint(25,"Ed(\"~/MakeHome.HC.Z\");\n");
+
+TourPut(
+"This is your MakeHome file.  It is a good place to "
+"Adam include your preferred screen saver and setup "
+"your settings like FPS, screen saver timeout, etc. "
+"You can also do things like disable autocomplete or "
+"add additional things to load here on startup.\n\n"
+
+"For example you could add the line:\n"
+"AdamFile(\"/Demo/ScreenSavers/NewGlass.HC.Z\");\n\n"
+
+"Press $$GREEN$$<SHIFT-ESC>$$FG$$ to abort saving changes "
+"and exit this file and tour.\n");
+InGetChar(CH_SHIFT_ESC);

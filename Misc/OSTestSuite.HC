@@ -28,7 +28,7 @@ U0 TS(U8 *desc)
            (PROGRESS_DESC_LEN-StrLen(st))>>1,CH_SPACE,st);
   Free(st);
   progress4=ts_i++;
-  progress4_max=178;
+  progress4_max=179;
   progress4_t0=ts_t0;
   *progress4_desc=0;
   RegExe("TempleOS/OSTestSuite");
@@ -173,20 +173,6 @@ U0 DoSudoku()
   DeathWait(&task,TRUE);
 }
 
-
-U0 DoTDScreenSaver()
-{
-  CTask *task=User;
-  AdamFile("/Demo/ScreenSavers/TDance.HC.Z");
-  SetScreenSaverTimeout(1);
-  Sleep(10000);
-  AdamFile("/Demo/ScreenSavers/Default.HC.Z");
-  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_ESC,0);
-  SetScreenSaverTimeout(0);
-  ms_hard.timestamp = GetTSC;
-  Sleep(1);
-  Kill(task);
-}
 
 U0 DoLSScreenSaver()
 {
@@ -1476,6 +1462,23 @@ U0 DoFPS()
   DeathWait(&task,TRUE);
 }
 
+U0 DoFPS2()
+{
+  I64 i;
+  CTask *task=User;
+  XTalkWait(task,"#include \"::/Apps/CF2/CF2\";\n");
+  Sleep(2000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SPACE,0);
+  Sleep(500);
+  for (i=0; i<15; i++)
+  {
+    PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SPACE,0);
+    Sleep(500);
+  }
+  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SHIFT_ESC,0);
+  DeathWait(&task,TRUE);
+}
+
 U0 DoTalons()
 {
   I64 i;
@@ -1755,8 +1758,6 @@ U0 OSTestSuite()
   ts_i=0;
   TS("PersonalMenu");
   DoPersonalMenu;
-  TS("TerryDanceScreenSaver");
-  DoTDScreenSaver;
   TS("LineSandScreenSaver");
   DoLSScreenSaver;
   TS("NewGlassScreenSaver");
@@ -1782,6 +1783,8 @@ U0 OSTestSuite()
   DoDunGen;
   TS("FPS");
   DoFPS;
+  TS("FPS2");
+  DoFPS2;
   TS("ZoneOut");
   DoZoneOut;
   TS("Varoom");
@@ -2142,6 +2145,8 @@ U0 OSTestSuite()
   XTalkWait(task,"DrvRep;Sleep(750);\n");
   TS("TaskRep");
   XTalkWait(task,"TaskRep;Sleep(750);\n");
+  TS("SysRepLite");
+  XTalkWait(task,"SysRepLite;Sleep(750);\n");
   DeathWait(&task,TRUE);
   ProgressBarsRst("TinkerOS/OSTestSuite");
   "Elapsed Time:%5.3f\n"

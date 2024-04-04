@@ -260,7 +260,8 @@ U0 DskCacheInvalidate(CDrv *dv)
     BlkDevInit(bd);
     if (bd->flags & BDF_READ_CACHE)
       DskCacheInvalidate2(dv);
-    if ((bd->type==BDT_ATAPI || bd->type==BDT_AHCI_SATAPI) && !(bd->flags & BDF_READ_ONLY_OVERRIDE))
+    if ((bd->type==BDT_ATAPI || bd->type==BDT_AHCI_SATAPI)
+        && !(bd->flags & BDF_READ_ONLY_OVERRIDE))
       ISOInit(dv,(32767/bd->blk_size+1)*bd->blk_size>>BLK_SIZE_BITS);
     if (unlock)
       DrvUnlock(dv);
@@ -333,36 +334,19 @@ Bool Drv(U8 drv_let)
   }
 }
 
-U8 blkdev_text_attr[BDT_TYPES_NUM]= {BLACK,LTCYAN,WHITE,LTGREEN,LTRED,LTBLUE,WHITE,WHITE,LTBLUE,LTPURPLE,LTPURPLE,LTPURPLE};
-U8 drv_text_attr[3]= {BLACK,BLUE,RED};
+U8 blkdev_text_attr[BDT_TYPES_NUM]={BLACK,LTCYAN,WHITE,LTGREEN,LTRED,
+  LTBLUE,WHITE,WHITE,LTBLUE,LTPURPLE,LTPURPLE,LTPURPLE};
+
+U8 drv_text_attr[3]={BLACK,BLUE,RED};
 
 U8 DrvTextAttrGet(U8 drv_let=0)
 {//Get color of drive.
   drv_let=Let2Let(drv_let);
   if ('A'<=drv_let<='Z')
     return blkdev_text_attr[Let2BlkDevType(drv_let)]<<4|
-           drv_text_attr[drv_let%sizeof(drv_text_attr)];
+        drv_text_attr[drv_let%sizeof(drv_text_attr)];
   else
     return BLACK<<4|WHITE;
-}
-
-
-Bool DrvMounted(I64 drv_let)
-{//Returns true if drv_let is mounted
-  I64 i;
-  CDrv *dv=dv=blkdev.drvs;
-  for (i=0; i<DRVS_NUM; i++)
-  {
-    if (dv->dv_signature==DRV_SIGNATURE_VAL)
-    {
-      if (drv_let==Drv2Let(dv))
-      {
-        return TRUE;
-      }
-    }
-    dv++;
-  }
-  return FALSE;
 }
 
 
@@ -389,7 +373,7 @@ U0 DrvRep()
       "$$FG,%d$$$$BG,%d$$%C %-8Z %-10Z %04X %04X %02X\n"
       ,
       attr&15,attr>>4,drv_let,dv->fs_type&FSG_TYPE_MASK,"ST_DRV_TYPES",
-                  bd->type,"ST_BLKDEV_TYPES",bd->base0,bd->base1,bd->unit;
+          bd->type,"ST_BLKDEV_TYPES",bd->base0,bd->base1,bd->unit;
       if (AHCIMode && bd->ahci_port)
       {
         "SATA Port: %02d", bd->port_num;

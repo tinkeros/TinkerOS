@@ -1,5 +1,6 @@
 #help_index "Install;File/Cmd Line (Typically);Cmd Line (Typically);"
-U8 Mount2(U8 boot_drv_let,CDoc *_doc,Bool _caller_is_prtdsk, Bool just_ide=FALSE,I64 *cur_drv_hint=NULL)
+U8 Mount2(U8 boot_drv_let,CDoc *_doc,Bool _caller_is_prtdsk, Bool just_ide=FALSE,
+    I64 *cur_drv_hint=NULL)
 {//If _doc, called by $LK,"::/Kernel/KCfg.HC"$ else called by $LK,"Mount",A="MN:Mount"$().
   I64 cnt,total=0,num_hints,drv_let,type,unit,prt_num,port;
   U8 blks_buf[STR_LEN],addr_buf[STR_LEN],base0_buf[STR_LEN],base1_buf[STR_LEN],
@@ -76,11 +77,12 @@ U8 Mount2(U8 boot_drv_let,CDoc *_doc,Bool _caller_is_prtdsk, Bool just_ide=FALSE
               "Enter port number: \n";
             GetS(port_str, STR_LEN);
           }
-          while ((	type == BDT_ATAPI && AHCIPortSignatureGet(Str2I64(port_str)) != AHCI_PxSIG_ATAPI ||
-                    type == BDT_ATA   && AHCIPortSignatureGet(Str2I64(port_str)) != AHCI_PxSIG_ATA ||
-                    0 > Str2I64(port_str) || Str2I64(port_str) > num_hints - 1
-                 ) &&
-                 (type != BDT_AHCI_SATAPI || !boot_drv_let));
+          while ((type == BDT_ATAPI &&
+            AHCIPortSignatureGet(Str2I64(port_str)) != AHCI_PxSIG_ATAPI ||
+            type == BDT_ATA &&
+            AHCIPortSignatureGet(Str2I64(port_str)) != AHCI_PxSIG_ATA ||
+            0 > Str2I64(port_str) || Str2I64(port_str) > num_hints - 1) &&
+            (type != BDT_AHCI_SATAPI || !boot_drv_let));
           port = Str2I64(port_str);
           if (cur_drv_hint) *cur_drv_hint=port;
           break;
@@ -131,7 +133,7 @@ U8 Mount2(U8 boot_drv_let,CDoc *_doc,Bool _caller_is_prtdsk, Bool just_ide=FALSE
       }
       // TODO continue adding AHCI
       DocPrint(doc,"bd=BlkDevNextFreeSlot(\'%C\',%d);bd->unit=%d;\n",
-               drv_let,type,unit);
+          drv_let,type,unit);
       if (AHCIMode && port != -1 && *port_str)
       {
         DocPrint(doc, "AHCIPortInit(bd, &blkdev.ahci_hba->ports[%d], %d);\n", port, port);

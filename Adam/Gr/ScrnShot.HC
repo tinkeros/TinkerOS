@@ -53,7 +53,7 @@ U0 ScrnShotClip(U8 *filename)
 }
 
 U0 ScrnShot(Bool no_mouse=TRUE,Bool clip=FALSE)
-{// Captures GR screenshot or screen clip saved to Home/ScrnShot if possible, otherwise RAM drive B:/ScrnShot
+{// Captures GR screenshot or clip saved to ~/ScrnShot if possible, otherwise B:/ScrnShot
   Bool prev_mouse=ms.show,old_silent=IsSilent;
   U8 *prefix,*filename,*dircur;
   Silent;
@@ -73,7 +73,8 @@ U0 ScrnShot(Bool no_mouse=TRUE,Bool clip=FALSE)
     prefix=MStrPrint("B:/ScrnShot");
     Fs->catch_except=TRUE;
   }
-  filename=MStrPrint("%s/%04d%02d%02d%02d%02d%02d",prefix,ds.year,ds.mon,ds.day_of_mon,ds.hour,ds.min,ds.sec);
+  filename=MStrPrint("%s/%04d%02d%02d%02d%02d%02d",prefix,ds.year,ds.mon,ds.day_of_mon,
+          ds.hour,ds.min,ds.sec);
   try
   {
     if (clip)

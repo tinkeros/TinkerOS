@@ -187,30 +187,6 @@ I64 Dir(U8 *files_find_mask="*",Bool full=FALSE)
   return res;
 }
 
-
-Bool IsFile(U8* filename)
-{
-  I64 old_silent=Silent, res;
-  try {
-    res=Dir(filename);
-  }
-  catch {
-    res=0;
-    Fs->catch_except=TRUE;
-  }
-  Silent(old_silent);
-  return res>0;
-}
-
-
-Bool Cdd(U8 *dirname=NULL,Bool make_dirs=FALSE)
-{//Change directory and list contents
-  if(Cd(dirname,make_dirs))
-    return Dir>0;
-  else
-    return FALSE;
-}
-
 Bool DirMk(U8 *filename,I64 entry_cnt=0)
 {//Make directory. $LK,"Cd",A="MN:Cd"$() can also make directories.
 //entry_cnt is for preallocating dir blks, leave it zero if you like.

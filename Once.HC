@@ -14,6 +14,7 @@ U0 Tmp()
   if(!DrvMounted('C')&&!DrvMounted('T')&&!AHCIMode)
   {
     old_silent=Silent;
+    while (ms_hard.install_in_progress) Yield;
     SwitchToAHCI;
     Silent(old_silent);
   }

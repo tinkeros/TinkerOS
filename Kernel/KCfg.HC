@@ -65,8 +65,13 @@ U0 KCfgOptions(CKCfg *c)
     for (i=0; i<CFG_OPTIONS_NUM; i++)
       if (i==CFG_HOME_DIR)
         "$$PURPLE$$%13tz$$FG$$:\"%s\"\n",i,kernel_cfg_options,c->home_dir;
-      else if (i==CFG_RESOLUTION)
+      else if (i==CFG_RESOLUTION) {
         "$$PURPLE$$%13tz$$FG$$:\"%dx%d\"\n",i,kernel_cfg_options,c->gr_width,c->gr_height;
+        if (c->fb_width!=c->gr_width || c->fb_height!=c->gr_height)
+          "$$PURPLE$$  Framebuffer$$FG$$:\"%dx%d\"\n",c->fb_width,c->fb_height;
+        if (c->x_scale!=1 || c->y_scale!=1)
+          "$$PURPLE$$      Scaling$$FG$$:\"%dx%d\"\n",c->x_scale,c->y_scale;
+      }
       else if (i==CFG_SCREEN_SAVER)
         "$$PURPLE$$%13tz$$FG$$:\"%d\"\n",i,kernel_cfg_options,c->screen_saver_timeout;
       else

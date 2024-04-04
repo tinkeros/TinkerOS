@@ -7,8 +7,8 @@ U0 DocFormFwd(CDoc *doc,Bool giveup=FALSE)
   {
     if (doc_e==doc) goto ff_recover;
     while (!Bt(doldoc.type_flags_form,doc_e->type_u8) &&
-           !(doc_e->de_flags&DOCEF_LINK) ||
-           doc_e->de_flags&DOCEF_SKIP_IN_FORM)
+        !(doc_e->de_flags&DOCEF_LINK) ||
+        doc_e->de_flags&DOCEF_SKIP_IN_FORM)
     {
       doc_e=doc_e->next;
       if (doc_e==doc)
@@ -41,8 +41,8 @@ U0 DocFormBwd(CDoc *doc,Bool giveup=FALSE)
   if (doc->flags & DOCF_FORM)
   {
     while (!Bt(doldoc.type_flags_form,doc_e->type_u8) &&
-           !(doc_e->de_flags&DOCEF_LINK) ||
-           doc_e->de_flags&DOCEF_SKIP_IN_FORM)
+        !(doc_e->de_flags&DOCEF_LINK) ||
+        doc_e->de_flags&DOCEF_SKIP_IN_FORM)
     {
       doc_e=doc_e->last;
       if (doc_e==doc)
@@ -151,7 +151,7 @@ U0 DocDataFmt(CDoc *doc,CDocEntry *doc_e,I64 d=DOCM_CANCEL)
     else if (doc_e->de_flags & DOCEF_LST)
     {
       if (doc_e->de_flags & DOCEF_DEFINE && (tmph=HashFind(doc_e->define_str,
-                                             doc->win_task->hash_table,HTT_DEFINE_STR)) && 0<=d<tmph->cnt)
+                      doc->win_task->hash_table,HTT_DEFINE_STR)) && 0<=d<tmph->cnt)
       {
         ptr=MStrPrint("[%s]",tmph->sub_idx[d]);
         Free(doc_e->tag);
@@ -224,7 +224,7 @@ U0 DocDataScan(CDoc *doc,CDocEntry *doc_e)
       d=0;
       if (doc_e->tag && doc_e->de_flags & DOCEF_DEFINE &&
           (tmph=HashFind(doc_e->define_str,
-                         doc->win_task->hash_table,HTT_DEFINE_STR)))
+                      doc->win_task->hash_table,HTT_DEFINE_STR)))
       {
         ptr1=ptr2=StrNew(doc_e->tag);
         if (*ptr2=='[')
@@ -269,7 +269,7 @@ U0 DocDataScan(CDoc *doc,CDocEntry *doc_e)
 
 #help_index "DolDoc/Input;StdIn/DolDoc"
 public Bool DocForm(U8 *_d,U8 *class_name=lastclass,
-                    I64 dof_flags=0,U8 *header=NULL,U8 *footer=NULL)
+    I64 dof_flags=0,U8 *header=NULL,U8 *footer=NULL)
 {//User input. Supply a class name that has format definitions.
 //See $LK,"::/Demo/DolDoc/Form.HC"$ and $LK,"::/Demo/LastClass.HC"$.
   CMemberLst *ml;
@@ -295,13 +295,13 @@ public Bool DocForm(U8 *_d,U8 *class_name=lastclass,
     {
       tmpc2=ml->member_class;
       if ((doc_e->type_u8==DOCT_DATA || doc_e->type_u8==DOCT_LST ||
-           doc_e->type_u8==DOCT_CHECK_BOX) && !tmpc2->ptr_stars_cnt)
+              doc_e->type_u8==DOCT_CHECK_BOX) && !tmpc2->ptr_stars_cnt)
       {
         tmpc2=OptClassFwd(tmpc2);
         tmpc2-=tmpc2->ptr_stars_cnt;
         if (tmpc2->type & HTT_INTERNAL_TYPE)
         {
-          if (ml->dim.next)   //Array
+          if (ml->dim.next) //Array
           {
             if (tmpc2->raw_type==RT_U8 &&
                 LBtr(&doc_e->de_flags,&DOCEf_DFT_LEN))
@@ -311,7 +311,7 @@ public Bool DocForm(U8 *_d,U8 *class_name=lastclass,
                 doc_e->len--;
               Free(doc_e->tag);  //See $LK,"DataTagWidth",A="FA:::/Adam/DolDoc/DocPlain.HC,DataTagWidth"$
               doc_e->tag=MAlloc(doc_e->len+doc_e->min_col+2,
-                                doc->mem_task); //+2 because "_\0"
+                      doc->mem_task); //+2 because "_\0"
             }
           }
           else if (LBtr(&doc_e->de_flags,DOCEf_DFT_RAW_TYPE))
@@ -365,7 +365,7 @@ public Bool DocForm(U8 *_d,U8 *class_name=lastclass,
 U0 DocMenuEndTaskCB()
 {
   WinToTop;
-  throw;
+  throw(,,TRUE);
 }
 
 public I64 DocMenu(CDoc *m,I64 dof_flags=0,U8 *title=NULL)
@@ -426,8 +426,8 @@ public I64 PopUpMenu(CDoc *doc,I64 dof_flags=0, U8* title=NULL)
 }
 
 public Bool PopUpForm(U8 *_d,U8 *class_name=lastclass,
-                      I64 dof_flags=DOF_SIZE_MIN,U8 *header=NULL,U8 *footer=NULL)
+    I64 dof_flags=DOF_SIZE_MIN,U8 *header=NULL,U8 *footer=NULL)
 {//See $LK,"::/Demo/DolDoc/Form.HC"$ and $LK,"::/Demo/LastClass.HC"$.
   return PopUpPrint("DocForm(0x%X,0x%X,0x%X,0x%X,0x%X);",_d,class_name,
-                    dof_flags,header,footer);
+          dof_flags,header,footer);
 }

@@ -132,7 +132,7 @@ U0 Reboot()
 
 U0 KMain()
 {//Continued from $LK,"KStart64.HC",A="FF:::/Kernel/KStart64.HC,I32 &KMain"$
-  CBlkDev *bd;
+  CBlkDev *bd, *initramfs;
   OutU8(0x61,InU8(0x61)&~3); //Snd;
   adam_task=Fs;
   BlkPoolsInit;
@@ -168,7 +168,35 @@ U0 KMain()
   Busy(2000);
   LBts(&sys_run_level,RLf_INTERRUPTS);
   TimeCal;
-  BlkDevsInitAll;
+  try {
+    BlkDevsInitAll;
+  }
+  catch {
+    "Failed to initialize expected block devices!\n";
+    "You probably compiled your kernel with the wrong\n";
+    "settings, boot cannot continue!\n\n";
+    throw('NoBlkDev');
+  }
+
+  if (sys_initramfs_ptr && sys_initramfs_size)
+  {
+    if (DrvMounted('B')) {
+      Unmount('B');
+    }
+    initramfs=BlkDevNextFreeSlot('B',1);
+    initramfs->first_drv_let='B';
+    initramfs->type=BDT_RAM;
+    initramfs->RAM_dsk=sys_initramfs_ptr;
+    initramfs->max_blk=sys_initramfs_size>>BLK_SIZE_BITS-1;
+    initramfs->drv_offset=19<<2+(DVD_BLK_SIZE*2+DVD_BOOT_LOADER_SIZE)/BLK_SIZE;
+    BlkDevAdd(initramfs,I64_MIN,0,1);
+    DskChg('B');
+    Silent(ON);
+    DirMk("B:/Home");
+    DirMk("B:/Tmp");
+    Silent(OFF);
+  }
+
   "DskChg(':');\n";
   DskChg(':');
 #exe {
@@ -178,6 +206,7 @@ U0 KMain()
               blkdev.ins_base0,blkdev.ins_base1,blkdev.ins_unit);
 }
 Gs->idle_task->cur_dv=blkdev.let_to_drv[*blkdev.home_dir-'A'];
+
 DrvRep;
 if (blkdev.dvd_boot_is_good)
 {

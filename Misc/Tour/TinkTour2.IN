@@ -1,0 +1,77 @@
+//Puts the cursor at the bottom.
+Msg(MSG_KEY_DOWN,0,SC_CURSOR_DOWN|SCF_CTRL);
+"\n";
+
+TourPut(
+"You are now at the command line.\n\n"
+"Now well learn the first new hotkey.\n\n"
+"Type \"$$GREEN$$Cddd;$$FG$$\" and press $$GREEN$$<ENTER>$$FG$$.\n\n"
+"Note the syntax error is intentional!\n");
+InGetStr("Cddd;\n");
+
+TourPut(
+"Now let's correct the error. "
+"Press \"$$GREEN$$F8$$FG$$\" to paste the "
+"text up to the last compiler error.\n");
+
+InGetKey(SC_F8);
+TourPut(
+"Now let's correct the error.\n\n"
+"Press \"$$GREEN$$BACKSPACE$$FG$$\" twice.\n");
+
+InGetKey(SC_BACKSPACE);
+InGetKey(SC_BACKSPACE);
+
+TourPut(
+"Now let's correct the error.\n"
+"Type ; and press\"$$GREEN$$ENTER$$FG$$\"\n");
+
+InGetStr(";\n");
+
+
+TourPut(
+"This is a small example, but "
+"$$GREEN$$F8$$FG$$\" can save time retyping "
+"larger commands with typos.\n",TRUE);
+
+
+TourPut(
+"Press \"$$GREEN$$SHIFT-F8$$FG$$\" to toggle "
+"blinking and scrolling.\n");
+
+InGetKey(SC_F8|SCF_SHIFT);
+
+TourPut(
+"Press \"$$GREEN$$SHIFT-F8$$FG$$\" to toggle "
+"blinking and scrolling back on.\n");
+
+InGetKey(SC_F8|SCF_SHIFT);
+
+TourPut(
+"Now let take some screenshots!\n\n"
+"Press \"$$GREEN$$F9$$FG$$\"\n");
+
+InGetKey(SC_F9);
+
+
+TourPut(
+"Type \"$$GREEN$$Cdd(\"~/ScrnShot\");$$FG$$\" and "
+"press $$GREEN$$<ENTER>$$FG$$.\n\n"
+);
+InGetStr("Cdd(\"~/ScrnShot\");\n");
+
+TourPut("You should see a timestamped .GR file.\n"
+"\"$$GREEN$$F9$$FG$$\" makes a full screen capture.\n"
+,TRUE);
+
+
+TourPut(
+"There is also an experimental screen clip "
+"shortcut, but it currently does not work "
+"in the context of this tour.\n\n"
+"To use it press \"$$GREEN$$SHIFT-F9$$FG$$\" "
+"and then click a starting upper left location\n"
+"followed by clicking a lower right.\n\n"
+"If you get stuck in a program where it is not "
+"working, press ESC.",TRUE);
+

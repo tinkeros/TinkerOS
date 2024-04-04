@@ -68,14 +68,14 @@ CHashClass *PrsClass(CCmpCtrl *cc,I64 keyword,I64 fsp_flags,Bool is_extern)
 }
 
 CHashFun *PrsFunJoin(CCmpCtrl *cc,CHashClass *tmp_return,
-                     U8 *name,I64 fsp_flags)
+    U8 *name,I64 fsp_flags)
 {
   CMemberLst *tmpm,*header_lst;
   CAOTCtrl *aotc=cc->aotc;
   CHashClass *header_return;
   CHashFun *tmpf;
   I64 header_arg_cnt;
-  if (name)  //if not fun_ptr
+  if (name) //if not fun_ptr
   {
     if (cc->flags&CCF_AOT_COMPILE)
     {
@@ -84,7 +84,7 @@ CHashFun *PrsFunJoin(CCmpCtrl *cc,CHashClass *tmp_return,
         tmpf=NULL;
     }
     else if ((tmpf=HashSingleTableFind(name,cc->htc.glbl_hash_table,HTT_FUN)) &&
-             !Bt(&tmpf->flags,Cf_EXTERN))
+        !Bt(&tmpf->flags,Cf_EXTERN))
       tmpf=NULL;
     if (tmpf && tmpf->use_cnt<3)
       UnusedExternWarning(cc,tmpf);
@@ -199,7 +199,7 @@ U0 PrsFun(CCmpCtrl *cc,CHashClass *tmp_return,U8 *name,I64 fsp_flags)
   {
     old_trace=Btr(&cc->opts,OPTf_TRACE);
     cc->htc.fun->exe_addr=COCCompile(
-                          cc,&size,&cc->htc.fun->dbg_info,NULL);
+            cc,&size,&cc->htc.fun->dbg_info,NULL);
     if (old_trace)
     {
       Bts(&cc->opts,OPTf_TRACE);
@@ -216,20 +216,20 @@ U0 PrsFun(CCmpCtrl *cc,CHashClass *tmp_return,U8 *name,I64 fsp_flags)
     {
       if (tmpm->use_cnt>1&&StrCmp(tmpm->str,"_anon_"))
         PrintWarn("Unneeded no_warn\n $$LK,\"FL:%s,%d\"$$'%s' in '%s'\n",
-                  cc->lex_include_stk->full_name,cc->lex_include_stk->line_num,
-                  tmpm->str,cc->htc.fun->str);
+            cc->lex_include_stk->full_name,cc->lex_include_stk->line_num,
+            tmpm->str,cc->htc.fun->str);
     }
     else if (!tmpm->use_cnt && GetOption(OPTf_WARN_UNUSED_VAR))
       PrintWarn("Unused var\n $$LK,\"FL:%s,%d\"$$'%s' in '%s'\n",
-                cc->lex_include_stk->full_name,cc->lex_include_stk->line_num,
-                tmpm->str,cc->htc.fun->str);
+          cc->lex_include_stk->full_name,cc->lex_include_stk->line_num,
+          tmpm->str,cc->htc.fun->str);
     tmpm=tmpm->next;
   }
   cc->htc.local_var_lst=cc->htc.fun=cc->fun_lex_file=NULL;
 }
 
 U0 PrsGlblVarLst(CCmpCtrl *cc,I64 saved_mode,CHashClass *saved_tmpc,
-                 I64 saved_val,I64 fsp_flags)
+    I64 saved_val,I64 fsp_flags)
 {
   I64 i,j,mode,k,val;
   U8 *st;
@@ -244,7 +244,7 @@ U0 PrsGlblVarLst(CCmpCtrl *cc,I64 saved_mode,CHashClass *saved_tmpc,
   while (TRUE)
   {
     tmpc=PrsType(cc,&saved_tmpc,&saved_mode,NULL,&st,
-                 &tmpf_fun_ptr,&tmpex,&tmpad,fsp_flags);
+            &tmpf_fun_ptr,&tmpex,&tmpad,fsp_flags);
     if (!st) return;
     if (tmpad.next)
       is_array=TRUE;
@@ -632,7 +632,7 @@ class CSwitchCase
 U0 PrsSwitch(CCmpCtrl *cc,I64 try_cnt)
 {
   CSwitchCase *header=NULL,*tmps,*tmps1;	//Leaks on except
-  CSubSwitch head,*tmpss;			//Leaks on except
+  CSubSwitch head,*tmpss;	//Leaks on except
   CCodeMisc *lb_dft,*lb_fwd_case,*mc_jt,*lb_entry,**jmp_table;
   CIntermediateCode *tmpi_sub,*tmpi_cmp,*tmpi_jmp,*tmpi_start;
   Bool dft_found=FALSE,nobound;
@@ -896,7 +896,7 @@ U0 PrsStreamBlk(CCmpCtrl *cc)
   cc->htc.next=htc;
   cc->htc.fun=cc->htc.local_var_lst=NULL;
   cc->htc.define_hash_table=cc->htc.hash_table_lst=
-                            cc->htc.glbl_hash_table=cc->htc.local_hash_table=Fs->hash_table;
+          cc->htc.glbl_hash_table=cc->htc.local_hash_table=Fs->hash_table;
   cc->flags=cc->flags & ~(CCF_ASM_EXPRESSIONS|CCF_AOT_COMPILE) | CCF_EXE_BLK;
   if (cc->token=='{')
     Lex(cc);
@@ -906,7 +906,7 @@ U0 PrsStreamBlk(CCmpCtrl *cc)
     ExeCmdLine(cc);
   MemCpy64(&cc->htc,htc,sizeof(CLexHashTableContext)/8);
   cc->flags=cc->flags&~CCF_EXE_BLK |
-            htc->old_flags & (CCF_ASM_EXPRESSIONS|CCF_EXE_BLK|CCF_AOT_COMPILE);
+      htc->old_flags & (CCF_ASM_EXPRESSIONS|CCF_EXE_BLK|CCF_AOT_COMPILE);
   Free(htc);
   COCPop(cc);
   QueRem(tmpe);
@@ -944,7 +944,7 @@ U0 PrsTryBlk(CCmpCtrl *cc,I64 try_cnt)
   else
     ICAdd(cc,IC_CALL,tmp_try->exe_addr,tmpc);
   if ((Bt(&tmp_try->flags,Ff_RET1) ||
-       Bt(&tmp_try->flags,Ff_ARGPOP)) && !Bt(&tmp_try->flags,Ff_NOARGPOP))
+          Bt(&tmp_try->flags,Ff_ARGPOP)) && !Bt(&tmp_try->flags,Ff_NOARGPOP))
     ICAdd(cc,IC_ADD_RSP1,16,tmpc);
   else
     ICAdd(cc,IC_ADD_RSP,16,tmpc);
@@ -976,7 +976,7 @@ U0 PrsTryBlk(CCmpCtrl *cc,I64 try_cnt)
 }
 
 Bool PrsStmt(CCmpCtrl *cc,I64 try_cnt=0,
-             CCodeMisc *lb_break=NULL,I64 cmp_flags=CMPF_PRS_SEMICOLON)
+    CCodeMisc *lb_break=NULL,I64 cmp_flags=CMPF_PRS_SEMICOLON)
 {
   I64 i,fsp_flags=0;
   CHashExport *tmpex;
@@ -1114,7 +1114,7 @@ sm_underscore_import:
                   LexExcept(cc,"Expecting type at ");
                 Lex(cc);
                 PrsGlblVarLst(cc,PRS0__IMPORT|PRS1_NULL,tmpex,
-                              import_name,fsp_flags);
+                    import_name,fsp_flags);
                 Free(import_name);
                 break;
               case KW_EXTERN:
@@ -1162,7 +1162,7 @@ start:
                 break;
               case KW_INTERRUPT:
                 fsp_flags=FSF_INTERRUPT|FSF_NOARGPOP|
-                          fsp_flags&(FSG_FUN_FLAGS2|FSF_ASM);
+                    fsp_flags&(FSG_FUN_FLAGS2|FSF_ASM);
                 break;
               case KW_HASERRCODE:
                 fsp_flags=FSF_HASERRCODE|fsp_flags&(FSG_FUN_FLAGS2|FSF_ASM);
@@ -1185,7 +1185,7 @@ end:
                 if (try_cnt)
                 {
                   tmp_untry=HashFind("SysUntry",
-                                     cc->htc.hash_table_lst,HTT_FUN);
+                          cc->htc.hash_table_lst,HTT_FUN);
                   for (i=0; i<try_cnt; i++)
                   {
                     if (Bt(&tmp_untry->flags,Cf_EXTERN))
@@ -1193,15 +1193,15 @@ end:
                       cc->abs_cnts.externs++;
                       if (cc->flags&CCF_AOT_COMPILE)
                         ICAdd(cc,IC_CALL_IMPORT,
-                              tmp_untry,cmp.internal_types[RT_PTR]);
+                            tmp_untry,cmp.internal_types[RT_PTR]);
                       else
                         ICAdd(cc,IC_CALL_INDIRECT2,
-                              &tmp_untry->exe_addr,
-                              cmp.internal_types[RT_PTR]);
+                            &tmp_untry->exe_addr,
+                            cmp.internal_types[RT_PTR]);
                     }
                     else
                       ICAdd(cc,IC_CALL,tmp_untry->exe_addr,
-                            cmp.internal_types[RT_PTR]);
+                          cmp.internal_types[RT_PTR]);
                   }
                 }
                 if (Lex(cc)!=';')
@@ -1257,7 +1257,7 @@ end:
                 }
               }
             }
-            else    //Ident, found in hash table, not keyword
+            else //Ident, found in hash table, not keyword
             {
 sm_not_keyword_afterall:
               if (tmpex->type & (HTT_CLASS|HTT_INTERNAL_TYPE))
@@ -1295,7 +1295,7 @@ sm_not_keyword_afterall:
               fsp_flags&=FSF_ASM;
             }
           }
-          else    //Ident, not in hash table
+          else //Ident, not in hash table
           {
             if (cc->local_var_entry)
               goto sm_prs_exp;
@@ -1323,7 +1323,7 @@ sm_not_keyword_afterall:
           PrsFunCall(cc,NULL,FALSE,NULL);
           goto sm_semicolon;
         }
-        else if (cc->token!=TK_EOF)    //Non-cur_str symbol, num or something
+        else if (cc->token!=TK_EOF) //Non-cur_str symbol, num or something
         {
 sm_prs_exp:
           if (!PrsExpression(cc,NULL,TRUE))

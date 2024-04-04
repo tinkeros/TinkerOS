@@ -169,7 +169,7 @@ U0 UncachedAliasAlloc() //Make uncached alias for 4 lowest Gig.
   WBINVD
 }
 
-I64 BIOSTotalMem()
+public I64 BIOSTotalMem()
 {
   I64 r01,r20;
   U16		*m01=MEM_E801;

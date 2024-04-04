@@ -318,11 +318,28 @@ public class CMathODE
 #define PCIR_MIN_GRANT          0x3E
 #define PCIR_MAX_LATENCY        0x3F
 
+class CPciDevInfo
+{
+  U16 vendor_id, device_id;
+  U16 command, status;
+  U8 class_, subclass, prog_if, revision_id;
+  U8 cache_line_size, latency_timer, header_type, bist;
+  U32 bar[6];
+
+  U8 interrupt_line;
+  I64 bus,dev,fun;
+};
+
 //PCI class codes
 #define PCIC_STORAGE    0x1
 #define PCIC_NETWORK    0x2
+#define PCIC_DISPLAY    0x3
+#define PCIC_MULTIMEDIA 0x4
+#define PCIC_COM_CONTRL 0x7
+#define PCIC_SERIAL_BUS 0xc
 
 //PCI subclass codes
+//TODO, cleanup these depend on class codes above
 #define PCISC_ETHERNET  0x0
 #define PCISC_AHCI      0x6
 
@@ -428,7 +445,7 @@ class CSysLimitBase
 };
 
 #help_index "Memory/Info"
-#define MEM_E820_ENTRIES_NUM	48
+#define MEM_E820_ENTRIES_NUM	256
 class CMemE820
 {
   U8	*base;
@@ -554,7 +571,8 @@ class CKernel
   CGDT	sys_gdt;
   U32  sys_frame_buffer;
   U16  sys_vbe_mode_pitch;
-  U64  sys_smbios_entry;
+  U8*  sys_initramfs_ptr;
+  U32  sys_initramfs_size;
 };
 
 //Run-Levels
@@ -1930,7 +1948,7 @@ I64 class CAbsCntsI64
 };
 
 class CAsmUndefHash
-{//Only place created is $LK,"Exp Parser",A="FF:::/Compiler/PrsExp.HC,sizeof(CAsmUndefHash)"$ when an undef is found in an ASM exp.
+{//Only created in $LK,"Exp Parser",A="FF:::/Compiler/PrsExp.HC,sizeof(CAsmUndefHash)"$ when an undef is found in an ASM exp.
   CAsmUndefHash	*next;
   CHashExport	*hash;
 };
@@ -2357,256 +2375,13 @@ class CUAsmGlbls
 	mem_arg_mask;
 };
 
-#help_index "Devices/SMBIOS"
-//SMBIOS parsing based on SMBIOS specification 3.3.0 (document "DSP0134")
-#define SMBIOSt_BIOS                0
-#define SMBIOSt_SYSTEM              1
-#define SMBIOSt_BASEBOARD           2
-#define SMBIOSt_ENCLOSURE           3
-#define SMBIOSt_PROCESSOR           4
-#define SMBIOSt_CACHE               7
-#define SMBIOSt_CONNECTOR           8
-#define SMBIOSt_SLOT                9
-#define SMBIOSt_OEM_STRINGS         11
-#define SMBIOSt_SYS_CONFIG_OPTIONS  12
-#define SMBIOSt_PHYMEM              16
-#define SMBIOSt_MEM_DEVICE          17
-#define SMBIOSt_MAPPED_ADDR         19
-#define SMBIOSt_BATTERY             22
-#define SMBIOSt_BOOT_INFO           32
-#define SMBIOSt_ALL                 0xFF //Non-existent placeholder type
-
-class CSMBIOSHeader
-{//Section 6.1.2 line 885
-    U8  type,   //SMBIOSt_*
-        length;
-    U16 handle; //identifier for this structure.
-};
-class CSMBIOSEntryPoint
-{//Section 5.2.1 line 812
-    U8  anchor_str[4], // '_SM_'
-        checksum,
-        length,
-        major_version,
-        minor_version;
-    U16 max_structure_size;
-    U8  entry_point_revision,
-        formatted_area[5],
-        anchor_str2[5], // '_DMI_'
-        checksum2;
-    U16 table_length;
-    U32 table_address;
-    U16 structure_cnt;
-    U8  bcd_revision;
-};
-
-class CSMBIOSBIOSInfo
-{//Section 7.1 line 922
-    CSMBIOSHeader header;
-    U8  vendor,
-        version;
-    U16 start_address_segment;
-    U8  release_date,
-        rom_size;
-    U64 flags;
-    U8  extended_flags[2];
-    U8  major_release,
-        minor_release,
-        embedded_controller_firmware_major_release,
-        embedded_controller_firmware_minor_release;
-    U16 extended_rom_size;
-};
-
-class CSMBIOSSystemInfo
-{//Section 7.2 line 936
-    CSMBIOSHeader header;
-    U8  manufacturer,
-        product_name,
-        version,
-        serial_number,
-        uuid[16],
-        wakeup_type,
-        sku_number,
-        family;
-};
-
-class CSMBIOSBaseboardInfo
-{//Section 7.3 line 968
-    CSMBIOSHeader header;
-    U8  manufacturer,
-        product,
-        version,
-        serial_number,
-        asset_tag,
-        feature_flags,
-        chassis_location;
-    U16 chassis_handle;
-    U8  board_type,
-        contained_object_handles_num;
-    U16 contained_object_handles[1]; //Variable length, member above gives length
-};
-
-class CSMBIOSEnclosureInfo
-{//Section 7.4 line 984
-    CSMBIOSHeader header;
-    U8  manufacturer,
-        type,
-        version,
-        serial_number,
-        asset_tag,
-        bootup_state,
-        power_supply_state,
-        thermal_state,
-        security_status;
-    U32 oem_defined;
-    U8  height,
-        power_cord_cnt,
-        contained_element_cnt,
-        contained_element_record_length,
-        contained_elements[1]; //array length == cnt * record_length;
-};
-
-class CSMBIOSEnclosureContainedElement
-{//Section 7.4.4 line 999
-    U8  contained_element_type,
-        contained_element_minimum,
-        contained_element_maximum;
-};
-
-class CSMBIOSProcessorInfo
-{//Section 7.5 line 1010
-    CSMBIOSHeader header;
-    U8  name,
-        type,
-        family,
-        manufacturer;
-    U64 id;
-    U8  version,
-        voltage;
-    U16 external_clock,
-        max_speed,
-        current_speed;
-    U8  status,
-        upgrade;
-    U16 l1_cache_handle,
-        l2_cache_handle,
-        l3_cache_handle;
-    U8  serial_number,
-        asset_tag,
-        part_number,
-        core_cnt,
-        cores_enabled,
-        thread_cnt;
-    U16 characteristics;
-};
-
-class CSMBIOSCacheInfo
-{//Section 7.8 line 1168
-    CSMBIOSHeader header;
-    U8  name;
-    U16 config,
-        max_size,
-        installed_size,
-        supported_sram_type,
-        installed_sram_type;
-    U8  cache_speed,
-        error_correction_type,
-        cache_type,
-        associativity;
-};
-
-class CSMBIOSConnectorInfo
-{//Section 7.9 line 1198
-    CSMBIOSHeader header;
-    U8  internal_name,
-        internal_type,
-        external_name,
-        external_type,
-        port_type;
-};
-
-class CSMBIOSSlotInfo
-{//Section 7.10 line 1226
-    CSMBIOSHeader header;
-    U8  name,
-        type,
-        data_bus_width,
-        current_usage,
-        length;
-    U16 id;
-    U8  flags1,
-        flags2;
-    U16 segment_group_number;
-    U8  bus_number,
-        device_function_number;
-};
-
-class CSMBIOSMemArrayInfo
-{//Section 7.17 line 1519
-    CSMBIOSHeader header;
-    U8  location,
-        use,
-        memory_error_correction;
-    U32 max_capacity;
-    U16 memory_error_info_handle,
-        mem_device_cnt;
-    U64 extended_max_capacity;
-};
-
-class CSMBIOSMemDeviceInfo
-{//Section 7.18 line 1538
-    CSMBIOSHeader header;
-    U16 memory_array_handle,
-        memory_error_info_handle,
-        total_width,
-        data_width,
-        size;
-    U8  form_factor,
-        device_set,
-        device_locator,
-        bank_locator,
-        type;
-    U16 type_detail,
-        speed;
-    U8  manufacturer,
-        serial_number,
-        asset_tag,
-        part_number,
-        attributes;
-    U32 extended_size;
-    U16 configured_speed,
-        min_voltage,
-        max_voltage,
-        configured_voltage;
-};
-
-class CSMBIOSBatteryInfo
-{//Section 7.23 line 1723
-    CSMBIOSHeader header;
-    U8  location,
-        manufacturer,
-        manufacture_date,
-        serial_number,
-        name,
-        chemistry,
-        capacity,
-        voltage,
-        sbds_version_number,
-        max_battery_data_error,
-        sbds_serial_number,
-        sbds_manufacture_date,
-        sbds_chemistry,
-        capacity_multiplier;
-    U32 oem;
-};
-
 #help_index "Devices;PCI"
 class CPCIDev
 {
   CPCIDev *next,*last;
-  U16	vendor,dev_id;
-  U8	bus,dev,fun,pad,
-	sub_code,base_code,pad[6],
+  U16	vendor,dev_id,bridge_upper_io_base;
+  U8	bus,dev,fun,pad,progif,header_type,secondary_bus,sub_bus,bridge_io_base,
+        sub_code,base_code,pad[6],
 	*vendor_str,*dev_id_str;
 };
 
@@ -2651,6 +2426,8 @@ public class CATARep
 #define ATAR0_STAT	7
 #define ATAR0_CMD	7
 #define ATAR1_CTRL	2
+
+#define ATA_CMD_TIMEOUT 0.5
 
 #help_index "File/FileNames"
 #define FILEMASK_JIT	"*.HC*;*.HH*"
@@ -3028,9 +2805,9 @@ public class CDirEntry
 #define AHCI_MAX_PORTS			32
 
 //Physical Region Descriptor Table
-#define AHCI_PRD_MAX_BYTES		(4 * 1024 * 1024) //Max bytes that can go in one PRD entry ($ER$4 MiB). Section 4.2.3.3 Fig. 17 (DBC) 
-#define AHCI_PRDT_MAX_BLOCKS	(U16_MAX + 1) 	  //Max blocks you can transfer in one command. 
-#define AHCI_PRDT_MAX_LEN		8 				  //Max PRD entries in one command. This is equal to (MAX_BLOCKS * BLK_SIZE) ö MAX_BYTES.
+#define AHCI_PRD_MAX_BYTES		(4 * 1024 * 1024)
+#define AHCI_PRDT_MAX_BLOCKS	(U16_MAX + 1)
+#define AHCI_PRDT_MAX_LEN		8
 
 //Global Host Control (Controller) flags
 #define AHCI_GHCf_HBA_RESET			0
@@ -3045,7 +2822,7 @@ public class CDirEntry
 //BIOS/OS Handoff Control
 #define AHCI_BOHCf_BOS		0	//BIOS-Owned Semaphore (BIOS owns controller)
 #define AHCI_BOHCf_OOS		1	//OS-Owned Semaphore (OS owns controller)
-#define AHCI_BOHCf_BB		4	//BIOS Busy (polling bit while BIOS cleans up things after ownership transfer)
+#define AHCI_BOHCf_BB		4	//BIOS Busy (polling bit while BIOS cleans up things)
 
 //Command Header flags
 #define AHCI_CH_DESCf_A		5	//'ATAPI' bit. Set when ATAPI command is being sent.
@@ -3059,13 +2836,13 @@ public class CDirEntry
 
 //Port register flags
 //Command and Status register flags
-#define AHCI_PxCMDf_ST		0	//'Start'. Start processing commmand list. FRE must be set before.
-#define AHCI_PxCMDf_SUD		1	//'Spin-Up Device'. For devices that support Staggered Spin-up. We attempt to set it for all ports.
-#define AHCI_PxCMDf_POD		2	//'Power-On Device'. For devices that support Cold Presence. We attempt to set it for all ports.
-#define AHCI_PxCMDf_FRE		4	//'FIS Receive Enable'. Allows the processing of FISes.
-#define AHCI_PxCMDf_FR		14	//'FIS receive Running'. Status indicator for FRE.
-#define AHCI_PxCMDf_CR		15	//'Command list Running'. Status indicator for ST.
-#define AHCI_PxCMDf_ATAPI	24	//'Device is ATAPI'. When set, HBA turns on desktop LED when device is in use. For ATAPI devices.
+#define AHCI_PxCMDf_ST		0
+#define AHCI_PxCMDf_SUD		1
+#define AHCI_PxCMDf_POD		2
+#define AHCI_PxCMDf_FRE		4
+#define AHCI_PxCMDf_FR		14
+#define AHCI_PxCMDf_CR		15
+#define AHCI_PxCMDf_ATAPI	24
 #define AHCI_PxCMDF_ST		(1 << AHCI_PxCMDf_ST)
 #define AHCI_PxCMDF_SUD		(1 << AHCI_PxCMDf_SUD)
 #define AHCI_PxCMDF_POD		(1 << AHCI_PxCMDf_POD)
@@ -3080,8 +2857,8 @@ public class CDirEntry
 //Signature types
 #define AHCI_PxSIG_ATA		0x00000101
 #define AHCI_PxSIG_ATAPI	0xEB140101
-#define AHCI_PxSIG_SEMB		0xC33C0101 //Enclosure Management Bridge... rare to encounter in wild.
-#define AHCI_PxSIG_PM		0x96690101 //Port multiplier... not relevant to PC-type systems.
+#define AHCI_PxSIG_SEMB		0xC33C0101 //Enclosure Management Bridge.
+#define AHCI_PxSIG_PM		0x96690101 //Port multiplier not relevant to PC systems.
 
 //Interrupt flags (same in PxIE and PxIS)
 #define AHCI_PxIf_OFS	24	//Overflow Status
@@ -3194,7 +2971,7 @@ class CPrdtEntry
 	U32	data_base,
 		data_base_upper,
 		reserved,
-		data_byte_cnt; //bit 31 is "Interrupt on Completion". bits 21:0 are the actual count.
+		data_byte_cnt; //bit 31 is "Interrupt on Completion". bits 21:0 are count.
 };
 
 /*
@@ -3473,7 +3250,7 @@ public class CBlkDevGlbls
   CCacheBlk *cache_base,*cache_ctrl,**cache_hash_table;
   I64	cache_size,read_cnt,write_cnt;
   CDrv	*drvs,*let_to_drv[32];
-  I64	mount_ide_auto_cnt, ins_base0,ins_base1, cmd_slot_cnt;
+  I64	mount_ide_auto_cnt, ins_base0,ins_base1, cmd_slot_cnt, boot_hint;
   U8	boot_drv_let,first_hd_drv_let,first_dvd_drv_let;
   Bool	dvd_boot_is_good,ins_unit,pad[3];
 };
@@ -4247,6 +4024,7 @@ public class CSysFixedArea
 #define SC_TAB		0x0F
 #define SC_ENTER	0x1C
 #define SC_SHIFT	0x2A
+#define SC_RSHIFT	0x36
 #define SC_CTRL		0x1D
 #define SC_ALT		0x38
 #define SC_CAPS		0x3A
@@ -4287,9 +4065,13 @@ public class CSysFixedArea
 #define SC_F23		0x6E
 #define SC_F24		0x76
 #define SC_PAUSE	0x61
-#define SC_GUI		0xDB
+#define SC_VOL_MUTE	0xA0
 #define SC_PRTSCRN1	0xAA
+#define SC_VOL_DOWN	0xAE
+#define SC_VOL_UP	0xB0
 #define SC_PRTSCRN2	0xB7
+#define SC_GUI		0xDB
+#define SC_APPS		0xDD
 
 #help_index "Char;Debugging/Raw Output;TextBase Layer/Char"
 //text.raw_flags

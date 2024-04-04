@@ -54,7 +54,8 @@ public extern CDate Str2Date(U8 *src);
 
 #help_index "Char/Flags"
 public extern U0 ScanFlags(U8 *_dst_flags,U8 *lst,U8 *src);
-public extern U8 *StrPrintFlags(U8 *dst,U8 *lst,I64 flags, Bool print_all=FALSE, I64 print_all_length=0);
+public extern U8 *StrPrintFlags(U8 *dst,U8 *lst,I64 flags,
+                                Bool print_all=FALSE,I64 print_all_length=0);
 
 #help_index "Char/Lists"
 public extern I64 LstMatch(U8 *needle, U8 *haystack_lst,I64 flags=0);
@@ -80,7 +81,8 @@ public _extern _STRNICMP I64 StrNICmp(U8 *st1,U8 *st2,I64 n);
 public extern I64 StrOcc(U8 *src, U8 ch);
 public extern U8 *StrPrint(U8 *dst,U8 *fmt,...);
 public extern U8 *StrPrintJoin(U8 *dst,U8 *fmt,I64 argc,I64 *argv);
-public extern U8 *StrReplace(U8 *str, U8 *old, U8 *new, I64 sff_flags=0, Bool free_str=FALSE);
+public extern U8 *StrReplace(U8 *str, U8 *old, U8 *new,
+                             I64 sff_flags=0, Bool free_str=FALSE);
 public extern U8 *StrUtil(U8 *_src,I64 flags);
 public extern U8 *Tabs2Spaces(U8 *src);
 public extern Bool WildMatch(U8 *test_str,U8 *wild_str);
@@ -268,6 +270,7 @@ extern Bool AHCIAtapiBlank(CBlkDev *bd, Bool minimal=TRUE);
 extern Bool DiscEject(U8 drv_let);
 extern Bool DiscLoad( U8 drv_let);
 extern Bool SwitchToAHCI();
+extern Bool SwitchToIDE();
 public extern U0 AHCIInit(I64 addr=NULL);
 
 #help_index "DolDoc/Clip"
@@ -284,7 +287,7 @@ public extern Bool BreakUnlock(CTask *task=NULL);
 public extern U0 PutExcept(Bool catch_it=TRUE);
 extern U0 SysTry(U8 *start_label,U8 *skip_label);
 extern U0 SysUntry();
-public extern U0 throw(I64 ch=0,Bool no_log=FALSE);
+public extern U0 throw(I64 ch=0,Bool no_log=FALSE,Bool exit_unhandled=FALSE);
 
 #help_index "File/CD DVD"
 public extern U0 DVDImageRead(U8 dvd_drv_let,U8 *out_name);
@@ -310,10 +313,12 @@ public extern U0 DskChg(U8 drv_let=0);
 public extern U0 HomeSet(U8 *dirname);
 public extern Bool Copy(U8 *src_files_find_mask,U8 *dst_files_find_mask=".");
 public extern Bool Move(U8 *f1,U8 *f2);
-public extern I64 CopyTree(U8 *src_files_find_mask,U8 *dst_files_find_mask,Bool no_mask=TRUE);
+public extern I64 CopyTree(U8 *src_files_find_mask,
+                           U8 *dst_files_find_mask,Bool no_mask=TRUE);
 public extern I64 DelTree(U8 *files_find_mask,U8 *fu_flags=NULL);
 public extern Bool IsFile(U8 *filename);
-public extern U0 Touch(U8 *files_find_mask="*",U8 *attr="+?",U8 *fu_flags=NULL,CDate cdt=I64_MIN);
+public extern U0 Touch(U8 *files_find_mask="*",U8 *attr="+?",
+                       U8 *fu_flags=NULL,CDate cdt=I64_MIN);
 public extern U8 *DirTreeSerialize(CDirEntry *tmpde,I64 *_size=NULL);
 public extern CDirEntry *DirTreeUnserialize(U8 *src);
 public extern I64 Size(U8 *files_find_mask="/*",U8 *fu_flags=NULL,I64 round_to=0);
@@ -423,7 +428,8 @@ extern CBlkDev *ATAMount(U8 first_drv_let,
 	I64 type,I64 base0,I64 base1,I64 unit);
 extern CBlkDev *AHCIMount(U8 first_drive_let, I64 type, I64 port_num);
 extern Bool ATAPIStartStop(CBlkDev *bd,F64 timeout,Bool start);
-public extern I64 ATAProbe(I64 base0,I64 base1,I64 unit,Bool verbose=FALSE);
+public extern I64 ATAProbe(I64 base0,I64 base1,I64 unit,
+                           I64 verbose=FALSE,F64 timeout=ATA_CMD_TIMEOUT);
 extern U0 ATAReadBlks(CBlkDev *bd,U8 *buf, I64 blk, I64 cnt);
 extern U0 ATAWriteBlks(CBlkDev *bd,U8 *buf, I64 blk, I64 cnt);
 public extern I64 BlkDevAdd(CBlkDev *bd,I64 prt_num=I64_MIN,
@@ -627,6 +633,9 @@ public extern U8 *ACAlloc(I64 size);
 public extern U8 *AMAlloc(I64 size);
 public extern U8 *AMAllocIdent(U8 *src);
 
+#help_index "Memory/BIOS"
+public extern I64 BIOSTotalMem();
+
 #help_index "Memory/BlkPool"
 public extern U0 BlkPoolAdd(CBlkPool *bp,CMemBlk *m,I64 pags);
 public extern U0 BlkPoolInit(CBlkPool *bp,I64 pags);
@@ -714,12 +723,13 @@ public extern CJob *JobQue(I64 (*fp_addr)(U8 *data),U8 *data=NULL,
 	I64 job_code=JOBT_CALL,U8 *aux_str=NULL,I64 aux1=0,I64 aux2=0);
 
 #help_index "PCIe"
-public extern U0 EnumPcie();
-public extern I64 GetPcieDevBar(I64 find_class, I64 find_subclass, I64 bar_index, I64 n=0);
-public extern I64 GetPcieDevBarIO(I64 find_class, I64 find_subclass, I64 bar_index, I64 n=0);
+public extern U0 EnumPcie(U8 *mcfg_addr=0);
+public extern I64 GetPcieDevBar(I64 find_class,I64 find_subclass,I64 bar_index,I64 n=0);
+public extern I64 GetPcieDevBarIO(I64 find_class,I64 find_subclass,I64 bar_index,I64 n=0);
 public extern U8 *PcieFindDev(I64 vendor_id, I64 device_id);
 public extern U0 PcieCfgWrite(U8 *base, I64 reg_offset, I64 len, I64 value);
 public extern I64 PcieCfgRead(U8 *base, I64 reg_offset, I64 len);
+public extern I64 MCFGTableAddr;
 
 #help_index "PCI"
 public extern I64 PCIClassFind(I64 class_code,I64 n);
@@ -758,11 +768,15 @@ public extern CScrnCastGlbls scrncast;
 #help_file "::/Doc/Snd"
 public extern U0 Beep(I8 ona=62,Bool busy=FALSE);
 public extern I8 Freq2Ona(F64 freq);
+public extern I64 GetVolume();
 public extern Bool IsMute();
 public extern Bool Mute(Bool val);
 public extern F64 Ona2Freq(I64 ona);
+public extern U0 ShowVolume();
 public extern U0 Snd(I8 ona=0);
 public extern U0 SndRst();
+public extern U0 VolumeDown();
+public extern U0 VolumeUp();
 
 #help_index "StdIn"
 #help_file "::/Doc/Streams"
@@ -872,13 +886,17 @@ public extern U32 *USBAllocFrameLst(I64 usb_num,I64 size);
 public extern CSndGlbls snd;
 
 #help_index "Graphics"
-public _extern _TEXT_CHAR Bool TextChar(CTask *task, Bool allow_border=FALSE, I64 x, I64 y, I64 d);
-public _extern _TEXT_LEN_STR Bool TextLenStr(CTask *task, I64 x, I64 y, I64 len,I64 attr, U8 *s);
-public _extern _TEXT_LEN_ATTR_STR Bool TextLenAttrStr(CTask *task, I64 x, I64 y, I64 len, U32 *_attr);
-public _extern _TEXT_LEN_ATTR Bool TextLenAttr(CTask *task, I64 x, I64 y, I64 len, I64 attr);
+public _extern _TEXT_CHAR Bool TextChar(CTask *task, Bool allow_border=FALSE,
+                                        I64 x, I64 y, I64 d);
+public _extern _TEXT_LEN_STR Bool TextLenStr(CTask *task, I64 x, I64 y,
+                                             I64 len, I64 attr, U8 *s);
+public _extern _TEXT_LEN_ATTR_STR Bool TextLenAttrStr(CTask *task, I64 x, I64 y,
+                                                      I64 len, U32 *_attr);
+public _extern _TEXT_LEN_ATTR Bool TextLenAttr(CTask *task, I64 x, I64 y,
+                                               I64 len, I64 attr);
 public extern U0 TextPrint(CTask *task, I64 x, I64 y, I64 attr, U8 *fmt, ...);
-public extern U0 TextBorder(CTask *task=NULL, I64 l, I64 r, I64 t, I64 b, I64 attr, Bool solid);
-public extern U0 TextRect(I64 l, I64 r, I64 t, I64 b, I64 d);
+public extern U0 TextBorder(CTask *task=NULL,I64 l,I64 r,I64 t,I64 b,I64 attr,Bool solid);
+public extern U0 TextRect(I64 l,I64 r,I64 t,I64 b,I64 d);
 public extern CDC *gr_alt_scrn;
 public extern U0 SetAltScrn(CDC *scrn=NULL);
 
@@ -886,13 +904,16 @@ public extern U0 SetAltScrn(CDC *scrn=NULL);
 public extern U8 *key_state, *sc_state;
 public extern I64 sc_flags_state;
 public extern U0 KeyStateRst();
+public extern U0 SetScanCodeEntry(U8 idx, U8 scan_code);
+public extern U8 GetScanCodeEntry(U8 idx);
 
 #help_index "Bit field"
 public extern U0 BitFieldSet(U8 *bit_field, U8 offset, U8 size, U8 value);
 public extern U64 BitFieldGet(U8 *bit_field, U8 offset, U8 size);
 
 #help_index "Virtualization"
-public extern U8 *GetHypeInfo();
+public extern U8 *HypeInfo();
+public extern Bool IsHypervisorPresent();
 
 #help_index "Serial Block Device"
 public extern Bool (*fp_serial_blkdev_init)();
@@ -907,4 +928,8 @@ public extern Bool (*fp_virtual_blkdev_deinit)();
 public extern Bool (*fp_virtual_blkdev_read)(U8* buf, I64 blk, I64 cnt);
 public extern Bool (*fp_virtual_blkdev_write)(U8* buf, I64 blk, I64 cnt);
 public extern I64 (*fp_virtual_blkdev_get_max)();
+
+#help_index "Ramdisk"
+public _extern SYS_INITRAMFS_PTR U8* sys_initramfs_ptr;
+public _extern SYS_INITRAMFS_SIZE U32 sys_initramfs_size;
 

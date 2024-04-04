@@ -3,12 +3,14 @@ Cd(__DIR__);;
 #include "Load"
 I64 retries = 0;
 NetCfg;
-while (ipv4_globals.local_ip == 0 && retries<3)  // local_ip is set if NetConfigure is successful
+while (ipv4_globals.local_ip == 0
+    && retries<3) // local_ip is set if NetConfigure is successful
 {
   retries++;
   if (retries>0)
     net_log_dbg=TRUE;
-  if (retries>1) {
+  if (retries>1)
+  {
     net_log_warn=TRUE;
     net_log_log=TRUE;
   }

@@ -72,19 +72,10 @@ public I64 PopUpTourPart()
 {
   I64 i;
   CDoc *doc=DocNew;
-  DocPrint(doc,"$$PURPLE$$TempleOS Tours$$FG$$\n\n"
-	"$$CM+LX,4,4$$$$BT,\"Part1: The help system\",LE=1$$"
-	"$$CM+LX,4,4$$$$BT,\"Part2: The basics\",LE=2$$"
-	"$$CM+LX,4,4$$$$BT,\"Part3: Editing and running programs\",LE=3$$"
-	"$$CM+LX,4,4$$$$BT,\"Part4: Adding macros to PersonalMenu\",LE=4$$"
-	"$$CM+LX,4,4$$$$BT,\"Part5: Choose filename, choose dir\",LE=5$$"
-	"$$CM+LX,4,4$$$$BT,\"Part6: AutoComplete\",LE=6$$"
-	"$$CM+LX,4,4$$$$BT,\"Part7: Search (Find)\",LE=7$$"
-	"$$CM+LX,4,4$$$$BT,\"Part8: TempleOS file masks\",LE=8$$"
-	"$$CM+LX,4,4$$$$BT,\"Part9: Editor filter\",LE=9$$"
-	"$$CM+LX,4,4$$$$BT,\"Part10: Debugging\",LE=10$$"
-	"$$CM+LX,4,4$$$$BT,\"Part11: Wow!!\",LE=11$$"
-	"$$CM+LX,4,4$$$$BT,\"Part12: Test Suite\",LE=12$$"
+  DocPrint(doc,"$$PURPLE$$TempleOS/TinkerOS Tours$$FG$$\n\n"
+	"$$CM+LX,4,4$$$$BT,\"Part1: TempleOS Tours (start here)\",LE=1$$"
+	"$$CM+LX,4,4$$$$BT,\"Part2: TinkerOS Tours\",LE=2$$"
+	"$$CM+LX,4,4$$$$BT,\"Part3: HolyC Language\",LE=3$$"
 	"$$CM+LX,4,4$$$$BT,\"Done\",LE=DOCM_CANCEL$$\n");
   doc->flags|=DOCF_FORM;
   i=PopUpPrint("WinMax;DocMenu(0x%X,0);",doc);
@@ -96,21 +87,31 @@ U0 TourMenu()
 {
   U8 buf[STR_LEN];
   I64 i;
-  tour_task=Fs;
-  tour_okay_pressed=TRUE;
-  tour_put=Spawn(&TourPutTask,NULL,"TourPut",,Fs);
-  TaskWait(tour_put);
+//  tour_task=Fs;
+//  tour_okay_pressed=TRUE;
+//  tour_put=Spawn(&TourPutTask,NULL,"TourPut",,Fs);
+//  TaskWait(tour_put);
   while (TRUE) {
     Cd(__DIR__);
     AutoComplete;
-    if (LBtr(&tour_put->display_flags,DISPLAYf_SHOW))
-      WinZBufUpdate;
+//    if (LBtr(&tour_put->display_flags,DISPLAYf_SHOW))
+//      WinZBufUpdate;
     i=PopUpTourPart;
     if (i>0) {
-      if (!LBts(&tour_put->display_flags,DISPLAYf_SHOW))
-	WinZBufUpdate;
-      StrPrint(buf,"Tour%X.IN",i);
-      ExeFile(buf);
+//      if (!LBts(&tour_put->display_flags,DISPLAYf_SHOW))
+//	WinZBufUpdate;
+      if (i==1)
+      {
+        ExeFile("TempleOS.IN");
+      }
+      else if (i==2)
+      {
+        ExeFile("TinkerOS.IN");
+      }
+      else if (i==3)
+      {
+        ExeFile("HolyC.IN");
+      }
     } else
       break;
   }
@@ -122,3 +123,4 @@ Refresh(2);
 TourMenu;
 Msg(MSG_KEY_DOWN,0,SC_CURSOR_DOWN|SCF_CTRL);
 "Cd;Dir;\n";
+"Cdd(\"/Misc/Tour\");\n";

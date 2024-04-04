@@ -38,6 +38,7 @@
 #include "FontStd"
 #include "FontCyrillic"
 #include "StrB"
+#include "StrC"
 #include "KHashA"
 #include "KInts"
 #include "KDataTypes"
@@ -66,6 +67,7 @@
 #include "ABlkDev/MakeABlkDev"
 #include "FunSeg"
 #include "GrTextBase"
+#include "KMiscB"
 #include "KMain"
 
 #exe {KCfgDel(kernel_cfg);};

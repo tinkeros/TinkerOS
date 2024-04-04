@@ -27,6 +27,7 @@ Spawn(&ACInitSpawn);
 //NetCfg;
 //Cd;
 
+// TODO retest network
 
 // Misc helper functions
 U0 AutoHome()
@@ -35,8 +36,14 @@ U0 AutoHome()
   Cdd("C:/Home");
 }
 
+// Experimental FM 801 sound card OPL support
+#include "/Demo/Snd/FM801"
+
 // Enable ISA OPL sounds if detected
 #include "/Demo/Snd/OPL2"
+
+// Enable Virtualbox guest additions if detected
+#include "/Demo/VM/VBoxAdd"
 
 #include "~/HomeWrappers"
 MapFileLoad("::/Kernel/Kernel");

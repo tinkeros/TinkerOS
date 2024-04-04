@@ -26,12 +26,12 @@ U0 NetDriverInit()
   I64 b, d, f;
 //TODOTODOTODO
   Bool   found = FALSE;
-  if(PciFindByID(PCIV_PCNET,PCID_PCNET, &b, &d, &f))
+  if(PciFindByID(PCIV_PCNET,PCID_PCNET, NULL, NULL, &b, &d, &f))
   {
     "Found PCNet network card\n";
     found=TRUE;
   }
-  if (PciFindByID(PCIV_VIRTIO,0, &b, &d, &f))
+  if (PciFindByID(PCIV_VIRTIO,0, NULL, NULL, &b, &d, &f))
   {
     "Found Virtio network card\n";
     found=TRUE;

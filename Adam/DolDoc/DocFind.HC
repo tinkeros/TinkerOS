@@ -19,7 +19,7 @@ public Bool DocGoToLine(CDoc *doc,I64 line_num) //one based
 }
 
 public Bool DocFind(CDoc *haystack_doc,I64 start_line_num=I64_MIN,
-                    U8 *needle,I64 match=1)
+    U8 *needle,I64 match=1)
 {//Find str by searching tags. Move cur_entry & center.
   Bool res=FALSE,unlock;
   CDocEntry *doc_e;
@@ -209,7 +209,7 @@ public U0 EdSelAll(CDoc *doc,Bool sel)
 }
 
 public Bool EdFindPaired(CDoc *doc,U8 plus,U8 minus,
-                         Bool fwd,Bool abort_on_dbl_colon=FALSE)
+    Bool fwd,Bool abort_on_dbl_colon=FALSE)
 {//Find { } or ( ) pair. Move cur_entry & center.
   Bool unlock=DocLock(doc),res=FALSE;
   U8 *ptr;
@@ -536,7 +536,7 @@ I64 EdFindReplace(CDoc *doc)
     if (doc->head.next!=doc)
     {
       doc_e=doc_marker=DocSplitTag(doc,doc->cur_entry,doc->cur_col,
-                                   doc->cur_entry->x+doc->cur_col,doc->cur_entry->y,DOCT_MARKER);
+                  doc->cur_entry->x+doc->cur_col,doc->cur_entry->y,DOCT_MARKER);
       do
       {
         if (doc_e==doc)
@@ -551,8 +551,8 @@ I64 EdFindReplace(CDoc *doc)
         if (doc_e->type_u8==DOCT_TEXT &&
             !(doc_e->de_flags&(DOCEG_DONT_EDIT|DOCEF_FILTER_SKIP)) &&
             (doc_e->type & DOCET_SEL ||
-             !doc->find_replace->scan_sel_text&&
-             !doc->find_replace->local_var))
+                !doc->find_replace->scan_sel_text&&
+                !doc->find_replace->local_var))
         {
           src=doc_e->tag;
           while (src)
@@ -626,7 +626,7 @@ fr_unlock_done:
 }
 
 public I64 EdReplace(CDoc *doc,U8 *find,U8 *replace,
-                     Bool sel=TRUE,Bool match_case=TRUE,Bool whole_labels=FALSE)
+    Bool sel=TRUE,Bool match_case=TRUE,Bool whole_labels=FALSE)
 {//Find & replace using editor's cmd.
   CEdFindText old_find_replace;
   Bool unlock;

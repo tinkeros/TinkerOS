@@ -47,7 +47,8 @@ GDT_TR_RING3:
 
   SYS_FRAME_BUFFER::	DU8 	4 DUP(0);
   SYS_VBE_MODE_PITCH::  DU8 	2 DUP(0);
-  SYS_SMBIOS_ENTRY::    DU64    0;
+  SYS_INITRAMFS_PTR::	DU8 	8 DUP(0);
+  SYS_INITRAMFS_SIZE::	DU8 	4 DUP(0);
 #assert $$ - SYS_KERNEL == sizeof(CKernel) - sizeof(CBinFile)
 
 VBE_INFO::	DU8 	sizeof(CVBEInfo) DUP(0);

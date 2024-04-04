@@ -256,6 +256,11 @@ U0 Beep(I8 ona=62,Bool busy=FALSE)
     Sleep(200);
 }
 
+U0 MuteCallback()
+{
+  // Override me!
+}
+
 Bool Mute(Bool val)
 {//Turn-off sound.
   Bool res;
@@ -269,12 +274,32 @@ Bool Mute(Bool val)
   }
   else
     res=LBtr(&sys_semas[SEMA_MUTE],0);
+  MuteCallback;
   return res;
 }
 
 Bool IsMute()
 {//Return is-mute flag.
   return Bt(&sys_semas[SEMA_MUTE],0);
+}
+
+I64 GetVolume()
+{// Returns system volume
+  // Override me, if changing from PC speaker
+  if (IsMute) return 0;
+  return 100;
+}
+
+U0 VolumeUp()
+{
+  // Override me!
+  if (IsMute) Mute(0);
+}
+
+U0 VolumeDown()
+{
+  // Override me!
+  if (!IsMute) Mute(1);
 }
 
 Bool Silent(Bool val=ON)
@@ -391,7 +416,6 @@ U0 BitFieldSet(U8 *bit_field, U8 offset, U8 size, U8 value)
     BEqu(bit_field,offset+i,value>>i);
 }
 
-
 U64 BitFieldGet(U8 *bit_field, U8 offset, U8 size)
 {//Gets values from a bit field
   I64 i;
@@ -399,6 +423,16 @@ U64 BitFieldGet(U8 *bit_field, U8 offset, U8 size)
   for (i=0; i<size; i++)
     BEqu(&val,i,Bt(bit_field,offset+i));
   return val;
+}
+
+Bool IsHypervisorPresent()
+{
+  CRAXRBXRCXRDX regs;
+  CPUId(1, &regs);
+  I64 hyper=(regs.rcx>>31)&1;
+  if (hyper)
+    return 1;
+  return 0;
 }
 
 U8 *HypeInfo()

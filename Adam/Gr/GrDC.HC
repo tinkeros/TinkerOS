@@ -54,22 +54,22 @@ public I64 Mat4x4NormSqr65536(I64 *r)
 {//Norm Squared of r.
 //(1.0/Sqrt(3))*65536=37837.22
   return SqrI64((r[0*4+0]*37838+r[0*4+1]*37838+r[0*4+2]*37838)>>32)+
-         SqrI64((r[1*4+0]*37837+r[1*4+1]*37837+r[1*4+2]*37837)>>32)+
-         SqrI64((r[2*4+0]*37837+r[2*4+1]*37837+r[2*4+2]*37837)>>32);
+      SqrI64((r[1*4+0]*37837+r[1*4+1]*37837+r[1*4+2]*37837)>>32)+
+      SqrI64((r[2*4+0]*37837+r[2*4+1]*37837+r[2*4+2]*37837)>>32);
 }
 
 public U0 DCMat4x4Set(CDC *dc=NULL,I64 *r)
-{//Set device context's rot matrix. Will be $LK,"Free",A="MN:Free"$d() in $LK,"DCDel",A="MN:DCDel"$().Uses $LK,"fixed-point",A="FI:::/Demo/Lectures/FixedPoint.HC"$.
+{//Set device context rot matrix. Will be $LK,"Free",A="MN:Free"$ in $LK,"DCDel",A="MN:DCDel"$.Uses $LK,"fixed-point",A="FI:::/Demo/Lectures/FixedPoint.HC"$.
 //The main purpose is to set matrix norm for thick scaling.
   //NULL as dc means gr.dc
-  if (!dc)   dc=gr.dc;
+  if (!dc) dc=gr.dc;
   dc->r=r;
   dc->r_norm=Sqrt(Mat4x4NormSqr65536(r))*65536; //scaled 32 bits
 }
 
 #help_index "Graphics/Mesh"
 public U0 DCLighting(CDC *dc,
-                     CD3I32 *p1,CD3I32 *p2,CD3I32 *p3,CColorROPU32 color)
+    CD3I32 *p1,CD3I32 *p2,CD3I32 *p3,CColorROPU32 color)
 {//This is the dft dc->lighting() callback.
   CD3I32 v1,v2;
   I64 i,vn_x,vn_y,vn_z;
@@ -172,7 +172,7 @@ public U0 DCExtentsInit(CDC *dc=NULL)
 //NULL means gr.dc
   //See $LK,"::/Demo/Graphics/Extents.HC"$
   //You should clear the record flag yourself
-  if (!dc)   dc=gr.dc;
+  if (!dc) dc=gr.dc;
   dc->flags|=DCF_RECORD_EXTENTS;
   dc->min_x=I64_MAX;
   dc->max_x=I64_MIN;
@@ -184,7 +184,7 @@ public CDC *DCAlias(CDC *dc=NULL,CTask *task=NULL)
 {//Create alias of dc, so can change pen, color, etc.
 //NULL means gr.dc
   CDC *res;
-  if (!dc)   dc=gr.dc;
+  if (!dc) dc=gr.dc;
   if (!task) task=Fs;
   if (dc->dc_signature!=DCS_SIGNATURE_VAL)
     throw('Graphics');
@@ -270,7 +270,7 @@ public CDC *DCCopy(CDC *dc,CTask *task=NULL)
 }
 
 public U0 DCMono(CDC *dc,
-                 I64 quest=TRANSPARENT,I64 true_color=0,I64 false_color=COLOR_MONO)
+    I64 quest=TRANSPARENT,I64 true_color=0,I64 false_color=COLOR_MONO)
 {//Set entire device context to one of two colors.
   I64 i;
   U8 *dst;
@@ -442,7 +442,7 @@ public CDC *DCScrnCapture(Bool include_zoom=TRUE,CTask *task=NULL)
   dst=MAlloc(dc->width_internal*dc->height,task);
   //Pick background color that never occurs. COLOR_INVALID
   GrBitMap4ToBitMap8(dst,dc->body,
-                     (dc->width_internal*dc->height)>>1,COLOR_INVALID);
+      (dc->width_internal*dc->height)>>1,COLOR_INVALID);
   Free(dc->body);
   dc->body=dst;
   return dc;

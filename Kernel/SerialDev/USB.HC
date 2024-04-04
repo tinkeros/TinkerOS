@@ -48,7 +48,7 @@ U32 *USBAllocFrameLst(I64 usb_num,I64 size)
   {
     u=&sys_usb_devs[usb_num];
     Free(u->frame_lst);
-    u->frame_lst=MAllocAligned(size*sizeof(U32),0x1000,Fs->code_heap) + dev.uncached_alias;
+    u->frame_lst=MAllocAligned(size*sizeof(U32),0x1000,Fs->code_heap)+dev.uncached_alias;
     OutU16(u->ports+USBP_CMD,0); //Stop
     OutU16(u->ports+USBP_FRNUM,0);
     OutU32(u->ports+USBP_FRBASEADD,u->frame_lst);

@@ -2,9 +2,9 @@
 
 I64 FTPGetMsg(CTCPSocket *message_socket, U8 *buf)
 {// returns FTP status code of message
-  U8        *temp;
-  Bool   first = TRUE;
-  I64        status;
+  U8 *temp;
+  Bool first = TRUE;
+  I64 status;
   "\n";
   while (TCPSocketReceive(message_socket, buf, FTP_BUF_SIZE) > 0)
   {
@@ -29,11 +29,11 @@ I64 FTPGetMsg(CTCPSocket *message_socket, U8 *buf)
 
 I64 FTPReplyPassivePrs(CTCPSocket *message_socket, CSocketAddressIPV4 *dest_addr_out)
 {// Prs an FTP reply message to the PASV command, destination written to arg.
-  U8             buf[8192], *str;
-  I64            tk, cur_section = 0, recv = 0, recv_sum = 0, res;
-  U32            ip_addr = 0;
-  U16            port = 0;
-  CCmpCtrl  *cc;
+  U8 buf[8192], *str;
+  I64 tk, cur_section = 0, recv = 0, recv_sum = 0, res;
+  U32 ip_addr = 0;
+  U16 port = 0;
+  CCmpCtrl *cc;
   while ((recv = TCPSocketReceive(message_socket, buf + recv_sum, 8192 - recv_sum)) > 0)
   {
     recv_sum += recv;
@@ -74,9 +74,9 @@ parse_done:
     res = -1;
   else
   {
-    dest_addr_out->family           = AF_INET;
-    dest_addr_out->port             = EndianU16(port);
-    dest_addr_out->address.address  = ip_addr;
+    dest_addr_out->family = AF_INET;
+    dest_addr_out->port = EndianU16(port);
+    dest_addr_out->address.address = ip_addr;
     res = 0;
   }
   CmpCtrlDel(cc);
@@ -86,8 +86,8 @@ parse_done:
 I64 FTPFileDownload(CTCPSocket *data_socket, U8 *dest)
 {
   CFile *f;
-  I64        data_len = 0, recv_sum = 0, recv;
-  U8         buf[BLK_SIZE];
+  I64 data_len = 0, recv_sum = 0, recv;
+  U8 buf[BLK_SIZE];
   progress4 = 0;
   f = FOpen(dest, "w");
   if (!f)
@@ -166,8 +166,8 @@ class CFTPFilePmt
 };
 U8 *FTPFilePmt(U8 *path)
 {
-  CFTPFilePmt    form;
-  U8                *basename = FTPBasename(path);
+  CFTPFilePmt form;
+  U8 *basename = FTPBasename(path);
   MemSet(form.name, 0, 256);
   MemCpy(form.name, basename, MinI64(StrLen(basename), sizeof(form.name) - 1));
   form.name[255] = 0;
@@ -182,15 +182,15 @@ U8 *FTPFilePmt(U8 *path)
 
 I64 FTPClient(U8 *hostname=NULL, U16 port=21)
 {
-  U32                    addr;
-  CAddressInfo      *current;
-  CAddressInfo      *result = NULL;
-  I64                    error, tk, i;
-  CSocketAddressIPV4     ipv4_address, *temp_ipv4, data_ipv4;
-  CTCPSocket            *message_socket = TCPSocket(AF_INET), *data_socket;
-  I64                    status = 0;
-  U8                     buf[FTP_BUF_SIZE], *temp, *input_str, *dest;
-  CCmpCtrl          *cc;
+  U32 addr;
+  CAddressInfo *current;
+  CAddressInfo *result = NULL;
+  I64 error, tk, i;
+  CSocketAddressIPV4 ipv4_address, *temp_ipv4, data_ipv4;
+  CTCPSocket *message_socket = TCPSocket(AF_INET), *data_socket;
+  I64 status = 0;
+  U8 buf[FTP_BUF_SIZE], *temp, *input_str, *dest;
+  CCmpCtrl *cc;
   if (!hostname)
     hostname = GetStr("\nEnter FTP server address (URL or IPV4): ");
   if (!IPV4AddressPrs(hostname, &addr))
@@ -218,9 +218,9 @@ I64 FTPClient(U8 *hostname=NULL, U16 port=21)
       return -1;
     }
   }
-  ipv4_address.port             = EndianU16(port);
-  ipv4_address.family               = AF_INET;
-  ipv4_address.address.address  = addr;
+  ipv4_address.port = EndianU16(port);
+  ipv4_address.family = AF_INET;
+  ipv4_address.address.address = addr;
   message_socket->timeout = TCP_TIMEOUT;
   if (TCPSocketConnect(message_socket, &ipv4_address) != 0)
   {
@@ -262,9 +262,9 @@ I64 FTPClient(U8 *hostname=NULL, U16 port=21)
           Free(temp);
           goto lex_done;
         }
-        else if (!StrCmp(cc->cur_str, "LIST")   ||
-                 !StrCmp(cc->cur_str, "DIR")    ||
-                 !StrCmp(cc->cur_str, "LS"))
+        else if (!StrCmp(cc->cur_str, "LIST") ||
+            !StrCmp(cc->cur_str, "DIR") ||
+            !StrCmp(cc->cur_str, "LS"))
         {
           TCPSocketSendString(message_socket, "PASV\r\n");
           if (FTPReplyPassivePrs(message_socket, &data_ipv4) != 0)
@@ -292,8 +292,8 @@ I64 FTPClient(U8 *hostname=NULL, U16 port=21)
           TCPSocketSendString(message_socket, "PWD\r\n");
           FTPGetMsg(message_socket, buf);
         }
-        else if (!StrCmp(cc->cur_str, "RETR")   ||
-                 !StrCmp(cc->cur_str, "GET"))
+        else if (!StrCmp(cc->cur_str, "RETR") ||
+            !StrCmp(cc->cur_str, "GET"))
         {
           StrFirstRem(input_str, " ");
           if (!StrCmp(input_str, ""))
@@ -331,8 +331,8 @@ I64 FTPClient(U8 *hostname=NULL, U16 port=21)
             FTPFileView(dest);
           goto lex_done;
         }
-        else if (!StrCmp(cc->cur_str, "VIEW")   ||
-                 !StrCmp(cc->cur_str, "CAT"))
+        else if (!StrCmp(cc->cur_str, "VIEW") ||
+            !StrCmp(cc->cur_str, "CAT"))
         {
           StrFirstRem(input_str, " ");
           if (!StrCmp(input_str, ""))
@@ -393,8 +393,8 @@ I64 FTPClient(U8 *hostname=NULL, U16 port=21)
           goto lex_done;
         }
         else if (!StrCmp(cc->cur_str, "QUIT") ||
-                 !StrCmp(cc->cur_str, "EXIT") ||
-                 !StrCmp(cc->cur_str, "BYE"))
+            !StrCmp(cc->cur_str, "EXIT") ||
+            !StrCmp(cc->cur_str, "BYE"))
         {
           TCPSocketSendString(message_socket, "QUIT\r\n");
           status = FTPGetMsg(message_socket, buf);
@@ -412,14 +412,14 @@ I64 FTPClient(U8 *hostname=NULL, U16 port=21)
           "
 Command Lst:
         (Alternate names separated by '/'; names case-insensitive)
-            CWD/CD <path>       = Chg Working Directory to <path>.
-                                  LIST/DIR/LS           = Lst directory contents.
-                                      PWD                 = Print name of current directory.
-                                          RETR/GET <file>     = Download copy of <file> from server.
-                                              VIEW/CAT <file>     = Print the contents of <file> to the screen.
-                                                  USER <username>     = Set username to <username>.
-                                                      PASS <password>     = Set password to <password>.
-                                                          QUIT/EXIT/BYE       = End FTP session.\n\n";
+            CWD/CD <path> = Chg Working Directory to <path>.
+                LIST/DIR/LS = Lst directory contents.
+            PWD = Print name of current directory.
+                        RETR/GET <file> = Download copy of <file> from server.
+                            VIEW/CAT <file> = Print the contents of <file> to the screen.
+                                USER <username> = Set username to <username>.
+                                    PASS <password> = Set password to <password>.
+                                        QUIT/EXIT/BYE = End FTP session.\n\n";
           }
         break;
       default:

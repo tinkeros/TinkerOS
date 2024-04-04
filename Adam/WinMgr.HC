@@ -84,7 +84,7 @@ I64 WinQueIPMsgs(Bool que)
     {
       if (que)
         TaskMsg(task_focus,0,
-                MSG_MS_MOVE,arg1,arg2,0);
+            MSG_MS_MOVE,arg1,arg2,0);
       msg_code=MSG_MS_MOVE;
     }
 //TODO que msg for ms.pos.z?
@@ -98,7 +98,7 @@ I64 WinQueIPMsgs(Bool que)
           {
             if (que)
               TaskMsg(task_focus,0,
-                      MSG_MS_L_D_DOWN,arg1,arg2,0);
+                  MSG_MS_L_D_DOWN,arg1,arg2,0);
             ms.left_down_sent=TRUE;
             msg_code=MSG_MS_L_D_DOWN;
           }
@@ -106,7 +106,7 @@ I64 WinQueIPMsgs(Bool que)
           {
             if (que)
               TaskMsg(task_focus,0,
-                      MSG_MS_L_D_UP,arg1,arg2,0);
+                  MSG_MS_L_D_UP,arg1,arg2,0);
             ms.left_dbl_time=0;
             msg_code=MSG_MS_L_D_UP;
           }
@@ -117,7 +117,7 @@ I64 WinQueIPMsgs(Bool que)
           {
             if (que)
               TaskMsg(task_focus,0,
-                      MSG_MS_L_DOWN,single_arg1,single_arg2,0);
+                  MSG_MS_L_DOWN,single_arg1,single_arg2,0);
             ms.left_down_sent=TRUE;
             msg_code=MSG_MS_L_DOWN;
           }
@@ -125,7 +125,7 @@ I64 WinQueIPMsgs(Bool que)
           {
             if (que)
               TaskMsg(task_focus,0,
-                      MSG_MS_L_UP,arg1,arg2,0);
+                  MSG_MS_L_UP,arg1,arg2,0);
             ms.left_dbl_time=0;
             msg_code=MSG_MS_L_UP;
           }
@@ -145,24 +145,24 @@ I64 WinQueIPMsgs(Bool que)
       if (TaskValidate(task_focus) &&
           Bt(&task_focus->win_inhibit,WIf_FOCUS_TASK_MS_L_D))
       {
-        if (ms.lb  && !ms_last.lb)
+        if (ms.lb && !ms_last.lb)
         {
           if (que)
             TaskMsg(task_focus,0,
-                    MSG_MS_L_DOWN,arg1,arg2,0);
+                MSG_MS_L_DOWN,arg1,arg2,0);
           msg_code=MSG_MS_L_DOWN;
         }
         else if (!ms.lb && ms_last.lb)
         {
           if (que)
             TaskMsg(task_focus,0,
-                    MSG_MS_L_UP,arg1,arg2,0);
+                MSG_MS_L_UP,arg1,arg2,0);
           msg_code=MSG_MS_L_UP;
         }
       }
       else
       {
-        if (ms.lb  && !ms_last.lb)
+        if (ms.lb && !ms_last.lb)
         {
           ms.left_dbl=FALSE;
           ms.left_down_sent=FALSE;
@@ -182,7 +182,7 @@ I64 WinQueIPMsgs(Bool que)
           {
             if (que)
               TaskMsg(task_focus,0,
-                      MSG_MS_R_D_DOWN,arg1,arg2,0);
+                  MSG_MS_R_D_DOWN,arg1,arg2,0);
             ms.right_down_sent=TRUE;
             msg_code=MSG_MS_R_D_DOWN;
           }
@@ -190,7 +190,7 @@ I64 WinQueIPMsgs(Bool que)
           {
             if (que)
               TaskMsg(task_focus,0,
-                      MSG_MS_R_D_UP,arg1,arg2,0);
+                  MSG_MS_R_D_UP,arg1,arg2,0);
             ms.right_dbl_time=0;
             msg_code=MSG_MS_R_D_UP;
           }
@@ -201,7 +201,7 @@ I64 WinQueIPMsgs(Bool que)
           {
             if (que)
               TaskMsg(task_focus,0,
-                      MSG_MS_R_DOWN,single_arg1,single_arg2,0);
+                  MSG_MS_R_DOWN,single_arg1,single_arg2,0);
             ms.right_down_sent=TRUE;
             msg_code=MSG_MS_R_DOWN;
           }
@@ -209,7 +209,7 @@ I64 WinQueIPMsgs(Bool que)
           {
             if (que)
               TaskMsg(task_focus,0,
-                      MSG_MS_R_UP,arg1,arg2,0);
+                  MSG_MS_R_UP,arg1,arg2,0);
             ms.right_dbl_time=0;
             msg_code=MSG_MS_R_UP;
           }
@@ -229,24 +229,24 @@ I64 WinQueIPMsgs(Bool que)
       if (TaskValidate(task_focus) &&
           Bt(&task_focus->win_inhibit,WIf_FOCUS_TASK_MS_R_D))
       {
-        if (ms.rb  && !ms_last.rb)
+        if (ms.rb && !ms_last.rb)
         {
           if (que)
             TaskMsg(task_focus,0,
-                    MSG_MS_R_DOWN,arg1,arg2,0);
+                MSG_MS_R_DOWN,arg1,arg2,0);
           msg_code=MSG_MS_R_DOWN;
         }
         else if (!ms.rb && ms_last.rb)
         {
           if (que)
             TaskMsg(task_focus,0,
-                    MSG_MS_R_UP,arg1,arg2,0);
+                MSG_MS_R_UP,arg1,arg2,0);
           msg_code=MSG_MS_R_UP;
         }
       }
       else
       {
-        if (ms.rb  && !ms_last.rb)
+        if (ms.rb && !ms_last.rb)
         {
           ms.right_dbl=FALSE;
           ms.right_down_sent=FALSE;
@@ -269,7 +269,7 @@ U0 WinCalcIdles()
   CCPU *c;
   CWinMgrTimingGlbls *t=winmgr.t;
   if ((t->calc_idle_delta_time=
-       (calc_idle_time=tS)-t->last_calc_idle_time)>.25)
+              (calc_idle_time=tS)-t->last_calc_idle_time)>.25)
   {
     PUSHFD
     CLI
@@ -356,7 +356,7 @@ I64 WinMgrSleep(Bool flush_msgs=FALSE)
     while (winmgr.ideal_refresh_tS<t)
       winmgr.ideal_refresh_tS+=1001/(fps_master*1000.0);
     timeout_val=cnts.jiffies+(winmgr.ideal_refresh_tS-tS)*JIFFY_FREQ;
-    if (scrncast.record  && !scrncast.just_audio)
+    if (scrncast.record && !scrncast.just_audio)
     {
       cdt=scrncast.t0_now(I64)+ToI64(CDATE_FREQ*(tS-scrncast.t0_tS));
       if (!scrncast.dc)
@@ -368,7 +368,7 @@ I64 WinMgrSleep(Bool flush_msgs=FALSE)
         Free(st);
       }
       else if (MemCmp(scrncast.dc->body,
-                      scrncast.dc2_alias->body,MSize(scrncast.dc2_alias->body)))
+              scrncast.dc2_alias->body,MSize(scrncast.dc2_alias->body)))
       {
         diff=DCDiff(scrncast.dc,scrncast.dc2_alias);
         diff->cdt=cdt;
@@ -522,7 +522,7 @@ Bool WinKeyNavMenu()
     }
     if (sys_cur_submenu_entry)
       TaskMsg(sys_focus_task,0,sys_cur_submenu_entry->msg_code,
-              sys_cur_submenu_entry->arg1,sys_cur_submenu_entry->arg2,0);
+          sys_cur_submenu_entry->arg1,sys_cur_submenu_entry->arg2,0);
     winmgr.show_menu=FALSE;
     ms.pos.x=old_pos.x;
     ms.pos.y=old_pos.y;
@@ -589,7 +589,7 @@ wmt_start:
           SetRFlags(old_flags);
           break;
         }
-        if (task==Fs)  	//Shouldn't happen
+        if (task==Fs)	//Shouldn't happen
         {
           SetRFlags(old_flags);
           goto wmt_start;
@@ -618,9 +618,9 @@ wmt_start:
               WinMgrSleep(TRUE);
             if (sys_cur_submenu_entry)
               TaskMsg(sys_focus_task,0,
-                      sys_cur_submenu_entry->msg_code,
-                      sys_cur_submenu_entry->arg1,
-                      sys_cur_submenu_entry->arg2,0);
+                  sys_cur_submenu_entry->msg_code,
+                  sys_cur_submenu_entry->arg1,
+                  sys_cur_submenu_entry->arg2,0);
             winmgr.show_menu=FALSE;
             old_ms.lb=FALSE;
             goto wmt_start;
@@ -630,13 +630,13 @@ wmt_start:
       //grab scroll
       if (!Bt(&task->win_inhibit,WIf_SELF_GRAB_SCROLL) &&
           (!TaskValidate(sys_focus_task)||
-           !Bt(&sys_focus_task->win_inhibit,WIf_FOCUS_TASK_GRAB_SCROLL)) &&
+              !Bt(&sys_focus_task->win_inhibit,WIf_FOCUS_TASK_GRAB_SCROLL)) &&
           kbd.scan_code&SCF_CTRL && TaskValidate(task))
       {
         winmgr.grab_scroll_closed=FALSE;
         winmgr.grab_scroll=TRUE;
         while (kbd.scan_code&SCF_CTRL && TaskValidate(task) && (!ac.task ||
-               !WinInside(ms.pos.x,ms.pos.y,ac.task,FONT_WIDTH)))
+                !WinInside(ms.pos.x,ms.pos.y,ac.task,FONT_WIDTH)))
         {
           if (ms.lb)
           {
@@ -670,7 +670,7 @@ wmt_start:
         winmgr.grab_scroll=FALSE;
       if (!Bt(&task->win_inhibit,WIf_SELF_CTRLS) &&
           (!TaskValidate(sys_focus_task)||
-           !Bt(&sys_focus_task->win_inhibit,WIf_FOCUS_TASK_CTRLS)))
+              !Bt(&sys_focus_task->win_inhibit,WIf_FOCUS_TASK_CTRLS)))
       {
         if (ms.lb && !old_ms.lb)
         {
@@ -817,7 +817,7 @@ wmt_start:
         goto wmt_start;
       if (!Bt(&task->win_inhibit,WIf_SELF_MS_L)&&
           (!TaskValidate(sys_focus_task)||
-           !Bt(&sys_focus_task->win_inhibit,WIf_FOCUS_TASK_MS_L)))
+              !Bt(&sys_focus_task->win_inhibit,WIf_FOCUS_TASK_MS_L)))
       {
         if (!old_ms.lb && ms.lb)
         {
@@ -841,7 +841,7 @@ wmt_start:
       }
       if (!Bt(&task->win_inhibit,WIf_SELF_MS_R)&&
           (!TaskValidate(sys_focus_task)||
-           !Bt(&sys_focus_task->win_inhibit,WIf_FOCUS_TASK_MS_R)))
+              !Bt(&sys_focus_task->win_inhibit,WIf_FOCUS_TASK_MS_R)))
       {
         if (!old_ms.rb && ms.rb)
         {
@@ -854,7 +854,7 @@ wmt_start:
       }
       if (!Bt(&task->win_inhibit,WIf_SELF_BORDER) && has_border &&
           (!TaskValidate(sys_focus_task)||
-           !Bt(&sys_focus_task->win_inhibit,WIf_FOCUS_TASK_BORDER)))
+              !Bt(&sys_focus_task->win_inhibit,WIf_FOCUS_TASK_BORDER)))
       {
         if (old_ms.lb && !ms.lb)
         {
@@ -880,7 +880,7 @@ wmt_start:
       }
       if (!Bt(&task->win_inhibit,WIf_SELF_MS_L)&&
           (!TaskValidate(sys_focus_task)||
-           !Bt(&sys_focus_task->win_inhibit,WIf_FOCUS_TASK_MS_L)))
+              !Bt(&sys_focus_task->win_inhibit,WIf_FOCUS_TASK_MS_L)))
       {
         if (old_ms.lb && !ms.lb)
         {
@@ -905,8 +905,8 @@ wmt_start:
                         if (doc_e->de_flags & DOCEF_HAS_BORDER)
                           doc_e->de_flags&=~DOCEF_SOLID_BORDER;
                         if (doc_e->de_flags & (DOCEF_TREE|DOCEF_LST|
-                                               DOCEF_LINK|DOCEF_CHECK_COLLAPSABLE|
-                                               DOCEF_LEFT_CB|DOCEF_LEFT_MACRO|DOCEF_LEFT_EXP))
+                                DOCEF_LINK|DOCEF_CHECK_COLLAPSABLE|
+                                DOCEF_LEFT_CB|DOCEF_LEFT_MACRO|DOCEF_LEFT_EXP))
                           TaskMsg(task,0,MSG_KEY_DOWN,CH_SPACE,0,0);
                       }
                     }
@@ -924,7 +924,7 @@ wmt_start:
       }
       if (!Bt(&task->win_inhibit,WIf_SELF_MS_R)&&
           (!TaskValidate(sys_focus_task)||
-           !Bt(&sys_focus_task->win_inhibit,WIf_FOCUS_TASK_MS_R)))
+              !Bt(&sys_focus_task->win_inhibit,WIf_FOCUS_TASK_MS_R)))
       {
         if (old_ms.rb && !ms.rb)
         {
@@ -947,7 +947,7 @@ wmt_start:
                       if (doc_e!=doc)
                       {
                         if (doc_e->de_flags&(DOCEF_LINK|
-                                             DOCEF_RIGHT_CB|DOCEF_RIGHT_MACRO|DOCEF_RIGHT_EXP))
+                                DOCEF_RIGHT_CB|DOCEF_RIGHT_MACRO|DOCEF_RIGHT_EXP))
                           TaskMsg(task,0,MSG_KEY_DOWN,'\n',0,0);
                       }
                     }
@@ -965,7 +965,7 @@ wmt_start:
       }
       if (!Bt(&task->win_inhibit,WIf_SELF_BORDER) && has_border &&
           (!TaskValidate(sys_focus_task)||
-           !Bt(&sys_focus_task->win_inhibit,WIf_FOCUS_TASK_BORDER)))
+              !Bt(&sys_focus_task->win_inhibit,WIf_FOCUS_TASK_BORDER)))
       {
         if (ms.lb && !old_ms.lb)
         {
@@ -1007,7 +1007,7 @@ wmt_start:
               {
                 WinHorz(ms.pos_text.x+1,task->win_width+ms.pos_text.x,task);
                 WinVert(ms.pos_text.y-y,
-                        task->win_height-1+ms.pos_text.y-y,task);
+                    task->win_height-1+ms.pos_text.y-y,task);
                 WinMgrSleep;
               }
             }

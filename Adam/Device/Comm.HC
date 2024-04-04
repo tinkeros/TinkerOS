@@ -1,6 +1,5 @@
 #help_index "Comm"
 
-#define PCIC_COMM    7
 #define PCISC_SERIAL 0
 #define SERIAL_16550 2
 
@@ -97,7 +96,7 @@ interrupt U0 IRQCommPCI()
 
 I64 AddPCIComms(I64 next_port)
 {
-  I64 class_code = PCIC_COMM << 8 | PCISC_SERIAL,
+  I64 class_code = PCIC_COM_CONTRL << 8 | PCISC_SERIAL,
       ioport,bdf,cur_port=next_port,
                  b, d, f, bar;
   for (b = 0; b < sys_pci_busses; b++)
@@ -235,7 +234,7 @@ public U0 CommPrint(I64 port,U8 *fmt,...)
   Free(buf);
 }
 
-public U0 PciRerouteInterrupts(I64 base, I64 cpu)
+public U0 PciRerouteInterrupts(I64 base, I64 cpu=0)
 {
   I64 i;
   U8 *da = dev.uncached_alias + IOAPIC_REG;

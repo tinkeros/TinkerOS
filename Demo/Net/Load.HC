@@ -6,8 +6,6 @@ Bool net_log_log=FALSE;
 Bool net_log_warn=FALSE;
 Bool net_log_dbg=FALSE;
 
-#include "Pci"
-
 #include "Utilities/Net.HH"
 
 #include "Utilities/NetLogAdam"

@@ -1,0 +1,14 @@
+//Puts the cursor at the bottom.
+Msg(MSG_KEY_DOWN,0,SC_CURSOR_DOWN|SCF_CTRL);
+"\n";
+
+InPrint(10,"Ed(\"/Doc/HolyC.DD.Z\");\n");
+Msg(MSG_KEY_DOWN,0,SC_CURSOR_UP|SCF_CTRL);
+
+TourPut(
+"Now look over the HolyC documentation.\n\n"
+"Press $$GREEN$$<SHIFT-ESC>$$FG$$ to abort saving changes "
+"and exit this file when done.\n"
+);
+
+InUntilChar(CH_SHIFT_ESC);

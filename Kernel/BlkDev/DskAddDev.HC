@@ -18,7 +18,8 @@ U0 BlkDevLockFwdingSet(CBlkDev *bd)
     {
       bd1=&blkdev.blkdevs[i];
       if (bd1->bd_signature==BD_SIGNATURE_VAL && bd!=bd1 &&
-          (bd1->type==BDT_ATAPI || bd1->type==BDT_ATA || bd1->type==BDT_AHCI_SATAPI || bd1->type==BDT_AHCI_SATA) &&
+          (bd1->type==BDT_ATAPI || bd1->type==BDT_ATA || bd1->type==BDT_AHCI_SATAPI
+              || bd1->type==BDT_AHCI_SATA) &&
           bd1->base0==bd->base0)
       {
         bd->lock_fwding=bd1;
@@ -30,7 +31,7 @@ U0 BlkDevLockFwdingSet(CBlkDev *bd)
 }
 
 I64 BlkDevAdd(CBlkDev *bd,I64 prt_num=I64_MIN,
-              Bool whole_drv,Bool make_free)
+    Bool whole_drv,Bool make_free)
 {//It will mount just one partition of prt_num>=0.
 //When repartitioing whole drive, whole_drv=TRUE.
   I64 i,j,ext_base,offset,res=0,num=0;
@@ -106,7 +107,7 @@ I64 BlkDevAdd(CBlkDev *bd,I64 prt_num=I64_MIN,
         {
           if (bd->type >= BDT_OTHER && prt_num > 0)
           {
-            "\nOnly one parition/drive is supported for serial/other/virtual block devices!\n";
+            "\nOnly one parition/drive supported for serial/other/virtual devices!\n";
             break;
           }
           if (mbr.p[i].type)
@@ -220,7 +221,6 @@ I64 SysGetI64()
   return Str2I64(st,16);
 }
 
-
 U0 SwitchDrvsToAHCI()
 {// Switch drive letters to AHCI mode block device types.
   I64 i, type;
@@ -239,14 +239,40 @@ U0 SwitchDrvsToAHCI()
   }
 }
 
+U0 SwitchDrvsToIDE()
+{// Switch drive letters to IDE mode block device types.
+  I64 i, type;
+  for (i=0; i<26; i++)
+  {
+    type=Let2BlkDevType('A'+i);
+    switch (type)
+    {
+    case BDT_AHCI_SATA:
+      SetDrvLetType('A'+i,BDT_ATA);
+      break;
+    case BDT_AHCI_SATAPI:
+      SetDrvLetType('A'+i,BDT_ATAPI);
+      break;
+    }
+  }
+}
 
 public Bool SwitchToAHCI()
 {// Switch from Legacy to AHCI mode.
   AHCIInit;
   if (!blkdev.ahci_hba)
     return FALSE;
+  if (blkdev.ahci_hba->version == 0xffffffff)
+    return FALSE;
   AHCIMode=TRUE;
   SwitchDrvsToAHCI;
+  return TRUE;
+}
+
+public Bool SwitchToIDE()
+{// Switch from AHCI mode to IDE/Legacy.
+  AHCIMode=FALSE;
+  SwitchDrvsToIDE;
   return TRUE;
 }
 

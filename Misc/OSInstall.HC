@@ -1,6 +1,9 @@
 #define DRV_WAIT_TIMEOUT_MS 30000
 #define DRV_PART_TIMEOUT_MS 60000
 
+static I64 last_drv_installed=0;
+static I64 last_mounted_hd='C';
+
 class InstallOptions
 {
   Bool extras;
@@ -14,7 +17,7 @@ class TempleOSCfg
       gr_height,
       fps,
       gfx_mode;
-  Bool no_hpet,text_mode;
+  Bool add_patches,text_mode;
 };
 
 TempleOSCfg tos_orig= {640,480,30,0x12,FALSE,FALSE};
@@ -37,7 +40,8 @@ U0 InstallDrv(U8 drv_let,Bool extras=FALSE,Bool templeos=FALSE)
   old_silent=Silent;
   while (!ready && timeout<DRV_WAIT_TIMEOUT_MS)
   {
-    try {
+    try
+    {
       DirMk(st);
       Sleep(1);
       if (IsDir(st))
@@ -47,7 +51,8 @@ U0 InstallDrv(U8 drv_let,Bool extras=FALSE,Bool templeos=FALSE)
         ready=TRUE;
       }
     }
-    catch {
+    catch
+    {
       Fs->catch_except=TRUE;
     }
     Sleep(100);
@@ -55,13 +60,11 @@ U0 InstallDrv(U8 drv_let,Bool extras=FALSE,Bool templeos=FALSE)
   }
   Silent(old_silent);
   Free(st);
-
   if (timeout>DRV_WAIT_TIMEOUT_MS)
   {
      "Failed to write to drive %C, install cannot continue!\n",drv_let;
-     return;
+    return;
   }
-
   if (templeos)
   {
     if (!DrvMounted('M'))
@@ -103,9 +106,10 @@ U0 InstallDrv(U8 drv_let,Bool extras=FALSE,Bool templeos=FALSE)
     Free(st2);
   }
   Free(st);
-  if (templeos && drv_tos_cfg->no_hpet)
+  if (templeos && drv_tos_cfg->add_patches)
   {
     ExePrint("CopyTree(\"::/Misc/TempleOS/NoHPET\",\"%C:/Kernel\");",drv_let);
+    ExePrint("CopyTree(\"::/Misc/TempleOS/BlkDev\",\"%C:/Kernel/BlkDev\");",drv_let);
   }
   if (templeos && drv_tos_cfg->text_mode)
   {
@@ -174,7 +178,7 @@ Bool VMPrtDskAHCI(CTask *task,I64 port, I64 num)
 }
 
 U0 VMInstallDrv(CTask *task,U8 drv_let,
-                CATARep *ata_drv,CATARep *atapi_drv,U8 *res, Bool extras=FALSE)
+    CATARep *ata_drv,CATARep *atapi_drv,U8 *res, Bool extras=FALSE)
 {
   Bool templeos=FALSE;
   if (StrLen(res)<3)
@@ -231,8 +235,8 @@ U0 DispResOptions()
   if (!AHCIMode)
   {
     "19: TempleOS standard no patches\n";
-    "20: TempleOS custom FPS, no HPET\n";
-    "21: TempleOS text mode, no HPET\n\n";
+    "20: TempleOS custom FPS, w/patches\n";
+    "21: TempleOS text mode, w/patches\n\n";
   }
   else "\n";
 }
@@ -250,15 +254,15 @@ U8* ResPrompt(U8 drive)
   Free(pmpt);
   if (res==20)
   {
-    pmpt=MStrPrint("Enter target FPS (1-60): ");
+    pmpt=MStrPrint("Enter target FPS (1-60, default 30): ");
     drv_tos_cfg->fps=GetI64(pmpt,30,1,60);
     Free(pmpt);
-    drv_tos_cfg->no_hpet=TRUE;
+    drv_tos_cfg->add_patches=TRUE;
   }
   if (res==21)
   {
     drv_tos_cfg->text_mode=TRUE;
-    drv_tos_cfg->no_hpet=TRUE;
+    drv_tos_cfg->add_patches=TRUE;
   }
   if (res==0)
   {
@@ -389,7 +393,7 @@ U0 VMInstall(Bool just_std_ide=TRUE, InstallOptions *cfg)
   TaskWait(task);
   task->border_src=BDS_CONST;
   task->border_attr=LTGRAY<<4+DrvTextAttrGet(':')&15;
-  task->text_attr  =LTGRAY<<4+BLUE;
+  task->text_attr =LTGRAY<<4+BLUE;
   task->win_inhibit=WIG_TASK_DFT-WIF_SELF_BORDER;
   WinHorz(Fs->win_left,Fs->win_right,task);
   WinVert(Fs->win_top,(Fs->win_top+Fs->win_bottom)>>2-1,task);
@@ -427,7 +431,8 @@ U0 VMInstall(Bool just_std_ide=TRUE, InstallOptions *cfg)
     ATARep(FALSE,just_std_ide,&head);
     ATAIDDrvs(head,&ata_drv,&atapi_drv);
   }
-  if ((AHCIMode && VMPrtDskAHCI(task,ata_drv->num,cfg->num)) || VMPrtDsk(task,ata_drv,cfg->num))
+  if ((AHCIMode && VMPrtDskAHCI(task,ata_drv->num,cfg->num))
+      || VMPrtDsk(task,ata_drv,cfg->num))
   {
     while (!task->user_data && timeout < DRV_PART_TIMEOUT_MS)
     {
@@ -447,7 +452,7 @@ U0 VMInstall(Bool just_std_ide=TRUE, InstallOptions *cfg)
     }
     BootMHDIns('C');
   }
-  install_end:
+install_end:
   if (!AHCIMode)
   {
     LinkedLstDel(head);
@@ -459,7 +464,7 @@ U0 VMInstall(Bool just_std_ide=TRUE, InstallOptions *cfg)
 U0 RegularInstallWiz()
 {
   I64 unit,drv_let;
-  U8 *st,*base0,*base1,*res;
+  U8 *st,*base0,*base1,*res,*tmpstr;
   CATARep *head=NULL,*tmpha;
   I64 ch,num_hints=0;
   CTask *task;
@@ -469,7 +474,7 @@ U0 RegularInstallWiz()
   TaskWait(task);
   task->border_src=BDS_CONST;
   task->border_attr=LTGRAY<<4+DrvTextAttrGet(':')&15;
-  task->text_attr  =LTGRAY<<4+BLUE;
+  task->text_attr =LTGRAY<<4+BLUE;
   task->win_inhibit=WIG_TASK_DFT-WIF_SELF_BORDER;
   WinHorz(Fs->win_left,Fs->win_right,task);
   WinVert(Fs->win_top,(Fs->win_top+Fs->win_bottom)>>2-1,task);
@@ -518,7 +523,7 @@ U0 RegularInstallWiz()
       Free(base0);
       base0=MStrPrint("0x%X",tmpha->base0);
       base1=MStrPrint("0x%X",tmpha->base1);
-      st	 =MStrPrint("0x%X",tmpha->unit);
+      st =MStrPrint("0x%X",tmpha->unit);
       unit=Str2I64(st);
       Free(st);
     }
@@ -553,11 +558,22 @@ U0 RegularInstallWiz()
   DrvRep;
   do
   {
-    st=GetStr("\nDestination Partition Letter: ");
-    if (*st)
-      drv_let=Let2Let(*st);
+    if (!last_drv_installed)
+      last_drv_installed='C';
     else
-      drv_let=0;
+      last_drv_installed++;
+    tmpstr=MStrPrint("\nDestination Partition Letter (default %C): ",last_drv_installed);
+    st=GetStr(tmpstr);
+    Free(tmpstr);
+    if (!StrLen(st))
+      drv_let=last_drv_installed;
+    else
+    {
+      if (*st)
+        drv_let=Let2Let(*st);
+      else
+        drv_let=0;
+    }
     Free(st);
   }
   while (!('A'<=drv_let<='Z'));
@@ -569,14 +585,14 @@ U0 RegularInstallWiz()
     '\n';
     do
     {
-      "$$PURPLE$$1$$FG$$) Use FAT32\n"
+      "$$PURPLE$$1$$FG$$) Use FAT32 (default)\n"
       "$$PURPLE$$2$$FG$$) Use RedSea\n"
       "\nFile System Type: ";
       ch=GetChar;
       '\n';
     }
-    while (!('1'<=ch<='2'));
-    if (ch=='1')
+    while (!('1'<=ch<='2')&&ch!=10);
+    if (ch=='1' || ch==10)
       Fmt(drv_let,,FALSE,FSt_FAT32);
     else
       Fmt(drv_let,,FALSE,FSt_REDSEA);
@@ -596,8 +612,8 @@ U0 RegularInstallWiz()
     unit=tmpbd->unit;
   }
   XTalkWait(task,"BootHDIns('%C');\n\nB\n0x20000\n"
-            "C\ns%s\n%s\n%C\n\n%s\n", //Exit Drives,Dsk Cache,Options
-            drv_let,base0,base1,'0'+unit,res);
+      "C\ns%s\n%s\n%C\n\n%s\n", //Exit Drives,Dsk Cache,Options
+      drv_let,base0,base1,'0'+unit,res);
   Free(base0);
   Free(base1);
   WinVert(task->win_top,Fs->win_bottom);
@@ -606,62 +622,78 @@ U0 RegularInstallWiz()
 
 U0 RegularInstallWizAHCI()
 {
-  I64		 drv_let;
-  U8		*st, *port_st, *res;
-  I64		 ch;
-  Bool           extras=FALSE;
+  I64 drv_let;
+  U8	*st, *port_st, *res, *tmpstr;
+  I64 i, ch, default_port=0, selected_port;
+  Bool extras=FALSE;
   CTask	*task;
   task = User;
   TaskWait(task);
   task->border_src	= BDS_CONST;
   task->border_attr	= LTGRAY << 4 + DrvTextAttrGet(':') & 15;
-  task->text_attr		= LTGRAY << 4 + BLUE;
+  task->text_attr	= LTGRAY << 4 + BLUE;
   task->win_inhibit=WIG_TASK_DFT-WIF_SELF_BORDER;
   WinHorz(Fs->win_left, Fs->win_right, task);
-  WinVert(Fs->win_top,  (Fs->win_top + Fs->win_bottom) >> 2 - 1, task);
+  WinVert(Fs->win_top, (Fs->win_top + Fs->win_bottom) >> 2 - 1, task);
   WinVert(task->win_bottom + 3, Fs->win_bottom);
   WinToTop(Fs);
   XTalk(task, "Mount;\nC\n");
+  for (i=0; i<AHCI_MAX_PORTS; i++)
+    if ((&blkdev.ahci_hba->ports[i])->signature == AHCI_PxSIG_ATA)
+      selected_port=default_port=i;
   "\nSelect the port of the ATA drive to install on listed in the window above.\n";
-  "Hard Drive Port: ";
+  "Hard Drive Port (default %d): ", default_port;
   while (TRUE)
   {
     port_st = GetStr;
-    if ((0 <= Str2I64(port_st) < AHCI_MAX_PORTS) &&
+    if (!StrLen(port_st)) break;
+    selected_port=Str2I64(port_st);
+    if ((0 <= selected_port < AHCI_MAX_PORTS) &&
         ((&blkdev.ahci_hba->ports[Str2I64(port_st)])->signature == AHCI_PxSIG_ATA))
     {
       break;
     }
     Free(port_st);
   }
-  XTalkWait(task, "%s\n\n", port_st);
+  Free(port_st);
+  XTalkWait(task, "%d\n\n", selected_port);
   DrvRep;
   do
   {
-    st = GetStr("\nDestination Partition Letter: ");
-    if (*st)
-      drv_let = Let2Let(*st);
+    if (!last_drv_installed)
+      last_drv_installed='C';
     else
-      drv_let = 0;
+      last_drv_installed++;
+    tmpstr=MStrPrint("\nDestination Partition Letter (default %C): ",last_drv_installed);
+    st=GetStr(tmpstr);
+    Free(tmpstr);
+    if (!StrLen(st))
+      drv_let = last_drv_installed;
+    else
+    {
+      if (*st)
+        drv_let = Let2Let(*st);
+      else
+        drv_let = 0;
+    }
     Free(st);
   }
   while (!('A' <= drv_let <= 'Z'));
   '\n';
-  "$$RED$$Format %C Partition?$$FG$$\n"
-  , drv_let;
+  "$$RED$$Format %C Partition?$$FG$$\n", drv_let;
   if (YorN('y'))
   {
     '\n';
     do
     {
-      "$$PURPLE$$1$$FG$$) Use FAT32\n"
+      "$$PURPLE$$1$$FG$$) Use FAT32 (default)\n"
       "$$PURPLE$$2$$FG$$) Use RedSea\n"
       "\nFile System Type: ";
       ch = GetChar;
       '\n';
     }
-    while (!('1' <= ch <= '2'));
-    if (ch == '1')
+    while (!('1'<=ch<='2')&&ch!=10);
+    if (ch=='1' || ch==10)
       Fmt(drv_let,, FALSE, FSt_FAT32);
     else
       Fmt(drv_let,, FALSE, FSt_REDSEA);
@@ -672,8 +704,8 @@ U0 RegularInstallWizAHCI()
   DispResOptions;
   res=ResPrompt(drv_let);
   XTalkWait(task,"BootHDIns('%C');\n\nB\n0x20000\n"
-            "C\n%s\n\n\n%s\n", //Exit Drives,Dsk Cache,Options
-            drv_let,port_st,res);
+      "C\n%d\n\n\n%s\n", //Exit Drives,Dsk Cache,Options
+      drv_let,selected_port,res);
   WinVert(task->win_top, Fs->win_bottom);
   Kill(task);
 }
@@ -697,9 +729,9 @@ U0 DoInstructions()
 
 Bool DoInstall(Bool pmt_reboot)
 {
-  I64 res=FALSE,vm_install;
+  I64 i,res=FALSE,vm_install,default_choice='y';
   InstallOptions *cfg;
-  if(DrvMounted('C'))
+  if (DrvMounted('C'))
   {
     "\n\nIt appears drive C is already mounted.\n"
     "I will assume you have pre-mounted the\n"
@@ -785,9 +817,13 @@ Bool DoInstall(Bool pmt_reboot)
           RegularInstallWiz();
         }
         res=TRUE;
+        for (i='C'; i<'G'; i++)
+          if (DrvMounted(i))
+            last_mounted_hd=i;
         "\nWould you like to run the wizard again to install to another drive ";
+        if (last_drv_installed == last_mounted_hd) default_choice='n';
       }
-      while (YorN('n'));
+      while (YorN(default_choice));
       "$$RED$$Install Master Boot loader?$$FG$$";
       if (YorN('y'))
       {
@@ -808,8 +844,19 @@ Bool DoInstall(Bool pmt_reboot)
     }
     else
     {
-      if (YorN('n'))
-        Reboot;
+      for (i='C'; i<'G'; i++)
+        if (DrvMounted(i))
+          last_mounted_hd=i;
+      if (last_drv_installed == last_mounted_hd)
+      {
+        if (YorN('y'))
+          Reboot;
+      }
+      else
+      {
+        if (YorN('n'))
+          Reboot;
+      }
     }
   }
   return res;

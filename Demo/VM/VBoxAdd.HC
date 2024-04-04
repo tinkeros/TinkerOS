@@ -533,8 +533,8 @@ U0 VBInitAll()
     AdamLog("Found VirtualBox!\n");
     VBLogInit;
     VBMouseInit;
-    VBClipInit;
-    ClipHijackInit;
+    //VBClipInit;
+    //ClipHijackInit;
     VBLog("Initialized TinkerOS guest additions!\n");
   }
   else

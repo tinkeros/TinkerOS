@@ -38,7 +38,7 @@
 	qemu-img.exe create tos.qcow2 512M
 
 ### Run TempleOS (with PC speaker sound) to install from CD to virtual hard disk
-	qemu-system-x86_64.exe -m 2g -accel whpx,kernel-irqchip=off -smp 4 -audiodev sdl,id=snd0 -machine pc,pcspk-audiodev=snd0 -display sdl -cdrom TinkerOS_5.14.ISO -hda tos.qcow2
+	qemu-system-x86_64.exe -m 2g -accel whpx,kernel-irqchip=off -smp 4 -audiodev sdl,id=snd0 -machine pc,pcspk-audiodev=snd0 -display sdl -cdrom TOS_Distro.ISO -hda tos.qcow2
 
 ### Run TinkerOS (with Adlib sound) to install from CD to virtual hard disk
 	qemu-system-x86_64.exe -m 2g -accel whpx,kernel-irqchip=off -smp 4 -audiodev sdl,id=snd0 -machine pc -device adlib,audiodev=snd0 -display sdl -cdrom TinkerOS_5.14.ISO -hda tos.qcow2

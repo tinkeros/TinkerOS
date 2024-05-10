@@ -27,7 +27,7 @@
 	cd "C:\Program Files\qemu"
 
 ### Run TempleOS (with PC speaker sound) from CD only (no install)
-	qemu-system-x86_64.exe -m 2g -accel whpx,kernel-irqchip=off -smp 4 -audiodev sdl,id=snd0 -machine pc,pcspk-audiodev=snd0 -display sdl -cdrom TOS_Distro.ISO`
+	qemu-system-x86_64.exe -m 2g -accel whpx,kernel-irqchip=off -smp 4 -audiodev sdl,id=snd0 -machine pc,pcspk-audiodev=snd0 -display sdl -cdrom TOS_Distro.ISO
 	
 ### Run TinkerOS (with Adlib sound) from CD only (no install)
 	qemu-system-x86_64.exe -m 2g -accel whpx,kernel-irqchip=off -smp 4 -audiodev sdl,id=snd0 -machine pc -device adlib,audiodev=snd0 -display sdl -cdrom TinkerOS_5.14.ISO

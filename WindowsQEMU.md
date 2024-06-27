@@ -17,7 +17,7 @@
 	
 4) Download TempleOS and/or TinkerOS ISO
 	- TempleOS: http://templeos.org/Downloads/TOS_Distro.ISO
-	- TinkerOS: https://github.com/tinkeros/TinkerOS/releases/download/5.14pre/TinkerOS_5.14.ISO ( or latest release )
+	- TinkerOS: https://github.com/tinkeros/TinkerOS/releases
 
 5) Copy downloaded TempleOS/TinkerOS ISO files to where you installed QEMU `C:\Program Files\qemu`
 

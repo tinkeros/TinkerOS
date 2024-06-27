@@ -10,7 +10,7 @@
  
 4) Download TempleOS and/or TinkerOS ISO
 	- TempleOS: http://templeos.org/Downloads/TOS_Distro.ISO
-	- TinkerOS: https://github.com/tinkeros/TinkerOS/releases/download/5.14pre/TinkerOS_5.14.ISO ( or latest release )
+	- TinkerOS: https://github.com/tinkeros/TinkerOS/releases
 
 ## Test run from CD:
 

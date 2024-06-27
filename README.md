@@ -5,6 +5,7 @@
 <p align="center"><a href="https://tinkeros.github.io">TinkerOS/TempleOS documentation</a></p>
 <p align="center"><a href="https://tinkeros.github.io/WbTempleOS/Downloads/">TempleOS downloads</a></p>
 <p align="center"><a href="https://github.com/tinkeros/TinkerOS/releases">TinkerOS downloads</a></p>
+<p align="center"><a href="https://github.com/tinkeros/TinkerOS/blob/main/LinuxQEMU.md">TempleOS/TinkerOS Linux QEMU VM setup guide</a></p>
 <p align="center"><a href="https://github.com/tinkeros/TinkerOS/blob/main/WindowsQEMU.md">TempleOS/TinkerOS Windows QEMU VM setup guide</a></p>
 </p>
 

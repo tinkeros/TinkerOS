@@ -3,6 +3,10 @@
   <img src="https://tinkeros.github.io/Images/theme.gif" /></a>
 </p>
 <p align="center"><a href="https://tinkeros.github.io">TinkerOS/TempleOS documentation</a></p>
+<p align="center"><a href="https://tinkeros.github.io/WbTempleOS/Downloads/">TempleOS downloads</a></p>
+<p align="center"><a href="https://github.com/tinkeros/TinkerOS/releases">TinkerOS downloads</a></p>
+<p align="center"><a href="https://github.com/tinkeros/TinkerOS/blob/main/WindowsQEMU.md">TempleOS/TinkerOS Windows QEMU VM setup guide</a></p>
+</p>
 
 
 ### Preface

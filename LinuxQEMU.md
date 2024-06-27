@@ -34,5 +34,6 @@
 ### Notes
   - QEMU has a poorly emulated PC speaker sound might not be good with TempleOS
   - If you use TinkerOS instead you can use Adlib sound instead and as an added bonus you can [roll your own 64-bit randomly generated instrument with RandInst to go with your randomly generated GodSong or use PickInst to select from a list of available instruments](https://youtu.be/d0J1Jbhxsv0)!
+  - You can run without KVM, but it will be slower.
 
  

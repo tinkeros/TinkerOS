@@ -41,7 +41,7 @@ TourPut(
 "($$GREEN$$<CTRL-ENTER>$$FG$$ does a page break."
 "$$GREEN$$<ENTER>$$FG$$ would execute the macro.)\n");
 InGetKey(SC_ENTER|SCF_CTRL|SCF_SHIFT);
-
+
 Msg(MSG_KEY_DOWN,0,SC_CURSOR_UP|SCF_CTRL);
 TourPut("Press $$GREEN$$<SPACE>$$FG$$ to test it.\n");
 InGetStr(" ");

@@ -45,9 +45,11 @@ static U8 instrument_base_registers[6] = { 0x20, 0x40, 0x60, 0x80, 0xE0, 0xC0 };
 
 static I64 old_block=-1;
 
+#help_index "OPL"
+
 #ifdef ISA_OPL
 public U0 WriteOPL(I64 r, U8 data, I64 port=ISA_IOPORT_OPL_BASE)
-{
+{//Writes data to OPL registers
   I64 i;
   OutU8(port,r);
   for (i=0; i<4; i++) PortNop;
@@ -56,7 +58,7 @@ public U0 WriteOPL(I64 r, U8 data, I64 port=ISA_IOPORT_OPL_BASE)
 }
 
 public Bool DetectOPL(I64 port=ISA_IOPORT_OPL_BASE)
-{
+{//Detects OPL chip
   I64 x1=0,x2=0;
   WriteOPL(4,0x60,port);
   WriteOPL(4,0x80,port);
@@ -78,7 +80,7 @@ public Bool DetectOPL(I64 port=ISA_IOPORT_OPL_BASE)
 
 #ifdef OPL2LPT
 public U0 WriteOPL(I64 r, U8 data)
-{
+{//Writes data to OPL registers
   I64 i;
   OutU8(LPT_IOPORT_OPL_BASE,r);
   OutU8(LPT_IOPORT_OPL_BASE+2,0x0d);
@@ -101,7 +103,7 @@ static Bool recording=FALSE;
 static U64 commands=0;
 
 public U0 WriteOPL(I64 r, U8 data, I64 func=0)
-{
+{//Writes data to OPL registers
   U8 bytes[3];
   bytes[0]=0x80 | ((func << 2)&0x7c)  | (r >> 6);
   bytes[1]=((r & 0x3F) << 1) | (data >> 7)&1;
@@ -111,7 +113,8 @@ public U0 WriteOPL(I64 r, U8 data, I64 func=0)
   commands++;
 }
 
-public U0 OPLRec()
+// TODO make public when appropriate
+U0 OPLRec()
 {
   if (recording)
   {
@@ -131,15 +134,15 @@ public U0 OPLRec()
   PortNop;
 }
 
-public U0 OPLReplay()
+U0 OPLReplay()
 {//CommPutChar(SERIAL_OPL_PORT,137);
   WriteOPL(0,0,2);
   PortNop;
 }
 #endif
 
-public U0 AdlibReset()
-{
+public U0 OPLReset()
+{// Reset OPL chip
   I64 i;
   for(i = 0; i < 256; i ++)
   {
@@ -257,17 +260,17 @@ U8 SetKeyState(Bool state)
   }
 }
 
-public U0 SetOPLRegister(U8 r, U8 val)
+U0 SetOPLRegister(U8 r, U8 val)
 {
   SetRegister(r,val);
 }
 
-public U8 GetOPLRegister(U8 r)
+U8 GetOPLRegister(U8 r)
 {
   return opl_registers[r];
 }
 
-public U0 AdlibBeep()
+U0 OPLBeep()
 {
   SetFreq(440.0);
   SetKeyState(TRUE);
@@ -285,8 +288,8 @@ static U8 opl_inst_mod2[11]= {1,  1, 1,  1,  1, 1,1,  1, 1,  32, 1};
 // 2^64 = 128*64*128*128*16*2*128*32*128*128*2
 //        * 1* 1*  1*  1* 1*1*  1* 1*  1* 32*1
 
-U0 U64Inst(U64 inst)
-{// Setup an instruments registers from a 64-bit number
+public U0 U64Inst(U64 inst)
+{//Setup an instrument registers from a 64-bit number
   I64 i;
   U8 opl2inst[12];
   opl2inst[0]=0;
@@ -301,8 +304,8 @@ U0 U64Inst(U64 inst)
   SetInst(opl2inst);
 }
 
-U64 RandInst()
-{// Generate a random instrument from a random 64-bit number
+public U64 RandInst()
+{//Generate a random instrument from a random 64-bit number
   U64 inst=RandU64();
   SetKeyState(FALSE);
   U64Inst(inst);
@@ -311,8 +314,8 @@ U64 RandInst()
   return inst;
 }
 
-I64 PickInst()
-{// Popup a window to pick some standard instruments
+public I64 PickInst()
+{//Popup a window to pick some standard instruments
   I64 ins;
   ins=PopUpPickDefineSub("ST_INSTRUMENTS");
   if (0<=ins<=127)
@@ -320,21 +323,21 @@ I64 PickInst()
   return ins;
 }
 
-U0 PickInstLoop(Bool doc_clear=FALSE)
-{// Keeps calling PickInst to open a new popup to change the instrument
+public U0 PickInstLoop(Bool doc_clear=FALSE)
+{//Keeps calling PickInst to open a new popup to change the instrument
   I64 ins;
   ins=PickInst;
   while (ins>=0)
   {
     if (doc_clear) DocClear;
-    AdlibBeep;
+    OPLBeep;
     "Using Instrument: %s\n"
     ,DefineSub(ins,"ST_INSTRUMENTS");
     ins=PickInst;
   }
 }
 
-U0 AdlibSnd(I8 ona=0)
+public U0 OPLSnd(I8 ona=0)
 {//Play ona, a piano key num. 0 means rest.
   CSndData *d;
   if (!Bt(&sys_semas[SEMA_MUTE],0) &&
@@ -364,9 +367,9 @@ U0 AdlibSnd(I8 ona=0)
   }
 }
 
-public U0 AdlibInit()
-{
-  AdlibReset;
+public U0 OPLInit()
+{//Reset OPL chip and set default square wave.
+  OPLReset;
   SetInst(SQUARWAV);
   SetAttack(0xf);
   SetDecay(0xf);
@@ -379,7 +382,7 @@ U0 EnableISAOPL()
 {
   if (DetectOPL)
   {
-    AdlibInit;
+    OPLInit;
     
     // Patch hook into sound system
     Snd(0);
@@ -387,7 +390,7 @@ U0 EnableISAOPL()
     LBts(&sys_semas[SEMA_SND],0);
     Yield;
     *(&Snd(U8*))=0xe9;
-    *((&Snd+1)(U32*))=&AdlibSnd-&Snd-5;
+    *((&Snd+1)(U32*))=&OPLSnd-&Snd-5;
     LBtr(&sys_semas[SEMA_SND],0);
     Mute(0);
   }
@@ -395,3 +398,4 @@ U0 EnableISAOPL()
 
 EnableISAOPL;
 #endif
+#help_index ""

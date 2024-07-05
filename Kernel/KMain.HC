@@ -100,10 +100,11 @@ U0 SysGrInit()
     text.cols = GR_WIDTH / FONT_WIDTH;
     text.rows = GR_HEIGHT / FONT_HEIGHT;
     text.screen_size = GR_WIDTH * GR_HEIGHT;
-    text.buffer_size = text.screen_size * 4; //buffer for 32-bit TODO pitch
+    text.buffer_size = text.screen_size * 4;
     text.raw_scrn_image = CAllocAligned(text.buffer_size,16);
+    text.raw_scrn_img2 = CAllocAligned(FB_HEIGHT*sys_vbe_mode_pitch,16);
     text.fb_alias = sys_frame_buffer;
-    MemSetU32(text.fb_alias, BLACK32, FB_WIDTH*FB_HEIGHT); // TODO pitch
+    MemSetU32(text.fb_alias, BLACK32, FB_HEIGHT*sys_vbe_mode_pitch/4);
     text.vga_alias = CAlloc(text.rows * text.cols * 8);
     text.border_chars[2] (I64)=0x0908070605040302;
     text.border_chars[10](U32)=0x0D0C0B0A;

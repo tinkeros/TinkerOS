@@ -409,14 +409,14 @@ U0 KeyStateRst()
   sc_flags_state=0;
 }
 
-U0 BitFieldSet(U8 *bit_field, U8 offset, U8 size, U8 value)
+public U0 BitFieldSet(U8 *bit_field, U8 offset, U8 size, U8 value)
 {//Sets values in a bit field
   I64 i;
   for (i=0; i<size; i++)
     BEqu(bit_field,offset+i,value>>i);
 }
 
-U64 BitFieldGet(U8 *bit_field, U8 offset, U8 size)
+public U64 BitFieldGet(U8 *bit_field, U8 offset, U8 size)
 {//Gets values from a bit field
   I64 i;
   U64 val=0;
@@ -425,7 +425,7 @@ U64 BitFieldGet(U8 *bit_field, U8 offset, U8 size)
   return val;
 }
 
-Bool IsHypervisorPresent()
+public Bool IsHypervisorPresent()
 {
   CRAXRBXRCXRDX regs;
   CPUId(1, &regs);

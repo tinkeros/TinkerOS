@@ -14,7 +14,7 @@ TourPut(
 
 InGetStr("Cdd;\n");
 
-TourPut(
+TourPut(
 "The \"$$GREEN$$Cdd$$FG$$\" function is a TinkerOS "
 "shortcut for running \"$$GREEN$$Cd;Dir;$$FG$$\"\n\n"
 "This shortcut was added since "

@@ -1,0 +1,5 @@
+
+$WW,1$There is a python server for TinkerOS tos_server.py which runs on Linux machines (in either server or client mode) which can connect to TinkerOS over real or virtual serial ports to exchange files, clipboard contents, fetch URLs or execute commands on the remote server.
+
+If properly setup, the following functions may be available to you:
+$WW,0$

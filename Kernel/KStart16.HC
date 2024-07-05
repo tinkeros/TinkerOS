@@ -49,11 +49,12 @@ GDT_TR_RING3:
   SYS_VBE_MODE_PITCH::  DU8 	2 DUP(0);
   SYS_INITRAMFS_PTR::	DU8 	8 DUP(0);
   SYS_INITRAMFS_SIZE::	DU8 	4 DUP(0);
+  VBE_VID_MODES::       DU8 128 DUP(0);
 #assert $$ - SYS_KERNEL == sizeof(CKernel) - sizeof(CBinFile)
 
 VBE_INFO::	DU8 	sizeof(CVBEInfo) DUP(0);
 VBE_MODE::	DU8 	sizeof(CVBEMode) DUP(0);
-TEMP_VBE_MODE: DU8 	sizeof(CVBEMode) DUP(0);
+TEMP_VBE_MODE:  DU8 	sizeof(CVBEMode) DUP(0);
 
 //************************************
   CORE0_16BIT_INIT::
@@ -98,6 +99,7 @@ GET_IP:
   MOV	SI, CVBEInfo.video_modes[AX]
   MOV	GS, CVBEInfo.video_modes+2[AX]
   MOV	DI, TEMP_VBE_MODE
+  MOV   DX, VBE_VID_MODES
 @@06:
   MOV 	AX, GS:[SI]
   CMP 	AX, 0xFFFF
@@ -122,13 +124,22 @@ GET_IP:
   JNE 	@@06
   MOV 	BX, CVBEMode.height[DI]
   MOV	AX, CVBEMode.width[DI]
+  MOV   [DX],BX
+  ADD   DX, 2
+  MOV   [DX],AX
+  ADD   DX, 2
   CMP   AX, FB_WIDTH
   JNE	@@06
   CMP	BX, FB_HEIGHT
   JNE	@@06
-  JMP   @@09
-@@08:   
-  JMP @@10
+  MOV   [SYS_FRAME_BUFFER], CX
+  MOV   [SYS_VBE_MODE_PITCH], 1
+  JMP   @@06
+@@08:
+  MOV CX, [SYS_VBE_MODE_PITCH]
+  CMP CX, 1
+  JNE @@10
+  MOV CX, [SYS_FRAME_BUFFER]
 @@09:   
   PUSH	ES
   PUSH	DS
@@ -228,6 +239,11 @@ GET_IP:
   MOV	CH,0
   INC	CX
   MOV	U16 [SYS_PCI_BUSES],CX
+
+  MOV AX, 0XEC00
+  MOV BL, 2
+  INT 0x15
+
 @@40:
   CLI
 //Enable A20

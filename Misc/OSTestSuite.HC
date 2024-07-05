@@ -28,7 +28,7 @@ U0 TS(U8 *desc)
            (PROGRESS_DESC_LEN-StrLen(st))>>1,CH_SPACE,st);
   Free(st);
   progress4=ts_i++;
-  progress4_max=179;
+  progress4_max=181;
   progress4_t0=ts_t0;
   *progress4_desc=0;
   RegExe("TempleOS/OSTestSuite");
@@ -173,7 +173,6 @@ U0 DoSudoku()
   DeathWait(&task,TRUE);
 }
 
-
 U0 DoLSScreenSaver()
 {
   CTask *task=User;
@@ -187,6 +186,21 @@ U0 DoLSScreenSaver()
   Sleep(1);
   Kill(task);
 }
+
+U0 DoToastScreenSaver()
+{
+  CTask *task=User;
+  AdamFile("/Demo/ScreenSavers/Toast.HC.Z");
+  SetScreenSaverTimeout(1);
+  Sleep(12000);
+  AdamFile("/Demo/ScreenSavers/Default.HC.Z");
+  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_ESC,0);
+  SetScreenSaverTimeout(0);
+  ms_hard.timestamp = GetTSC;
+  Sleep(1);
+  Kill(task);
+}
+
 $PL,1000$$PL,1000$
 U0 DoNGScreenSaver()
 {
@@ -1020,6 +1034,31 @@ U0 DoAfterEgypt()
   DeathWait(&task,TRUE);
 }
 
+U0 DoCube()
+{
+  CTask *task=User;
+  XTalkWait(task,"#include \"::/Apps/Cube/Cube\";CubeGame(20,20);\n");
+  Sleep(6000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,'h',0);
+  Sleep(1000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,0,SC_CURSOR_LEFT);
+  Sleep(1000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,0,SC_CURSOR_RIGHT);
+  Sleep(1000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,0,SC_CURSOR_DOWN);
+  Sleep(1000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,0,SC_CURSOR_UP);
+  Sleep(1000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,'f',0);
+  Sleep(1000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,'r',0);
+  Sleep(1000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SHIFT_ESC,0);
+  Sleep(5000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SHIFT_ESC,0);
+  DeathWait(&task,TRUE);
+}
+
 U0 DoSpyHunt()
 {
   I64 i,j;
@@ -1762,6 +1801,10 @@ U0 OSTestSuite()
   DoLSScreenSaver;
   TS("NewGlassScreenSaver");
   DoNGScreenSaver;
+  TS("ToastScreenSaver");
+  DoToastScreenSaver;
+  TS("Cube");
+  DoCube;
   TS("Chess");
   DoChess;
   TS("Sudoku");

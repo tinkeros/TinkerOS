@@ -529,7 +529,6 @@ class CVBEInfo
 	U8	reserved[222],
 		oem_data[256];
 };
-#assert sizeof(CVBEInfo) == 512
 
 class CVBEMode
 {
@@ -548,7 +547,6 @@ class CVBEMode
 	U32 max_pixel_clock;
 	U8	reserved[190];
 };
-#assert sizeof(CVBEMode) == 256
 
 class CKernel
 {//Must match $LK,"OSStartUp",A="FF:::/Kernel/KStart16.HC,MEM_BOOT_BASE"$
@@ -573,6 +571,7 @@ class CKernel
   U16  sys_vbe_mode_pitch;
   U8*  sys_initramfs_ptr;
   U32  sys_initramfs_size;
+  U32 vbe_vid_modes[32];
 };
 
 //Run-Levels
@@ -4083,7 +4082,7 @@ public class CSysFixedArea
 public class CTextGlbls
 {
   I64	raw_col,raw_flags;
-  U32   *raw_scrn_image, *fb_alias;
+  U32   *raw_scrn_image, *fb_alias, *raw_scrn_img2;
   I64	rows,cols;		//Use TEXT_ROWS,TEXT_COLS
   U64	*font,*aux_font,screen_size, buffer_size;
   U8	*vga_alias,*vga_text_alias;

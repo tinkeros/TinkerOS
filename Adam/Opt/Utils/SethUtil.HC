@@ -1,40 +1,70 @@
-U0 SethREPL(I64 cpu_num=mp_cnt-1)
+#help_index "Seth"
+
+I64 GetCPUSlice(I64 cpu_num=mp_cnt-1)
 {
-  if (!cpu_num || cpu_num>=mp_cnt)
+  // Make this work like python array
+  // slices when we have lots of CPUs
+  //        so CPU -1 = last core
+  //           CPU -2 = second to last
+  //           etc
+  // When only two everything goes to 1
+
+  if (mp_cnt==2) cpu_num=1;
+  else cpu_num = cpu_num % mp_cnt;
+
+  if (cpu_num<0) cpu_num+=mp_cnt;
+
+  return cpu_num;
+}
+
+public U0 SethREPL(I64 cpu_num=mp_cnt-1, U8 *first_cmd=NULL, Bool exit_after_first=FALSE)
+{//Get a REPL to execute commands on a Seth core.
+  if (cpu_num>=mp_cnt || !cpu_num)
   {
     "Not a valid Seth core!\n";
     return;
   }
+  cpu_num=GetCPUSlice(cpu_num);
   CTask *repl=Spawn(&SrvCmdLine,NULL,NULL,cpu_num);
   TaskWait(repl);
   repl->title_src=TTS_LOCKED_CONST;
   StrCpy(repl->task_title,"Seth REPL");
-  U8 *line,*cwd,*pmpt;
+  U8 *line,*cwd,*pmpt,cpu_desc[5];
+  cpu_desc[0]=0;
+  if (cpu_num) CatPrint(cpu_desc,"Seth");
+  else CatPrint(cpu_desc,"Adam");
   CJob *tmpc;
   while (1)
   {
-//TODO get DirCur result from Seth, not here
-    //cwd=DirCur;
     tmpc=TaskExe(repl,Fs,"DirCur;",0);
     TaskWait(repl);
     cwd=StrNew(repl->answer);
     tmpc=TaskExe(repl,Fs,"Free(Fs->answer);",0);
     TaskWait(repl);
-    if (cwd)
+
+    if (!first_cmd)
     {
-      pmpt=MStrPrint("Seth %d %s> ",cpu_num,cwd);
-      Free(cwd);
+      if (cwd)
+      {
+        pmpt=MStrPrint("%s %d %s> ",cpu_desc,cpu_num,cwd);
+        Free(cwd);
+      }
+      else
+        pmpt=MStrPrint("%s %d > ",cpu_desc,cpu_num);
+      line=GetStr(pmpt);
+      Free(pmpt);
+      if (!line || StrLen(line)<=6 && (!StrNICmp(line,"exit",4) ||
+        !StrNICmp(line,"quit",4)))
+        break;
+      "\nExecuting, waiting for results...";
+      tmpc=TaskExe(repl,Fs,line,0);
     }
-    else
-      pmpt=MStrPrint("Seth %d > ",cpu_num);
-    line=GetStr(pmpt);
-    Free(pmpt);
-    if (!line || StrLen(line)<=6 && (!StrNICmp(line,"exit",4) ||
-      !StrNICmp(line,"quit",4)))
-      break;
-    "\nWaiting...";
-    tmpc=TaskExe(repl,Fs,line,0);
-    TaskWait(repl); // TODO how to detect core reset???
+    else {
+      tmpc=TaskExe(repl,Fs,first_cmd,0);
+      first_cmd=NULL;
+    }
+
+    TaskWait(repl); // TODO detect core reset
     while (TaskValidate(repl) && !JobResScan(tmpc))
     {
       Sleep(1);
@@ -63,13 +93,54 @@ U0 SethREPL(I64 cpu_num=mp_cnt-1)
           repl->answer=0;
         }
         repl->new_answer=FALSE;
+        if (exit_after_first) break;
       }
     }
     else
     {
-      "Seth REPL task died!\n";
+      "%s REPL task died!?\n",cpu_desc;
       break;
     }
   }
   if (TaskValidate(repl)) Kill(repl);
 }
+
+U0 SethExec(U8 *include_file, I64 cpu_num=mp_cnt-1)
+{
+  if (cpu_num>=mp_cnt || !cpu_num)
+  {
+    "Not a valid Seth core!\n";
+    return;
+  }
+  U8 *first_cmd = MStrPrint("#include \"%s\"\n", include_file);
+  SethREPL(cpu_num, first_cmd, TRUE);
+  Free(first_cmd);
+}
+
+public CTask* SethFile(U8 *include_file, I64 cpu_num=mp_cnt-1)
+{//Include file on a Seth core (like AdamFile)
+  U8 *first_cmd = MStrPrint("#include \"%s\"\n\nExit;\n", include_file);
+
+  if (cpu_num>=mp_cnt)
+  {
+    "Not a valid Adam or Seth core!\n";
+    return NULL;
+  }
+
+  // If we only have 1 CPU Adam does it
+  if (mp_cnt==1)
+  {
+    AdamFile(include_file);
+    return adam_task;
+  }
+
+  cpu_num=GetCPUSlice(cpu_num);
+
+  CTask *repl=Spawn(&SrvCmdLine,NULL,NULL,cpu_num);
+  repl->title_src=TTS_LOCKED_CONST;
+  // TODO StrNCpy
+  StrCpy(repl->task_title,include_file);
+  TaskExe(repl,Fs,first_cmd,0);
+  return repl;
+}
+#help_index ""

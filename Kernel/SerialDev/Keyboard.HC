@@ -64,6 +64,18 @@ U0 KbdLEDsSet(I64 sc)
   }
   catch
     Fs->catch_except=TRUE;
+  kbd_last_leds=v;
+}
+
+public U0 KbdModLEDs(U8 v)
+{// Modifies upper 5 keyboard LED bits
+  try
+  {
+    KbdCmdSend(KBD_PORT,0xED);
+    KbdCmdSend(KBD_PORT,kbd_last_leds&7|v&0xf8);
+  }
+  catch
+    Fs->catch_except=TRUE;
 }
 
 public U0 KbdMsCmdAck(...)

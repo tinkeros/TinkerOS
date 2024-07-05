@@ -192,7 +192,7 @@ public Bool MsHardRst()
     KbdCmdSend(KBD_CTRL,0xAD); //Disable Kbd
     KbdCmdSend(KBD_CTRL,0xA8); //Enable Mouse
     KbdMsCmdAck(0xFF); //Rst
-    timeout=tS+10.0;
+    timeout=tS+1.25;
     do
       try
       {
@@ -389,11 +389,14 @@ Bool MsHardDrvrInstall(I64 dummy=0) //can be spawned
   ms_hard.install_in_progress=TRUE;
   OutU8(0xA1,InU8(0xA1)|0x10);
   ms_hard.installed=ms_hard.irqs_working=FALSE;
-  IntEntrySet(0x2C,&IRQMsHard);
+  IntEntrySet(0x21,&IntNop);
+  IntEntrySet(0x2C,&IntNop);
   for(i=0; i<5; i++)
     ms_hard.bttns[i]=0;
   if (i=MsHardRst)
     OutU8(0xA1,InU8(0xA1)&~0x10);
+  IntEntrySet(0x21,&IRQKbd);
+  IntEntrySet(0x2C,&IRQMsHard);
   KbdMsRst;
   ms_hard.install_attempts++;
   ms_hard.installed=ms_hard.evt=i;

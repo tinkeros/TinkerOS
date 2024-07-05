@@ -147,7 +147,7 @@ asm
   RET
 };
 
-
+#help_index "BitOPS"
 _extern _ANDN I64 Andn(I64 val, I64 val2); // Returns val & ~val2
 // Bit extract, returns (src >> start) & ((1 << len) - 1)
 _extern _BEXTR I64 Bextr(I64 src, U8 start, U8 len);
@@ -163,3 +163,4 @@ _extern _RDSEED I64 RDSeed(); // Returns a random 64-bit value using RDSEED
 _extern _CRC32 U32 Crc32(U32 a, U32 val);
 // Returns 32-bit accumulated CRC32 accumulating 64-bit val into a.
 _extern _CRC64 U32 Crc64(U64 a, U64 val);
+#help_index ""

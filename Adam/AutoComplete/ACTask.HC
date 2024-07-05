@@ -370,3 +370,12 @@ public Bool AutoComplete(Bool val=OFF)
   }
   return old_val;
 }
+
+U0 ShowACWhenReady()
+{
+  while (!Bt(&sys_run_level,RLf_AUTO_COMPLETE))
+  {
+    Sleep(100);
+  }
+  AutoComplete(ON);
+}

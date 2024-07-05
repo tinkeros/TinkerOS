@@ -50,10 +50,20 @@ Bool CtrlInsideRect(CCtrl *c,I64 x,I64 y)
 
 public Bool CtrlInside(CCtrl *c,I64 x,I64 y)
 {//Is x,y inside a ctrl?
+  Bool res;
   if (c->flags&CTRLF_SHOW)
   {
     if (c->inside_ctrl)
-      return (*c->inside_ctrl)(c,x,y);
+    {
+      try {
+        res=(*c->inside_ctrl)(c,x,y);
+      }
+      catch {
+        Fs->catch_except=TRUE;
+        res=FALSE;
+      }
+      return res;
+    }
     else
       return CtrlInsideRect(c,x,y);
   }

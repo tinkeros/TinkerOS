@@ -1,0 +1,12 @@
+
+$WW,1$TinkerOS can use an OPL2/3 chip as a sound output device provided it can be accessed with IO ports.  This allows for nearly unlimited different instrument sounds to be used in place of the default square wave.  In some cases this provides sound when PC speaker is not an option or supported.
+
+It has been tested with QEMU adlib, VirtualBox + VMusic extension, and VMware (select DOS as OS type).
+
+These virtual machine 3 cases should be autodetected if present.
+
+It also works with real hardware such as an OPL2LPT or OPL3LPT connected to a parallel port!
+
+See functions below for picking ($FG,4$PickInst$FG$) and generating ($FG,4$RandInst$FG$) instruments to try in place of the default square wave sound.
+$WW,0$
+ 

@@ -1,0 +1,100 @@
+TinkerOS contains:
+
+$FG,4$Everything from TempleOS plus:$FG$
+
+Command line shortcut:
+
+  $FG,4$Cdd(dir); = Cd(dir);Dir;$FG$
+
+New key shortcuts:
+
+  $FG,4$F8$FG$       - Paste last statement
+  $FG,4$SHIFT-F8$FG$ - Pause/resume blink scroll
+  $FG,4$F9$FG$       - Save screenshot to ~/ScrnShot or RAM disk
+  $FG,4$SHIFT-F9$FG$ - Save screenclip to ~/ScrnShot or RAM disk
+
+Additional Games included:
+
+  $FG,4$After Egypt
+  CF2 (expanded Castle Frankenstein)
+  Cube
+  Oregon Trail
+  SpyHunt (improved Titanium)
+  Sudoku
+  Wordle$FG$
+
+Enhanced graphics:
+
+  $FG,4$Can change resolution and scaling
+  Draw with 254 different 24-bit colors
+  Can write any colors directly to FB
+  Can display more CPU cores
+  Safe or Fast graphics modes
+  Seth can help render in some cases
+  Change brightness SetBrightness
+  Can change FPS without kernel rebuild
+
+$FG$Enhanced sound:
+
+  $FG,4$OPL support via ISA/PCI/LPT
+  Use any OPL instrument
+  Built in instrument list
+  Randomly generate 64-bit instruments!
+  $LK,"OPL sound support functions",A="HI:OPL"$
+
+$FG$Other TinkerOS features:
+
+  $FG,4$AHCI and Legacy/IDE drive support$FG$
+  $FG,4$More compatible with baremetal
+  Screenshot/ScreenClip/GR viewer
+  Improved installer with more options
+  Improved BootRAM can retain RAM disk
+  Seamless mouse in VirtualBox VMs
+  Experimental Networking
+  Improved boot-loader menu
+  Supports additional keyboard keys
+  Supports more CPU cores
+  More verbose PCI reporting
+  Additional PCI device functions
+  Raw mouse capture for games (CF2)
+  A few new tutorials
+
+$FG$USB image additional features:
+
+  $FG,4$Live USB boot to RAM (try or install)
+  Can also live USB boot TempleOS to RAM!
+  Clonezilla to partition hard drive
+  Clonezilla to backup TOS installs
+
+$FG$Easy kernel recompiling:
+
+  $FG,4$MakeAllDef - compile default kernel  
+  MakeAllIns - same and installs also
+  ChangeRes(scale) - Resolution/scale
+
+$FG$Updated functionality:
+$FG,4$
+  $LK,"Easier kernel compile / install",A="HI:Install"$
+
+  $LK,"ScreenSavers",A="HI:ScreenSaver"$
+
+  $LK,"Client for Linux remote server",A="HI:TOSClient"$
+
+  $LK,"Tools for making Seth work",A="HI:Seth"$
+
+  $LK,"Restored BMP support",A="HI:Graphics/Windows BMP Files"$
+
+  $LK,"System Info",A="HI:SysInfo"$
+
+  $LK,"Video FPS and resolution settings",A="HI:Video"$
+
+  $LK,"Basic file hashing",A="HI:Hashing"$
+
+  $LK,"Additional BitOPS functions",A="FI:/Adam/Opt/Utils/BitOps.HC.Z"$
+
+  $LK,"Serial port communication functions",A="HI:Comm"$
+
+  $LK,"A very incomplete list of other new functions",A="HI:OtherTinkerOSFuncs"$
+
+$WW,1$$FG$There are $FG,4$hundreds of other new functions$FG$ not listed above which are extensions of existing functions (but maintain backwards compatability) or are new functions I found useful and missing from TempleOS which I added.  These new functions are found in the appropriate help index they belong to or are kernel specific and not typically need by average users.
+

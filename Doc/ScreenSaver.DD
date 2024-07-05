@@ -1,0 +1,10 @@
+
+Screen savers are in: 
+
+$RED$/Demo/ScreenSavers$FG$
+
+Right click one and select AdamInclude
+
+For dev info see $LK,"ScreenSavers.DD.Z",A="FI:/Doc/ScreenSavers.DD.Z"$
+
+Set the screensaver timeout with:

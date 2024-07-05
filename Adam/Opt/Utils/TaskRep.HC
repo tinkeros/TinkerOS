@@ -84,10 +84,13 @@ public U0 TaskCoreRep(I64 core, Bool detailed=FALSE, Bool kill=FALSE)
   POPFD
 }
 
+#help_index "Seth"
 public U0 KillSeth(I64 core)
-{
+{//Used to kill all tasks on a core.
   TaskCoreRep(core, FALSE, TRUE);
 }
+#help_index "Info;Task"
+
 
 public U0 TaskRep(Bool detailed=FALSE)
 {//Report current tasks on all cores.

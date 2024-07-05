@@ -925,9 +925,10 @@ U8 *SysRepFlagsMk(U8 *buf)
   return str;
 }
 
+#help_index "SysInfo"
 public I64 SysRep(I64 type=SMBIOSt_ALL, I64 handle=0, Bool show_all_flags=FALSE,
     I64 memdev_handle=0xFFFF, I64 verbose=2)
-{//Display info of SMBIOS structures.  Returns cnt of displayed structures.
+{//Display verbose system info.
 
 #else
 // TempleOS
@@ -1565,7 +1566,7 @@ loop_end:
 }
 
 public U0 SysRepLite()
-{
+{//Show minimal system info.
   SysRep(SMBIOSt_ALL, 0, FALSE, 0xFFFF, 0);
 }
 
@@ -1573,6 +1574,8 @@ public U0 BIOSRep()
 {//Wrapper around $LK,"SysRep",A="MN:SysRep"$() to only show BIOS info.
   SysRep(SMBIOSt_BIOS);
 }
+
+#help_index ""
 
 public U0 SysRepSurvey()
 {//Display system info excluding sensative info

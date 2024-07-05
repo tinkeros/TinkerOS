@@ -14,7 +14,7 @@
 #define BOOT_DIR_OTHERMBR_BIN_C	BOOT_DIR "/OtherMBR.BIN.C"
 #define BOOT_DIR_RESCUEMBR_BIN_C	BOOT_DIR "/RescueMBR.BIN.C"
 
-public U0 BootMHDOldRead(U8 src_drv,U8 dst_drv)
+U0 BootMHDOldRead(U8 src_drv,U8 dst_drv)
 {
   //Reads MBR from disk drive containing src partition.
 //Writes a single blk file to dst BOOT_DIR.
@@ -40,7 +40,7 @@ public U0 BootMHDOldRead(U8 src_drv,U8 dst_drv)
   }
 }
 
-public U0 BootMHDOldWrite(U8 src_drv,U8 dst_drv)
+U0 BootMHDOldWrite(U8 src_drv,U8 dst_drv)
 {
   //Reads OldMBR from src drive BOOT_DIR.
 //writes it to the MBR of the drive with dst partition.
@@ -61,7 +61,7 @@ public U0 BootMHDOldWrite(U8 src_drv,U8 dst_drv)
 }
 
 public U0 BootMHDZero(U8 dst_drv)
-{
+{// Zero MBRof disk
   //Set MBR of disk with dst partition to zero.
   //This is dangerous!!
   //The TempleOS partitioner doesn't play well
@@ -81,7 +81,7 @@ public U0 BootMHDZero(U8 dst_drv)
 }
 
 public Bool BootMHDIns(U8 drv_let,U8 *drv_lst=NULL)
-{
+{//Install new master boot record
   //Create new MBR on the disk that has drv_let as a partition.
 //Puts stage 2 in BOOT_DIR of drv_let.
   CBlkDev *bd,*bd1;

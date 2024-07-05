@@ -39,6 +39,6 @@ You can place macros in your $LK,"PersonalMenu",A="FI:~/PersonalMenu.DD"$ for $L
 
 >$FG,2$Find("needle","/Demo/*.HC.Z;*.DD.Z;");$FG$ See $LK,"File Utils",A="FI:::/Doc/FileUtils.DD"$.
 
-$LK,"Cmd Line Routines",A="HI:Cmd Line (Typically)"$
+$LK,"Cmd Line Routines",A="HI:Cmd Line (Typically)"$
 
 $MA-X+PU,"Take Tour",LM="User(\"Cd(\\\"::/Misc/Tour\\\");;InFile(\\\"Tour\\\");\n\");"$

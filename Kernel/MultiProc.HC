@@ -182,7 +182,6 @@ U0 MPAPICInit()
   if (Gs->num)
   {
     IntInit1;
-    Busy(10);
     SetRFlags(RFLAGG_NORMAL);
   }
 }
@@ -275,23 +274,9 @@ CTask *SpawnQue(U0 (*fp_addr)(U8 *data),U8 *data=NULL,U8 *task_name=NULL,
 U0 CoreAPSethInit()
 {//Called by multicore's seth task after $LK,"Core0StartMP",A="MN:Core0StartMP"$()
 //as the first thing a CPU does before waiting for jobs.
-  Busy(10);
   MPAPICInit;
   Fs->rip=&CoreAPSethTask;
   TaskContextRestore;
-}
-
-U64 nextPow2(U64 x)
-{
-  x--;
-  x |= x >> 1;
-  x |= x >> 2;
-  x |= x >> 4;
-  x |= x >> 8;
-  x |= x >> 16;
-  x |= x >> 32;
-  x++;
-  return x;
 }
 
 U0 Core0StartMP()
@@ -304,9 +289,7 @@ U0 Core0StartMP()
   CRAXRBXRCXRDX ee;
   CPUId(0x1,&ee);
   if (!Bt(&ee.rdx,9))
-  {
     return;
-  }
   PUSHFD
   CLI
   while (LBts(&sys_semas[SEMA_SYS_TIMER],0))
@@ -326,7 +309,6 @@ U0 Core0StartMP()
   //When you start-up other cores, they jump to an addr
   //specified by a byte vect number, $LK,"MPN_VECT",A="MN:MPN_VECT"$ which corresponds
   //to a location 4096*vect number, $LK,"MP_VECT_ADDR",A="MN:MP_VECT_ADDR"$$WW,0$.
-  // Copy initial ASM code for CPU to execute
   MemCpy(mp,COREAP_16BIT_INIT,COREAP_16BIT_INIT_END-COREAP_16BIT_INIT);
   MemCpy(&mp->ap_gdt_ptr,SYS_GDT_PTR,sizeof(CSysLimitBase));
   mp_cnt_initial=mp_cnt=1;
@@ -334,17 +316,16 @@ U0 Core0StartMP()
   *(LAPIC_LVT_ERR)(U32 *)=
   *(LAPIC_LVT_ERR)(U32 *)&0xFFFFFF00+MPN_VECT;
   WBINVD //Not sure why this is needed.	Might just need delay. $LK,"MemCpy",A="MN:MemCpy"$ above?
-  Busy(10000);
+  Busy(10);
   *(LAPIC_ICR_LOW)(U32 *)=0xC4500; //assert init IPI
   Busy(10000);
   *(LAPIC_ICR_LOW)(U32 *)=0xC4600+MPN_VECT; //start-up
   Busy(200);
   *(LAPIC_ICR_LOW)(U32 *)=0xC4600+MPN_VECT; //start-up
-  Busy(200000); // try delaying longer for more cores which take more time
+  Busy(150000); // try delaying longer for more cores which take more time
   // This seems sketchy?
   for (i=0; i<10000; i++)
     LBts(&mp_cnt_lock,0); //Don't let more through
-  Busy(200);
   my_mp_cnt=mp_cnt_initial;
   if (my_mp_cnt>MP_PROCESSORS_NUM)
     my_mp_cnt=MP_PROCESSORS_NUM;

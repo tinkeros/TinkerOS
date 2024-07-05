@@ -44,7 +44,7 @@ TourPut(
 "compile and execute that statement.\n"
 ,TRUE);
 
-/*
+/*
 InPrint(10,"Ed(\"/Doc/HolyC.DD.Z\");\n");
 
 TourPut(

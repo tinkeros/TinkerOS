@@ -97,8 +97,10 @@ md5_print(U32 part)
   "%02x%02x%02x%02x", part.u8[0], part.u8[1], part.u8[2], part.u8[3];
 }
 
+#help_index "Hashing"
+
 public U0 md5buf(U8 *bytes, I64 len, U8 **res=NULL)
-{
+{//MD5 sum raw buffer
   U8 *msg;
   I32 i,msg_len;
   U32 a, b, c, d;
@@ -137,11 +139,27 @@ public U0 md5buf(U8 *bytes, I64 len, U8 **res=NULL)
 }
 
 public U8 *md5(U8 *file, U8 **res=NULL)
-{
+{//MD5 sum file returning string
   I64 size=0;
   U8 *data=FileRead(file,&size);
-  if (size>0 && data)
+  if (size>=0 && data)
     md5buf(data,size, res);
   Free(data);
   return res;
 }
+
+public U0 Md5Sum(U8 *file)
+{//MD5 sum file printing hash
+  I64 size=0;
+  U8 *data=FileRead(file,&size);
+  if (size>=0 && data)
+  {
+    "File: %s MD5: ",file;
+    md5buf(data,size, NULL);
+    "\n";
+  }
+  
+  Free(data);
+}
+
+#help_index ""

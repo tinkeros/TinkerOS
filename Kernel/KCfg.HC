@@ -119,7 +119,7 @@ U0 KCfgOptions(CKCfg *c)
           "640 x 480 (default 4:3)\n"
           "800 x 600 (alt 4:3, some games may not look right)\n\n";
           c->fb_width=GetI64("Enter width (min 640, max 3440):",640,640,3440);
-          c->fb_height=GetI64("Enter height (min 480, max 1440):",480,480,1440);
+          c->fb_height=GetI64("Enter height (min 360, max 1440):",480,360,1440);
           c->gr_width=c->fb_width;
           c->gr_height=c->fb_height;
           c->gr_scale=0;
@@ -131,6 +131,7 @@ U0 KCfgOptions(CKCfg *c)
           {
             if (c->fb_width>640 && c->fb_height==480 || c->fb_width>800 && c->fb_height==600 || c->fb_width>1024 && c->fb_height==768 || c->fb_width % 8)
             {
+#ifndef NO_LB
               if (c->fb_width % 8 == 0)
               {
                 "\nWould you like to letterbox for a true"
@@ -162,6 +163,7 @@ U0 KCfgOptions(CKCfg *c)
                 c->letter_box_bar_width=(c->fb_width-c->gr_width)/2;
                 break;
               }
+#endif
             }
             if (c->fb_width>=800 && c->fb_height>=600)
             {

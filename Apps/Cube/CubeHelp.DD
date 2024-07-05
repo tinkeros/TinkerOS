@@ -1,0 +1,40 @@
+$FG,4$h$FG$/F1        - $FG,4$help$FG$
+$FG,4$q$FG$/ESC       - $FG,4$quit$FG$
+$FG,4$s$FG$/SHIFT-ESC - $FG,4$smash$FG$ cube and quit
+
+$FG,4$Arrow keys$FG$  - Rotate entire cube 
+
+Rotate face $FG,4$front$FG$ left / $FG,4$back$FG$ right:
+$FG,4$f$FG$ - Rotate $FG,4$front$FG$ left clockwise
+$FG,4$F$FG$ - Rotate $FG,4$front$FG$ left counter-clockwise
+$FG,4$b$FG$ - Rotate $FG,4$back$FG$ right clockwise
+$FG,4$B$FG$ - Rotate $FG,4$back$FG$ right counter-clockwise
+
+Rotate face front $FG,4$right$FG$ / back $FG,4$left$FG$:
+$FG,4$r$FG$ - Rotate front $FG,4$right$FG$ clockwise
+$FG,4$R$FG$ - Rotate front $FG,4$right$FG$ counter-clockwise
+$FG,4$l$FG$ - Rotate back $FG,4$left$FG$ clockwise
+$FG,4$L$FG$ - Rotate back $FG,4$left$FG$ counter-clockwise
+
+Rotate face top ($FG,4$upper$FG$) / bottom ($FG,4$down$FG$):
+$FG,4$u$FG$ - Rotate the $FG,4$upper$FG$ face clockwise
+$FG,4$U$FG$ - Rotate the $FG,4$upper$FG$ face counter-clockwise
+$FG,4$d$FG$ - Rotate the $FG,4$downward$FG$ face clockwise
+$FG,4$D$FG$ - Rotate the $FG,4$downward$FG$ face counter-clockwise
+
+Cheater multi-step keys:
+$FG,4$o$FG$ - $FG,4$Orient$FG$ the top cube closet to you. $FG,4$(RDrd)x2$FG$
+$FG,4$c$FG$ - Permute top to make $FG,4$cross$FG$.$FG$ (assumes bottom 2 layers done) $FG,4$(fruRUF)$FG$
+$FG,4$p$FG$ - $FG,4$Permute$FG$ the top 3 corners farthest from you. $FG,4$(urULuRUl)$FG$
+$FG,4$e$FG$ - $FG,4$Exchange$FG$ top left front middle with the top left back middle. $FG,4$(ruRuruuRu)$FG$
+$FG,4$m$FG$ - $FG,4$Move middle$FG$ top left cube to left middle layer on the right. $FG,4$(urURUFuf)$FG$
+$FG,4$M$FG$ - $FG,4$Move middle$FG$ top left cube to left middle layer on the left. $FG,4$(ULulufUF)$FG$
+
+Beginners cube solve guide with help from cheat key algorithms:
+
+1) Complete any outter face layer. (Hint do top, then $FG,4$e/p/u/U $FG$maybe useful!$FG$)
+2) Move complete layer to bottom $FG,4$arrows$FG$ and align so middle is correct. $FG,4$d/D$FG$
+3) Use $FG,4$u/U$FG$ and $FG,4$m/M$FG$ to complete middle layer.
+4) Use $FG,4$u/U$FG$ and $FG,4$c$FG$ to make cross on top layer.
+5) Use $FG,4$u/U$FG$ and $FG,4$e$FG$ then $FG,4$u/U$FG$ and $FG,4$p$FG$ to place top cubes in correct locations.
+6) Use $FG,4$u/U$FG$ and $FG,4$o$FG$ to re-orient the top layer corners to complete.

@@ -271,7 +271,7 @@ extern Bool DiscEject(U8 drv_let);
 extern Bool DiscLoad( U8 drv_let);
 extern Bool SwitchToAHCI();
 extern Bool SwitchToIDE();
-public extern U0 AHCIInit(I64 addr=NULL);
+public extern Bool AHCIInit(I64 addr=NULL);
 
 #help_index "DolDoc/Clip"
 public extern CDoc *sys_clip_doc;
@@ -585,6 +585,7 @@ public extern I64 GetS(U8 *buf,I64 size,Bool allow_ext=TRUE);
 public extern U8 *GetStr(U8 *msg=NULL,U8 *dft=NULL,I64 flags=0);
 public extern U0 KbdCmdSend(I64 port, U8 val);
 public extern I64 KbdCmdRead();
+public extern U0 MsHardGetType();
 public extern U0 KbdCmdFlush();
 public extern U0 MsHardHndlr(U8 *pkt=NULL);
 public extern Bool MsHardRst();
@@ -597,6 +598,7 @@ extern U0	KbdMsHndlr(Bool poll_kbd,Bool poll_ms);
 extern U0	KbdMsInit();
 extern I64	KbdMsgsQue();
 extern U0	KbdMsRst();
+public extern U0 KbdModLEDs(U8 v);
 public extern U0 KbdTypeMatic(U8 delay);
 extern Bool	MsHardDrvrInstall();
 public extern I64 PressAKey();
@@ -933,3 +935,19 @@ public extern I64 (*fp_virtual_blkdev_get_max)();
 public _extern SYS_INITRAMFS_PTR U8* sys_initramfs_ptr;
 public _extern SYS_INITRAMFS_SIZE U32 sys_initramfs_size;
 
+#help_index "ScreenSaver"
+#help_file "::/Doc/ScreenSaver"
+
+#help_index "TinkerOS"
+#help_file "::/Doc/TinkerOS"
+
+#help_index "TOSClient"
+#help_file "::/Doc/TOSClient"
+
+#help_index "Seth"
+#help_file "::/Doc/Seth"
+
+#help_index "OPL"
+#help_file "::/Doc/OPL"
+
+#help_index ""

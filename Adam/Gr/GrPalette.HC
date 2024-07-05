@@ -91,3 +91,17 @@ public U0 GrPaletteSet(CBGR48 *bgr48)
   for (i=0; i<COLORS_NUM; i++)
     GrPaletteColorSet(i,bgr48[i]);
 }
+
+public U0 SetBrightness(U64 p)
+{//Sets default 16 colors scaled by p/100
+  I64 i;
+  CBGR48 c;
+  for (i=0;i<16;i++)
+  {
+    c=gr_palette_std[i];
+    c.r.u8[1]=ClampU64(c.r.u8[1]*p/100,0,255);
+    c.g.u8[1]=ClampU64(c.g.u8[1]*p/100,0,255);
+    c.b.u8[1]=ClampU64(c.b.u8[1]*p/100,0,255);
+    GrPaletteColorSet(i,c);
+  }
+}

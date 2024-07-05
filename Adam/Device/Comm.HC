@@ -31,6 +31,7 @@ class CComm
   I64   base,
         device,
         flags,
+        poll,
         type;
   CFifoU8 *RX_fifo;
 };
@@ -64,6 +65,33 @@ public U0 CommHndlr(I64 port)
   }
 }
 
+public U0 PollCommHndlr(I64 port)
+{// Com port IRQ handler
+  CComm *c;
+  CFifoU8 *f;
+  I64 stat, free_size=COMM_RX_FIFO_SIZE;
+  c=&comm_ports[port];
+  if (Bt(&c->flags,COMf_ENABLED))
+  {
+    f=c->RX_fifo;
+    if (f->out_ptr>f->in_ptr)
+      free_size-=f->mask+1-(f->out_ptr-f->in_ptr);
+    else
+      free_size-=f->in_ptr-f->out_ptr;
+    while (free_size>0)
+    {
+      stat=InU8(c->base+UART_LSR);
+      if (stat & 1)	//RX
+      {
+        FifoU8Ins(c->RX_fifo,InU8(c->base+UART_RDR));
+        free_size--;
+      }
+      else
+        break;
+    }
+  }
+}
+
 interrupt U0 IRQComm3()
 {// Com 2/4 IRQ handler
   CommHndlr(2);
@@ -78,21 +106,18 @@ interrupt U0 IRQComm4()
   OutU8(0x20,0x20);
 }
 
-
 interrupt U0 IRQCommPCI()
 {// Com 5+ IRQ handler
   I64 port=5;
   while (port<=MAX_COMM_NUM)
   {
-    if (Bt(comm_ports[port].flags,COMf_ENABLED) && comm_ports[port].base>0)
+    if (Bt(&comm_ports[port].flags,COMf_ENABLED) && comm_ports[port].base>0)
       CommHndlr(port++);
   }
   *(dev.uncached_alias + LAPIC_EOI)(U32*)=0;
 }
 
-
-// TODO add PCIE
-// TODO common PCI/PCIE function
+// TODO add other PCIE, common PCI/PCIE function
 
 I64 AddPCIComms(I64 next_port)
 {
@@ -143,8 +168,12 @@ public CComm *CommInit7n1(I64 port,I64 baud)
   OutU8(c->base+UART_MCR,4);
   OutU8(c->base+UART_IER,0);	//Disable all IRQ
   OutU8(c->base+UART_MCR,0xA);	//out2 and rts
-  OutU8(0x21,InU8(0x21) & (0xFF-0x18));	//Enable 8259 IRQ 3 & 4
-  OutU8(c->base+UART_IER,1);	//RX but no THR empty
+  if (!c->poll) {
+    OutU8(0x21,InU8(0x21) & (0xFF-0x18));	//Enable 8259 IRQ 3 & 4
+    OutU8(c->base+UART_IER,1);	//RX but no THR empty
+  }
+  else 
+    OutU8(c->base+UART_IIR,0xC7);
   LBts(&c->flags,COMf_ENABLED);
   POPFD
   return c;
@@ -168,32 +197,70 @@ public CComm *CommInit8n1(I64 port,I64 baud)
   OutU8(c->base+UART_MCR,4);
   OutU8(c->base+UART_IER,0);	//Disable all IRQ
   OutU8(c->base+UART_MCR,0xA);	//out2 and rts
-  OutU8(0x21,InU8(0x21) & (0xFF-0x18));	//Enable 8259 IRQ 3 & 4
-  OutU8(c->base+UART_IER,1);	//RX but no THR empty
+  if (!c->poll) {
+    OutU8(0x21,InU8(0x21) & (0xFF-0x18));	//Enable 8259 IRQ 3 & 4
+    OutU8(c->base+UART_IER,1);	//RX but no THR empty
+  }
+  else
+    OutU8(c->base+UART_IIR,0xC7);
   LBts(&c->flags,COMf_ENABLED);
   POPFD
   return c;
 }
 
-public U0 CommPutChar(I64 port,U8 b)
-{// Write 1 byte to com port
-  I64 base=comm_ports[port].base;
-  while (!(InU8(base+UART_LSR) & 0x20))
-    Yield;
-  OutU8(base+UART_THR,b);
-  while (!(InU8(base+UART_LSR) & 0x20))
-    Yield;
+public U0 PollComm(U8 *data)
+{// Polls a serial port
+  PUSHFD
+  CLI
+  PollCommHndlr(data);
+  POPFD
 }
 
-public U8 CommGetChar(I64 port)
+public U0 CommPutChar(I64 port,U8 b, I64 timeout_ms=500)
+{// Write 1 byte to com port
+  I64 base=comm_ports[port].base;
+  F64 timeout_time=tS+ToF64(timeout_ms)/1000.0;
+  while (!(InU8(base+UART_LSR) & 0x20))
+  {
+    if (tS>timeout_time) throw('ComErr');
+    Yield;
+  }
+  OutU8(base+UART_THR,b);
+  while (!(InU8(base+UART_LSR) & 0x20))
+  {
+    if (tS>timeout_time) throw('ComErr');
+    Yield;
+  }
+  if (Bt(&comm_ports[port].flags,COMf_ENABLED) && comm_ports[port].poll)
+  {
+    Spawn(&PollComm, port);
+    if (tS>timeout_time) throw('ComErr');
+    Yield;
+  }
+}
+
+public U8 CommGetChar(I64 port, I64 timeout_ms=500)
 {// Get 1 byte from com port
   U8 chr;
+  F64 timeout_time=tS+ToF64(timeout_ms)/1000.0;
+  if (Bt(&comm_ports[port].flags,COMf_ENABLED) && comm_ports[port].poll)
+  {
+    PollCommHndlr(port);
+  }
   while (1)
   {
     if (FifoU8Rem(comm_ports[port].RX_fifo, &chr))
       return chr;
-    else
-      Yield;
+    else {
+      if (Bt(&comm_ports[port].flags,COMf_ENABLED) && comm_ports[port].poll)
+      {
+        PollCommHndlr(port);
+        Yield;
+      }
+      else
+        Yield;
+    }
+    if (tS>timeout_time) throw('ComErr');
   }
 }
 
@@ -203,11 +270,21 @@ public Bool CommGetCharNoWait(I64 port, U8 *byte_out)
   {
     return TRUE;
   }
+  if (Bt(&comm_ports[port].flags,COMf_ENABLED) && comm_ports[port].poll)
+  {
+    PollCommHndlr(port);
+    if (FifoU8Rem(comm_ports[port].RX_fifo, byte_out))
+    {
+      return TRUE;
+    }
+  }
   return FALSE;
 }
 
 public U0 CommFlush(I64 port)
 {// Flush com port fifos
+  if (Bt(&comm_ports[port].flags,COMf_ENABLED) && comm_ports[port].poll)
+      PollCommHndlr(port);
   FifoU8Flush(comm_ports[port].RX_fifo);
 }
 
@@ -234,7 +311,7 @@ public U0 CommPrint(I64 port,U8 *fmt,...)
   Free(buf);
 }
 
-public U0 PciRerouteInterrupts(I64 base, I64 cpu=0)
+U0 PciRerouteInterrupts(I64 base, I64 cpu=0)
 {
   I64 i;
   U8 *da = dev.uncached_alias + IOAPIC_REG;
@@ -248,10 +325,29 @@ public U0 PciRerouteInterrupts(I64 base, I64 cpu=0)
   }
 }
 
+U0 DisablePciInterrupts(I64 cpu=0)
+{
+  I64 i, base=0x40;
+  U8 *da = dev.uncached_alias + IOAPIC_REG;
+  U32 *_d = dev.uncached_alias + IOAPIC_DATA;
+  for(i=0; i<4; i++)
+  {
+    *da=IOREDTAB +i*2 +1;
+    *_d=dev.mp_apic_ids[cpu] << 24;
+    *da=IOREDTAB+i*2;
+    *_d=0x14000+base+i;
+  }
+}
+
 U0 EnablePCIComms()
 {
+  I64 i=5;
+ 
   if (comm_ports[5].base)
   {
+    while (comm_ports[i].base) {
+      comm_ports[i++].poll=0;
+    }
     IntEntrySet(0x40, &IRQCommPCI, IDTET_IRQ);
     IntEntrySet(0x41, &IRQCommPCI, IDTET_IRQ);
     IntEntrySet(0x42, &IRQCommPCI, IDTET_IRQ);
@@ -288,7 +384,17 @@ public U0 CommInit()
   }
   IntEntrySet(0x23,&IRQComm3);
   IntEntrySet(0x24,&IRQComm4);
-  if (next_port>5) EnablePCIComms;
+  for (i=0; i<4; i++)
+  {
+    comm_ports[i].poll=0;
+  }
+  if (next_port>5)
+  {
+    for (i=5; i<next_port; i++)
+    {
+      comm_ports[i].poll=1;
+    }
+  }
 }
 CommInit;
 
@@ -300,7 +406,27 @@ U0 CommRep()
   {
     if (comm_ports[i].base)
     {
-      "COM %d - base 0x%08x\n",i,comm_ports[i].base;
+      if (comm_ports[i].poll)
+        "COM %d - base 0x%08x (polled)\n",i,comm_ports[i].base;
+      else
+        "COM %d - base 0x%08x\n",i,comm_ports[i].base;
     }
   }
+}
+
+I64 CommGetFifoCnt(I64 port)
+{
+  CComm *c;
+  CFifoU8 *f;
+  I64 cnt=0;
+  c=&comm_ports[port];
+  if (Bt(&c->flags,COMf_ENABLED))
+  {
+    f=c->RX_fifo;
+    if (f->out_ptr>f->in_ptr)
+      cnt+=f->mask+1-(f->out_ptr-f->in_ptr);
+    else
+      cnt+=f->in_ptr-f->out_ptr;
+  }
+  return cnt;
 }

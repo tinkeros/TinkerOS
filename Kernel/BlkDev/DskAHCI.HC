@@ -903,14 +903,14 @@ U0 AHCIHbaReset()
 }
 
 
-U0 AHCIInit(I64 addr=NULL)
+Bool AHCIInit(I64 addr=NULL)
 {
   CAHCIHba *hba = NULL;
   CAHCIPort *port;
   I64 i, bdf, timeout;
   "______________________\n\n";
   if (blkdev.ahci_hba)
-    return;
+    return FALSE;
   if (!addr)
   {
     bdf = PCIClassFind(PCIC_STORAGE << 16 | PCISC_AHCI << 8 + 1,
@@ -925,6 +925,8 @@ U0 AHCIInit(I64 addr=NULL)
       hba = PCIReadU32(bdf.u8[2], bdf.u8[1], bdf.u8[0],
               PCIR_BASE5) & ~0x1F; //Last 4 bits not part of address.
     }
+    // Skip for now to prevent delay
+    /*
     if (hba == NULL)
     {
       bdf = GetPcieDevBar(PCIC_STORAGE, PCISC_AHCI, 5);
@@ -939,13 +941,14 @@ U0 AHCIInit(I64 addr=NULL)
         hba = bdf;
       }
     }
+    */
     if (hba == NULL)
-      return;
+      return FALSE;
   }
   else
   {
     "AHCI: No AHCI controller found.\n";
-    return;
+    return FALSE;
   }
   "AHCI: Controller found\n";
   hba = PCIReadU32(bdf.u8[2], bdf.u8[1], bdf.u8[0],
@@ -986,10 +989,10 @@ U0 AHCIInit(I64 addr=NULL)
     {
       //$BK,1$Mk ports idle?$BK,0$
       port = &hba->ports[i];
-      "AHCI: Port %2d signature 0x%08X "
-      , i, port->signature;
       if (port->signature == AHCI_PxSIG_ATA || port->signature == AHCI_PxSIG_ATAPI)
       {
+        "AHCI: Port %2d signature 0x%08X "
+        , i, port->signature;
         if (port->signature == AHCI_PxSIG_ATAPI)
         {
           PCIBts(&port->command, AHCI_PxCMDf_ATAPI);
@@ -1003,11 +1006,10 @@ U0 AHCIInit(I64 addr=NULL)
           AHCIPortCmdStop(i);
         }
       }
-      else
-        "Unknown\n";
     }
   }
   "______________________\n\n";
+  return TRUE;
 }
 
 Bool AHCIBootDVDProbeAll(CBlkDev *bd)

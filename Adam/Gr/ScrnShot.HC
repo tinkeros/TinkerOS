@@ -7,10 +7,13 @@
  * give me some winning lotto numbers.
  */
 
-U0 ScrnShotClip(U8 *filename)
+#help_index "OtherTinkerOSFuncs"
+
+public U0 ScrnShotClip(U8 *filename)
 {// Captures a mouse seleted screen clip
   I64 x=0, y=0, x2=0, y2=0, msg_code, old_inhibit=Fs->win_inhibit;
   CDC *dc,*dc2,*dc3;
+  CTask *old_focus=sys_focus_task;
   ms.show=FALSE;
   Yield;
   Fs->win_inhibit=WIG_TASK_DFT;
@@ -19,7 +22,9 @@ U0 ScrnShotClip(U8 *filename)
   ms.show=TRUE;
   LBts(&sys_semas[SEMA_REFRESH_IN_PROGRESS],0);
   Yield;
-  gr_alt_scrn=dc2;
+  SettingsPush;
+  WinMax;
+  SetAltScrn(dc2);
   Yield;
   do
   {
@@ -42,17 +47,18 @@ U0 ScrnShotClip(U8 *filename)
   dc3=DCExt(dc,MinI64(x,x2)+1,MinI64(y,y2)+1,MaxI64(x,x2)-1,MaxI64(y,y2)-1);
   LBts(&sys_semas[SEMA_REFRESH_IN_PROGRESS],0);
   Yield;
-  gr_alt_scrn=NULL;
+  SetSysFocusTask(old_focus);
   VGAFlush;
   LBtr(&sys_semas[SEMA_REFRESH_IN_PROGRESS],0);
   GRWrite(filename,dc3,DCSF_COMPRESSED|DCSF_PALETTE_GET);
+  SettingsPop;
   Fs->win_inhibit=old_inhibit;
   DCDel(dc);
   DCDel(dc2);
   DCDel(dc3);
 }
 
-U0 ScrnShot(Bool no_mouse=TRUE,Bool clip=FALSE)
+public U0 ScrnShot(Bool no_mouse=TRUE,Bool clip=FALSE)
 {// Captures GR screenshot or clip saved to ~/ScrnShot if possible, otherwise B:/ScrnShot
   Bool prev_mouse=ms.show,old_silent=IsSilent;
   U8 *prefix,*filename,*dircur;
@@ -98,7 +104,7 @@ U0 ScrnShot(Bool no_mouse=TRUE,Bool clip=FALSE)
   if (no_mouse) ms.show=prev_mouse;
 }
 
-U0 GrView(U8 *filename)
+public U0 GrView(U8 *filename)
 {// Views GR file full screen, ESC to exit
   I64 x=0,y=0;
   CDC *dc,*dc2;
@@ -115,7 +121,12 @@ U0 GrView(U8 *filename)
       Yield;
       SetAltScrn(dc2);
       Yield;
-      DeathWait(tmp);
+      while (TaskValidate(tmp))
+      {
+        if (sys_focus_task!=tmp)
+          Kill(tmp);
+        Yield;
+      }
       SetAltScrn;
       VGAFlush;
       LBtr(&sys_semas[SEMA_REFRESH_IN_PROGRESS],0);
@@ -134,7 +145,12 @@ U0 GrView(U8 *filename)
       Yield;
       SetAltScrn(dc);
       Yield;
-      DeathWait(tmp);
+      while (TaskValidate(tmp))
+      {
+        if (sys_focus_task!=tmp)
+          Kill(tmp);
+        Yield;
+      }
       SetAltScrn;
       VGAFlush;
       LBtr(&sys_semas[SEMA_REFRESH_IN_PROGRESS],0);
@@ -148,3 +164,4 @@ U0 GrView(U8 *filename)
   DCDel(dc2);
 }
 
+#help_index ""

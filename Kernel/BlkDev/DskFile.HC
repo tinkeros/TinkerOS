@@ -1,3 +1,9 @@
+U0 FileReadCB(U8 *filename)
+{
+  // Override me if you want to intercept
+  no_warn filename;
+}
+
 U8 *FileRead(U8 *filename,I64 *_size=NULL,I64 *_attr=NULL)
 {//Read whole file from disk.
   CHashGeneric *tmph;
@@ -7,6 +13,9 @@ U8 *FileRead(U8 *filename,I64 *_size=NULL,I64 *_attr=NULL)
   CArcCompress *arc;
   absname=FileNameAbs(filename);
   altname=ToggleZorNotZ(absname);
+
+  FileReadCB(filename);
+
   if ((tmph=HashFind(absname,adam_task->hash_table,HTT_FILE))||
       (tmph=HashFind(altname,adam_task->hash_table,HTT_FILE)))
   {
@@ -92,6 +101,12 @@ U8 *FileRead(U8 *filename,I64 *_size=NULL,I64 *_attr=NULL)
   return res;
 }
 
+U0 FileWriteCB(U8 *filename)
+{
+  // Override me if you want to intercept
+  no_warn filename;
+}
+
 I64 FileWrite(U8 *filename,U8 *fbuf,I64 size,CDate cdt=0,I64 attr=0)
 {//Write whole file to disk.
   I64 c=0;
@@ -141,5 +156,6 @@ I64 FileWrite(U8 *filename,U8 *fbuf,I64 size,CDate cdt=0,I64 attr=0)
     DirContextDel(dirc);
   }
   Free(absname);
+  FileWriteCB(filename);
   return c;
 }

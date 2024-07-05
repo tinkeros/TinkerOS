@@ -13,7 +13,7 @@ class CPlannedDrv
 };
 
 public I64 DskPrt(U8 drv_let=0,...)
-{
+{//Partition disk
   /*Partition the disk containing partition drv_let.
 
   drv_let=0 means add new drive that is not already mounted.

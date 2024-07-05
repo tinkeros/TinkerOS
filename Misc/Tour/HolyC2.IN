@@ -1,7 +1,7 @@
 //Puts the cursor at the bottom.
 Msg(MSG_KEY_DOWN,0,SC_CURSOR_DOWN|SCF_CTRL);
 "\n";
-
+
 InPrint(10,"Ed(\"/Doc/HolyC.DD.Z\");\n");
 Msg(MSG_KEY_DOWN,0,SC_CURSOR_UP|SCF_CTRL);
 

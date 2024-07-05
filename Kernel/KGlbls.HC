@@ -22,7 +22,7 @@ U8 *rev_bits_table, //Table with U8 bits revd
 *set_bits_table; //Table with count of set bits in a U8
 CDate local_time_offset;
 F64	*pow10_I64,
-    sys_os_version=5.140;
+    sys_os_version=5.150;
 
 CAutoCompleteDictGlbls acd;
 CAutoCompleteGlbls ac;
@@ -71,3 +71,5 @@ I64 (*fp_virtual_blkdev_get_max)()=NULL;
 
 CDC *gr_alt_scrn=NULL;
 CBlkDev *initramfs=NULL;
+
+U8 kbd_last_leds=0;

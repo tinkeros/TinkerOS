@@ -49,7 +49,7 @@ Release Version:$FG,0$1.7$FG$
 Start Address:$FG,0$0xF0000$FG$
 Image Size:$FG,0$65536 bytes$FG$
 ROM Size:$FG,0$2048 KiB$FG$
-$TR,"Flags"$$ID,17$
+$TR,"Flags"$$ID,17$
 $FG,1$+$FG,2$ISA
 $FG,1$+$FG,2$PCI
 $FG,1$+$FG,2$PC Card

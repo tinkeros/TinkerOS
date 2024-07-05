@@ -152,7 +152,7 @@ public CPCIDev *GetPCIDevInfo(I64 b, I64 d, I64 f)
   return tmppci;
 }
 
-U0 PCILookUpDevs()
+public U0 PCILookUpDevs()
 {
   CPCIDev *tmppci;
   I64 w1,w2,b,d,f,timeout=32*8*2;
@@ -384,7 +384,7 @@ public CPCIDev *PCIDevFind(U16 class_code=NULL, U16 sub_code=NULL,
   return NULL;
 }
 
-U0 PCILookUpDev(I64 vendor, I64 dev)
+public U0 PCILookUpDev(I64 vendor, I64 dev)
 {
   CDoc *doc;
   U8 *vendor_str, *dev_id_str;
@@ -416,7 +416,8 @@ U0 PciDumpInfo(CPciDevInfo* info)
   , info->interrupt_line;
 }
 
-Bool PciFindByID(U16 vendor_id, U16 device_id, U16 class_code=NULL, U16 sub_code=NULL, I64* bus_out, I64* dev_out, I64* fun_out)
+public Bool PciFindByID(U16 vendor_id, U16 device_id, U16 class_code=NULL, U16 sub_code=NULL,
+                 I64* bus_out=NULL, I64* dev_out=NULL, I64* fun_out=NULL)
 {
   I64 vendor, device, cl, sub, b, d, f, timeout = 32 * 8 * 2;
   for (b = 0; b < sys_pci_busses; b++)
@@ -436,16 +437,16 @@ Bool PciFindByID(U16 vendor_id, U16 device_id, U16 class_code=NULL, U16 sub_code
             device = PCIReadU16(b, d, f, PCIR_DEVICE_ID);
           if (vendor == vendor_id && device == device_id)
           {
-            *bus_out = b;
-            *dev_out = d;
-            *fun_out = f;
+            if (bus_out) *bus_out = b;
+            if (dev_out) *dev_out = d;
+            if (fun_out) *fun_out = f;
             return TRUE;
           }
           if (vendor == vendor_id && 0 == device_id)
           {
-            *bus_out = b;
-            *dev_out = d;
-            *fun_out = f;
+            if (bus_out) *bus_out = b;
+            if (dev_out) *dev_out = d;
+            if (fun_out) *fun_out = f;
             return TRUE;
           }
           timeout = 32 * 8 * 2;

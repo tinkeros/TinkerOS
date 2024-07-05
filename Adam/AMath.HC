@@ -136,3 +136,16 @@ public Complex *CPoly(Complex *dst,I64 n,Complex *zeros,Complex *x)
     CEqu(dst,1.0,0.0);
   return dst;
 }
+
+public U64 NextPow2(U64 x)
+{// Get next power of 2 >= input
+  x--;
+  x |= x >> 1;
+  x |= x >> 2;
+  x |= x >> 4;
+  x |= x >> 8;
+  x |= x >> 16;
+  x |= x >> 32;
+  x++;
+  return x;
+}

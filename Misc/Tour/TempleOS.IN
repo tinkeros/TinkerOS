@@ -114,7 +114,7 @@ U0 TourMenu()
     } else
       break;
   }
-  Kill(tour_put);
+  Kill(tour_put);
 }
 
 "DocClear;WinMax;\n";

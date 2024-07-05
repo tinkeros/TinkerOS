@@ -251,13 +251,13 @@ U0 VBGuestMsUpdate()
 
 U0 VBMsPollTask()
 {
-  Sleep(100);
   while (1)
   {
     if (vb_msg_lock)
       Yield;
     else
       VBGuestMsUpdate;
+    Yield;
   }
 }
 
@@ -360,10 +360,10 @@ U0 VBMouseInit()
   AdamLog("Enabling VirtualBox mouse integration!\n");
   ms_hard.scale.x=0.25;
   ms_hard.scale.y=0.25;
-  vb_ms_task=Spawn(&VBMsPollTask,,"VBMsTask",mp_cnt-1);
+  vb_ms_task=Spawn(&VBMsPollTask,,"VBMsTask",-1);
 }
 
-U0 VBClipInit()
+Bool VBClipInit()
 {
   utf8_host_read_clipboard = CAlloc(HOST_CLIP_READ_MAX);
   utf16_host_read_clipboard = CAllocAligned(HOST_CLIP_READ_MAX*2, 16, Fs->code_heap);
@@ -396,7 +396,13 @@ U0 VBClipInit()
   OutU32(vb_guest.port, vbox_clip);
   Sleep(20);
   VBHostClipMsgReq;
-  AdamLog("Enabling VirtualBox shared clipboard!\n");
+  if (vbox_clip_msg->msg.value == 3)
+  {
+    AdamLog("Enabling VirtualBox shared clipboard!\n");
+    return TRUE;
+  }
+  AdamLog("VirtualBox shared clipboard NOT enabled!\n");
+  return FALSE;
 }
 
 
@@ -434,7 +440,7 @@ public U0 CopyTextToHost(U8 *str)
 
 U8 *GetTextFromHost()
 {
-  I64 timeout=10;
+  I64 timeout=2;
 
   vbox_clip_read->size.value = 0;
 
@@ -533,8 +539,14 @@ U0 VBInitAll()
     AdamLog("Found VirtualBox!\n");
     VBLogInit;
     VBMouseInit;
-    //VBClipInit;
-    //ClipHijackInit;
+    // Uncomment if you want experimental clipboard integration
+    // must be enabled as bidirectional and is WIP might stop
+    // working randomly though I've had luck moving entire
+    // files of text in and out with it.
+    /*
+    if (VBClipInit)
+      ClipHijackInit;
+    */
     VBLog("Initialized TinkerOS guest additions!\n");
   }
   else

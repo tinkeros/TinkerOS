@@ -315,13 +315,21 @@ if (!probe)
 }
 else
 {
-  AHCIMode=FALSE;
-  legacy = BootDVDProbeAll(bd);
-  if (!legacy)
+  if (AHCIInit)
   {
-    "Failed trying AHCI mode...\n";
-    AHCIInit;
-    if (!blkdev.ahci_hba)
+    AHCIMode=TRUE;
+    SwitchToAHCI;
+    bd->type=BDT_AHCI_SATAPI;
+    ahci=AHCIBootDVDProbeAll(bd);
+  }
+  if (!ahci)
+  {
+    "AHCI not detected, trying legacy mode...\n\n";
+    AHCIMode=FALSE;
+    SwitchToIDE;
+    bd->type=BDT_ATAPI;
+    legacy = BootDVDProbeAll(bd);
+    if (!legacy)
     {
       "Failed to find any legacy or AHCI mode devices!\n\n";
       "Please Reboot!\n";
@@ -332,27 +340,13 @@ else
     }
     else
     {
-      SwitchToAHCI;
-      bd->type=BDT_AHCI_SATAPI;
-      ahci=AHCIBootDVDProbeAll(bd);
-      if (ahci)
-      {
-        blkdev.dvd_boot_is_good=TRUE;
-      }
-      else
-      {
-        "Failed to find any legacy or AHCI mode devices!\n\n";
-        "Please reboot!\n";
-        while (TRUE)
-        {
-          Sleep(10000);
-        }
-      }
+      "Found IDE device!\n";
+      blkdev.dvd_boot_is_good=TRUE;
     }
   }
   else
   {
-    "Found IDE device!\n";
+    "Found AHCI device!\n";
     blkdev.dvd_boot_is_good=TRUE;
   }
 }

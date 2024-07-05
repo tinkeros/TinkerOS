@@ -219,17 +219,30 @@ U0 DispResOptions()
   "3: 640x480 via 768x480 (letterboxed)*\n"
   "4: 800x600 via 960x600 (letterboxed)*\n"
   "5: 1024x768 via 1280x768 (letterboxed)*\n"
-  "6: 1024x768 via 1366x768 (letterboxed)*\n"
-  "7: 640x360 via 1280x720 (2/2 scaling)\n"
-  "8: 640x400 via 1280x800 (2/2 scaling)\n"
-  "9: 640x512 via 1280x1024 (2/2 scaling)\n"
-  "10: 1280x1024 (5:4)\n"
-  "11: 1360x768 via 1366x768 (approx 16:9)\n"
-  "12: 1280x720 (HD 720p)\n"
-  "13: 1920x1080 (HD 1080p)\n"
-  "14: 960x540 via 1920x1080 (2x scaling)\n"
-  "15: 1920x1200\n"
-  "16: 960x600 via 1920x1200 (2x scaling)\n"
+  "6: 1024x768 via 1366x768 (letterboxed)*\n";
+if (CheckVidMode(1280,720))
+  "7: 640x360 via 1280x720 (2x scaling)\n";
+if (CheckVidMode(1280,800))
+  "8: 640x400 via 1280x800 (2x scaling)\n";
+if (CheckVidMode(1280,1024))
+{
+  "9: 640x512 via 1280x1024 (2x scaling)\n";
+  "10: 1280x1024 (5:4)\n";
+}
+if (CheckVidMode(1360,768))
+  "11: 1360x768 via 1366x768 (approx 16:9)\n";
+if (CheckVidMode(1280,720))
+  "12: 1280x720 (HD 720p)\n";
+if (CheckVidMode(1920,1080))
+{
+  "13: 1920x1080 (HD 1080p)\n";
+  "14: 960x540 via 1920x1080 (2x scaling)\n";
+}
+if (CheckVidMode(1920,1200))
+{
+  "15: 1920x1200\n";
+  "16: 960x600 via 1920x1200 (2x scaling)\n";
+}
   "17: Text mode 80x60 columns, no graphics\n";
   "18: Enter custom width and height\n";
   if (!AHCIMode)

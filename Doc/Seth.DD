@@ -1,0 +1,10 @@
+
+$WW,1$These functions are wrappers to help run commands or include files on Seth cores.
+
+The $FG,4$SethREPL$FG$ function provides a method of running non-interactive commands to be executed on a Seth core.  Remember Seth has no GUI or access to Adam functions, so the HolyC code you can run here is limited.
+
+$FG,4$SethFile$FG$ is a Seth analog to AdamFile. $FG,4$SethFile$FG$ will call AdamFile instead if there is only 1 core.
+
+If you lock a Seth core and your CPU usage for that core is maxed, you can kill all tasks on a specific core number with $FG,4$SethKill$FG$
+
+$WW,0$

@@ -154,3 +154,15 @@ public I64 DocOpt(U8 *files_find_mask="*",U8 *fu_flags=NULL)
   return DocOptLst(FilesFind(files_find_mask,fuf_flags&FUG_FILES_FIND),
 	fuf_flags&~FUG_FILES_FIND);
 }
+
+public Bool DocHasBin(U8 *filename)
+{// Returns true if DolDoc has binary content
+  Bool res=TRUE;
+  CDoc *doc=DocRead(filename);
+  if (!doc->bin_head || !doc->cur_bin_num) res=FALSE;
+  if (doc->cur_bin_num==1 && doc->bin_head.next == doc->bin_head.last)
+    res=FALSE;
+  DocDel(doc);
+  return res;
+}
+

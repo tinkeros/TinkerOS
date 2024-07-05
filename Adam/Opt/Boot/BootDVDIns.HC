@@ -20,7 +20,7 @@ U0 MakeAll()
 }
 
 public U0 BootDVDIns(U8 drv_let=0)
-{
+{//Helper function for DoDistro
   //See $LK,"::/Misc/DoDistro.HC"$.
   try
   {

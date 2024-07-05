@@ -75,7 +75,7 @@ public I64 PopUpTourPart()
   //TODO different menu if mp_cnt>1
   DocPrint(doc,"$$PURPLE$$TinkerOS Tours$$FG$$\n\n"
 	"$$CM+LX,4,4$$$$BT,\"Part1: The command line is a JIT compiler\",LE=1$$"
-	"$$CM+LX,4,4$$$$BT,\"Part2: HolyC documentation.\",LE=2$$"
+	"$$CM+LX,4,4$$$$BT,\"Part2: HolyC documentation.\",LE=2$$"
 /*
   // TODO what else should I do?
 */

@@ -1,4 +1,5 @@
-I64 YNorU(I64 enter_default=0)
+#help_index "OtherTinkerOSFuncs"
+public I64 YNorU(I64 enter_default=0)
 {//Wait for user to answer Y or N.
   I64 ch;
   if (ToLower(enter_default)=='y'
@@ -29,6 +30,7 @@ I64 YNorU(I64 enter_default=0)
     }
   }
 }
+#help_index ""
 
 I64 AskQuestion(U8 *q)
 {
@@ -68,7 +70,7 @@ U0 SetDefaultResp(U8 *q, I64 resp)
 }
 
 
-U0 RunSysSurvey()
+public U0 RunSysSurvey()
 {
   U8 *notes=NULL, *survey_file;
   Bool is_laptop,extra_notes,installed,sysrep;
@@ -127,7 +129,7 @@ U0 RunSysSurvey()
   "\n";
   "Any extra notes you would like to share ";
 
-  if (YorN)
+  if (YorN('n'))
   {
     notes=PopUpGetStr("Please enter extra notes, then press ESC\n");
   }
@@ -175,10 +177,19 @@ U0 RunSysSurvey()
     SysRepSurvey;
   }
 
-  if (installed)
+
+  "\nHypervisor present: %d\n\n",IsHypervisorPresent;
+
+  VidModes;
+  "\n";
+
+  if (installed && blkdev.boot_drv_let != 'T')
     survey_file=MStrPrint("%C:/Home/Survey.DD",blkdev.boot_drv_let);
   else
+  {
+    DirMk("B:/Home");
     survey_file=MStrPrint("B:/Home/Survey.DD");
+  }
 
   StrCpy(Fs->put_doc->filename.name,survey_file);
   DocWrite(Fs->put_doc);
@@ -199,7 +210,9 @@ U0 RunSysSurvey()
   AutoComplete(1);
 }
 
-U0 SysSurvey()
-{
+#help_index "SysInfo"
+public U0 SysSurvey()
+{//Run system survey
   User("RunSysSurvey;\n");
 }
+#help_index ""

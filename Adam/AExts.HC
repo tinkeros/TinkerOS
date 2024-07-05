@@ -106,3 +106,9 @@ extern U0 InUntilKey(I64 scan_code,I64 sc_mask=0xFF|SCF_SHIFT|SCF_CTRL|SCF_ALT,
 extern I64 InGetChar(...);
 extern I64 InUntilChar(...);
 extern Bool BootMHDIns(U8 drv_let,U8 *drv_lst=NULL);
+extern I64 Hypervisor();
+extern U0 PCILookUpDevs();
+extern U0 PCILookUpDev(I64 vendor, I64 dev);
+extern Bool PciFindByID(U16 vendor_id, U16 device_id, U16 class_code=NULL, U16 sub_code=NULL,
+                 I64* bus_out=NULL, I64* dev_out=NULL, I64* fun_out=NULL);
+

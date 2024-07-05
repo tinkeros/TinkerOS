@@ -1,3 +1,5 @@
+#help_index "OtherTinkerOSFuncs"
+
 public U0 DumpAdamLog()
 {// Output Adam Log to current doc/term
   DocInsDoc(DocPut,adam_task->put_doc);
@@ -15,3 +17,5 @@ public U0 HijackFunc(U8 *orig, U8 *new)
     *(orig+1)(U32*)=new-orig-5;
     POPFD
 }
+
+#help_index ""

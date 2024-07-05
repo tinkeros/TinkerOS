@@ -148,7 +148,7 @@ public U0 ACInit(U8 *mask=NULL)
   if (DrvIsWritable && FileFind(ACD_DEF_FILENAME_Z) &&
       !FileFind(ACD_DEF_FILENAME))
   {
-    if (bd->type!=BDT_RAM)
+    if (!Gs->num && bd->type!=BDT_RAM)
     {
       start_flag=FALSE;
       Spawn(&ACProgressTask,&start_flag);
@@ -167,7 +167,6 @@ public U0 ACInit(U8 *mask=NULL)
   ACDWordsLoad;
   LBtr(&ac.flags,ACf_INIT_IN_PROGRESS);
   LBts(&sys_run_level,RLf_AUTO_COMPLETE);
-  AutoComplete(ON);
 }
 
 I64 AutoCompleteSize()

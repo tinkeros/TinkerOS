@@ -1,3 +1,5 @@
+#help_index "OtherTinkerOSFuncs"
+
 I64 ToLower(I64 ch)
 {// Basic lower case conversion implementation
   I64 res=ch;
@@ -36,3 +38,5 @@ Bool AreYouSure()
   "ARE YOU SURE ";
   return YorN;
 }
+
+#help_index ""

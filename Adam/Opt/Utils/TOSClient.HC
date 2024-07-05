@@ -20,14 +20,20 @@
 #define CMD_FILE_RECV     6
 #define CMD_FILE_SEND     7
 #define CMD_ID 8
-#define CMD_URL_GET 9
+#define CMD_URL_GET_RAW 9
 #define CMD_HDIR 10
 #define CMD_GET_DIR 11
 #define CMD_CMP_HASH 12
+#define CMD_GET_CB_TEXT 13
+#define CMD_SET_CB_TEXT 14
+#define CMD_HOST_EXEC 15
+#define CMD_URL_GET_TEXT 16
 
 public I8 SNAIL_COM=-1;
 public I64 SNAIL_PORT=-1;
 
+// This is prep for possibly doing TOSClient
+// over network instead of over serial/virtual serial
 public U0 StartTOSServer(I16 port)
 {// TODO
   SNAIL_PORT=port;
@@ -60,47 +66,6 @@ U0 NetPutBlk(I64 port, U8 *data,I64 len)
   no_warn len;
   no_warn port;
   //TODO
-}
-
-public U0 ProbeComm()
-{
-  I64 i,j;
-  U8 tmp_buf[17], tmp_byte;
-  MemSet(tmp_buf,0,17);
-  for (i=1; i<=MAX_COMM_NUM; i++)
-  {
-    if (comm_ports[i].base)
-    {
-      "Checking COMM %d - ",i;
-      CommInit8n1(i, 115200);
-      CommPutChar(i,0xAA);
-      Sleep(1);
-      if (CommGetCharNoWait(i,&tmp_byte))
-      {
-        if (tmp_byte==0xAA)
-        {
-          CommPutChar(i,CMD_ID);
-          Sleep(200);
-          for (j=0; j<16; j++)
-          {
-            Sleep(5);
-            if (CommGetCharNoWait(i,&tmp_byte))
-            {
-              tmp_buf[j]=tmp_byte;
-            }
-          }
-          if (!StrCmp("TOSSERVER",tmp_buf))
-          {
-            "Found TOS Server on COMM %d\n",i;
-            SNAIL_COM=i;
-            goto probe_end;
-          }
-        }
-      }
-      " No device detected!\n";
-    }
-  }
-probe_end:
 }
 
 static I64 ClientGetCharNoWait(U8 *ch)
@@ -136,11 +101,13 @@ static U0 ClientPutBlk(U8 *data, I64 len)
     NetPutBlk(SNAIL_PORT,data,len);
 }
 
-static U8 ReadByte()
+static U8 ReadByte(I64 timeout_ms=750)
 {
   U8 chr;
+  F64 timeout_time=tS+ToF64(timeout_ms)/1000.0;
   while (1)
   {
+    if (tS>timeout_time) throw('ComErr');
     if (ClientGetCharNoWait(&chr))
       return chr;
     else
@@ -148,11 +115,13 @@ static U8 ReadByte()
   }
 }
 
-static I8 ReadI8()
+static I8 ReadI8(I64 timeout_ms=750)
 {
   I8 chr;
+  F64 timeout_time=tS+ToF64(timeout_ms)/1000.0;
   while (1)
   {
+    if (tS>timeout_time) throw('ComErr');
     if (ClientGetCharNoWait(&chr))
       return chr;
     else
@@ -160,14 +129,17 @@ static I8 ReadI8()
   }
 }
 
-static U0 ReadBlock(U8* buf, I64 count)
+static U0 ReadBlock(U8* buf, I64 count, I64 timeout_ms=750)
 {
+  F64 timeout_time=tS+ToF64(timeout_ms)/1000.0;
   while (count)
   {
+    if (tS>timeout_time) throw('ComErr');
     if (ClientGetCharNoWait(buf))
     {
       buf++;
       count--;
+      timeout_time=tS+ToF64(timeout_ms)/1000.0;
     }
     else
       Yield;
@@ -192,8 +164,8 @@ I64 SocketInit()
       }
       else
       {
-        "$FG,6$Failed to initialize Snail -- wrong hello 0x%02X\n", chr;
-        "Are you using the right version of snail.py?\n$FG$";
+        "$FG,6$Failed to connect!\n";
+        "Did you run InitTOSClient; and check if server is running?\n$FG$";
         throw;
       }
       return chr;
@@ -202,23 +174,11 @@ I64 SocketInit()
       Yield;
   }
   while (cnts.jiffies < max_time);
-  "$FG,6$Failed to initialize Snail -- make sure COM%d "
-  "is properly configured & snail.py is running!\n$FG$"
-  , SNAIL_COM;
+  "$FG,6$Failed to connect on COM%d!\n",SNAIL_COM;
+  "Did you run InitTOSClient; and check if server is running?\n$FG$";
   throw;
 }
 
-
-// TODO add this back when adding network support
-// TODO disable other net functions below when real
-// net is available also!
-/*
-if (!HashFind("SocketInit",adam_task->hash_table,HTT_FUN))
-{
-
- Adam("I64 SocketInit(){if (SNAIL_COM>0) SocketInitComm;}\n");
-}
-*/
 
 I64 socket(I64 domain, I64 type)
 {
@@ -280,11 +240,91 @@ I64 send(I64 sockfd, U8* buf, I64 len, I64 flags)
   return ReadI8();
 }
 
-I64 Fget(U8 *filename, U8 *local_name=NULL)
-{//Gets file from another PC over serial
+#help_index "TOSClient"
+
+Bool ProbeComm()
+{//Search COM ports for TOS server
+  I64 i,j;
+  U8 tmp_buf[17], tmp_byte;
+  MemSet(tmp_buf,0,17);
+  for (i=1; i<=MAX_COMM_NUM; i++)
+  {
+    if (comm_ports[i].base)
+    {
+      "Checking COMM %d - ",i;
+      CommInit8n1(i, 115200);
+      CommFlush(i);
+      CommPutChar(i,0xAA);
+      Sleep(5);
+      if (CommGetCharNoWait(i,&tmp_byte))
+      {
+        if (tmp_byte==0xAA)
+        {
+          CommPutChar(i,CMD_ID);
+          Sleep(200);
+          for (j=0; j<16; j++)
+          {
+            if (CommGetCharNoWait(i,&tmp_byte))
+            {
+              tmp_buf[j]=tmp_byte;
+            }
+            else Sleep(50);
+          }
+          if (!StrCmp("TOSSERVER",tmp_buf))
+          {
+            "Found TOS Server on COMM %d\n",i;
+            SNAIL_COM=i;
+            goto probe_end;
+          }
+        }
+      }
+      " No device detected!\n";
+    }
+  }
+probe_end:
+if (SNAIL_COM>0)
+  return TRUE;
+else
+  return FALSE;
+}
+
+public Bool InitTOSClient()
+{// Find server COM port (if exists)
+  Bool have_server=ProbeComm;
+
+  if (have_server)
+  {
+    "Found server on COM %d\n",SNAIL_COM;
+    return TRUE;
+  }
+  else
+    "Could not find server to connect to!\n";
+  return FALSE;
+}
+
+public Bool TOSServerCheck()
+{//Checks if InitTOSClient setup serial port
+  if (SNAIL_COM<0)
+  {
+    "Server not yet setup, calling InitTOSClient;\n\n";
+
+    if (InitTOSClient) return TRUE;
+
+    "Failed to connect to server!\n";
+
+    return FALSE;
+  }
+  CommFlush(SNAIL_COM);
+  return TRUE;
+}
+
+public I64 Fget(U8 *filename, U8 *local_name=NULL)
+{//Gets file from remote
   U8 *data, *basename, *zfile;
   I64 len,lenlen;
-  SocketInit;
+
+  if (!TOSServerCheck) return -1;
+
   ClientPutChar(CMD_FILE_SEND);
   ClientPutChar(StrLen(filename));
   ClientPutS(filename);
@@ -348,12 +388,13 @@ I64 Fget(U8 *filename, U8 *local_name=NULL)
   }
 }
 
-
-I64 Fput(U8 *filename, U8* remote_name=NULL)
-{//Transfers file using to another PC over serial
+public I64 Fput(U8 *filename, U8* remote_name=NULL)
+{//Transfers file to remote
   U8 *data, *len_str;
   I64 len,lenlen;
-  SocketInit;
+
+  if (!TOSServerCheck) return -1;
+
   CDirEntry *de = FilesFind(filename);
   if (!de)
   {
@@ -398,10 +439,12 @@ I64 Fput(U8 *filename, U8* remote_name=NULL)
 }
 
 I64 FCmpHash(U8 *filename, U8* remote_name=NULL, Bool silent=TRUE)
-{
+{//Compares local file hash to remote hash
   U8 *data=NULL, *len_str;
   I64 len,lenlen;
-  SocketInit;
+
+  if (!TOSServerCheck) return -1;
+
   CDirEntry *de = FilesFind(filename);
   if (!de)
   {
@@ -447,12 +490,13 @@ I64 FCmpHash(U8 *filename, U8* remote_name=NULL, Bool silent=TRUE)
   return -1;
 }
 
-
-
-I64 Dput2(CDirEntry *tmpde,I64 src_dir_len,I64 dst_dir_len,U8 *dst_dir, Bool sync=FALSE)
-{
+I64 Dput2(CDirEntry *tmpde,I64 src_dir_len,I64 dst_dir_len,U8 *dst_dir, Bool sync=FALSE, Bool bin_files=TRUE)
+{//Used by Dput not for user use.
   U8 *st;
   I64 res=1;
+
+  if (!TOSServerCheck) return -1;
+
   while (tmpde)
   {
     st=MAlloc(StrLen(tmpde->full_name)+dst_dir_len+2);
@@ -460,7 +504,7 @@ I64 Dput2(CDirEntry *tmpde,I64 src_dir_len,I64 dst_dir_len,U8 *dst_dir, Bool syn
     StrCpy(st+dst_dir_len,tmpde->full_name+src_dir_len);
     if (tmpde->attr & RS_ATTR_DIR)
     {
-      res+=Dput2(tmpde->sub,src_dir_len,dst_dir_len,dst_dir,sync);
+      res+=Dput2(tmpde->sub,src_dir_len,dst_dir_len,dst_dir,sync,bin_files);
     }
     else
     {
@@ -475,13 +519,21 @@ I64 Dput2(CDirEntry *tmpde,I64 src_dir_len,I64 dst_dir_len,U8 *dst_dir, Bool syn
         if (StrMatch(".HC",tmpde->full_name) || StrMatch(".DD",tmpde->full_name)
             || StrMatch(".IN",tmpde->full_name))
           CursorRemFile(tmpde->full_name);
-        if (0==FCmpHash(tmpde->full_name,st))
+
+        if ((StrMatch("Downloads/Linux",tmpde->full_name) || StrMatch(".DATA",tmpde->full_name) || StrMatch(".ISO",tmpde->full_name) || StrMatch(".BIN",tmpde->full_name)) && !bin_files)
         {
-          "%s remote copy is already up to date.\n",tmpde->full_name;
+          "Skipping binary/data file %s\n",tmpde->full_name;
           res++;
         }
-        else if (Fput(tmpde->full_name,st))
-          res++;
+        else {
+          if (0==FCmpHash(tmpde->full_name,st))
+          {
+            "%s remote copy is already up to date.\n",tmpde->full_name;
+            res++;
+          }
+          else if (Fput(tmpde->full_name,st))
+            res++;
+        }
       }
     }
     Free(st);
@@ -490,15 +542,17 @@ I64 Dput2(CDirEntry *tmpde,I64 src_dir_len,I64 dst_dir_len,U8 *dst_dir, Bool syn
   return res;
 }
 
-
 public I64 Dput(U8 *src_files_find_mask,U8 *remote_dir=NULL, Bool no_mask=TRUE,
-    Bool sync=FALSE)
-{//Copy directory tree.
+    Bool sync=FALSE, Bool bin_files=TRUE)
+{//Copy directory tree to remote machine.
 //Returns the count of copied files (not dirs).
   CDirContext *dirc;
   CDirEntry *tmpde=NULL;
   I64 res=0,i1,i2;
   U8 *st1,*st2;
+
+  if (!TOSServerCheck) return -1;
+
   st1=DirNameAbs(src_files_find_mask);
   i1=StrLen(st1);
   if (remote_dir)
@@ -518,42 +572,46 @@ public I64 Dput(U8 *src_files_find_mask,U8 *remote_dir=NULL, Bool no_mask=TRUE,
     DirContextDel(dirc);
     i1=StrLen(st1);
     if (i1==3) i1--;
-    res=Dput2(tmpde,i1,i2,st2,sync);
+    res=Dput2(tmpde,i1,i2,st2,sync,bin_files);
     DirTreeDel(tmpde);
     Free(st1);
   }
   return res;
 }
 
-public I64 Dsync(U8 *src_files_find_mask,U8 *remote_dir=NULL, Bool no_mask=TRUE)
-{
-  return Dput(src_files_find_mask,remote_dir, no_mask, TRUE);
+public I64 Dsync(U8 *src_files_find_mask,U8 *remote_dir=NULL, Bool no_mask=TRUE, Bool bin_files=FALSE)
+{//Sync directory tree to remote (ignores binary by default)
+  if (!TOSServerCheck) return -1;
+
+  return Dput(src_files_find_mask,remote_dir, no_mask, TRUE, bin_files);
 }
 
-
-I64 URLget(U8 *url, U8 *filename)
-{//Gets URL from another PC over serial
+public I64 URLGet(U8 *url, U8 *filename)
+{//Gets URL (raw file) to a file from remote
   U8* data;
   I64 len,lenlen;
-  SocketInit;
-  ClientPutChar(CMD_URL_GET);
+
+  if (!TOSServerCheck) return -1;
+
+  ClientPutChar(CMD_URL_GET_RAW);
   ClientPutChar(StrLen(url));
   ClientPutS(url);
-  lenlen=ReadI8;
+  lenlen=ReadI8(2500);
   if (lenlen > 0)
   {
     data=CAlloc(lenlen+1);
-    ReadBlock(data,lenlen);
+    ReadBlock(data,lenlen,2500);
     len=Str2I64(data);
     Free(data);
   }
   else
   {
-    "Failed to read file %s (or file size is zero)!\n",filename;
+    "Failed to data (or size is zero)!\n";
     ClientPutChar(0);
     return 0;
   }
-  data=MAlloc(len);
+  "Fetching %d bytes from URL\n",len;
+  data=MAlloc(len+1);
   if (data)
   {
     ClientPutChar(lenlen);
@@ -570,11 +628,60 @@ I64 URLget(U8 *url, U8 *filename)
   }
 }
 
-I64 Hdir(U8 *dir=".")
-{//Gets URL from another PC over serial
+public U8 *URLGetTextStr(U8 *url)
+{//Gets URL (text only) from remote as string
   U8* data;
   I64 len,lenlen;
-  SocketInit;
+
+  if (!TOSServerCheck) return -1;
+
+  ClientPutChar(CMD_URL_GET_TEXT);
+  ClientPutChar(StrLen(url));
+  ClientPutS(url);
+  lenlen=ReadI8(2500);
+  if (lenlen > 0)
+  {
+    data=CAlloc(lenlen+1);
+    ReadBlock(data,lenlen,2500);
+    len=Str2I64(data);
+    Free(data);
+  }
+  else
+  {
+    "Failed to read data (or size is zero)!\n";
+    ClientPutChar(0);
+    return 0;
+  }
+  "Fetching %d bytes from URL\n",len;
+  data=MAlloc(len+1);
+  if (data)
+  {
+    ClientPutChar(lenlen);
+    ReadBlock(data,len);
+    return data;
+  }
+  else
+  {
+    "Failed to malloc space!\n";
+    ClientPutChar(0);
+    return 0;
+  }
+}
+
+public U0 URLGetText(U8 *url)
+{//Gets URL (text only) and prints result
+  U8 *str=URLGetTextStr(url);
+  "%s\n",str;
+  Free(str);
+}
+
+public I64 Hdir(U8 *dir=".")
+{//List remote directory contents
+  U8* data;
+  I64 len,lenlen;
+
+  if (!TOSServerCheck) return -1;
+
   ClientPutChar(CMD_HDIR);
   ClientPutChar(StrLen(dir));
   ClientPutS(dir);
@@ -626,9 +733,8 @@ U8 *GetBaseDir(U8 *filename)
   }
 }
 
-
-U0 DirMks(U8 *dirs)
-{
+public U0 DirMks(U8 *dirs)
+{//Make an entire directory tree
   Bool s;
   U8 *tmpdir,*ptr;
   if (!StrOcc(dirs,'/'))
@@ -658,7 +764,6 @@ U0 DirMks(U8 *dirs)
     Free(tmpdir);
   }
 }
-
 
 U0 FGetFileList(U8 *list)
 {//TODO just get last directory
@@ -692,12 +797,13 @@ U0 FGetFileList(U8 *list)
   Free(buf);
 }
 
-
-I64 Dget(U8 *dir=".")
-{//Gets directory from another PC over serial
+public I64 Dget(U8 *dir=".")
+{//Gets directory from remote
   U8* data;
   I64 len,lenlen;
-  SocketInit;
+
+  if (!TOSServerCheck) return -1;
+
   ClientPutChar(CMD_GET_DIR);
   ClientPutChar(StrLen(dir));
   ClientPutS(dir);
@@ -731,13 +837,151 @@ I64 Dget(U8 *dir=".")
   }
 }
 
+public U8 *ClipGetStr()
+{//Get clipboard text from remote as string
+  U8 *data;
+  I64 len,lenlen;
 
-// TODO add/create DolDoc web functionality after https added
-/*
-U0 DDWeb(U8 *url="https://github.com/tinkeros/TinkerOS/raw/main/Doc/HelpIndex.DD")
-{//U8 *filename=StrNew("WebTmp.DD");
-  URLget(url,"B:/WebTmp.DD");
-//Free(filename);
-  //User("WinMax;Ed(\"WebTmp.DD\");\n");
+  if (!TOSServerCheck) return 0;
+
+  ClientPutChar(CMD_GET_CB_TEXT);
+  lenlen=ReadI8;
+  if (lenlen > 0)
+  {
+    data=CAlloc(lenlen+1);
+    ReadBlock(data,lenlen);
+    len=Str2I64(data);
+    Free(data);
+  }
+  else
+  {
+    "Failed to get clipboard text (or size is zero)!\n";
+    ClientPutChar(0);
+    return 0;
+  }
+  data=MAlloc(len);
+  if (data)
+  {
+    ClientPutChar(lenlen);
+    ReadBlock(data,len);
+    return data;
+  }
+  return 0;
 }
-*/
+
+public U0 ClipGet()
+{//Get clipboard text from remote and print
+  if (!TOSServerCheck) return;
+
+  U8 *clip=ClipGetStr;
+  "%s\n",clip;
+  Free(clip);
+}
+
+public U0 ClipPutStr(U8 *send_text)
+{//Put text string into clipboard of remote
+  if (!TOSServerCheck) return;
+
+  U8 *len_str;
+  I64 lenlen,len=StrLen(send_text);
+  if (len)
+  {
+    len_str = MStrPrint("%d",len);
+    lenlen = StrLen(len_str);
+    ClientPutChar(CMD_SET_CB_TEXT);
+    ClientPutChar(lenlen);
+    ClientPutS(len_str);
+    Free(len_str);
+    ClientPutS(send_text);
+  }
+}
+
+public U8 *HExecToStr(U8 *cmd)
+{// Send NON-INTERACTIVE cmd to another PC over serial, execute, return string output
+  U8 *len_str, *data;
+  I64 lenlen,len=StrLen(cmd);
+
+  if (!TOSServerCheck) return 0;
+
+  if (len)
+  {
+    len_str = MStrPrint("%d",len);
+    lenlen = StrLen(len_str);
+    ClientPutChar(CMD_HOST_EXEC);
+    ClientPutChar(lenlen);
+    ClientPutS(len_str);
+    Free(len_str);
+    ClientPutS(cmd);
+    lenlen=ReadI8;
+    if (lenlen > 0)
+    {
+      data=CAlloc(lenlen+1);
+      ReadBlock(data,lenlen);
+      len=Str2I64(data);
+      Free(data);
+    }
+    else
+    {
+      "Failed to get result string (or got 0 bytes)!\n";
+      ClientPutChar(0);
+      return 0;
+    }
+    data=MAlloc(len+1);
+    if (data)
+    {
+      ClientPutChar(lenlen);
+      ReadBlock(data,len);
+      data[len]=0;
+      return data;
+    }
+  }
+}
+
+public U0 HExec(U8 *cmd)
+{// Send NON-INTERACTIVE cmd to another PC over serial, execute, print output
+  if (!TOSServerCheck) return;
+
+  U8 *res=HExecToStr(cmd);
+  "%s\n",res;
+  Free(res);
+}
+
+U0 ClientCopyCBToHost()
+{
+  U8 *str=DocDumpToStr(sys_clip_doc);
+  if (str) ClipPutStr(str);
+  Free(str);
+}
+
+U0 ClientCopyCBFromHost()
+{
+  U8 *host_cb=ClipGetStr;
+  if (host_cb)
+  {
+    ClipDel;
+    DocPrint(sys_clip_doc,host_cb);
+  }
+  Free(host_cb);
+}
+
+public U0 ClientClipHijack()
+{// Send/get clipboard to/from remote machine automatically
+  Bool have_server=ProbeComm;
+
+  if (have_server)
+  {
+    HijackFunc(&ClipCutCB,&ClientCopyCBToHost);
+    HijackFunc(&ClipCopyCB,&ClientCopyCBToHost);
+    HijackFunc(&ClipPasteCB,&ClientCopyCBFromHost);
+  }
+  else
+    "Could not find server to connect to!\n";
+}
+
+public U0 ClipPut()
+{//Put clipboard text to remote clipboard
+  ClientCopyCBToHost;
+}
+
+// TODO add/create DolDoc web surf functionality after https added (if ever?)
+#help_index ""

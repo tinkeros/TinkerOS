@@ -9,17 +9,8 @@ Cd(__DIR__);;
 #include "/Adam/Opt/Boot/MakeBoot"
 #include "/Adam/Opt/Utils/MakeUtils"
 
-// Comment these if you do not want autocomplete
-
-#include "/Adam/AutoComplete/ACInit"
-U0 ACInitSpawn()
-{
-  Silent;       //no output to scrn
-  ACInit("/*;!*/Bible.TXT*");
-  Silent(OFF); //no output to scrn
-}
-// Run ACInit in own thread to prevent boot hang
-Spawn(&ACInitSpawn);
+// Comment this if you do not want autocomplete
+SethFile("/Adam/AutoComplete/DoACInit",-1);
 
 // Uncomment these to enable networking
 
@@ -43,7 +34,7 @@ U0 AutoHome()
 #include "/Demo/Snd/OPL2"
 
 // Enable Virtualbox guest additions if detected
-#include "/Demo/VM/VBoxAdd"
+SethFile("/Demo/VM/VBoxAdd",-2);
 
 #include "~/HomeWrappers"
 MapFileLoad("::/Kernel/Kernel");

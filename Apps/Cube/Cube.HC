@@ -51,6 +51,7 @@ U0 DrawCube(CDC *dc, I64 idx)
   I64 x_offset,y_offset,z_offset;
   F64 é=45*ã/180.0,è=45*ã/180.0,ê=45*ã/180.0,rot=0;
   CD3I32 poly[4];
+  Bool rotating=FALSE;
 
   if (CUBE_START_ROTATE_TIME>0.0 && tS-start_time<CUBE_START_ROTATE_TIME)
   {
@@ -58,6 +59,7 @@ U0 DrawCube(CDC *dc, I64 idx)
     é+=rot;
     è+=rot;
     ê+=rot;
+    rotating=TRUE;
   }
 
   cube_size=30;
@@ -88,6 +90,22 @@ U0 DrawCube(CDC *dc, I64 idx)
   Mat4x4RotZ(dc->r,é);
   DCMat4x4Set(dc,dc->r);
 
+  dc->color=cubes[idx].cyb;
+
+  poly[0].z=-cube_size+z_offset;
+  poly[0].x=-cube_size+x_offset;
+  poly[0].y=-cube_size+y_offset;
+  poly[1].z=cube_size+z_offset;
+  poly[1].x=-cube_size+x_offset;
+  poly[1].y=-cube_size+y_offset;
+  poly[2].z=cube_size+z_offset;
+  poly[2].x=cube_size+x_offset;
+  poly[2].y=-cube_size+y_offset;
+  poly[3].z=-cube_size+z_offset;
+  poly[3].x=cube_size+x_offset;
+  poly[3].y=-cube_size+y_offset;
+  GrFillPoly3(dc,4,poly);
+
   dc->color=cubes[idx].czf;
 
   poly[0].x=-cube_size+x_offset;
@@ -102,22 +120,6 @@ U0 DrawCube(CDC *dc, I64 idx)
   poly[3].x=-cube_size+x_offset;
   poly[3].y=cube_size+y_offset;
   poly[3].z=-cube_size+z_offset;
-  GrFillPoly3(dc,4,poly);
-
-  dc->color=cubes[idx].czb;
-
-  poly[0].x=-cube_size+x_offset;
-  poly[0].y=-cube_size+y_offset;
-  poly[0].z=cube_size+z_offset;
-  poly[1].x=cube_size+x_offset;
-  poly[1].y=-cube_size+y_offset;
-  poly[1].z=cube_size+z_offset;
-  poly[2].x=cube_size+x_offset;
-  poly[2].y=cube_size+y_offset;
-  poly[2].z=cube_size+z_offset;
-  poly[3].x=-cube_size+x_offset;
-  poly[3].y=cube_size+y_offset;
-  poly[3].z=cube_size+z_offset;
   GrFillPoly3(dc,4,poly);
 
   dc->color=cubes[idx].cxf;
@@ -136,53 +138,57 @@ U0 DrawCube(CDC *dc, I64 idx)
   poly[3].x=cube_size+x_offset;
   GrFillPoly3(dc,4,poly);
 
-  dc->color=cubes[idx].cxb;
+  if (smash || rotating)
+  {
+    dc->color=cubes[idx].czb;
 
-  poly[0].z=-cube_size+z_offset;
-  poly[0].y=-cube_size+y_offset;
-  poly[0].x=-cube_size+x_offset;
-  poly[1].z=cube_size+z_offset;
-  poly[1].y=-cube_size+y_offset;
-  poly[1].x=-cube_size+x_offset;
-  poly[2].z=cube_size+z_offset;
-  poly[2].y=cube_size+y_offset;
-  poly[2].x=-cube_size+x_offset;
-  poly[3].z=-cube_size+z_offset;
-  poly[3].y=cube_size+y_offset;
-  poly[3].x=-cube_size+x_offset;
-  GrFillPoly3(dc,4,poly);
+    poly[0].x=-cube_size+x_offset;
+    poly[0].y=-cube_size+y_offset;
+    poly[0].z=cube_size+z_offset;
+    poly[1].x=cube_size+x_offset;
+    poly[1].y=-cube_size+y_offset;
+    poly[1].z=cube_size+z_offset;
+    poly[2].x=cube_size+x_offset;
+    poly[2].y=cube_size+y_offset;
+    poly[2].z=cube_size+z_offset;
+    poly[3].x=-cube_size+x_offset;
+    poly[3].y=cube_size+y_offset;
+    poly[3].z=cube_size+z_offset;
+    GrFillPoly3(dc,4,poly);
 
-  dc->color=cubes[idx].cyf;
+    dc->color=cubes[idx].cxb;
 
-  poly[0].z=-cube_size+z_offset;
-  poly[0].x=-cube_size+x_offset;
-  poly[0].y=cube_size+y_offset;
-  poly[1].z=cube_size+z_offset;
-  poly[1].x=-cube_size+x_offset;
-  poly[1].y=cube_size+y_offset;
-  poly[2].z=cube_size+z_offset;
-  poly[2].x=cube_size+x_offset;
-  poly[2].y=cube_size+y_offset;
-  poly[3].z=-cube_size+z_offset;
-  poly[3].x=cube_size+x_offset;
-  poly[3].y=cube_size+y_offset;
-  GrFillPoly3(dc,4,poly);
+    poly[0].z=-cube_size+z_offset;
+    poly[0].y=-cube_size+y_offset;
+    poly[0].x=-cube_size+x_offset;
+    poly[1].z=cube_size+z_offset;
+    poly[1].y=-cube_size+y_offset;
+    poly[1].x=-cube_size+x_offset;
+    poly[2].z=cube_size+z_offset;
+    poly[2].y=cube_size+y_offset;
+    poly[2].x=-cube_size+x_offset;
+    poly[3].z=-cube_size+z_offset;
+    poly[3].y=cube_size+y_offset;
+    poly[3].x=-cube_size+x_offset;
+    GrFillPoly3(dc,4,poly);
 
-  dc->color=cubes[idx].cyb;
+    dc->color=cubes[idx].cyf;
 
-  poly[0].z=-cube_size+z_offset;
-  poly[0].x=-cube_size+x_offset;
-  poly[0].y=-cube_size+y_offset;
-  poly[1].z=cube_size+z_offset;
-  poly[1].x=-cube_size+x_offset;
-  poly[1].y=-cube_size+y_offset;
-  poly[2].z=cube_size+z_offset;
-  poly[2].x=cube_size+x_offset;
-  poly[2].y=-cube_size+y_offset;
-  poly[3].z=-cube_size+z_offset;
-  poly[3].x=cube_size+x_offset;
-  poly[3].y=-cube_size+y_offset;
-  GrFillPoly3(dc,4,poly);
+    poly[0].z=-cube_size+z_offset;
+    poly[0].x=-cube_size+x_offset;
+    poly[0].y=cube_size+y_offset;
+    poly[1].z=cube_size+z_offset;
+    poly[1].x=-cube_size+x_offset;
+    poly[1].y=cube_size+y_offset;
+    poly[2].z=cube_size+z_offset;
+    poly[2].x=cube_size+x_offset;
+    poly[2].y=cube_size+y_offset;
+    poly[3].z=-cube_size+z_offset;
+    poly[3].x=cube_size+x_offset;
+    poly[3].y=cube_size+y_offset;
+    GrFillPoly3(dc,4,poly);
+  }
+
 
   dc->color=BLACK;
 
@@ -431,40 +437,43 @@ U0 DoMFB(Bool dir=0)
 
 Bool IsSolved()
 {
-  I64 i,j;
+  I64 face,i,j;
+  U8 *cptr1,*cptr2;
 
-  // Check all, but ignore fake middle cube
-
-  for (i=0;i<12;i++)
+  // Check only outter face colors
+  static U8 faces_to_idx[6][9]=
   {
-    for (j=i+1;j<13;j++)
-    {
-      if (cubes[i].cxb!=cubes[j].cxb) return FALSE;
-      if (cubes[i].cyb!=cubes[j].cyb) return FALSE;
-      if (cubes[i].czb!=cubes[j].czb) return FALSE;
-      if (cubes[i].cxf!=cubes[j].cxf) return FALSE;
-      if (cubes[i].cyf!=cubes[j].cyf) return FALSE;
-      if (cubes[i].czf!=cubes[j].czf) return FALSE;
-    }
-  }
+    {0,1,2,9,10,11,18,19,20},      // top cyb
+    {6,7,8,15,16,17,24,25,26},     // bottom cyf
+    {0,9,18,3,12,21,6,15,24},      // front left czf
+    {18,19,20,21,22,23,24,25,26},  // front right cxf
+    {0,1,2,3,4,5,6,7,8},           // back left cxb
+    {2,11,20,5,14,23,8,17,26}      // back right czb
+  };
 
-  if (cubes[12].cxb!=cubes[14].cxb) return FALSE;
-  if (cubes[12].cyb!=cubes[14].cyb) return FALSE;
-  if (cubes[12].czb!=cubes[14].czb) return FALSE;
-  if (cubes[12].cxf!=cubes[14].cxf) return FALSE;
-  if (cubes[12].cyf!=cubes[14].cyf) return FALSE;
-  if (cubes[12].czf!=cubes[14].czf) return FALSE;
-
-  for (i=14;i<26;i++)
+  static U8 face_color_offsets[6]=
   {
-    for (j=i+1;j<27;j++)
+    offset(cube.cyb),
+    offset(cube.cyf),
+    offset(cube.czf),
+    offset(cube.cxf),
+    offset(cube.cxb),
+    offset(cube.czb)
+  };
+
+
+  for (face=0;face<6;face++)
+  {
+    for (i=0;i<8;i++)
     {
-      if (cubes[i].cxb!=cubes[j].cxb) return FALSE;
-      if (cubes[i].cyb!=cubes[j].cyb) return FALSE;
-      if (cubes[i].czb!=cubes[j].czb) return FALSE;
-      if (cubes[i].cxf!=cubes[j].cxf) return FALSE;
-      if (cubes[i].cyf!=cubes[j].cyf) return FALSE;
-      if (cubes[i].czf!=cubes[j].czf) return FALSE;
+      cptr1=&cubes[faces_to_idx[face][i]];
+      cptr1+=face_color_offsets[face];
+      for (j=i+1;j<9;j++)
+      {
+        cptr2=&cubes[faces_to_idx[face][j]];
+        cptr2+=face_color_offsets[face];
+        if (*cptr1(I64*) != *cptr2(I64*)) return FALSE;
+      }
     }
   }
   return TRUE;

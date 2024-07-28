@@ -26,8 +26,10 @@ Note: Only do this on a machine you are prepared to lose all data on.  This will
    - Write TinkerOS_USB.img from latest [releases page](https://github.com/tinkeros/TinkerOS/releases) 
 
 5) Try Live booting TempleOS and TinkerOS from the USB
-   - Check the keyboard and mouse work
-   - If they do not do you have a PS/2 port you can try with real PS/2 keyboard/mouse? (USB to PS/2 adapters will not help).
+   - Check the keyboard and mouse work.
+   - If they do not, do you have a PS/2 port you can try with real PS/2 keyboard/mouse? (USB to PS/2 adapters will not help).
+   - Note that even if you can live boot TempleOS to a RAM disk, you still need support for legacy/IDE mode to be able to actually install it.
+   - It is possible that TinkerOS works and TempleOS does not in which case TinkerOS would be your only option for that machine.
 
 6) Use Clonezilla to partition your drive
    - Enter through defaults until you get to mode, then select Beginner

@@ -9,6 +9,7 @@ Note: Only do this on a machine you are prepared to lose all data on.  This will
    - Must have a IDE or SATA drive to install to (M.2/NVME is not supported, this guide assumes 1 drive, not multiple).
    - Familiarity with how to enter the BIOS and change settings.
    - Must support CSM/Legacy booting, if your system is UEFI only, it is too new.
+   - Use older < 500 GB spinning disks instead of SSDs for supporting the type of ATA communication TempleOS does, newer SSDs might not mount even if the OS can see them!
    - Your target hardware should probably be from between the years 2000 (first 64-bit CPU was a Pentium 4) and 2018 (newer probably lacks compatability, but still worth testing).
    - Here's a list of [baremetal installs](https://tinkeros.github.io/WbGit/Doc/Baremetal/Baremetal.html) which might be good options if you are looking to purchase hardware (note that some, but not all run both TempleOS and TinkerOS).
    
@@ -17,7 +18,7 @@ Note: Only do this on a machine you are prepared to lose all data on.  This will
    - Legacy / CSM boot on
    - UEFI boot off
    - Legacy USB / Port 60/64 emulation enabled
-   - SATA drive in Compatability / IDE / Legacy (not AHCI or RAID) for installing both TempleOS and TinkerOS
+   - SATA drive in ATA / Compatability / IDE / Legacy (not AHCI or RAID) for installing both TempleOS and TinkerOS
    - SATA drive in AHCI mode (for installing TinkerOS only, no TempleOS support)
    - HPET disabled
    - Fast boot disabled

@@ -49,7 +49,7 @@ Note: Only do this on a machine you are prepared to lose all data on.  This will
 
 8) Boot from your hard drive hopefully to get a boot menu for TempleOS/TinkerOS!
 
-9) If you success and find a good machine for runnning TempleOS/TinkerOS let others know about it!
+9) If you have success and find a good machine for runnning TempleOS/TinkerOS let others know about it!
    - Run `SysSurvey;`
    - Edit the file and remove any information you do not want to share `Ed("/Home/Survey.DD");`
    - Copy file off manually or use Live USB to back up to the USB thumb drive.

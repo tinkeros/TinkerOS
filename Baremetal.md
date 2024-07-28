@@ -57,5 +57,14 @@ Note: Only do this on a machine you are prepared to lose all data on.  This will
    - Make a github pull request with the file name under and appropriate subdirectory of /Doc/Baremetal/Machines
 
 ## Advanced baremetal install tips
- - TODO
 
+### Dual booting
+  If you want to dual boot the best thing to do is let TempleOS/TinkerOS have one entire drive which it can install its bootloader on and then you can choose to boot that drive or your other OS manually at boot time (many computers have a key you can press/hold at start-up to let you choose a boot device manually, if you can't and have Windows it is probably because Fast Boot is on and you need to turn it off).
+
+### Multiple hard drives (same controller/motherboard)
+  - Use clonezilla to partition the drive, but make sure you select the correct one.
+  - Choose N for Install onto hard drive and N for tour.  Then manually mount the drive (run `Mount;`) and pick the appropriate drive (if things are correct you should see C,D,E, and F FAT32 partitions mounted).
+  - Restart the installer `#include "/Misc/OSInstall";` It should detect drives are already mounted and let you continue with a guided manual install.
+
+### IDE/Legacy install when an AHCI controller is present
+  By default TinkerOS prefers AHCI and will start in AHCI mode if it is detected as available.  If you know you've added an IDE controller (or SATA with legacy support) that you want to use for TempleOS/TinkerOS, then Choose N for Install onto hard drive and N for tour and run `SwitchToIDE;` to change to IDE mode.  Then use `Mount;` to mount the drive and restart the installer `#include "/Misc/OSInstall";` It should detect drives are already mounted and let you continue with a guided manual install.

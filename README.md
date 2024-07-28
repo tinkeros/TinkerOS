@@ -7,6 +7,7 @@
 <p align="center"><a href="https://github.com/tinkeros/TinkerOS/releases">TinkerOS downloads</a></p>
 <p align="center"><a href="https://github.com/tinkeros/TinkerOS/blob/main/LinuxQEMU.md">TempleOS/TinkerOS Linux QEMU VM setup guide</a></p>
 <p align="center"><a href="https://github.com/tinkeros/TinkerOS/blob/main/WindowsQEMU.md">TempleOS/TinkerOS Windows QEMU VM setup guide</a></p>
+<p align="center"><a href="https://github.com/tinkeros/TinkerOS/blob/main/Baremetal.md">TempleOS/TinkerOS baremetal (real hardware) setup guide</a></p>
 </p>
 
 

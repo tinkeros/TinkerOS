@@ -52,6 +52,7 @@ Note: Only do this on a machine you are prepared to lose all data on.  This will
 9) If you have success and find a good machine for runnning TempleOS/TinkerOS let others know about it!
    - Run `SysSurvey;`
    - Edit the file and remove any information you do not want to share `Ed("/Home/Survey.DD");`
+   - Add the form factor if applicable (for example Dell makes multiple form factors of the same Optiplex model so I added MFF/SFF after Optiplex 7050)
    - Copy file off manually or use Live USB to back up to the USB thumb drive.
    - Make a github pull request with the file name under and appropriate subdirectory of /Doc/Baremetal/Machines
 

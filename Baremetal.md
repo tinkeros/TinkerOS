@@ -2,12 +2,13 @@
 
 Note: Only do this on a machine you are prepared to lose all data on.  This will not setup a dual boot environment.  Installing baremetal is possible and has succeeded on many machines.  That being said this is totally unsupported so please do not make issues if your particular hardware does not work.
 
-## First steps:
+## Beginner "easy" baremetal install guide:
 
-1) Check you have the right hardware
+1) Check you have the right hardware and knowledge
    - 64-bit x86_64 PC (not Mac or Chromebook) with at least 2 GB of RAM
-   - Must have a IDE or SATA drive to install (M.2/NVME is not supported)
-
+   - Must have a IDE or SATA drive to install to (M.2/NVME is not supported, this guide assumes 1 drive, not multiple).
+   - Familiarity with how to enter the BIOS and change settings.
+   
 3) Make appropriate changes to BIOS settings (varies by system).
    - Secure boot off
    - Legacy / CSM boot on
@@ -16,6 +17,7 @@ Note: Only do this on a machine you are prepared to lose all data on.  This will
    - SATA drive in Compatability / IDE / Legacy for installing both TempleOS and TinkerOS
    - SATA drive in AHCI for installing TinkerOS only
    - HPET disabled
+   - Fast boot disabled
 
 4) Write the Live USB image to a thumb drive or burn a CD/DVD (for IDE/legacy systems) to boot from.
    - Write TinkerOS_USB.img from latest [releases page](https://github.com/tinkeros/TinkerOS/releases) 
@@ -45,4 +47,8 @@ Note: Only do this on a machine you are prepared to lose all data on.  This will
    - Run `SysSurvey;`
    - Edit the file and remove any information you do not want to share `Ed("/Home/Survey.DD");`
    - Copy file off manually or use Live USB to back up to the USB thumb drive.
-   - Make a github pull request with the file name under and appropriate subdirectory of /Doc/Baremetal/Machines 
+   - Make a github pull request with the file name under and appropriate subdirectory of /Doc/Baremetal/Machines
+
+## Advanced baremetal install tips
+ - TODO
+

@@ -14,7 +14,7 @@ Note: Only do this on a machine you are prepared to lose all data on.  This will
    - Here's a list of [baremetal installs](https://tinkeros.github.io/WbGit/Doc/Baremetal/Baremetal.html) which might be good options if you are looking to purchase hardware (note that some, but not all run both TempleOS and TinkerOS).
    - Know that TempleOS/TinkerOS have no drivers for controlling system fans and temperature.  I've Live USB booted TinkerOS on more than 50 different systems and the worst that has ever happend to me is it locks up, I power it off, and it restarts just fine.  That being said only do this at your own risk on a system you can afford to lose!  If you nuke your system, that is your fault, don't blame me.
    
-3) Make appropriate changes to BIOS settings (varies by system).
+3) Make appropriate changes to BIOS settings (varies by system, not all systems will have all options).
    - Secure boot off
    - Legacy / CSM boot on
    - UEFI boot off

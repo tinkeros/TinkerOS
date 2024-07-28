@@ -12,6 +12,7 @@ Note: Only do this on a machine you are prepared to lose all data on.  This will
    - Use older < 500 GB spinning disks instead of SSDs for supporting the type of ATA communication TempleOS does, newer SSDs might not mount even if the OS can see them!
    - Your target hardware should probably be from between the years 2000 (first 64-bit CPU was a Pentium 4) and 2018 (newer probably lacks compatability, but still worth testing).
    - Here's a list of [baremetal installs](https://tinkeros.github.io/WbGit/Doc/Baremetal/Baremetal.html) which might be good options if you are looking to purchase hardware (note that some, but not all run both TempleOS and TinkerOS).
+   - Know that TempleOS/TinkerOS have no drivers for controlling system fans and temperature.  I've Live USB booted TinkerOS on more than 50 different systems and the worst that has ever happend to me is it locks up, I power it off, and it restarts just fine.  That being said only do this at your own risk on a system you can afford to lose!  If you nuke your system, that is your fault, don't blame me.
    
 3) Make appropriate changes to BIOS settings (varies by system).
    - Secure boot off

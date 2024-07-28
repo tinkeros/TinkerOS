@@ -37,3 +37,10 @@ Note: Only do this on a machine you are prepared to lose all data on.  This will
    - Choose Y for run MountAuto
    - Choose Y for Continue Install Wizard
    - You should be able to press enter and select all default options for here (or modify them as you desire).
+
+8) Boot from your hard drive hopefully to get a boot menu for TempleOS/TinkerOS!
+
+9) If you success and find a good machine for runnning TempleOS/TinkerOS let others know about it!
+   - Run `SysSurvey;`
+   - Edit the file and remove any information you do not want to share `Ed("/Home/Survey.DD");`
+   - Make a github pull request with the file name under and appropriate subdirectory of /Doc/Baremetal/Machines 

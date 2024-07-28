@@ -59,6 +59,11 @@ Note: Only do this on a machine you are prepared to lose all data on.  This will
 
 ## Advanced baremetal install tips
 
+### USB emulation
+  - On some boards strangely USB mice will work only if a PS/2 mouse is also plugged in.
+  - Sometimes combo devices where the keyboard/mouse share one usb port do not work, but having a normal individual separate USB keyboard and mouse does work.
+  - A PS/2 to USB adapter will not help you, these convert PS/2 to USB (so if USB isn't working, this won't help).
+
 ### Dual booting
   If you want to dual boot the best thing to do is let TempleOS/TinkerOS have one entire drive which it can install its bootloader on and then you can choose to boot that drive or your other OS manually at boot time (many computers have a key you can press/hold at start-up to let you choose a boot device manually, if you can't and have Windows it is probably because Fast Boot is on and you need to turn it off).
 

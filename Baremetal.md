@@ -8,6 +8,9 @@ Note: Only do this on a machine you are prepared to lose all data on.  This will
    - 64-bit x86_64 PC (not Mac or Chromebook) with at least 2 GB of RAM
    - Must have a IDE or SATA drive to install to (M.2/NVME is not supported, this guide assumes 1 drive, not multiple).
    - Familiarity with how to enter the BIOS and change settings.
+   - Must support CSM/Legacy booting, if your system is UEFI only, it is too new.
+   - Your target hardware should probably be from between the years 2000 (first 64-bit CPU was a Pentium 4) and 2018 (newer probably lacks compatability, but still worth testing).
+   - Here's a list of [baremetal installs](https://tinkeros.github.io/WbGit/Doc/Baremetal/Baremetal.html) which might be good options if you are looking to purchase hardware (note that some, not all run both TempleOS and TinkerOS).
    
 3) Make appropriate changes to BIOS settings (varies by system).
    - Secure boot off

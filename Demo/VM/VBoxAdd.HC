@@ -549,10 +549,6 @@ U0 VBInitAll()
     */
     VBLog("Initialized TinkerOS guest additions!\n");
   }
-  else
-  {
-    "Failed to find VirtualBox!\n";
-  }
 }
 
 U0 DumpCBMsg()

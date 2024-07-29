@@ -32,7 +32,8 @@ class CComm
         device,
         flags,
         poll,
-        type;
+        type,
+        mmio;
   CFifoU8 *RX_fifo;
 };
 
@@ -53,10 +54,10 @@ public U0 CommHndlr(I64 port)
       free_size-=f->in_ptr-f->out_ptr;
     while (free_size>0)
     {
-      stat=InU8(c->base+UART_IIR);
+      stat=MixedInU8(c->mmio,c->base+UART_IIR);
       if (stat & 4)	//RX
       {
-        FifoU8Ins(c->RX_fifo,InU8(c->base+UART_RDR));
+        FifoU8Ins(c->RX_fifo,MixedInU8(c->mmio,c->base+UART_RDR));
         free_size--;
       }
       else
@@ -80,10 +81,10 @@ public U0 PollCommHndlr(I64 port)
       free_size-=f->in_ptr-f->out_ptr;
     while (free_size>0)
     {
-      stat=InU8(c->base+UART_LSR);
+      stat=MixedInU8(c->mmio,c->base+UART_LSR);
       if (stat & 1)	//RX
       {
-        FifoU8Ins(c->RX_fifo,InU8(c->base+UART_RDR));
+        FifoU8Ins(c->RX_fifo,MixedInU8(c->mmio,c->base+UART_RDR));
         free_size--;
       }
       else
@@ -157,23 +158,23 @@ public CComm *CommInit7n1(I64 port,I64 baud)
   CLI
   if (!c->RX_fifo)
     c->RX_fifo=FifoU8New(COMM_RX_FIFO_SIZE);
-  OutU8(c->base+UART_LCR,0);	//Set for IER
-  OutU8(c->base+UART_IER,0);	//Disable all IRQ
-  OutU8(c->base+UART_LCR,0x80);	//Enable baud rate control
-  OutU8(c->base+UART_BRDL,0x180/(baud/300) & 0xFF);	//LSB
-  OutU8(c->base+UART_BRDH,0x180/(baud/300) / 256);	//MSB
-  OutU8(c->base+UART_LCR,2);	//7-none-1
-  InU8(c->base+UART_RDR);	//read garbage
-  InU8(c->base+UART_LSR);
-  OutU8(c->base+UART_MCR,4);
-  OutU8(c->base+UART_IER,0);	//Disable all IRQ
-  OutU8(c->base+UART_MCR,0xA);	//out2 and rts
+  MixedOutU8(c->mmio,c->base+UART_LCR,0);	//Set for IER
+  MixedOutU8(c->mmio,c->base+UART_IER,0);	//Disable all IRQ
+  MixedOutU8(c->mmio,c->base+UART_LCR,0x80);	//Enable baud rate control
+  MixedOutU8(c->mmio,c->base+UART_BRDL,0x180/(baud/300) & 0xFF);	//LSB
+  MixedOutU8(c->mmio,c->base+UART_BRDH,0x180/(baud/300) / 256);	//MSB
+  MixedOutU8(c->mmio,c->base+UART_LCR,2);	//7-none-1
+  MixedInU8(c->mmio,c->base+UART_RDR);	//read garbage
+  MixedInU8(c->mmio,c->base+UART_LSR);
+  MixedOutU8(c->mmio,c->base+UART_MCR,4);
+  MixedOutU8(c->mmio,c->base+UART_IER,0);	//Disable all IRQ
+  MixedOutU8(c->mmio,c->base+UART_MCR,0xA);	//out2 and rts
   if (!c->poll) {
     OutU8(0x21,InU8(0x21) & (0xFF-0x18));	//Enable 8259 IRQ 3 & 4
-    OutU8(c->base+UART_IER,1);	//RX but no THR empty
+    MixedOutU8(c->mmio,c->base+UART_IER,1);	//RX but no THR empty
   }
   else 
-    OutU8(c->base+UART_IIR,0xC7);
+    MixedOutU8(c->mmio,c->base+UART_IIR,0xC7);
   LBts(&c->flags,COMf_ENABLED);
   POPFD
   return c;
@@ -186,23 +187,23 @@ public CComm *CommInit8n1(I64 port,I64 baud)
   CLI
   if (!c->RX_fifo)
     c->RX_fifo=FifoU8New(COMM_RX_FIFO_SIZE);
-  OutU8(c->base+UART_LCR,0);	//Set for IER
-  OutU8(c->base+UART_IER,0);	//Disable all IRQ
-  OutU8(c->base+UART_LCR,0x80);	//Enable baud rate control
-  OutU8(c->base+UART_BRDL,0x180/(baud/300) & 0xFF);	//LSB
-  OutU8(c->base+UART_BRDH,0x180/(baud/300) / 256);	//MSB
-  OutU8(c->base+UART_LCR,3);	//8-none-1
-  InU8(c->base+UART_RDR);	//read garbage
-  InU8(c->base+UART_LSR);
-  OutU8(c->base+UART_MCR,4);
-  OutU8(c->base+UART_IER,0);	//Disable all IRQ
-  OutU8(c->base+UART_MCR,0xA);	//out2 and rts
+  MixedOutU8(c->mmio,c->base+UART_LCR,0);	//Set for IER
+  MixedOutU8(c->mmio,c->base+UART_IER,0);	//Disable all IRQ
+  MixedOutU8(c->mmio,c->base+UART_LCR,0x80);	//Enable baud rate control
+  MixedOutU8(c->mmio,c->base+UART_BRDL,0x180/(baud/300) & 0xFF);	//LSB
+  MixedOutU8(c->mmio,c->base+UART_BRDH,0x180/(baud/300) / 256);	//MSB
+  MixedOutU8(c->mmio,c->base+UART_LCR,3);	//8-none-1
+  MixedInU8(c->mmio,c->base+UART_RDR);	//read garbage
+  MixedInU8(c->mmio,c->base+UART_LSR);
+  MixedOutU8(c->mmio,c->base+UART_MCR,4);
+  MixedOutU8(c->mmio,c->base+UART_IER,0);	//Disable all IRQ
+  MixedOutU8(c->mmio,c->base+UART_MCR,0xA);	//out2 and rts
   if (!c->poll) {
     OutU8(0x21,InU8(0x21) & (0xFF-0x18));	//Enable 8259 IRQ 3 & 4
-    OutU8(c->base+UART_IER,1);	//RX but no THR empty
+    MixedOutU8(c->mmio,c->base+UART_IER,1);	//RX but no THR empty
   }
   else
-    OutU8(c->base+UART_IIR,0xC7);
+    MixedOutU8(c->mmio,c->base+UART_IIR,0xC7);
   LBts(&c->flags,COMf_ENABLED);
   POPFD
   return c;
@@ -218,15 +219,15 @@ public U0 PollComm(U8 *data)
 
 public U0 CommPutChar(I64 port,U8 b, I64 timeout_ms=500)
 {// Write 1 byte to com port
-  I64 base=comm_ports[port].base;
+  CComm *c=&comm_ports[port];
   F64 timeout_time=tS+ToF64(timeout_ms)/1000.0;
-  while (!(InU8(base+UART_LSR) & 0x20))
+  while (!(MixedInU8(c->mmio,c->base+UART_LSR) & 0x20))
   {
     if (tS>timeout_time) throw('ComErr');
     Yield;
   }
-  OutU8(base+UART_THR,b);
-  while (!(InU8(base+UART_LSR) & 0x20))
+  MixedOutU8(c->mmio,c->base+UART_THR,b);
+  while (!(MixedInU8(c->mmio,c->base+UART_LSR) & 0x20))
   {
     if (tS>timeout_time) throw('ComErr');
     Yield;

@@ -102,9 +102,10 @@ LptInit;
 U0 LptRep()
 {
   I64 i;
+  "LPT 1-3 are standard IO ports, the actual ports themselves may or may not exist.\n";
+
   for (i=1; i<=MAX_LPT_NUM; i++)
   {
-    "LPT 1-3 are standard IO ports, the actual ports themselves may or may not exist.\n";
     if (lpt_ports[i].base)
     {
       "LPT %d - base 0x%08x\n",i,lpt_ports[i].base;

@@ -353,7 +353,7 @@ else
 return blkdev.dvd_boot_is_good;
 }
 
-U0 MountAuto()
+U0 MountAuto(Bool probe_extra=FALSE)
 {
   Bool silent=IsSilent;
   if (AHCIMode)
@@ -365,7 +365,10 @@ U0 MountAuto()
     catch
       Fs->catch_except=TRUE;
   }
-  else MountIDEAuto;
+  else {
+    if (probe_extra) MountIDEAuto(FALSE,FALSE);
+    else MountIDEAuto;
+  }
   Silent(silent);
 }
 

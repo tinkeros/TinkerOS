@@ -207,3 +207,28 @@ I64 Seg2Linear(U32 *ptr)
   *ptr = *ptr >> 16 << 4 + *ptr & 0xFFFF;
   return *ptr;
 }
+
+public U8 MixedInU8(I64 mmio, I64 port)
+{//Dual function to support MMIO/IO space reading
+  U8 *mmio_ptr=mmio;
+  if (mmio)
+    return *mmio_ptr;
+  else
+    return InU8(port);
+}
+
+public U0 MixedOutU8(I64 mmio, I64 port, I64 val)
+{//Dual function to support MMIO/IO space writing
+  U8 *mmio_ptr=mmio;
+  if (mmio)
+    *mmio_ptr=val;
+  else
+    OutU8(port,val);
+}
+
+public U0 MakeAddrUncached(I64 mmio_addr)
+{//Make address uncached
+  *MemPageTable(mmio_addr)=*MemPageTable(mmio_addr)&~0x18 |0x11;
+  *MemPageTable(mmio_addr+mem_page_size)=*MemPageTable(mmio_addr+mem_page_size)&~0x18 |0x11;
+}
+

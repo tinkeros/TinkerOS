@@ -5,8 +5,13 @@
 // because QEMU will have graphics glitches without it.
 //
 // You might get a decent speedup setting this to FALSE for
-// VirtualBox, VMware, and some hardware!
-Bool use_slower_safe_gfx=TRUE;
+// VirtualBox, VMware, and some hardware!  Set this to
+// TRUE if you experience graphics glitches such as
+// artifacts when moving the mouse.
+//
+// The default is FALSE = fast for real hardware.
+
+Bool use_slower_safe_gfx=IsHypervisorPresent;
 
 #define I_UPDATE_CACHE 0xfd
 #define I_BLOT         0xfe
@@ -505,7 +510,7 @@ U0 GrDoLetterBox()
   src=text.raw_scrn_image;
   for (i=0; i<GR_HEIGHT; i++)
   {
-    dst=output_dst2+dst_row*gr.pitch/4;
+    dst=output_dst2+dst_row*gr.pitch/8;
     for (j=0; j<LETTER_BOX_BAR_WIDTH; j++)
     {
       *dst++=0;

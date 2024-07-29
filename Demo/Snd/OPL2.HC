@@ -3,7 +3,7 @@ Cd(__DIR__);
 
 // Pick one, then configure below
 
-// QEMU / Real ISA Adlib card
+// QEMU / Real ISA Adlib or compatible card
 #define ISA_OPL
 // OPT2LPT or OPL3LPT connected via a parallel port
 //#define OPL2LPT
@@ -22,7 +22,9 @@ Cd(__DIR__);
 #define ISA_IOPORT_OPL_BASE 0x388
 #endif
 
+// Run LptRep and try ports below
 #define LPT_IOPORT_OPL_BASE 0x378
+
 #define SERIAL_OPL_PORT 2
 
 /*
@@ -56,41 +58,21 @@ public U0 WriteOPL(I64 r, U8 data, I64 port=ISA_IOPORT_OPL_BASE)
   OutU8(port+1,data);
   for (i=0; i<23; i++) PortNop;
 }
-
-public Bool DetectOPL(I64 port=ISA_IOPORT_OPL_BASE)
-{//Detects OPL chip
-  I64 x1=0,x2=0;
-  WriteOPL(4,0x60,port);
-  WriteOPL(4,0x80,port);
-  x1=InU8(port)&0xe0;
-  WriteOPL(2,0xff,port);
-  WriteOPL(4,0x21,port);
-  x2=InU8(port)&0xe0;
-  WriteOPL(4,0x60,port);
-  WriteOPL(4,0x80,port);
-  if (x1==0 && x2==0xc0) {
-    if (InU8(port)&0x06)
-      "Found OPL2, enabling premium sound!\n";
-    else "Found OPL3, enabling premium sound!\n";
-    return TRUE;
-  }
-  return FALSE;
-}
 #endif
 
 #ifdef OPL2LPT
-public U0 WriteOPL(I64 r, U8 data)
+public U0 WriteOPL(I64 r, U8 data, I64 port=LPT_IOPORT_OPL_BASE)
 {//Writes data to OPL registers
   I64 i;
-  OutU8(LPT_IOPORT_OPL_BASE,r);
-  OutU8(LPT_IOPORT_OPL_BASE+2,0x0d);
-  OutU8(LPT_IOPORT_OPL_BASE+2,0x09);
-  OutU8(LPT_IOPORT_OPL_BASE+2,0x0d);
+  OutU8(port,r);
+  OutU8(port+2,0x0d);
+  OutU8(port+2,0x09);
+  OutU8(port+2,0x0d);
   for (i=0; i<4; i++) PortNop;
-  OutU8(LPT_IOPORT_OPL_BASE,data);
-  OutU8(LPT_IOPORT_OPL_BASE+2,0x0c);
-  OutU8(LPT_IOPORT_OPL_BASE+2,0x08);
-  OutU8(LPT_IOPORT_OPL_BASE+2,0x0c);
+  OutU8(port,data);
+  OutU8(port+2,0x0c);
+  OutU8(port+2,0x08);
+  OutU8(port+2,0x0c);
   for (i=0; i<23; i++) PortNop;
 }
 #endif
@@ -140,6 +122,26 @@ U0 OPLReplay()
   PortNop;
 }
 #endif
+
+public Bool DetectOPL(I64 port=ISA_IOPORT_OPL_BASE)
+{
+  I64 x1=0,x2=0;
+  WriteOPL(4,0x60,port);
+  WriteOPL(4,0x80,port);
+  x1=InU8(port)&0xe0;
+  WriteOPL(2,0xff,port);
+  WriteOPL(4,0x21,port);
+  x2=InU8(port)&0xe0;
+  WriteOPL(4,0x60,port);
+  WriteOPL(4,0x80,port);
+  if (x1==0 && x2==0xc0) {
+    if (InU8(port)&0x06)
+      "Found OPL2, enabling premium sound!\n";
+    else "Found OPL3, enabling premium sound!\n";
+    return TRUE;
+  }
+  return FALSE;
+}
 
 public U0 OPLReset()
 {// Reset OPL chip
@@ -289,7 +291,7 @@ static U8 opl_inst_mod2[11]= {1,  1, 1,  1,  1, 1,1,  1, 1,  32, 1};
 //        * 1* 1*  1*  1* 1*1*  1* 1*  1* 32*1
 
 public U0 U64Inst(U64 inst)
-{//Setup an instrument registers from a 64-bit number
+{//Setup instrument registers from a 64-bit number
   I64 i;
   U8 opl2inst[12];
   opl2inst[0]=0;
@@ -389,8 +391,7 @@ U0 EnableISAOPL()
     Mute(1);
     LBts(&sys_semas[SEMA_SND],0);
     Yield;
-    *(&Snd(U8*))=0xe9;
-    *((&Snd+1)(U32*))=&OPLSnd-&Snd-5;
+    HijackFunc(&Snd,&OPLSnd);
     LBtr(&sys_semas[SEMA_SND],0);
     Mute(0);
   }
@@ -398,4 +399,19 @@ U0 EnableISAOPL()
 
 EnableISAOPL;
 #endif
+
+
+#ifdef OPL2LPT
+AdamLog("Assuming OPL2/3LPT is connected and parallel port base is 0x%08x\n",LPT_IOPORT_OPL_BASE);
+OPLInit;
+// Patch hook into sound system
+Snd(0);
+Mute(1);
+LBts(&sys_semas[SEMA_SND],0);
+Yield;
+HijackFunc(&Snd,&OPLSnd);
+LBtr(&sys_semas[SEMA_SND],0);
+Mute(0);
+#endif
+
 #help_index ""

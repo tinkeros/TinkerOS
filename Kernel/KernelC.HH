@@ -437,8 +437,8 @@ public extern I64 BlkDevAdd(CBlkDev *bd,I64 prt_num=I64_MIN,
 public extern Bool BlkDevInit(CBlkDev *bd);
 extern U0 DskCacheInit(I64 size_in_U8s);
 public extern U0 DskCacheInvalidate(CDrv *dv);
-public extern I64 MountIDEAuto(Bool ATAPIOnly=FALSE);
-public extern U0 MountAuto();
+public extern I64 MountIDEAuto(Bool ATAPIOnly=FALSE,Bool just_ide=TRUE);
+public extern U0 MountAuto(Bool probe_extra=FALSE);
 public extern CBlkDevGlbls blkdev;
 
 #help_index "Graphics/Color"
@@ -749,6 +749,11 @@ public extern Bool PCIBt(U8 *bit_field, I64 bit);
 public extern Bool PCIBtr(U8 *bit_field, I64 bit);
 public extern Bool PCIBts(U8 *bit_field, I64 bit);
 
+#help_index "PCI;PCIE;Devices"
+public extern U8 MixedInU8(I64 mmio, I64 port);
+public extern U0 MixedOutU8(I64 mmio, I64 port, I64 val);
+public extern U0 MakeAddrUncached(I64 mmio_addr);
+
 #help_index "PCI;Info;File/System;Devices"
 public extern I64 ATARep(Bool pmt=TRUE,
 	Bool just_ide=FALSE,CATARep **_head=NULL);
@@ -759,7 +764,6 @@ public extern U8 *IntEntrySet(I64 irq,
 	U0 (*fp_new_hndlr)(),I64 type=IDTET_IRQ,I64 dpl=0);
 public extern U0 RouteIrq(I64 irq, I64 cpu=0);
 public extern U0 MaskIrq(I64 irq, I64 cpu=0);
-
 
 #help_index "ScrnCast;Cmd Line (Typically)"
 public extern Bool ScrnCast(Bool val=ON,Bool just_audio=FALSE,

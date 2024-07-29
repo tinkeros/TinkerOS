@@ -454,7 +454,7 @@ I64 MountAHCIAuto()
     // if boot-drive blkdev exists, do a SATA port iteration to mount it first
     "( : BlkDev at 0x%0X )\n", bd;
     for (i = 0; i < AHCI_MAX_PORTS; i++)
-      if (Bt(&blkdev.ahci_hba->ports_implemented, i))
+      if (PCIBt(&blkdev.ahci_hba->ports_implemented, i))
       {
         port = &blkdev.ahci_hba->ports[i];
         if (bd->port_num == i)
@@ -481,7 +481,7 @@ I64 MountAHCIAuto()
   // do a 2nd iteration to mount remaining drives
   // (we end up trying to boot off whichever drive/partition ends up at chosen letter)
   for (i = 0; i < AHCI_MAX_PORTS; i++)
-    if (i != ata_port && i != atapi_port && Bt(&blkdev.ahci_hba->ports_implemented, i))
+    if (i != ata_port && i != atapi_port && PCIBt(&blkdev.ahci_hba->ports_implemented, i))
     {
       port = &blkdev.ahci_hba->ports[i];
       if (port->signature == AHCI_PxSIG_ATA)
@@ -502,8 +502,7 @@ I64 MountAHCIAuto()
   return res;
 }
 
-
-I64 MountIDEAuto(Bool ATAPIOnly=FALSE)
+I64 MountIDEAuto(Bool ATAPIOnly=FALSE, Bool just_ide=TRUE)
 {//Try to mount hard drive and CD/DVD, automatically. (Kernel.Cfg option).
 //It uses 'C' and 'T' as first drive letters or whatever you set
   //in config when compiling Kernel.BIN.
@@ -513,7 +512,7 @@ I64 MountIDEAuto(Bool ATAPIOnly=FALSE)
   {
     MountAHCIAuto;
   }
-  ATARep(FALSE,TRUE,&head);
+  ATARep(FALSE,just_ide,&head);
   ATAIDDrvs(head,&ata_drv,&atapi_drv);
   if (ata_drv && !ATAPIOnly)
     if (ATAMount(blkdev.first_hd_drv_let,BDT_ATA,

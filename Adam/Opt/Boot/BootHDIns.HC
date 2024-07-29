@@ -83,14 +83,13 @@ public U0 MakeAllDef(Bool install=FALSE, I64 width=-1, I64 height=-1, I64 do_mbr
 
   if (HashFind("CUR_DRV_HINT",adam_task->hash_table,HTT_DEFINE_STR))
   {
-
     if (width>0 && height>0 && !CheckVidMode(width, height, scale))
     {
       "This resolution is not supported!\n";
       return;
     }
-    if (FB_WIDTH!=GR_WIDTH || FB_HEIGHT!=GR_HEIGHT || DO_SCALING
-      || LETTER_BOX || WIDTH_SCALE>1 || HEIGHT_SCALE>1)
+    if (scale!=1 &&(FB_WIDTH!=GR_WIDTH || FB_HEIGHT!=GR_HEIGHT || DO_SCALING
+      || LETTER_BOX || WIDTH_SCALE>1 || HEIGHT_SCALE>1))
       res_ok=FALSE;
 
     if (AHCIMode)
@@ -155,11 +154,22 @@ public U0 MakeAllDef(Bool install=FALSE, I64 width=-1, I64 height=-1, I64 do_mbr
       return;
     }
   }
-  "Cannot make default config, from this kernel, use MakeAll and set options manually!\n";
+  "Can not make default config, from this kernel, use MakeAll and set options manually!\n";
 }
 
 public U0 MakeAllIns(I64 width=-1, I64 height=-1)
 {//Try to automatically recompile both compiler and kernel and install
   MakeAllDef(TRUE,width,height);
 }
+
+public U0 Do640x480()
+{//Try to recompile kernel with standard 640x480 resolution
+  MakeAllDef(TRUE,640,480,1);
+}
+
+public U0 Do800x600()
+{//Try to recompile kernel with standard 800x600 resolution
+  MakeAllDef(TRUE,800,600,1);
+}
+
 #help_index ""

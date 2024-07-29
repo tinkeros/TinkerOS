@@ -818,7 +818,7 @@ U8 *FindMCFG()
 // use them in Comm.HC
 //
 U0 EnumPcieDeviceIds(mcfg_entry *arr, I64 n)
-{
+{//Output listing of devices found in PCIE config space
   U8 pci_class, pci_subclass, header_type,irq_line,irq_pin,*cfg_space;
   U16 vendor_id, device_id;
   U32 *bar;
@@ -834,7 +834,7 @@ U0 EnumPcieDeviceIds(mcfg_entry *arr, I64 n)
       {
         for (Function=0; Function<8; Function++)
         {
-          "Start b,d,f=%d,%d,%d\n",Bus,Device,Function; //TODO
+      //    "Start b,d,f=%d,%d,%d\n",Bus,Device,Function; //TODO
           cfg_space = e->addr + ((Bus - e->bus_start) << 20 |
                   Device << 15 | Function << 12);
           vendor_id = PcieCfgRead(cfg_space, PCI_VENDOR_ID, 2);
@@ -846,13 +846,14 @@ U0 EnumPcieDeviceIds(mcfg_entry *arr, I64 n)
             header_type = PcieCfgRead(cfg_space, PCI_HEADER_TYPE, 1);
             irq_pin=PcieCfgRead(cfg_space,PCI_INTERRUPT_PIN,1);
             irq_line=PcieCfgRead(cfg_space,PCI_INTERRUPT_LINE,1);
-            PCILookUpDev(vendor_id,device_id);
+            //TODO add checks before lookup to prevent hangs here
+            //PCILookUpDev(vendor_id,device_id);
             "Bus %d Device %d Func %d Header Type %02x Vendor ID %04x Device ID %04x\n"
             ,Bus,Device,Function,header_type,vendor_id,device_id;
             "Class %02x Sub-Class %02x IRQ line: %d IRQ pin %02x\n"
             ,pci_class,pci_subclass,irq_line,irq_pin;
             Sleep(10); //TODO
-            if (header_type == 0)
+            if (header_type & 0x7f == 0)
             {
               bar = &cfg_space[PCI_BASE_ADDRESS_0];
               for (bi=0; bi<6; bi++)
@@ -869,8 +870,8 @@ U0 EnumPcieDeviceIds(mcfg_entry *arr, I64 n)
               }
             }
  "\n";
-            "End b,d,f=%d,%d,%d\n",Bus,Device,Function; //TODO
-            Sleep(1000); //TODO
+      //      "End b,d,f=%d,%d,%d\n",Bus,Device,Function; //TODO
+            Sleep(10); //TODO
           }
         }
       }

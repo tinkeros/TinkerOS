@@ -1,4 +1,27 @@
 #help_index "OtherTinkerOSFuncs"
+
+public U0 GetBootDrvPortInfo()
+{
+  CDrv *dv;
+  CBlkDev *bd;
+  I64 boot_let=blkdev.boot_drv_let;
+  if ('C'<=boot_let<'F')
+  {
+    dv=Let2Drv(boot_let);
+    if (dv && dv->bd)
+    {
+      bd=dv->bd;
+      if(bd->base0)
+      {
+        "Boot drive %C IO port info:\n\n",boot_let;
+        "Base 0: 0x%04x\n",bd->base0;
+        "Base 1: 0x%04x\n",bd->base1;
+        "Unit  : %d\n\n",bd->unit;
+      }
+    }
+  }
+}
+
 public I64 YNorU(I64 enter_default=0)
 {//Wait for user to answer Y or N.
   I64 ch;
@@ -48,19 +71,20 @@ static U8 *ins_questions[NUM_INS_SURVEY_QUESTIONS]=
   "Did you manually have to enter IO port numbers\0u",
 };
 
-#define NUM_STD_SURVEY_QUESTIONS 9
+#define NUM_STD_SURVEY_QUESTIONS 10
 
 static U8 *std_questions[NUM_STD_SURVEY_QUESTIONS]=
 {
   "Is AHCI mode supported in BIOS\0u",
   "Is Legacy/IDE mode supported in BIOS\0u",
-  "Does PS/2 emulation of a USB keyboard work\0u",
-  "Does PS/2 emulation of a USB mouse work\0u",
+  "Does PS/2 emulation of USB both keyboard and mouse work in TinkerOS\0u",
   "Does your system have a PS/2 mouse or combo port\0u",
   "Does your system have a serial port\0u",
   "Does your system have a parallel port\0u",
-  "Can you install and run TempleOS bare metal\0u",
   "Can you install and run TinkerOS bare metal\0u",
+  "Can you install and run TempleOS bare metal\0u",
+  "Does PS/2 emulation of USB both keyboard and mouse work in TempleOS\0u",
+  "Is this a custom built PC / motherboard you installed\0u",
 };
 
 
@@ -74,7 +98,7 @@ public U0 RunSysSurvey()
 {
   U8 *notes=NULL, *survey_file;
   Bool is_laptop,extra_notes,installed,sysrep;
-  I64 have_dock,i,resp[NUM_STD_SURVEY_QUESTIONS], resp_ins[NUM_INS_SURVEY_QUESTIONS];
+  I64 have_kbd_ms,have_expresscard,have_dock,i,resp[NUM_STD_SURVEY_QUESTIONS], resp_ins[NUM_INS_SURVEY_QUESTIONS];
 
   DocClear;
   WinMax;
@@ -92,6 +116,7 @@ public U0 RunSysSurvey()
   for (i=0; i<NUM_STD_SURVEY_QUESTIONS; i++)
   {
     resp[i]=AskQuestion(std_questions[i]);
+    if (i==1 && resp[i]==0) SetDefaultResp(std_questions[7],'n');
     "\n";
   }
 
@@ -101,8 +126,14 @@ public U0 RunSysSurvey()
 
   if (is_laptop)
   {
+    "Do the laptop keyboard and trackpad both work ";
+    have_kbd_ms=YNorU('u');
+    "\n";
     "Do you have a dock with useful ports (ps/2,serial,parallel) ";
     have_dock=YNorU('u');
+    "\n";
+    "Does your laptop have an expresscard slot ";
+    have_expresscard=YNorU('u');
     "\n";
   }
 
@@ -153,8 +184,12 @@ public U0 RunSysSurvey()
 
 
   "Laptop: %s\n\n",DefineSub(is_laptop,"ST_SYS_SURVEY");
-  if (is_laptop && have_dock)
+  if (is_laptop)
     "Dock with useful ports available: %s\n\n",DefineSub(have_dock,"ST_SYS_SURVEY");
+  if (is_laptop)
+    "Expresscard slot available: %s\n\n",DefineSub(have_expresscard,"ST_SYS_SURVEY");
+  if (is_laptop)
+    "Do laptop keyboard and trackpad both work: %s\n\n",DefineSub(have_kbd_ms,"ST_SYS_SURVEY");
 
   for (i=0; i<NUM_STD_SURVEY_QUESTIONS; i++)
   {
@@ -168,6 +203,9 @@ public U0 RunSysSurvey()
       "%s: %s\n\n",ins_questions[i],DefineSub(resp_ins[i],"ST_SYS_SURVEY");
     }
   }
+
+  if (!AHCIMode)
+    GetBootDrvPortInfo;
 
   if (extra_notes) "Extra notes: \n\n%s\n\n",notes;
 
@@ -195,8 +233,9 @@ public U0 RunSysSurvey()
   DocWrite(Fs->put_doc);
 
   "\nWrote %s, please transfer to an internet connected PC\n",survey_file;
-  "and make a github pull request to add your system! This\n";
-  "will help others know what systems are TOS compatible!\n\n";
+  "and rename it appropriately and make a github pull\n";
+  "request to add your system! This will help others\n";
+  "know what systems are TOS compatible!\n\n";
 
   if (SNAIL_COM>0)
   {

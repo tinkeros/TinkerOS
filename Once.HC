@@ -67,6 +67,8 @@ U0 Tmp()
       "change it using BootHDIns.  Otherwise\n";
       "perform a manual re-install of this\n";
       "partition using a lower resolution.\n\n";
+      "For a quick fix to try 640x480\n";
+      "instead run Do640x480;\n\n";
     }
     else
     {

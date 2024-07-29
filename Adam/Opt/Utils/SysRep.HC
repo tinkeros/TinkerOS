@@ -1050,7 +1050,7 @@ start:
       , SMBIOSStr(header, sys_info->product_name);
       "Version:$$BLACK$$%s$$FG$$\n"
       , SMBIOSStr(header, sys_info->version);
-      if (!verbose)
+      if (verbose<2)
       {
         "$$ID,-3$$";
         break;
@@ -1071,7 +1071,6 @@ start:
       "$$ID,-3$$";
       break;
     case SMBIOSt_ENCLOSURE:
-      if (!verbose) break;
       if (verbose<2) break;
       CSMBIOSEnclosureInfo *info = header;
       "$$TR-C,\"Enclosure\"$$\n";
@@ -1354,7 +1353,7 @@ start:
       }
       else
         "Unknown$$FG$$\n";
-      if (!verbose)
+      if (verbose==2)
       {
       "Serial Number:$$BLACK$$%s$$FG$$\n"
         , SMBIOSStr(header, mem_info->serial_number);
@@ -1387,7 +1386,7 @@ start:
       , SMBIOSStr(header, b_info->product);
       "Version:$$BLACK$$%s$$FG$$\n"
       , SMBIOSStr(header, b_info->version);
-      if (!verbose)
+      if (verbose==2)
       {
       "Type:$$BLACK$$%Z$$FG$$\n"
         , b_info->board_type, "ST_SMBIOS_BASEBOARD_TYPES";
@@ -1471,7 +1470,7 @@ start:
         "%d$$FG$$\n", bat_info->max_battery_data_error;
       else
         "Unknown$$FG$$\n";
-      if (!verbose)
+      if (verbose==2)
       {
       "Serial Number:$$BLACK$$";
         if (bat_info->serial_number)
@@ -1579,5 +1578,5 @@ public U0 BIOSRep()
 
 public U0 SysRepSurvey()
 {//Display system info excluding sensative info
-  SysRep(,,,, TRUE);
+  SysRep(,,,,1);
 }

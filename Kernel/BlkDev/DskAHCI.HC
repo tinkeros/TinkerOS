@@ -267,6 +267,7 @@ I64 AHCIAtapiCapacityGet(CBlkDev *bd)
   cmd_fis->type	= FISt_H2D;
   PCIBts(&cmd_fis->desc, AHCI_CF_DESCf_C); //Set Command bit in H2D FIS.
   cmd_fis->command	= ATA_PACKET;
+  cmd_fis->lba1 = 8;
   cmd_table->acmd[0]	= ATAPI_READ_CAPACITY >> 8;
   AHCIPortWait(bd->port_num, tS + 2);
   PCIBts(&port->cmd_issue, cmd_slot); //Issue the command.

@@ -742,7 +742,7 @@ U0 DoInstructions()
 
 Bool DoInstall(Bool pmt_reboot)
 {
-  I64 i,res=FALSE,vm_install,default_choice='y';
+  I64 i,res=FALSE,vm_install,default_choice='y',found_drv='n';
   InstallOptions *cfg;
   if (DrvMounted('C'))
   {
@@ -761,6 +761,8 @@ Bool DoInstall(Bool pmt_reboot)
     "$$BK, 1$$$$RED$$WARNING WARNING WARNING WARNING WARNING$$FG$$$$BK, 0$$\n\n"
     "Note this option will repartition your drive and overwrite any existing data!\n\n"
     "$$BK, 1$$$$RED$$WARNING WARNING WARNING WARNING WARNING$$FG$$$$BK, 0$$\n\n";
+    "$$BK, 1$$$$RED$$Select no here if you already setup$$FG$$$$BK, 0$$\n";
+    "$$BK, 1$$$$RED$$partitions (such as with clonezilla).$$FG$$$$BK, 0$$\n\n";
     "\nPerform automated partitioning and install ";
     vm_install=YorN('y');
   }
@@ -810,14 +812,42 @@ Bool DoInstall(Bool pmt_reboot)
   }
   else
   {
-    "\n\nThis wizard works if you have a partition ready."
-    "You can partition the drive or BootHDIns() "
-    "with more options if you do it by hand, not using this wizard.\n\n"
+    if (!DrvMounted('C'))
+    {
+      "\n\nThis wizard works if you already have partition(s) ready."
+      "\n\nThe partition table should be MSDOS\n"
+      "(NOT GPT) with FAT32 partitions on a\n"
+      "IDE or SATA drive (not M.2/NVME!)\n"
+      "\n\nIf you have already prepared partitions\n"
+      "to install to using clonezilla or\n"
+      "another partitioning tool you can try\n"
+      "to auto mount them now if they are\n"
+      "FAT32 formatted.\n"
+      "\nRun MountAuto ";
+      if (YorN('y'))
+        MountAuto;
+      if (!DrvMounted('C')&&!DrvMounted('D')&&!DrvMounted('E')&&!DrvMounted('F')&&!AHCIMode)
+      {
+        "\n\n$$BK, 1$$$$RED$$Performing extended probing...$$FG$$$$BK, 0$$\n";
+        "$$BK, 1$$$$RED$$If system locks, reboot and do manual mount.$$FG$$$$BK, 0$$\n\n";
+        Sleep(500);
+        MountAuto(TRUE);
+      }
+    }
+    if (DrvMounted('C')||DrvMounted('D')||DrvMounted('E')||DrvMounted('F'))
+    {
+      "Drive(s) have been detected!\n\n";
+      found_drv='y';
+    }
+    else {
+      "\n$$BK, 1$$$$RED$$Did you mount drives first? If not, exit.$$FG$$$$BK, 0$$\n\n";
+    }
+
     "$$BK, 1$$$$RED$$WARNING WARNING WARNING WARNING WARNING$$FG$$$$BK, 0$$\n"
     "Continue at your own risk, may cause loss of data!\n"
     "$$BK, 1$$$$RED$$WARNING WARNING WARNING WARNING WARNING$$FG$$$$BK, 0$$\n\n"
     "Continue Install Wizard ";
-    if (YorN('y'))
+    if (YorN(found_drv))
     {
       do
       {

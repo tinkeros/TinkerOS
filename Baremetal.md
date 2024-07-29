@@ -64,6 +64,11 @@ Note: Only do this on a machine you are prepared to lose all data on.  This will
   - On some boards strangely USB mice will work only if a PS/2 mouse is also plugged in.
   - Sometimes combo devices where the keyboard/mouse share one usb port do not work, but having a normal individual separate USB keyboard and mouse does work.
   - A PS/2 to USB adapter will not help you, these convert PS/2 to USB (so if USB isn't working, this won't help).
+    
+### Drive partitioning
+  - Don't do it yourself unless you know what you are doing, my clonezilla image will prepare your drive with the right partition table type and 4 FAT32 partitions that are 2 GB in size you can install to easily (2 GB is pleanty for TempleOS/TinkerOS and there is a good reason to limit the size!)
+  - If you want to partition the drive yourself you need to create a MSDOS (NOT GPT) partition table on the drive.  The partitions need to be FAT32 and kept a reasonable size. 
+ Size matters because TempleOS will zero the entire thing if you format (which can take a long time if it is large).  Also if you make them too large, they will fail to format for compatability reasons.  There is no reason to make a huge partition for TempleOS or try to make it take up your entire drive.
 
 ### Dual booting
   If you want to dual boot the best thing to do is let TempleOS/TinkerOS have one entire drive which it can install its bootloader on and then you can choose to boot that drive or your other OS manually at boot time (many computers have a key you can press/hold at start-up to let you choose a boot device manually, if you can't and have Windows it is probably because Fast Boot is on and you need to turn it off).

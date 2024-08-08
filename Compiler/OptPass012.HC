@@ -164,16 +164,6 @@ CIntermediateCode *OptPass012(CCmpCtrl *cc)
       if (tmpi->ic_class->raw_type==RT_F64)
         tmpi->ic_flags|=ICF_USE_F64;
       break;
-    case IC_COM:
-      if (tmpi1->ic_code==IC_IMM_I64)
-      {
-        tmpi->ic_data=~tmpi1->ic_data;
-        tmpi->ic_code=IC_IMM_I64;
-        tmpi->ic_flags|=tmpi1->ic_flags;
-        OptSetNOP1(tmpi1);
-      }
-      tmpi_push->ic_class2=cmp.internal_types[RT_I64];
-      break;
 start:
     case IC_NOT:
       if (tmpc->raw_type==RT_F64)
@@ -1456,6 +1446,7 @@ end:
     case IC_NOBOUND_SWITCH:
     case IC_SWITCH:
     case IC_ASM:
+    case IC_COM:
       break;
     default:
       "Pass:%d Missing IC hndlr\n"

@@ -23,7 +23,7 @@ SethFile("/Adam/AutoComplete/DoACInit",-1);
 // Misc helper functions
 U0 AutoHome()
 {
-  MountAuto;
+  MountAuto(1);
   Cdd("C:/Home");
 }
 

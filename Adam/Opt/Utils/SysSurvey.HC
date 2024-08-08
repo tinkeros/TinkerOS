@@ -96,8 +96,9 @@ U0 SetDefaultResp(U8 *q, I64 resp)
 
 public U0 RunSysSurvey()
 {
+  CDrv *dv;
   U8 *notes=NULL, *survey_file;
-  Bool is_laptop,extra_notes,installed,sysrep;
+  Bool is_laptop,extra_notes,installed,sysrep,clonezilla;
   I64 have_kbd_ms,have_expresscard,have_dock,i,resp[NUM_STD_SURVEY_QUESTIONS], resp_ins[NUM_INS_SURVEY_QUESTIONS];
 
   DocClear;
@@ -116,7 +117,13 @@ public U0 RunSysSurvey()
   for (i=0; i<NUM_STD_SURVEY_QUESTIONS; i++)
   {
     resp[i]=AskQuestion(std_questions[i]);
-    if (i==1 && resp[i]==0) SetDefaultResp(std_questions[7],'n');
+    if ((i==1||i==6) && resp[i]==0)
+    {
+      SetDefaultResp(std_questions[7],'n');
+      SetDefaultResp(std_questions[8],'n');
+    }
+    if (i==2 && resp[i]==0)
+      SetDefaultResp(std_questions[8],'n');
     "\n";
   }
 
@@ -220,6 +227,19 @@ public U0 RunSysSurvey()
 
   VidModes;
   "\n";
+
+  if (DrvMounted('C')||DrvMounted('D')||DrvMounted('E')||DrvMounted('F'))
+  {
+    clonezilla=TRUE;
+    for (i=0;i<4;i++)
+    {
+      dv=Let2BlkDev('C'+i);
+      if (!dv || dv->size != 0x256534442) clonezilla=FALSE;
+    }
+  }
+  else clonezilla=FALSE;
+
+  if (clonezilla) "It appears clonezilla was used to partition the drive.\n";
 
   if (installed && blkdev.boot_drv_let != 'T')
     survey_file=MStrPrint("%C:/Home/Survey.DD",blkdev.boot_drv_let);

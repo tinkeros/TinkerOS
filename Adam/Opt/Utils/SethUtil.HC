@@ -30,6 +30,10 @@ public U0 SethREPL(I64 cpu_num=mp_cnt-1, U8 *first_cmd=NULL, Bool exit_after_fir
   repl->title_src=TTS_LOCKED_CONST;
   StrCpy(repl->task_title,"Seth REPL");
   U8 *line,*cwd,*pmpt,cpu_desc[5];
+  cwd=MStrPrint("Cd(\"%s\");\n",DirCur);
+  TaskExe(repl,Fs,cwd,0);
+  TaskWait(repl);
+  Free(cwd);
   cpu_desc[0]=0;
   if (cpu_num) CatPrint(cpu_desc,"Seth");
   else CatPrint(cpu_desc,"Adam");
@@ -119,7 +123,7 @@ U0 SethExec(U8 *include_file, I64 cpu_num=mp_cnt-1)
 
 public CTask* SethFile(U8 *include_file, I64 cpu_num=mp_cnt-1)
 {//Include file on a Seth core (like AdamFile)
-  U8 *first_cmd = MStrPrint("#include \"%s\"\n\nExit;\n", include_file);
+  U8 *cwd,*first_cmd = MStrPrint("#include \"%s\"\n\nExit;\n", include_file);
 
   if (cpu_num>=mp_cnt)
   {
@@ -138,7 +142,10 @@ public CTask* SethFile(U8 *include_file, I64 cpu_num=mp_cnt-1)
 
   CTask *repl=Spawn(&SrvCmdLine,NULL,NULL,cpu_num);
   repl->title_src=TTS_LOCKED_CONST;
-  // TODO StrNCpy
+  cwd=MStrPrint("Cd(\"%s\");\n",DirCur);
+  TaskExe(repl,Fs,cwd,0);
+  TaskWait(repl);
+  Free(cwd);
   StrCpy(repl->task_title,include_file);
   TaskExe(repl,Fs,first_cmd,0);
   return repl;

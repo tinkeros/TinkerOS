@@ -28,7 +28,7 @@ U0 TS(U8 *desc)
            (PROGRESS_DESC_LEN-StrLen(st))>>1,CH_SPACE,st);
   Free(st);
   progress4=ts_i++;
-  progress4_max=181;
+  progress4_max=183;
   progress4_t0=ts_t0;
   *progress4_desc=0;
   RegExe("TempleOS/OSTestSuite");
@@ -223,6 +223,20 @@ U0 DoRandDemo()
   XTalkWait(task,"");
   XTalkWait(task,"");
   Sleep(750);
+  DeathWait(&task,TRUE);
+}
+
+U0 DoPI100()
+{
+  CTask *task=User;
+  XTalkWait(task,"#include \"::/Demo/Math/Pi/PI100\";\n");
+  DeathWait(&task,TRUE);
+}
+
+U0 DoCompilerFixCheck()
+{
+  CTask *task=User;
+  XTalkWait(task,"#include \"::/Demo/Tests/CompilerFix\";\n");
   DeathWait(&task,TRUE);
 }
 
@@ -2191,6 +2205,10 @@ U0 OSTestSuite()
   TS("SysRepLite");
   XTalkWait(task,"SysRepLite;Sleep(750);\n");
   DeathWait(&task,TRUE);
+  TS("Calculate digits of PI");
+  DoPI100;
+  TS("Test compiler bugfix");
+  DoCompilerFixCheck;
   ProgressBarsRst("TinkerOS/OSTestSuite");
   "Elapsed Time:%5.3f\n"
   ,tS-ts_t0;

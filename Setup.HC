@@ -1,5 +1,5 @@
 DocClear;
-"\nInstall FKey for TempleOS ";
+"\nInstall the FR keyboard layout for TempleOS ";
 
 if (YorN)
 {

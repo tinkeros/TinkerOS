@@ -12,7 +12,7 @@
 
 
 ### Preface
-VaticanTempleOS is essentially TinkerOS renamed with focus on system installer, a custom theme and fonts, setups, utilities, usability, practicality, among the many home-built features and improvements.
+VaticanTempleOS is essentially TinkerOS renamed focused on [Automation](https://en.wikipedia.org/wiki/Automation). It contains custom theme and fonts, among the many home-built features and improvements.
 
 ### Goals
 - Keep a TempleOS like look and feel while attempting to keep a fully TempleOS compatible API to the maximum extent possible.  TinkerOS should always be able to compile and install TempleOS.

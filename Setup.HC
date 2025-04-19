@@ -1,5 +1,5 @@
 DocClear;
-"\nInstall the FR keyboard layout for TempleOS ";
+"\nWould you like to install the French keyboard layout ";
 
 if (YorN)
 {
@@ -13,7 +13,7 @@ else
 
 DocClear;
 
-"\nSet Gruvbox theme ";
+"\nWould you like to set Gruvbox theme ";
 
 if (YorN)
 {

@@ -397,7 +397,9 @@ public U0 CommInit()
     }
   }
 }
-CommInit;
+// Disable by default for now, user can run if they need/want it.
+// Disabling speeds boot on some systems.
+//CommInit;
 
 U0 CommRep()
 {

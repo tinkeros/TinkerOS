@@ -198,7 +198,7 @@ Bool SetDrvLetType(U8 drv_let, U8 type)
 I64 Let2BlkDevType(U8 drv_let)
 {//Drv letter to BlkDev Type. drv_let=0 not allowed. See $LK,"BDT_NULL",A="MN:BDT_NULL"$.
   drv_let=Let2Let(drv_let);
-  if (BlkDevLtrOverride[drv_let-'A']!=BDT_NULL)
+  if (drv_let >= 'A' && drv_let <= 'Z' && BlkDevLtrOverride[drv_let-'A']!=BDT_NULL)
     return BlkDevLtrOverride[drv_let-'A'];
   if ('A'<=drv_let<='B')
     return BDT_RAM;

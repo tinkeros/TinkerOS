@@ -516,9 +516,12 @@ I64 Dput2(CDirEntry *tmpde,I64 src_dir_len,I64 dst_dir_len,U8 *dst_dir, Bool syn
       else
       {
         // TODO remove this cleanup in Linux instead eventually?
+        // Disabling for now, it can fragment the filesystem too much
+        /*
         if (StrMatch(".HC",tmpde->full_name) || StrMatch(".DD",tmpde->full_name)
             || StrMatch(".IN",tmpde->full_name))
           CursorRemFile(tmpde->full_name);
+        */
 
         if ((StrMatch("Downloads/Linux",tmpde->full_name) || StrMatch(".DATA",tmpde->full_name) || StrMatch(".ISO",tmpde->full_name) || StrMatch(".BIN",tmpde->full_name)) && !bin_files)
         {

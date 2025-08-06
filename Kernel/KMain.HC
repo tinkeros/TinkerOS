@@ -159,7 +159,7 @@ U0 KMain()
   sys_os_version,sys_compile_time,sys_compile_time;
   TimersInit;
   if (BIOSTotalMem<ToI64(0.95*MEM_MIN_MEG*0x100000))
-    RawPrint(4000,"!!! Requires $TX,"1024Meg",D="DD_MEM_MIN_MEG"$ of RAM Memory !!!");
+    RawPrint(4000,"!!! Requires 2GB of RAM !!!");
   IntsInit;
   "Enable IRQ's\n";
   IntInit2;
@@ -231,7 +231,7 @@ if (!kernel_cfg->opts[CFG_NO_MP])
 KbdMsInit;
 MsInit;
 KbdInit;
-Spawn(&MsHardDrvrInstall);
+MsHardDrvrInstall;
 
 Silent(OFF);
 

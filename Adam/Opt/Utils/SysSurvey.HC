@@ -5,6 +5,7 @@ public U0 GetBootDrvPortInfo()
   CDrv *dv;
   CBlkDev *bd;
   I64 boot_let=blkdev.boot_drv_let;
+  if (DrvMounted(boot_let))
   if ('C'<=boot_let<'F')
   {
     dv=Let2Drv(boot_let);
@@ -233,8 +234,11 @@ public U0 RunSysSurvey()
     clonezilla=TRUE;
     for (i=0;i<4;i++)
     {
-      dv=Let2BlkDev('C'+i);
-      if (!dv || dv->size != 0x256534442) clonezilla=FALSE;
+      if (DrvMounted('C'+i))
+      {
+        dv=Let2BlkDev('C'+i);
+        if (!dv || dv->size != 0x256534442) clonezilla=FALSE;
+      }
     }
   }
   else clonezilla=FALSE;

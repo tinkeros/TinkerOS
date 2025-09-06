@@ -1,8 +1,3 @@
-// Possible TODOs
-// Add Menu (doesn't seem necessary for this app?)
-// Animate turns (just wastes time?)
-// Add layer 1 solver (all people *should* be able to do one layer?)
-
 #define CUBE_START_ROTATE_TIME 5.0
 
 static class cube
@@ -189,7 +184,6 @@ U0 DrawCube(CDC *dc, I64 idx)
     GrFillPoly3(dc,4,poly);
   }
 
-
   dc->color=BLACK;
 
   GrLine3(dc,-cube_size+x_offset,-cube_size+y_offset,-cube_size+z_offset, -cube_size+x_offset, cube_size+y_offset,-cube_size+z_offset);
@@ -229,7 +223,6 @@ U0 Rotate4(I64 x, I64 y, I64 z, I64 w)
   MemCpy(&cubes[z],&cubes[y],size);
   MemCpy(&cubes[y],&cubes[x],size);
   MemCpy(&cubes[x],&tmpc,size);
-
 }
 
 U0 DoR(Bool dir=0)
@@ -474,6 +467,165 @@ Bool IsSolved()
         cptr2+=face_color_offsets[face];
         if (*cptr1(I64*) != *cptr2(I64*)) return FALSE;
       }
+    }
+  }
+  return TRUE;
+}
+
+Bool IsSingleFaceSolved()
+{
+  I64 face,i,j;
+  U8 *cptr1,*cptr2;
+  Bool face_solved;
+
+  // Check only outter face colors
+  static U8 faces_to_idx[6][9]=
+  {
+    {0,1,2,9,10,11,18,19,20},      // top cyb
+    {6,7,8,15,16,17,24,25,26},     // bottom cyf
+    {0,9,18,3,12,21,6,15,24},      // front left czf
+    {18,19,20,21,22,23,24,25,26},  // front right cxf
+    {0,1,2,3,4,5,6,7,8},           // back left cxb
+    {2,11,20,5,14,23,8,17,26}      // back right czb
+  };
+
+  static U8 face_color_offsets[6]=
+  {
+    offset(cube.cyb),
+    offset(cube.cyf),
+    offset(cube.czf),
+    offset(cube.cxf),
+    offset(cube.cxb),
+    offset(cube.czb)
+  };
+
+  for (face=0;face<6;face++)
+  {
+    face_solved=TRUE;
+    for (i=0;i<8;i++)
+    {
+      cptr1=&cubes[faces_to_idx[face][i]];
+      cptr1+=face_color_offsets[face];
+      for (j=i+1;j<9;j++)
+      {
+        cptr2=&cubes[faces_to_idx[face][j]];
+        cptr2+=face_color_offsets[face];
+        if (*cptr1(I64*) != *cptr2(I64*)) return face_solved=FALSE;
+      }
+    }
+    if (face_solved) return TRUE;
+  }
+  return FALSE;
+}
+
+Bool CheckForPlus(I64 color)
+{
+  I64 i;
+  static U8 plus_idx[4]={19,21,23,25};
+
+  for (i=0;i<4;i++)
+  {
+    if (cubes[plus_idx[i]].cxf!=color) return FALSE;
+  }
+
+  // Move + up
+  DoF(1);
+  DoMFB(1);
+  DoB;
+
+  // align middle
+  while (cubes[22].cxf!=cubes[19].cxf) DoU;
+
+  return TRUE;
+}
+
+Bool SolvePlus()
+{
+  I64 face,i,j,tries;
+  I64 middle_target;
+
+  // Check only outter face colors
+  static U8 faces_to_idx[6][9]=
+  {
+    {0,1,2,9,10,11,18,19,20},      // top cyb
+    {6,7,8,15,16,17,24,25,26},     // bottom cyf
+    {0,9,18,3,12,21,6,15,24},      // front left czf
+    {18,19,20,21,22,23,24,25,26},  // front right cxf
+    {0,1,2,3,4,5,6,7,8},           // back left cxb
+    {2,11,20,5,14,23,8,17,26}      // back right czb
+  };
+
+  static U8 face_color_offsets[6]=
+  {
+    offset(cube.cyb),
+    offset(cube.cyf),
+    offset(cube.czf),
+    offset(cube.cxf),
+    offset(cube.cxb),
+    offset(cube.czb)
+  };
+
+  middle_target = cubes[22].cxf;
+
+  for (j=0;j<32;j++)
+  {
+    DoR;
+    if (middle_target == cubes[5].cxb) {DoB;DoB;}
+    if (middle_target == cubes[5].czb) {DoB;DoB;}
+    if (middle_target == cubes[3].czf) {DoF;DoF;}
+    if (middle_target == cubes[3].cxb) {DoF;DoF;}
+
+    for (i=0;i<6;i++)
+    {
+      if (CheckForPlus(middle_target)) return TRUE;
+      // top left middle
+      if (cubes[faces_to_idx[0][3]].cyb==middle_target) {
+        DoF;
+      }
+      // top right middle
+      if (cubes[faces_to_idx[0][5]].cyb==middle_target) {
+        DoB(1);
+      }
+      // bottom left middle
+      if (cubes[faces_to_idx[1][3]].cyf==middle_target) {
+        DoF(1);
+      }
+      // bottom right middle
+      if (cubes[faces_to_idx[1][5]].cyf==middle_target) {
+        DoB;
+      }
+
+      tries=3;
+
+      while (tries>0)
+      {
+      // if front middle not matching target
+      // top front middle
+      if (cubes[faces_to_idx[3][1]].cxf!=middle_target) {
+
+         // rotate top and see if we can find it
+         DoU;
+         tries--;
+      }
+      else tries=0;
+      }
+
+      tries=3;
+
+      while (tries>0)
+      {
+      // if front middle not matching target
+      // bottom front middle
+      if (cubes[faces_to_idx[3][7]].cxf!=middle_target) {
+        // rotate bottom and see if we can find it
+        DoD;
+        tries--;
+
+      }
+      else tries=0;
+      }
+
+      DoR;
     }
   }
   return TRUE;
@@ -746,10 +898,9 @@ Bool CubeGame(U64 difficulty=20,U64 puz_num=0)
       if (IsSolved&&finish_time==0.0)
         finish_time=tS;
 
-
       if (moves>999) moves=999;
 
-      while (!ScanKey(&key,&sc) && !quit)
+      while ((finish_time||!ScanKey(&key,&sc)) && !quit)
       {
         DCDepthBufRst(dc);
 
@@ -767,18 +918,18 @@ Bool CubeGame(U64 difficulty=20,U64 puz_num=0)
         z=100;
         if (tS-start_time>CUBE_START_ROTATE_TIME)
         {
-          if (show_help)
+	  if (show_help)
           {
-            x-=Fs->pix_width/4;
-            status_str[0]=0;
-            CatPrint(status_str,"Moves: %3d Time:%6.2f",moves,tS-start_time-CUBE_START_ROTATE_TIME);
-            GrPrint3(dc,x-Fs->pix_width+40,-3*cube_size-24,z,status_str);
-          }
-          else {
-            status_str[0]=0;
-            CatPrint(status_str,"Moves: %3d      Time:%6.2f",moves,tS-start_time-CUBE_START_ROTATE_TIME);
-            GrPrint3(dc,x-49*8,y+16,z,status_str);
-          }
+	    x-=Fs->pix_width/4;
+	    status_str[0]=0;
+	    CatPrint(status_str,"Moves: %3d Time:%6.2f",moves,tS-start_time-CUBE_START_ROTATE_TIME);
+	    GrPrint3(dc,x-Fs->pix_width+40,-3*cube_size-24,z,status_str);
+	  }
+	  else {
+	    status_str[0]=0;
+	    CatPrint(status_str,"Moves: %3d      Time:%6.2f",moves,tS-start_time-CUBE_START_ROTATE_TIME);
+	    GrPrint3(dc,x-49*8,y+16,z,status_str);
+	  }
         }
 
         if (smash) 
@@ -789,7 +940,12 @@ Bool CubeGame(U64 difficulty=20,U64 puz_num=0)
 
         Refresh;
         DCFill;
-        if (finish_time>0.0&&tS-finish_time>1.0) quit=TRUE;
+        if (finish_time>0.0&&(tS-finish_time)>2.0) quit=TRUE;
+      }
+      if (quit)
+      {
+        key=0;
+        sc=0;
       }
       switch (key) 
       {
@@ -834,89 +990,92 @@ Bool CubeGame(U64 difficulty=20,U64 puz_num=0)
         end:
 	  break;
         start:
-          moves+=8;
+	  moves+=8;
 	  case 'o':
 	    DoR(1);
-            DoD(1);
-            DoR;
-            DoD;
+	    DoD(1);
+	    DoR;
+	    DoD;
 	    DoR(1);
-            DoD(1);
-            DoR;
-            DoD;
+	    DoD(1);
+	    DoR;
+	    DoD;
 	    break;
 	  case 'm':
 	    DoU;
-            DoR;
-            DoU(1);
-            DoR(1);
-            DoU(1);
-            DoF(1);
-            DoU;
-            DoF;
+	    DoR;
+	    DoU(1);
+	    DoR(1);
+	    DoU(1);
+	    DoF(1);
+	    DoU;
+	    DoF;
 	    break;
 	  case 'M':
 	    DoU(1);
-            DoL(1);
-            DoU;
-            DoL;
-            DoU;
-            DoF;
-            DoU(1);
-            DoF(1);
+	    DoL(1);
+	    DoU;
+	    DoL;
+	    DoU;
+	    DoF;
+	    DoU(1);
+	    DoF(1);
 	    break;
 	  case 'p':
 	    DoU;
-            DoR;
-            DoU(1);
-            DoL(1);
-            DoU;
-            DoR(1);
-            DoU(1);
-            DoL;
+	    DoR;
+	    DoU(1);
+	    DoL(1);
+	    DoU;
+	    DoR(1);
+	    DoU(1);
+	    DoL;
 	    break;
         end:
 	  break;
-	case 'c':
+        case 'c':
 	  DoF;
-          DoR;
-          DoU;
-          DoR(1);
-          DoU(1);
-          DoF(1);
-          moves+=6;
+	  DoR;
+	  DoU;
+	  DoR(1);
+	  DoU(1);
+	  DoF(1);
+	  moves+=6;
 	  break;
         case 'e':
 	  DoR;
-          DoU;
-          DoR(1);
-          DoU;
-          DoR;
-          DoU;
 	  DoU;
-          DoR(1);
-          DoU;
-          moves+=9;
+	  DoR(1);
+	  DoU;
+	  DoR;
+	  DoU;
+	  DoU;
+	  DoR(1);
+	  DoU;
+	  moves+=9;
 	  break;
         case 'h':
-          CubeHelp;
-          break;
+	  CubeHelp;
+	  break;
         case CH_SHIFT_ESC:
         case 's':
-          show_help=FALSE;
+	  show_help=FALSE;
 	  smash=TRUE;
-          break;
+	  break;
+        case 'x':
+	  SolvePlus;
+	  break;
         case 'q':
         case CH_ESC:
-          show_help=FALSE;
-          quit=TRUE;
+	  show_help=FALSE;
+	  quit=TRUE;
 	  break;
         case 0:
 	  switch (sc.u8[0])
           {
-            case SC_F1:
-              CubeHelp;
-              break;
+	    case SC_F1:
+	      CubeHelp;
+	      break;
 	    case SC_CURSOR_RIGHT:
 	      DoD;
 	      DoMDU;
@@ -945,9 +1104,9 @@ Bool CubeGame(U64 difficulty=20,U64 puz_num=0)
         PUSHFD
         CLI
         if (show_help)
-          Fs->display_doc=help_doc;
+	  Fs->display_doc=help_doc;
         else
-          Fs->display_doc=orig_doc;
+	  Fs->display_doc=orig_doc;
         POPFD
       }
     }

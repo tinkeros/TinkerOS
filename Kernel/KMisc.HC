@@ -158,8 +158,10 @@ I8 Freq2Ona(F64 freq)
     return 0;
 }
 
-U0 Snd(I8 ona=0)
+U0 SndM(I8 ona=0, I64 chan=0)
 {//Play ona, a piano key num. 0 means rest.
+  // the PC speaker doesn't use this, but this could get hooked to use it
+  no_warn chan;
   I64 period;
   CSndData *d;
   if (!Bt(&sys_semas[SEMA_MUTE],0) &&
@@ -204,6 +206,11 @@ U0 Snd(I8 ona=0)
     }
     LBtr(&sys_semas[SEMA_SND],0);
   }
+}
+
+U0 Snd(I8 ona=0)
+{
+  SndM(ona,0);
 }
 
 Bool ScrnCast(Bool val=ON,Bool just_audio=FALSE,U8 *print_fmt="B:/Tmp/%X.GR")

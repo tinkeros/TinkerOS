@@ -5,10 +5,18 @@ Cd(__DIR__);
 
 // QEMU / Real ISA Adlib or compatible card
 #define ISA_OPL
-// OPT2LPT or OPL3LPT connected via a parallel port
+
+// For OPT2LPT or OPL3LPT connected via a parallel port
+// comment ISA_OPL define above, uncomment and setup
+// next two lines (LptRep might help finding io port)
 //#define OPL2LPT
-// Serial OPL device
+//#define LPT_IOPORT_OPL_BASE 0x378
+
+// For Serial OPL device
+// comment ISA_OPL define above, uncomment and setup
+// next two lines (CommRep might help finding port)
 //#define SERIAL_OPL
+//#define SERIAL_OPL_PORT 2
 
 // Common OPL IO ports:
 // QEMU/ISA sound card 0x388
@@ -22,17 +30,26 @@ Cd(__DIR__);
 #define ISA_IOPORT_OPL_BASE 0x388
 #endif
 
-// Run LptRep and try ports below
-#define LPT_IOPORT_OPL_BASE 0x378
+#ifdef SERIAL_OPL
+#ifdef SERIAL_OPL_PORT
+#define FORCE_OPL_INIT 1
+#endif
+#endif
 
-#define SERIAL_OPL_PORT 2
+#ifdef OPL2LPT
+#ifdef LPT_IOPORT_OPL_BASE
+#define FORCE_OPL_INIT 1
+#endif
+#endif
 
 /*
-* This is a stripped own OPL2 implementation for single instrument usage within TempleOS
+* This is a stripped down OPL2 for usage within TempleOS
 *
 * For use with qemu with -soundhw adlib
 *
-* This uses 2-Operator FM sythesis only.
+* This file supplies helper functions for 2-Operator FM sythesis base instruments.
+*
+* The user is of course able to play anything using WriteOPL.
 *
 * The following functions only effect the carrier not the modulator:
 * SetAttack, SetDecay, SetSustain, SetRelease
@@ -45,7 +62,15 @@ static U8 **instruments[127]= {PIANO1,PIANO2,PIANO3,HONKTONK,EP1,EP2,HARPSIC,CLA
 
 static U8 instrument_base_registers[6] = { 0x20, 0x40, 0x60, 0x80, 0xE0, 0xC0 };
 
-static I64 old_block=-1;
+// Channel Operator slot mapping for melodic voices
+static I64 chan2op[9] = {0,1,2,8,9,10,16,17,18};
+
+// One block value per channel
+static I64 old_block[9];
+
+// only first channel goes to screencast
+// all are kept track of here
+static I64 playing_onas[9];
 
 #help_index "OPL"
 
@@ -58,6 +83,22 @@ public U0 WriteOPL(I64 r, U8 data, I64 port=ISA_IOPORT_OPL_BASE)
   OutU8(port+1,data);
   for (i=0; i<23; i++) PortNop;
 }
+// Usage assumes you have an OPL3 not OPL2
+public U0 WriteOPL3(I64 port, I64 r, U8 data, I64 ioport=ISA_IOPORT_OPL_BASE)
+{//Writes data to OPL registers
+  I64 i;
+
+  if (port)
+  {
+    OutU8(ioport+2,r);
+    for (i=0; i<4; i++) PortNop;
+    OutU8(ioport+3,data);
+    for (i=0; i<23; i++) PortNop;
+  }
+  else
+    WriteOPL(r,data,ioport);
+}
+
 #endif
 
 #ifdef OPL2LPT
@@ -149,11 +190,10 @@ public U0 OPLReset()
   for(i = 0; i < 256; i ++)
   {
     opl_registers[i] = 0x00;
-  }
-  for(i = 0; i < 256; i ++)
-  {
     WriteOPL(i, 0x00);
   }
+  for (i=0;i<9;i++)
+    old_block[i] = -1;
 }
 
 static U8 GetRegister(U8 r)
@@ -168,72 +208,96 @@ static U8 SetRegister(U8 r, U8 val)
   return r;
 }
 
-static U0 SetBlock(I64 block)
+static U0 SetBlock(I64 block, I64 chan=0)
 {
-  I64 r = 0xB0;
+  I64 r,c=ClampI64(chan,0,8);
+  r = 0xB0 + c;
   SetRegister(r, (opl_registers[r] & 0xE3) | ((ClampI64(block,0,7) & 0x07) << 2));
-  old_block=block;
+  old_block[c]=block;
 }
 
-U0 SetAttack(I64 val)
-{
-  I64 r = 0x60;
+U0 SetAttack(I64 val, I64 chan=0)
+{// Carrier only
+  I64 c=ClampI64(chan,0,8);
+  I64 r = 0x60 + chan2op[c] + 3;
   SetRegister(r, (opl_registers[r] & 0x0F) | ((ClampI64(val,0,15)&0x0F)<<4));
 }
 
-U0 SetDecay(I64 val)
-{
-  I64 r = 0x60;
+U0 SetDecay(I64 val, I64 chan=0)
+{// Carrier only
+  I64 r,c=ClampI64(chan,0,8);
+  r = 0x60 + chan2op[c] + 3;
   SetRegister(r, (opl_registers[r] & 0xF0) | (ClampI64(val,0,15)&0x0F));
 }
 
-U0 SetSustain(I64 val)
-{
-  I64 r = 0x80;
+U0 SetSustain(I64 val, I64 chan=0)
+{// Carrier only
+  I64 r,c=ClampI64(chan,0,8);
+  r = 0x80 + chan2op[c] + 3;
   SetRegister(r, (opl_registers[r] & 0x0F) | ((ClampI64(val,0,15)&0x0F)<<4));
 }
 
-U0 SetRelease(I64 val)
-{
-  I64 r = 0x80;
+U0 SetRelease(I64 val, I64 chan=0)
+{// Carrier only
+  I64 r,c=ClampI64(chan,0,8);
+  r = 0x80 + chan2op[c] + 3;
   SetRegister(r, (opl_registers[r] & 0xF0) | (ClampI64(val,0,15)&0x0F));
 }
 
-static U0 SetVolReg(I64 val)
-{
-  I64 r = 0x40;
+static U0 SetVolReg(I64 val, I64 chan=0)
+{// Carrier only (Total Level)
+  I64 r,c=ClampI64(chan,0,8);
+  r = 0x40 + chan2op[c] + 3;
   SetRegister(r, (opl_registers[r] & 0xC0) | (ClampI64(val,0,0x3F)&0x3F));
 }
 
-U0 SetVolume(I64 percent)
+U0 SetVolume(I64 percent, I64 chan=0)
 {
   if (!percent) Mute(1);
   else Mute(0);
   // TODO Mute and 200 divisor for QEMU
-  SetVolReg(0x3f-ClampI64(percent*0x3f/200,0,0x3f));
+  // TODO limit with multiple channels to prevent clipping?
+  SetVolReg(0x3f-ClampI64(percent*0x3f/200,0,0x3f), chan);
 }
 
-U0 SetInst(U8 *instrument)
+U0 SetInst(U8 *instrument, I64 chan=0)
 {
-  I64 i;
+  I64 base, i, opoff, c=ClampI64(chan,0,8);
   // Only melodic instruments for now
   SetRegister(0x01, opl_registers[0x01] | 0x20);
+
   for (i = 0; i < 11; i ++)
   {
-    SetRegister(instrument_base_registers[i % 6] + 3*(i > 5), instrument[i + 1]);
+    base = instrument_base_registers[i % 6];
+    if (base == 0xC0)
+    {
+      // Channel feedback/connection register
+      SetRegister(base + c, instrument[i + 1]);
+    }
+    else
+    {
+      // Operator registers: first 5 bytes -> mod, next 5 -> carrier
+      opoff = chan2op[c];
+      if (i > 5) opoff = (chan2op[c] + 3);
+      SetRegister(base + opoff, instrument[i + 1]);
+    }
   }
 }
 
-U8 SetFnum(I64 val)
+U8 SetFnum(I64 val, I64 chan=0)
 {
-  I64 r = 0xA0;
+  I64 r,c=ClampI64(chan,0,8);
+  r = 0xA0 + c;
   SetRegister(r, val & 0x00FF);
-  SetRegister(r + 0x10, (opl_registers[r + 0x10] & 0xFC) | ((ClampI64(val,0,1023) & 0x0300) >> 8));
+  SetRegister(0xB0 + c,
+      (opl_registers[0xB0+c] & 0xFC) |
+      ((ClampI64(val,0,1023) & 0x0300) >> 8));
   return r;
 }
 
-U0 SetFreq(F64 freq)
+U0 SetFreq(F64 freq, I64 chan=0)
 {
+  I64 c=ClampI64(chan,0,8);
   F64 fb_max=6208.431;
   I16 block=7,fnum=0;
   while (fb_max/2.0>freq && block>0)
@@ -244,14 +308,15 @@ U0 SetFreq(F64 freq)
   fnum=ToI64(freq*2`(20-block)/49716.0);
   if (0<fnum<1024)
   {
-    if (block!=old_block) SetBlock(block);
-    SetFnum(fnum);
+    if (block!=old_block[c]) SetBlock(block,c);
+    SetFnum(fnum,c);
   }
 }
 
-U8 SetKeyState(Bool state)
+U8 SetKeyState(Bool state, I64 chan=0)
 {
-  I64 r = 0xB0;
+  I64 c=ClampI64(chan,0,8);
+  I64 r = 0xB0 + c;
   if (state)
   {
     return SetRegister(r, opl_registers[r] | 0x20);
@@ -272,12 +337,12 @@ U8 GetOPLRegister(U8 r)
   return opl_registers[r];
 }
 
-U0 OPLBeep()
+U0 OPLBeep(I64 chan=0)
 {
-  SetFreq(440.0);
-  SetKeyState(TRUE);
+  SetFreq(440.0,chan);
+  SetKeyState(TRUE,chan);
   Sleep(1000);
-  SetKeyState(FALSE);
+  SetKeyState(FALSE,chan);
 }
 
 DefineLstLoad("ST_INSTRUMENTS","PIANO1\0PIANO2\0PIANO3\0HONKTONK\0EP1\0EP2\0HARPSIC\0CLAVIC\0CELESTA\0GLOCK\0MUSICBOX\0VIBES\0MARIMBA\0XYLO\0TUBEBELL\0SANTUR\0ORGAN1\0ORGAN2\0ORGAN3\0PIPEORG\0REEDORG\0ACORDIAN\0HARMONIC\0BANDNEON\0NYLONGT\0STEELGT\0JAZZGT\0CLEANGT\0MUTEGT\0OVERDGT\0DISTGT\0GTHARMS\0ACOUBASS\0FINGBASS\0PICKBASS\0FRETLESS\0SLAPBAS1\0SLAPBAS2\0SYNBASS1\0SYNBASS2\0VIOLIN\0VIOLA\0CELLO\0CONTRAB\0TREMSTR\0PIZZ\0HARP\0TIMPANI\0STRINGS\0SLOWSTR\0SYNSTR1\0SYNSTR2\0CHOIR\0OOHS\0SYNVOX\0ORCHIT\0TRUMPET\0TROMBONE\0TUBA\0MUTETRP\0FRHORN\0BRASS1\0SYNBRAS1\0SYNBRAS2\0SOPSAX\0ALTOSAX\0TENSAX\0BARISAX\0OBOE\0ENGLHORN\0BASSOON\0CLARINET\0PICCOLO\0FLUTE1\0RECORDER\0PANFLUTE\0BOTTLEB\0SHAKU\0WHISTLE\0OCARINA\0SQUARWAV\0SAWWAV\0SYNCALLI\0CHIFLEAD\0CHARANG\0SOLOVOX\0FIFTHSAW\0BASSLEAD\0FANTASIA\0WARMPAD\0POLYSYN\0SPACEVOX\0BOWEDGLS\0METALPAD\0HALOPAD\0SWEEPPAD\0ICERAIN\0SOUNDTRK\0CRYSTAL\0ATMOSPH\0BRIGHT\0GOBLIN\0ECHODROP\0STARTHEM\0SITAR\0BANJO\0SHAMISEN\0KOTO\0KALIMBA\0BAGPIPE\0FIDDLE\0SHANNAI\0TINKLBEL\0AGOGO\0STEELDRM\0WOODBLOK\0TAIKO\0MELOTOM\0SYNDRUM\0REVRSCYM\0FRETNOIS\0BRTHNOIS\0SEASHORE\0BIRDS\0TELEPHON\0HELICOPT\0APPLAUSE\0");
@@ -290,7 +355,7 @@ static U8 opl_inst_mod2[11]= {1,  1, 1,  1,  1, 1,1,  1, 1,  32, 1};
 // 2^64 = 128*64*128*128*16*2*128*32*128*128*2
 //        * 1* 1*  1*  1* 1*1*  1* 1*  1* 32*1
 
-public U0 U64Inst(U64 inst)
+public U0 U64Inst(U64 inst, I64 chan=0)
 {//Setup instrument registers from a 64-bit number
   I64 i;
   U8 opl2inst[12];
@@ -303,60 +368,67 @@ public U0 U64Inst(U64 inst)
     opl2inst[i+1]+=inst%opl_inst_mod2[i];
     inst/=opl_inst_mod2[i];
   }
-  SetInst(opl2inst);
+  SetInst(opl2inst,chan);
 }
 
-public U64 RandInst()
+public U64 RandInst(I64 chan=0)
 {//Generate a random instrument from a random 64-bit number
   U64 inst=RandU64();
-  SetKeyState(FALSE);
-  U64Inst(inst);
+  SetKeyState(FALSE,chan);
+  U64Inst(inst,chan);
   "Instrument number: %u = 0x%016x\n"
   ,inst,inst;
   return inst;
 }
 
-public I64 PickInst()
+public I64 PickInst(I64 chan=0)
 {//Popup a window to pick some standard instruments
   I64 ins;
   ins=PopUpPickDefineSub("ST_INSTRUMENTS");
   if (0<=ins<=127)
-    SetInst(instruments[ins]);
+    SetInst(instruments[ins],chan);
   return ins;
 }
 
-public U0 PickInstLoop(Bool doc_clear=FALSE)
+public U0 PickInstLoop(Bool doc_clear=FALSE, I64 chan=0)
 {//Keeps calling PickInst to open a new popup to change the instrument
   I64 ins;
-  ins=PickInst;
+  ins=PickInst(chan);
   while (ins>=0)
   {
     if (doc_clear) DocClear;
-    OPLBeep;
+    OPLBeep(chan);
     "Using Instrument: %s\n"
     ,DefineSub(ins,"ST_INSTRUMENTS");
-    ins=PickInst;
+    ins=PickInst(chan);
   }
 }
 
-public U0 OPLSnd(I8 ona=0)
+
+public U0 OPLSnd(I8 ona=0, I64 chan=0)
 {//Play ona, a piano key num. 0 means rest.
+
   CSndData *d;
   if (!Bt(&sys_semas[SEMA_MUTE],0) &&
       !LBts(&sys_semas[SEMA_SND],0))   //Mutex. Just throw-out if in use
   {
+
+    if (!chan)
+    {
     if (!ona)
     {
       scrncast.ona=ona;
-      SetKeyState(FALSE);
+      playing_onas[chan]=ona;
+      SetKeyState(FALSE,chan);
     }
     else if (ona!=scrncast.ona)
     {
       if (scrncast.ona)
-        SetKeyState(FALSE);
+        SetKeyState(FALSE,chan);
       scrncast.ona=ona;
-      SetFreq(Ona2Freq(ona));
-      SetKeyState(TRUE);
+      playing_onas[chan]=ona;
+      SetFreq(Ona2Freq(ona),chan);
+      SetKeyState(TRUE,chan);
     }
     if (!IsDbgMode && scrncast.record)
     {
@@ -366,52 +438,108 @@ public U0 OPLSnd(I8 ona=0)
       QueIns(d,scrncast.snd_head.last);
     }
     LBtr(&sys_semas[SEMA_SND],0);
+    }
+    else {
+    if (!ona)
+    {
+      playing_onas[chan]=ona;
+      SetKeyState(FALSE,chan);
+    }
+    else if (ona!=playing_onas[chan])
+    {
+      if (playing_onas[chan])
+        SetKeyState(FALSE,chan);
+      playing_onas[chan]=ona;
+      SetFreq(Ona2Freq(ona),chan);
+      SetKeyState(TRUE,chan);
+    }
+    LBtr(&sys_semas[SEMA_SND],0);
+    }
+
   }
 }
 
+public U0 OPLSnd0(I8 ona=0)
+{
+  OPLSnd(ona, 0);
+}
+
 public U0 OPLInit()
-{//Reset OPL chip and set default square wave.
+{//Reset OPL chip and set default square wave on channel 0-9.
+  I64 i;
   OPLReset;
-  SetInst(SQUARWAV);
-  SetAttack(0xf);
-  SetDecay(0xf);
-  SetSustain(0);
-  SetRelease(0xf);
+  for (i=0;i<1;i++)
+  {
+    SetInst(SQUARWAV,i);
+    SetAttack(0xf,i);
+    SetDecay(0xf,i);
+    SetSustain(0,i);
+    SetRelease(0xf,i);
+  }
+}
+
+public U0 OPLSndRst()
+{//Fix stuck sound.
+  I64 i;
+  for (i=0;i<9;i++)
+    SetKeyState(FALSE,i);
+
+  if (Bt(&sys_semas[SEMA_SND],0))
+  {
+    Sleep(1);
+    if (Bt(&sys_semas[SEMA_SND],0))
+    {
+      Sleep(1);
+      LBtr(&sys_semas[SEMA_SND],0);
+    }
+  }
+
+  for (i=0;i<9;i++)
+    SetKeyState(FALSE,i);
+
+  OPLInit;
+}
+
+
+U0 HijackSndSystem()
+{
+  // Init new sound system
+  OPLInit;
+  // Reset old sound system
+  Snd(0);
+  SndRst;
+  Mute(1);
+  // Patch in new sound system
+  LBts(&sys_semas[SEMA_SND],0);
+  Yield;
+  // Patch hook into sound system
+  HijackFunc(&Snd,&OPLSnd0);
+  HijackFunc(&SndM,&OPLSnd);
+  HijackFunc(&SndRst,&OPLSndRst);
+  LBtr(&sys_semas[SEMA_SND],0);
+  Mute(0);
 }
 
 #ifdef ISA_OPL
 U0 EnableISAOPL()
 {
   if (DetectOPL)
-  {
-    OPLInit;
-    
-    // Patch hook into sound system
-    Snd(0);
-    Mute(1);
-    LBts(&sys_semas[SEMA_SND],0);
-    Yield;
-    HijackFunc(&Snd,&OPLSnd);
-    LBtr(&sys_semas[SEMA_SND],0);
-    Mute(0);
-  }
+    HijackSndSystem;
 }
 
 EnableISAOPL;
 #endif
 
-
+#ifdef FORCE_OPL_INIT
 #ifdef OPL2LPT
 AdamLog("Assuming OPL2/3LPT is connected and parallel port base is 0x%08x\n",LPT_IOPORT_OPL_BASE);
-OPLInit;
-// Patch hook into sound system
-Snd(0);
-Mute(1);
-LBts(&sys_semas[SEMA_SND],0);
-Yield;
-HijackFunc(&Snd,&OPLSnd);
-LBtr(&sys_semas[SEMA_SND],0);
-Mute(0);
+#endif
+#ifdef SERIAL_OPL
+AdamLog("Assuming OPL serial device is connected to com port %d\n",SERIAL_OPL_PORT);
+#endif
+
+HijackSndSystem;
+
 #endif
 
 #help_index ""

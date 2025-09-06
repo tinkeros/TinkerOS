@@ -231,8 +231,12 @@ public I8 Ona2Octave(I8 ona)
     return octave;
 }
 
-public U0 Play(U8 *st,U8 *words=NULL)
-{
+public U0 PlayMD(U8 *st, U8 *words=NULL, I64 ch_start=0, I64 ch_end=0, I64 delay=0)
+{// Multi-channel Play with delay for delay/reverb like effect
+
+  // TODO create array of music objects, 1 for each channel
+  // right now all channels share the same tempo, etc
+
   /* Notes are entered with a capital letter.
 
   Octaves are entered with a digit and
@@ -264,10 +268,11 @@ public U0 Play(U8 *st,U8 *words=NULL)
   2.5 and gets faster when bigger.
   */
   U8 *word,*last_st;
-  I64 note,octave,i=0,ona,timeout_val,timeout_val2;
+  I64 note,octave,i=0,j,ona,timeout_val,timeout_val2;
   Bool tie;
   F64 d,on_jiffies,off_jiffies;
   music.play_note_num=0;
+
   while (*st)
   {
     timeout_val=cnts.jiffies;
@@ -320,15 +325,33 @@ public U0 Play(U8 *st,U8 *words=NULL)
     timeout_val+=on_jiffies;
     timeout_val2=timeout_val+off_jiffies;
     if (!music.mute)
-      Snd(ona);
+      for (j=ch_start;j<=ch_end;j++)
+      {
+        if (delay) Sleep(delay);
+        SndM(ona,j);
+      }
     SleepUntil(timeout_val);
     music.tM_correction+=on_jiffies-ToI64(on_jiffies);
     if (!music.mute && !tie)
-      Snd;
+      for (j=ch_start;j<=ch_end;j++)
+      {
+        if (delay) Sleep(delay);
+        SndM(0,j);
+      }
     SleepUntil(timeout_val2);
     music.tM_correction+=off_jiffies-ToI64(off_jiffies);
     music.play_note_num++;
   }
+}
+
+public U0 PlayM(U8 *st,U8 *words=NULL, I64 ch_start=0, I64 ch_end=0)
+{// Multi-channel Play
+ PlayMD(st,words=NULL,ch_start,ch_end,0);
+}
+
+public U0 Play(U8 *st,U8 *words=NULL)
+{// Single Channel 0 Play
+  PlayM(st,words,0,0);
 }
 
 U0 MusicSettingsRst()

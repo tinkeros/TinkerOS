@@ -780,6 +780,7 @@ public extern Bool Mute(Bool val);
 public extern F64 Ona2Freq(I64 ona);
 public extern U0 ShowVolume();
 public extern U0 Snd(I8 ona=0);
+public extern U0 SndM(I8 ona=0,I64 chan=0);
 public extern U0 SndRst();
 public extern U0 VolumeDown();
 public extern U0 VolumeUp();

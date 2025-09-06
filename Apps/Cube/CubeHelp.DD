@@ -29,6 +29,7 @@ $FG,4$p$FG$ - $FG,4$Permute$FG$ the top 3 corners farthest from you. $FG,4$(urUL
 $FG,4$e$FG$ - $FG,4$Exchange$FG$ top left front middle with the top left back middle. $FG,4$(ruRuruuRu)$FG$
 $FG,4$m$FG$ - $FG,4$Move middle$FG$ top left cube to left middle layer on the right. $FG,4$(urURUFuf)$FG$
 $FG,4$M$FG$ - $FG,4$Move middle$FG$ top left cube to left middle layer on the left. $FG,4$(ULulufUF)$FG$
+$FG,4$x$FG$ - $FG$$FG,4$Create cross$FG$ on top of cube (use arrows/e to align colors to match middle) $FG$
 
 Beginners cube solve guide with help from cheat key algorithms:
 

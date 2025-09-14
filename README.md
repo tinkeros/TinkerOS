@@ -17,7 +17,7 @@ TinkerOS is essentially TempleOS renamed with some changes that allow it to run 
 ### Goals
 - Keep a TempleOS like look and feel while attempting to keep a fully TempleOS compatible API to the maximum extent possible.  TinkerOS should always be able to compile and install TempleOS.
 - Be a fun playground OS that you can run on older machines 64-bit machines and do useful things with the serial and parallel ports.
-- Live USB boot images allow trying TempleOS/TinkerOS without having to install it.  These also work on some systems lacking legacy storage support.  The live boot version also contains utilities to help with baremetal installation on real hardware.
+- Live USB boot (use .img, not .iso files) allows booting TempleOS/TinkerOS to RAM disk to try it without having to install it on many machines.  These even work on some systems lacking legacy storage support.  The live boot version also contains utilities to help with baremetal installation on real hardware.
 - Cleanup some unfortunate language that was left in TempleOS.
 - Bring back some old TempleOS features and add new features, popular apps, and games.
 - Make higher resolutions easy to setup.
@@ -31,7 +31,7 @@ TinkerOS is essentially TempleOS renamed with some changes that allow it to run 
 - TempleOS and TinkerOS have no device drivers for CPU frequency control, temperature detection, fans, or other motherboard devices.  It may be the case that you are able to boot TinkerOS bare metal, but you may be putting your machine at risk and it may crash due to thermal issues or because a watchdog timer is tripped because the operating system does not take over control of critical hardware (since there is no driver for it).  There are no plans to fix this, if you system has these issues your only option is to run it inside a virtual machine instead of bare metal or to implement the required drivers yourself.
 - Though only 16 colors are typically used at a time, the graphics mode is 32-bit.  The frame buffer is linear and has resolution FB_WIDTH by FB_HEIGHT which maybe larger than GR_WIDTH and GR_HEIGHT.  You can always suspend the window manager and draw whatever graphics you want instead.  text.fb_alias is a pointer to the frame buffer.
 - Many laptops have keyboards and trackpads which are not PS/2 compatible (this is especially true of ultra thin laptops and chromebooks).
-- Contributions are welcome, but please do not create an issue you do not intend to create a pull request to fix.
+- ISOs files will not boot from USB not matter what tool you use to write them to a USB stick.  If you want to boot from USB you must use the .img file instead.
 
 
 ### Acknowlegements

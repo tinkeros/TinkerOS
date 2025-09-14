@@ -23,6 +23,7 @@ Note: Only do this on a machine you are prepared to lose all data on.  This will
    - SATA drive in AHCI mode (for installing TinkerOS only, no TempleOS support)
    - HPET disabled
    - Fast boot disabled
+   - Enable booting from USB (if applicable)
 
 4) Write the Live USB image to a thumb drive or burn a CD/DVD (for IDE/legacy systems/VMs) to boot from.
    - For CD/DVD use the ISO files, **Note: Do not write the ISO files to USB drives, they are for real or virtual CD/DVD drives only**

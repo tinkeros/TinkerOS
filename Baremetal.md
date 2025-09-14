@@ -24,17 +24,19 @@ Note: Only do this on a machine you are prepared to lose all data on.  This will
    - HPET disabled
    - Fast boot disabled
 
-4) Write the Live USB image to a thumb drive or burn a CD/DVD (for IDE/legacy systems) to boot from.
-   - Write TinkerOS_USB.img from latest [releases page](https://github.com/tinkeros/TinkerOS/releases)
-     (Write with Rufus, Etcher, Raspberry PI Imager on Windows, simple dd command works on Linux)
+4) Write the Live USB image to a thumb drive or burn a CD/DVD (for IDE/legacy systems/VMs) to boot from.
+   - For CD/DVD use the ISO files, **Note: Do not write the ISO files to USB drives, they are for real or virtual CD/DVD drives only**
+   - For USB boot to RAM disk, write TinkerOS_USB_version.img to a USB thumb drive.  **Note: Only the .img file will work, ISOs will NOT boot from USB!**
+   - Get the latest from [releases page](https://github.com/tinkeros/TinkerOS/releases)
+     (Write with Rufus, Etcher, Raspberry PI Imager on Windows, or simple dd command works on Linux)
 
-5) Try Live booting TempleOS and TinkerOS from the USB
+6) Try Live booting TempleOS and TinkerOS from CD/DVD or booting from a RAM disk via USB first to check if things work before modifying your system.
    - Check the keyboard and mouse work.
    - If they do not, do you have a PS/2 port you can try with real PS/2 keyboard/mouse? (USB to PS/2 adapters will not help).
    - Note that even if you can live boot TempleOS to a RAM disk, you still need support for legacy/IDE mode to be able to actually install it.
    - It is possible that TinkerOS works and TempleOS does not in which case TinkerOS would be your only option for that machine.
 
-6) Use Clonezilla to partition your drive
+7) Use Clonezilla to partition your drive (USB image only)
    - Enter through defaults until you get to mode, then select Beginner
    - Select restoredisk
    - Choose included image file templeos_tinkeros_.....
@@ -42,16 +44,16 @@ Note: Only do this on a machine you are prepared to lose all data on.  This will
    - Select No to skip image checking
    - Enter and confirm if you really want to do it!
      
-7) Live USB boot the first TinkerOS option to install
+8) Live USB boot the first TinkerOS option to install (USB image only)
    - Choose Y for Install onto hard drive
    - Choose N for automated partitioning
    - Choose Y for run MountAuto
    - Choose Y for Continue Install Wizard
    - You should be able to press enter and select all default options for here (or modify them as you desire).
 
-8) Boot from your hard drive hopefully to get a boot menu for TempleOS/TinkerOS!
+9) Boot from your hard drive hopefully to get a boot menu for TempleOS/TinkerOS!
 
-9) If you have success and find a good machine for runnning TempleOS/TinkerOS let others know about it!
+10) If you have success and find a good machine for runnning TempleOS/TinkerOS let others know about it!
    - Run `SysSurvey;`
    - Edit the file and remove any information you do not want to share `Ed("/Home/Survey.DD");`
    - Add the form factor if applicable (for example Dell makes multiple form factors of the same Optiplex model so I added MFF/SFF after Optiplex 7050)

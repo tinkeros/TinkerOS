@@ -12,7 +12,7 @@
 
 
 ### Preface
-TinkerOS is essentially TempleOS renamed with some changes that allow it to run bare metal on some more modern machines since it "only" requires real or emulated PS/2 keyboard and mouse input and legacy boot support, but does not require legacy / IDE disk support. Though some improvements and bug fixes are added to TinkerOS, 95% of the code is the same as TempleOS and TinkerOS can install and compile TempleOS.  TempleOS on the other hand requires hardware which supports Terry's hard coded 640x480 video mode which has been deprecated on some newer machines.  Also TempleOS requires an IDE drive interface or legacy ATA SATA support.  TinkerOS supports AHCI SATA mode installation.  It also has a "Live USB" version which runs from a RAM disk which allows it to be tried without installing or run on systems without supported drives.  You can also use the USB version to install it on supported machines that do not have a CD/DVD drive.  If your machine uses the newer EFI boot method, it will still need to support legacy booting (via CSM) which you may need to turn on in your BIOS.  
+VaticanTempleOS is essentially TinkerOS renamed focused on [Automation](https://en.wikipedia.org/wiki/Automation). It contains custom theme and fonts, among the many home-built features and improvements.
 
 ### Goals
 - Keep a TempleOS like look and feel while attempting to keep a fully TempleOS compatible API to the maximum extent possible.  TinkerOS should always be able to compile and install TempleOS.

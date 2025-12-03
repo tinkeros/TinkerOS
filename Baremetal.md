@@ -26,10 +26,10 @@ Note: Only do this on a machine you are prepared to lose all data on.  This will
    - Enable booting from USB (if applicable)
 
 4) Write the Live USB image to a thumb drive or burn a CD/DVD (for IDE/legacy systems/VMs) to boot from.
-   - For CD/DVD use the ISO files, **Note: Do not write the ISO files to USB drives, they are for real or virtual CD/DVD drives only**
-   - For USB boot to RAM disk, write TinkerOS_USB_version.img to a USB thumb drive.  **Note: Only the .img file will work, ISOs will NOT boot from USB!**
+   - For USB boot to RAM disk, write TinkerOS_USB_version.img to a USB thumb drive.  **Note: Only the .img file will work, ISOs will NOT boot from USB no matter what tool you use to write them!**
+   - For CD/DVD drives use the TinkerOS_version.ISO file. **Note: Do not write the ISO files to USB drives, they are for real or virtual machine CD/DVD drives only!  They will not boot from Ventoy, they will not boot if written with other tools to USB like Rufus.**
    - Get the latest from [releases page](https://github.com/tinkeros/TinkerOS/releases)
-     (Write with Rufus, Etcher, Raspberry PI Imager on Windows, or simple dd command works on Linux)
+     (Write .img files to USB with Rufus, Etcher, Raspberry PI Imager on Windows, or simple dd command works on Linux)
 
 6) Try Live booting TempleOS and TinkerOS from CD/DVD or booting from a RAM disk via USB first to check if things work before modifying your system.
    - Check the keyboard and mouse work.

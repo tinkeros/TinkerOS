@@ -12,6 +12,7 @@ Bool DrvTypeSet(U8 drv_let,I64 type=FSt_REDSEA)
   case BDT_AHCI_SATA:
   case BDT_OTHER:
   case BDT_SERIAL:
+  case BDT_SDHCI:
   case BDT_VIRTUAL:
     offset=0;
     ext_base=INVALID_CLUS;
@@ -99,7 +100,9 @@ U0 Fmt(I64 drv_let,Bool quick=TRUE,Bool confirm=TRUE,I64 type=FSt_FAT32)
   switch (type)
   {
   case FSt_FAT32:
-    if (dv->bd->type==BDT_ATA || dv->bd->type==BDT_AHCI_SATA)
+    if (dv->bd->type==BDT_ATA
+        || dv->bd->type==BDT_SDHCI
+        || dv->bd->type==BDT_AHCI_SATA)
     {
       Silent;
       Drv(drv_let);

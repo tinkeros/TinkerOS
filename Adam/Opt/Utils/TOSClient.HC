@@ -768,10 +768,10 @@ public U0 DirMks(U8 *dirs)
   }
 }
 
-U0 FGetFileList(U8 *list)
+U0 FGetFileList(U8 *list, I64 strip=0)
 {//TODO just get last directory
   I64 ch, res;
-  U8 *ptr=list,*buf,*dst, *base;
+  U8 *ptr=list,*buf,*dst, *base, *local;
   buf=dst=MAlloc(512);
   while (StrOcc(ptr,'\n'))
   {
@@ -781,17 +781,33 @@ U0 FGetFileList(U8 *list)
         *dst++=ch;
       *dst=0;
       *ptr++;
-      base=GetBaseDir(buf);
+      local=buf;
+      res=strip;
+      while (*local && res>0) {
+        if (*local=='/') res--;
+        local++;
+      }
+      base=GetBaseDir(local);
       if (StrLen(base))
       {
         DirMks(base);
-        res=IsFile(buf);
-        if (res && 0==FCmpHash(buf))
+        res=IsFile(local);
+        if (res && 0==FCmpHash(local,buf))
         {
           "%s local copy is already up to date.\n",buf;
         }
         else
-          Fget(buf,buf);
+          Fget(buf,local);
+      }
+      else if (StrLen(local))
+      {
+        res=IsFile(local);
+        if (res && 0==FCmpHash(local,buf))
+        {
+          "%s local copy is already up to date.\n",buf;
+        }
+        else
+          Fget(buf,local);
       }
       Free(base);
       dst=buf;
@@ -800,7 +816,7 @@ U0 FGetFileList(U8 *list)
   Free(buf);
 }
 
-public I64 Dget(U8 *dir=".")
+public I64 Dget(U8 *dir=".", I64 strip=0)
 {//Gets directory from remote
   U8* data;
   I64 len,lenlen;
@@ -828,7 +844,7 @@ public I64 Dget(U8 *dir=".")
   {
     ClientPutChar(lenlen);
     ReadBlock(data,len);
-    FGetFileList(data);
+    FGetFileList(data,strip);
     Free(data);
     return len;
   }

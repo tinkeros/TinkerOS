@@ -17,7 +17,7 @@ asm {
   CH_CTRLI,CH_CTRLO,CH_CTRLP,"[]",'\n',0,CH_CTRLA,CH_CTRLS;
   DU8	CH_CTRLD,CH_CTRLF,CH_CTRLG,CH_CTRLH,CH_CTRLJ,CH_CTRLK,CH_CTRLL,
   ";'\`",0,"\\",CH_CTRLZ,CH_CTRLX,CH_CTRLC,CH_CTRLV;
-  DU8	CH_CTRLB,CH_CTRLN,CH_CTRLM,",./",0,'*',0,CH_SPACE,0,0,0,0,0,0;
+  DU8	CH_CTRLB,CH_CTRLN,CH_CTRLM,",.",CH_CTRL_SLASH,0,'*',0,CH_SPACE,0,0,0,0,0,0;
   DU8	0,0,0,0,0,0,0,0,0,0,'-',0,0,0,'+',0;
 }
 
@@ -41,7 +41,8 @@ public I64 KbdCmdRead()
   while (tS<timeout)
     if (InU8(KBD_CTRL)&1)
       return InU8(KBD_PORT);
-  throw;
+  // Don't spam early kernel output on this error
+  throw(0,!Bt(&sys_run_level,RLf_COMPILER));
 }
 
 public U0 KbdCmdFlush()

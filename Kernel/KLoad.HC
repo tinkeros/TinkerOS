@@ -219,6 +219,7 @@ CBinFile *Load(U8 *filename,I64 ld_flags=0,CBinFile *bfh_addr=INVALID_PTR)
   fbuf=ExtDft(filename,"BIN.Z");
   if (!(bfh=FileRead(fbuf,&size)))
   {
+    "Failed to load %s\n",filename;
     Free(fbuf);
     return NULL;
   }
@@ -226,6 +227,7 @@ CBinFile *Load(U8 *filename,I64 ld_flags=0,CBinFile *bfh_addr=INVALID_PTR)
   module_align=1<<bfh->module_align_bits;
   if (!module_align || bfh->bin_signature!=BIN_SIGNATURE_VAL)
   {
+    "Bad signature or alignment in %s\n",filename;
     Free(bfh);
     Free(fbuf);
     throw('BinModul');

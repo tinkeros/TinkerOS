@@ -15,6 +15,7 @@ Cd(__DIR__);;
 #include "WinMgr"
 SetFPS(10); // slow FPS while compiling below
 #include "ADbg"
+#include "ATask"
 #include "::/Adam/God/GodExt"
 #include "DolDoc/MakeDoc"
 LBts(&sys_run_level,RLf_DOC);
@@ -31,6 +32,5 @@ LBts(&sys_run_level,RLf_DOC);
 #include "WallPaper"
 #include "AMouse"
 #include "Host"
-//#include "Net/MakeNet"
 Cd("..");;
 SetFPS(30); // restore default FPS now

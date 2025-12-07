@@ -335,7 +335,7 @@ Bool Drv(U8 drv_let)
 }
 
 U8 blkdev_text_attr[BDT_TYPES_NUM]={BLACK,LTCYAN,WHITE,LTGREEN,LTRED,
-  LTBLUE,WHITE,WHITE,LTBLUE,LTPURPLE,LTPURPLE,LTPURPLE};
+  LTBLUE,WHITE,WHITE,LTBLUE,LTPURPLE,LTPURPLE,LTPURPLE,LTPURPLE};
 
 U8 drv_text_attr[3]={BLACK,BLUE,RED};
 
@@ -390,11 +390,13 @@ U0 DrvRep()
         Free(st);
       }
       if (bd->type==BDT_OTHER)
-        "^_^_^_Other block device\n";
+        "Other block device\n";
+      else if (bd->type==BDT_SDHCI)
+        "SDHCI block device %04X\n",bd->base0;
       else if (bd->type==BDT_SERIAL)
-        "^_^_^_Serial block device %04X\n",bd->base0;
+        "Serial block device %04X\n",bd->base0;
       else if (bd->type==BDT_VIRTUAL)
-        "^_^_^_Virtual block device\n";
+        "Virtual block device\n";
       else if (bd->type==BDT_ISO_FILE_READ || bd->type==BDT_ISO_FILE_WRITE)
         "File=\"%s\"\n",bd->file_dsk_name;
       "%016X-%016X\n$$FG$$$$BG$$"

@@ -1,8 +1,10 @@
 //See $LK,"Install Documentation",A="FI:::/Doc/Install.DD"$.
 //Study my account examples: $LK,"Cfg Strs",A="FL:::/Demo/AcctExample/TOS/TOSCfg.HC,1"$, $LK,"Update Funs",A="FL:::/Demo/AcctExample/TOS/TOSDistro.HC,1"$
 
+#ifndef BMHD_START
 #include "BootMHD"
 #include "BootMHD2"
+#endif
 
 #help_index "Install"
 
@@ -112,6 +114,7 @@ public Bool BootMHDIns(U8 drv_let,U8 *drv_lst=NULL)
     else
     {
       bd=dv->bd;
+      if (!bd) bd=Let2BlkDev(drv_let);
       if (!FileFind(BOOT_DIR_OLDMBR_BIN_C,,FUF_JUST_FILES))
         BootMHDOldRead(drv_let,drv_let);
       _q=BMHD2_BLK_ARRAY;
@@ -131,16 +134,12 @@ public Bool BootMHDIns(U8 drv_let,U8 *drv_lst=NULL)
         *_q++=Clus2Blk(dv,de.clus);
         CatPrint(menu_ptr,"%d. Other MBR\n\r",j++);
       }
-      if (FileFind(BOOT_DIR_RESCUEMBR_BIN_C,&de,FUF_JUST_FILES))
-      {
-        Free(de.full_name);
-        *_q++=Clus2Blk(dv,de.clus);
-        CatPrint(menu_ptr,"%d. Rescue Mode\n\r",j++);
-      }
       ptr=buf;
       while (ch=*ptr++)
       {
-        if ((p1=Let2Drv(ch,FALSE)) && (bd1=p1->bd) && bd1==bd)
+        p1=Let2Drv(ch,FALSE);
+        if (p1 && !p1->bd) p1->bd=Let2BlkDev(ch);
+        if (p1 && (bd1=p1->bd) && bd1==bd)
         {
           *_q=p1->drv_offset;
           "Drive %C:%16X\n"
@@ -167,10 +166,12 @@ public Bool BootMHDIns(U8 drv_let,U8 *drv_lst=NULL)
         *BMHD_DAP_BLK(I64 *)=Clus2Blk(dv,de.clus);
 //Bypass partition bounds-checking
         BlkDevLock(bd);
-        if (AHCIMode)
-            AHCIAtaBlksRead(bd, &mbr, 0, 1);
-            else
-        ATAReadBlks(bd,&mbr,0,1);
+        if (bd->type==BDT_SDHCI)
+          fp_sdhci_blkdev_read(&mbr, 0, 1);
+        else if (AHCIMode)
+          AHCIAtaBlksRead(bd, &mbr, 0, 1);
+        else
+          ATAReadBlks(bd,&mbr,0,1);
         for (i=0; i<BMHD_END-BMHD_CODE; i++)
           mbr.code[i]=BMHD_CODE(U8 *)[i];
 #assert sizeof(CMasterBoot.code)>=BMHD_END-BMHD_CODE
@@ -180,10 +181,12 @@ public Bool BootMHDIns(U8 drv_let,U8 *drv_lst=NULL)
           mbr.media_id=RandU32;
         mbr.zero=0;
         mbr.signature=0xAA55;
-        if (AHCIMode)
-            AHCIAtaBlksWrite(bd, &mbr, 0, 1);
-            else
-        ATAWriteBlks(bd,&mbr,0,1);
+        if (bd->type==BDT_SDHCI)
+          fp_sdhci_blkdev_write(&mbr, 0, 1);
+        else if (AHCIMode)
+          AHCIAtaBlksWrite(bd, &mbr, 0, 1);
+        else
+          ATAWriteBlks(bd,&mbr,0,1);
         BlkDevUnlock(bd);
         res=TRUE;
       }

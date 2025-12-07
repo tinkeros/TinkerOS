@@ -3,5 +3,4 @@ Cd(__DIR__);;
 #include "LPT"
 #include "DevInfo"
 #include "VM"
-#include "SerialMouse"
 Cd("..");;

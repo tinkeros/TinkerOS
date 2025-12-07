@@ -104,11 +104,12 @@ Bool RedSeaValidate(U8 drv_let)
 
 U0 RedSeaFmt(U8 drv_let,Bool quick=TRUE)
 {
-  U8 *root_dir;
+  U8 *root_dir, *tmp;
   CDirEntry *d_native;
   CRedSeaBoot *br=CAlloc(BLK_SIZE);
+  CFAT32Boot *br_fat=br;
   CDrv *dv=Let2Drv(drv_let);
-  I64 i,n,root_dir_blks;
+  I64 i,n,root_dir_blks,type=Let2BlkDevType(drv_let);
   try
   {
     DrvLock(dv);
@@ -123,11 +124,21 @@ U0 RedSeaFmt(U8 drv_let,Bool quick=TRUE)
     br->bitmap_sects=n;
     br->unique_id=GetTSC^Now()(U64);
     br->root_clus=0;
+    tmp=MStrPrint("TinkerOS %C",drv_let);
+    MemCpy(br_fat->vol_name,tmp,StrLen(tmp)+1);
+    Free(tmp);
     if (quick)
       i=n+1;
     else
       i=dv->size;
-    BlkWriteZero(dv,dv->drv_offset,i);
+    if (BDT_SDHCI==type)
+    {
+      "Using SdEraseBlks...";
+      if (SdEraseBlks(dv->drv_offset,i)) "OK!\n";
+      else "Failed, use different card or smaller SD card partitions!\n";
+    }
+    else
+      BlkWriteZero(dv,dv->drv_offset,i);
     BlkWrite(dv,br,dv->drv_offset,1);
     RedSeaInit(dv);
     ClusAlloc(dv,0,1,FALSE);	//Alloc #1

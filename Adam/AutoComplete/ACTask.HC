@@ -231,7 +231,7 @@ U0 ACTaskCtrl(I64 sc,I64 last_sc,
         ACDocRst(AC_ctr_win_x,AC_ctr_win_y);
         if (TaskValidate(original_focus_task) &&
             !Bt(&original_focus_task->win_inhibit,WIf_SELF_KEY_DESC))
-          KeyMapFamily(original_focus_task,0,
+          KeyMapFamily(original_focus_task,SCF_ALT,
                        ToBool(!(sc&SCF_SHIFT)),ToBool(sc&SCF_SHIFT));
         KeyMapCtrlAltFamily(
         ToBool(!(sc&SCF_SHIFT)),ToBool(sc&SCF_SHIFT));

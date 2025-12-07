@@ -68,6 +68,7 @@
 #include "FunSeg"
 #include "GrTextBase"
 #include "KMiscB"
+#include "Dev/MakeDev"
 #include "KMain"
 
 #exe {KCfgDel(kernel_cfg);};

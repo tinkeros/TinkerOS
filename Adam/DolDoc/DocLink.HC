@@ -56,15 +56,26 @@ public U8 *DocEntryLink(CDoc *doc,CDocEntry *doc_e)
   return NULL;
 }
 
+// New warnings to help prevent unintentional file overwrites.
+// Set to true by default in MakeHome if desired.
+public Bool doc_ed_warn_overwrite=FALSE;
+public Bool doc_ed_warn_already_open=FALSE;
+
 Bool DocFileEd(I64 _type,U8 *filename,
                U8 *needle_str,I64 *_num,I64 edf_dof_flags)
 {
   I64 type=_type,flags=0,old_border_src=Fs->border_src;
   CDocEntry *doc_e;
   CDoc *doc;
+  CDate orig_cd;
+
   Bool old_silent=Bt(&Fs->display_flags,DISPLAYf_SILENT),
-       res=FALSE,other_found=FALSE;
+       res=FALSE,other_found=FALSE,do_doc_write=TRUE;
   U8 *st1,*st2;
+
+  orig_cd.date=0;
+  orig_cd.time=0;
+
   try
   {
     switch (type)
@@ -113,6 +124,7 @@ Bool DocFileEd(I64 _type,U8 *filename,
         else if (!(res=FileFind(filename,,FUF_JUST_FILES)))
           other_found=FileFind(filename,,
                                FUF_JUST_FILES|FUF_Z_OR_NOT_Z|FUF_SCAN_PARENTS);
+        GetFileDate(filename,&orig_cd);
         doc=DocRead(filename,flags);
         doc->desc='Edit';
         Silent(old_silent);
@@ -156,6 +168,16 @@ Bool DocFileEd(I64 _type,U8 *filename,
           doc->filename.dirc=DirContextNew(doc->filename.name);
         else
           doc->filename.dirc=NULL;
+
+        if (FindTaskByTitle(filename))
+        {
+          st1=MStrPrint("Warning! File: %s\n\nAppears to already be open in another Ed window?!?!\n\nOk to open again, otherwise Cancel!",filename);
+          res=PopUpCancelOk(st1);
+          Free(st1);
+          if (!res) return FALSE;
+          res=FALSE;
+        }
+
         if (DocEd(doc,edf_dof_flags|DOF_DONT_HOME))
         {
           DocLock(doc);
@@ -165,9 +187,21 @@ Bool DocFileEd(I64 _type,U8 *filename,
           DocUnlock(doc);
           if (!(LK_DOC<=_type<=LK_DOC_LINE))
           {
+            do_doc_write=TRUE;
+            if (doc_ed_warn_overwrite && orig_cd.date)
+            {
+               if (IsFileNewer(filename,&orig_cd))
+               {
+                 do_doc_write=PopUpCancelOk("WARNING file changed from when loaded!\nAre you sure you want to overwrite it?!?!?\n\nOk to save, Cancel to discard.\n\n");
+               }
+            }
+            if (do_doc_write)
+            {
             DocWrite(doc);
             if (edf_dof_flags&EDF_WAS_WRITE)
               res=TRUE;
+            }
+            else res=FALSE;
           }
         }
         DirContextDel(doc->filename.dirc);

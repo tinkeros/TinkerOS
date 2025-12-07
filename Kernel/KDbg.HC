@@ -328,13 +328,13 @@ I64 *TaskRegAddr(CTask *task,I64 reg_num)
   return NULL;
 }
 
-#define RAWDR_COL	56
+#define RAWDR_COL	48
 
 U0 RawDr(CTask *task=NULL)
 {
   I64 i,j,old_col=text.raw_col;
-  Bool old_raw=Raw(ON);
-  U8 buf[200];
+  Bool old_raw=Raw(ON),stkp=FALSE;
+  U8 buf[200], tmp_buf[256], **addr=_RSP;
   if (!task) task=Fs;
   for (i=0; i<16; i++)
   {
@@ -359,6 +359,21 @@ U0 RawDr(CTask *task=NULL)
   }
   else
     '\n';
+  text.raw_col=i++*text.cols+RAWDR_COL;
+  for (j=0;j<8;j++) {
+    StrPrintFunSeg(tmp_buf,*addr,0,0);
+    if (StrLen(tmp_buf)>3 && tmp_buf[0]=='&')
+    {
+      if (!stkp)
+      {
+        "ºSTK:\n";
+        stkp=TRUE;
+      }
+      text.raw_col=i++*text.cols+RAWDR_COL;
+      tmp_buf[text.cols-RAWDR_COL-12]=0;
+      "º%08X:%s\n",*addr,tmp_buf;addr++;
+    }
+  }
   text.raw_col=i*text.cols+RAWDR_COL;
   'È';
   for (j=0; j<text.cols-RAWDR_COL-1; j++)

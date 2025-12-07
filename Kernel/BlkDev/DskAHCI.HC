@@ -1054,6 +1054,11 @@ Bool AHCIBootDVDProbeAll(CBlkDev *bd)
       }
     }
   }
+  "\nCould not find ATAPI boot drive is SATA set to AHCI mode?\n";
+  "\nThis image is not for USB, did you write an ISO to USB?\n";
+  "\n\nFor help with Baremetal installs on real hardware see:\n";
+  "https://github.com/tinkeros/TinkerOS/blob/main/Baremetal.md\n";
+
   Panic("Could not find ATAPI boot drive");
   return FALSE;
 }

@@ -16,11 +16,25 @@ U8 Mount2(U8 boot_drv_let,CDoc *_doc,Bool _caller_is_prtdsk, Bool just_ide=FALSE
     if (!_doc)
       DrvRep;
     "\n****** Mount Drives ******\n"
-    "$$GREEN$$A$$FG$$-$$GREEN$$B$$FG$$ are RAM drives.\n"
-    "$$GREEN$$C$$FG$$-$$GREEN$$L$$FG$$ are ATA hard drives.\n"
-    "$$GREEN$$M$$FG$$-$$GREEN$$P$$FG$$ are ISO file read drives.\n"
-    "$$GREEN$$Q$$FG$$-$$GREEN$$S$$FG$$ are ISO file write drives.\n"
-    "$$GREEN$$T$$FG$$-$$GREEN$$Z$$FG$$ are ATAPI CD/DVD drives.\n"
+    "$$GREEN$$A$$FG$$-$$GREEN$$B$$FG$$ are RAM drives.\n";
+    if (Let2BlkDevType('C')==BDT_SDHCI)
+    {
+    "$$GREEN$$C$$FG$$-$$GREEN$$Z$$FG$$ is a SDHCI drive.\n";
+    "$$GREEN$$D$$FG$$-$$GREEN$$L$$FG$$ are ATA hard drives.\n";
+    }
+    else {
+    "$$GREEN$$C$$FG$$-$$GREEN$$L$$FG$$ are ATA hard drives.\n";
+    }
+    "$$GREEN$$M$$FG$$-$$GREEN$$P$$FG$$ are ISO file read drives.\n";
+    "$$GREEN$$Q$$FG$$-$$GREEN$$S$$FG$$ are ISO file write drives.\n";
+    if (Let2BlkDevType('W')==BDT_SDHCI)
+    {
+    "$$GREEN$$T$$FG$$-$$GREEN$$V$$FG$$ are ATAPI CD/DVD drives.\n"
+    "$$GREEN$$W$$FG$$-$$GREEN$$Z$$FG$$ are SDHCI drives.\n";
+    }
+    else {
+    "$$GREEN$$T$$FG$$-$$GREEN$$Z$$FG$$ are ATAPI CD/DVD drives.\n";
+    }
     "\nDrive Letter ($$PURPLE$$<ENTER>$$FG$$ to exit):";
     drv_let=Let2Let(GetChar);
     '\n';
@@ -131,7 +145,8 @@ U8 Mount2(U8 boot_drv_let,CDoc *_doc,Bool _caller_is_prtdsk, Bool just_ide=FALSE
           break;
         }
       }
-      // TODO continue adding AHCI
+      if (type == BDT_SDHCI)
+        DocPrint(doc,"SetDrvLetType(\'%C\',%d);sdhci_drv=SdhciInit;\n",drv_let,type);
       DocPrint(doc,"bd=BlkDevNextFreeSlot(\'%C\',%d);bd->unit=%d;\n",
           drv_let,type,unit);
       if (AHCIMode && port != -1 && *port_str)
@@ -176,7 +191,10 @@ U8 Mount2(U8 boot_drv_let,CDoc *_doc,Bool _caller_is_prtdsk, Bool just_ide=FALSE
         }
         break;
       }
-      DocPrint(doc,"BlkDevAdd(bd,%d,%d,%d);\n",prt_num,whole_drv,make_free);
+      if (type==BDT_SDHCI)
+        DocPrint(doc,"SDHCIMount(\'%C\',%d);\n",drv_let,type);
+      else
+        DocPrint(doc,"BlkDevAdd(bd,%d,%d,%d);\n",prt_num,whole_drv,make_free);
       if (_doc) //Called by $LK,"::/Kernel/KCfg.HC"$
         cnt++;
       else   //Called by $LK,"Mount",A="MN:Mount"$()

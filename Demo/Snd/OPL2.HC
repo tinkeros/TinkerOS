@@ -132,6 +132,8 @@ public U0 WriteOPL(I64 r, U8 data, I64 func=0)
   bytes[1]=((r & 0x3F) << 1) | (data >> 7)&1;
   bytes[2]=data & 0x7f;
   CommPutBlk(SERIAL_OPL_PORT,bytes,3);
+  // To reach watermark on ISR trigger on some micros
+  CommPutChar(SERIAL_OPL_PORT,0);
   PortNop;
   commands++;
 }

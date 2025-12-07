@@ -48,6 +48,30 @@ Bool BlkDevInit(CBlkDev *bd)
       if (bd->init_func)
         (*bd->init_func)();
       break;
+    case BDT_SDHCI:
+      if (fp_sdhci_blkdev_init)
+      {
+        bd->max_reads=128;
+        bd->max_writes=1;
+        bd->init_func = fp_sdhci_blkdev_init;
+        bd->deinit_func = fp_sdhci_blkdev_deinit;
+        bd->read_func = fp_sdhci_blkdev_read;
+        bd->write_func = fp_sdhci_blkdev_write;
+        bd->max_func = fp_sdhci_blkdev_get_max;
+        bd->base0 = 0x3f8; //TODO
+        bd->base1 = 4; //TODO
+        if (bd->init_func)
+          (*bd->init_func)();
+        bd->max_blk=(*bd->max_func)()-1;
+        dv->size=bd->max_blk+1;
+        dv->fs_type=FSt_FAT32;
+        res=TRUE;
+      }
+      else
+      {
+        "Init function fp_sdhci_blkdev_init NULL?\n";
+      }
+      break;
     case BDT_SERIAL:
       if (fp_serial_blkdev_init)
       {
@@ -71,6 +95,7 @@ Bool BlkDevInit(CBlkDev *bd)
       {
         "Init function fp_serial_blkdev_init NULL?\n";
       }
+      break;
     case BDT_VIRTUAL:
       if (fp_virtual_blkdev_init)
       {
@@ -96,7 +121,7 @@ Bool BlkDevInit(CBlkDev *bd)
     case BDT_RAM:
       if (!bd->RAM_dsk)
       {
-        bd->RAM_dsk=AMAlloc((bd->max_blk+1)<<BLK_SIZE_BITS);
+        bd->RAM_dsk=ACAlloc((bd->max_blk+1)<<BLK_SIZE_BITS);
         bd->max_blk=MSize(bd->RAM_dsk)>>BLK_SIZE_BITS-1;
       }
       dv->fs_type=FSt_REDSEA;
@@ -108,7 +133,19 @@ Bool BlkDevInit(CBlkDev *bd)
       res=TRUE;
       break;
     case BDT_ISO_FILE_READ:
-      if (FileFind(bd->file_dsk_name,&de,FUF_JUST_FILES))
+      if (bd->RAM_dsk)
+      {
+        dv->fs_type=FSt_REDSEA;
+        dv->size=bd->max_blk+1-bd->drv_offset;
+        if (RedSeaValidate(bd->first_drv_let))
+        {
+          RedSeaInit(dv);
+          res=TRUE;
+        }
+        else
+          PrintErr("Not RedSea\n");
+      }
+      else if (FileFind(bd->file_dsk_name,&de,FUF_JUST_FILES))
       {
         bd->max_blk=de.size>>BLK_SIZE_BITS-1;
         try bd->file_dsk=FOpen(bd->file_dsk_name,"rc",bd->max_blk+1);
@@ -221,6 +258,7 @@ CBlkDev *BlkDevNextFreeSlot(U8 first_drv_let,I64 type)
       res->flags=BDF_READ_CACHE;
       res->blk_size=BLK_SIZE;
       res->max_blk=0xEFFFFFFF;
+      res->RAM_dsk=0;
       switch (type)
       {
       case BDT_RAM:
@@ -245,11 +283,14 @@ CBlkDev *BlkDevNextFreeSlot(U8 first_drv_let,I64 type)
 
 U0 BlkDevDel(CBlkDev *bd)
 {//Delete BlkDev
-  if ( (bd->type == BDT_OTHER) || (bd->type == BDT_SERIAL) || (bd->type == BDT_VIRTUAL))
+  if ( (bd->type == BDT_OTHER) || (bd->type == BDT_SERIAL) || (bd->type == BDT_SDHCI) || (bd->type == BDT_VIRTUAL))
     if (bd->deinit_func)
       (*bd->deinit_func)();
   DrvBlkDevDel(bd);
   FClose(bd->file_dsk);
+  if ( bd->type == BDT_ISO_FILE_READ
+      && bd->file_dsk_name
+      && bd->RAM_dsk) Free(bd->RAM_dsk);
   Free(bd->file_dsk_name);
   Free(bd->dev_id_record);
   MemSet(bd,0,sizeof(CBlkDev));

@@ -10,6 +10,8 @@ CMsStateGlbls old_ms= {{-1000,-1000,0},{-1000,-1000,0},{-1000,-1000,0},
 public CWinMgrGlbls winmgr= {0,0,0,WINMGR_FPS,tS,tS,NULL,FALSE,FALSE,FALSE};
 #endif
 
+CTaskSettings *last_max_win_pos=NULL;
+
 F64 cur_tS=tS;
 SetFPS(30);
 winmgr.fps=WINMGR_FPS;
@@ -580,13 +582,29 @@ public U0 WinMax(CTask *task=NULL)
   I64 no_border;
   if (!task) task=Fs;
   if (!TaskValidate(task)) return;
+  if (last_max_win_pos) Free(last_max_win_pos);
   PUSHFD
   CLI //TODO Multiprocessor safe
+  last_max_win_pos=SaveWinLoc(task);
   no_border=Bt(&task->display_flags,DISPLAYf_NO_BORDER);
   WinHorz(1-no_border,TEXT_COLS-2+no_border,task);
   WinVert(2-no_border,TEXT_ROWS-2+no_border,task);
   WinToTop(task);
   POPFD
+}
+
+public U0 WinUnmax(CTask *task=NULL)
+{
+  if (!task) task=Fs;
+  if (!TaskValidate(task)) return;
+  if (last_max_win_pos)
+  {
+    PUSHFD
+    CLI //TODO Multiprocessor safe
+    RestoreWinLoc(task, last_max_win_pos);
+    POPFD
+    last_max_win_pos=NULL;
+  }
 }
 
 public Bool WinBorder(Bool val=OFF,CTask *task=NULL)

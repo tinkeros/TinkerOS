@@ -478,7 +478,7 @@ public U0 DocPutKey(CDoc *doc,I64 ch=0,I64 sc=0)
                 if (sc&SCF_SHIFT)
                   KeyDescSet("Cmd/Take Screen Clip");
                 else
-                  KeyDescSet("Cmd/Take Screenshot");
+                  KeyDescSet("Cmd/Take Screenshot");
               }
               else
               {
@@ -624,10 +624,15 @@ public U0 DocPutKey(CDoc *doc,I64 ch=0,I64 sc=0)
       case '\n':
         if (sc&SCF_KEY_DESC)
         {
-          if (sc&SCF_SHIFT)
-            KeyDescSet("Char/Return");
+          if (sc&SCF_CTRL)
+          {
+            if (sc&SCF_SHIFT)
+              KeyDescSet("Key/Line Feed");
+            else
+              KeyDescSet("Key/Page Break");
+          }
           else
-            KeyDescSet("Char/Page Break");
+            KeyDescSet("Char/Return");
         }
         else
           EdCharIns(ch,sc,doc);
@@ -864,6 +869,22 @@ public U0 DocPutKey(CDoc *doc,I64 ch=0,I64 sc=0)
             KeyDescSet("Dol/Inverted Text On");
           else
             DocPrint(doc,"$$IV,1$$");
+        }
+        break;
+      case CH_CTRL_SLASH:
+        if (sc&SCF_SHIFT)
+        {
+          if (sc&SCF_KEY_DESC)
+            KeyDescSet("Edit/UnComment Selection");
+          else
+            DocUnCommentSel(doc);
+        }
+        else
+        {
+          if (sc&SCF_KEY_DESC)
+            KeyDescSet("Edit/Comment Selection");
+          else
+            DocCommentSel(doc);
         }
         break;
       case '0'...'9':

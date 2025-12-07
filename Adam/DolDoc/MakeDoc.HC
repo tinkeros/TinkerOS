@@ -57,6 +57,7 @@ MemSet(&doldoc,0,sizeof(CDolDocGlbls));
 #include "DocGr"
 #include "DocMacro"
 #include "DocWidgetWiz"
+#include "DocCom"
 #include "DocPutKey"
 #include "DocPutS"
 #include "DocCodeTools"

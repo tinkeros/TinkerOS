@@ -446,3 +446,8 @@ U8 *HypeInfo()
 {
   return hype_info;
 }
+
+public U0 SYield()
+{
+  if (!Gs->num) Yield;
+}

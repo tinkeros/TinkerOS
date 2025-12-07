@@ -131,6 +131,10 @@ public extern CArcCtrl *ArcCtrlNew(Bool expand,I64 compression_type=CT_8_BIT);
 public extern U0 ArcExpandBuf(CArcCtrl *c);
 public extern Bool ArcFinishCompression(CArcCtrl *c);
 
+#help_index "Cpu/MSR"
+public _extern _SET_MSR U0 SetMSR(I64 model_specific_reg,I64 val);
+public _extern _GET_MSR I64 GetMSR(I64 model_specific_reg);
+
 #help_index "Data Types/Circular Queue"
 public extern I64	QueCnt(CQue *head);
 public extern CQue	*QueCopy(CQue *head,CTask *mem_task=NULL);
@@ -328,6 +332,8 @@ public extern I64 Zip(U8 *files_find_mask="*",U8 *fu_flags=NULL);
 public extern I64 Unzip(U8 *files_find_mask="*.Z",U8 *fu_flags=NULL);
 public extern U0 Unmount(U8 drv_let=0);
 public extern U8 MountFile(U8 *filename);
+public extern U8 MountFileB(U8 *buffer, I64 size);
+public extern U8 MountFileZ(U8 *filename);
 
 #help_index "File/Cmd Line (Typically);Cmd Line (Typically);Install"
 public extern Bool DrvMap(U8 drv_let,CDrv *dv);
@@ -748,6 +754,12 @@ public _extern SYS_PCI_SERVICES
 public extern Bool PCIBt(U8 *bit_field, I64 bit);
 public extern Bool PCIBtr(U8 *bit_field, I64 bit);
 public extern Bool PCIBts(U8 *bit_field, I64 bit);
+public extern Bool PciFindByID(U16 vendor_id, U16 device_id, U16 class_code=NULL, U16 sub_code=NULL,
+                 I64* bus_out=NULL, I64* dev_out=NULL, I64* fun_out=NULL, I64 cnt=0);
+public extern U0 PciGetDevInfo(CPciDevInfo* info_out, I64 bus, I64 dev, I64 fun);
+public extern U32 PCIGetFirstIOBar(CPciDevInfo* info);
+public extern U32 PCIGetFirstMMIO32(CPciDevInfo* info);
+
 
 #help_index "PCI;PCIE;Devices"
 public extern U8 MixedInU8(I64 mmio, I64 port);
@@ -879,16 +891,6 @@ public extern F64 tS(); //From SysTimerFreq.
 #help_index "Windows"
 public extern Bool WinInside(I64 x,I64 y,CTask *task=NULL,I64 border=0);
 
-#help_index "USB"
-public extern I64 sys_num_usb;
-public extern CUSB sys_usb_devs[USB_NUM];
-public extern U0 USBInitOne(I64 b,I64 d,I64 f);
-public extern U0 USBEndAll();
-public extern U0 USBInitAll(); //This is only valid for my ICH10 dev
-public extern CUSBTD *USBAllocTD();
-public extern U0 USBFreeTD(CUSBTD *tmptd);
-public extern U32 *USBAllocFrameLst(I64 usb_num,I64 size);
-
 #help_index "Sound"
 public extern CSndGlbls snd;
 
@@ -929,6 +931,21 @@ public extern Bool (*fp_serial_blkdev_read)(U8* buf, I64 blk, I64 cnt);
 public extern Bool (*fp_serial_blkdev_write)(U8* buf, I64 blk, I64 cnt);
 public extern I64 (*fp_serial_blkdev_get_max)();
 
+#help_index "SDHCI Block Device"
+public extern Bool (*fp_sdhci_blkdev_init)();
+public extern Bool (*fp_sdhci_blkdev_deinit)();
+public extern Bool (*fp_sdhci_blkdev_read)(U8* buf, I64 blk, I64 cnt);
+public extern Bool (*fp_sdhci_blkdev_write)(U8* buf, I64 blk, I64 cnt);
+public extern I64 (*fp_sdhci_blkdev_get_max)();
+public extern sd_drv *sdhci_drv;
+public extern sd_drv *SdhciInit(I64 vendor_id=NULL, I64 device_id=NULL, Bool setup_drvs=TRUE);
+public extern CBlkDev *SDHCIMount(U8 first_drv_let, I64 type);
+public extern I64 MountSDHCIAuto(U8 dv='W');
+public extern U0 SetupSdhciDrvs();
+public extern U0 SdSetResetClk(I64 freq);
+public extern Bool SdEraseBlks(I64 start_blk, I64 cnt);
+public extern U0 SdStats();
+
 #help_index "Virtual Block Device"
 public extern Bool (*fp_virtual_blkdev_init)();
 public extern Bool (*fp_virtual_blkdev_deinit)();
@@ -939,6 +956,22 @@ public extern I64 (*fp_virtual_blkdev_get_max)();
 #help_index "Ramdisk"
 public _extern SYS_INITRAMFS_PTR U8* sys_initramfs_ptr;
 public _extern SYS_INITRAMFS_SIZE U32 sys_initramfs_size;
+
+#help_index "MMIO"
+public extern U8 MInU8(I64 addr);
+public extern U16 MInU16(I64 addr);
+public extern U32 MInU32(I64 addr);
+public extern U0 MOutU8(I64 addr, U8 b);
+public extern U0 MOutU16(I64 addr, U16 b);
+public extern U0 MOutU32(I64 addr, U32 b);
+public extern U8 MInU8D(I64 addr, I64 delay=1);
+public extern U16 MInU16D(I64 addr, I64 delay=1);
+public extern U32 MInU32D(I64 addr, I64 delay=1);
+public extern U0 MOutU8D(I64 addr, U8 b, I64 delay=1);
+public extern U0 MOutU16D(I64 addr, U16 b, I64 delay=1);
+public extern U0 MOutU32D(I64 addr, U32 b, I64 delay=1);
+public extern U8 *UncachedDevCAlloc(I64 size);
+public extern U0 UncachedDevFree(U8 *d);
 
 #help_index "ScreenSaver"
 #help_file "::/Doc/ScreenSaver"
@@ -955,4 +988,12 @@ public _extern SYS_INITRAMFS_SIZE U32 sys_initramfs_size;
 #help_index "OPL"
 #help_file "::/Doc/OPL"
 
+#help_index "Misc"
+public extern U64 ThisFunc();
+public extern U8 *ThisFuncName();
+public extern U8 *MemMove(U8 *dst, U8 *src, I64 n);
+public extern U0 MemZero(U8 *dst, I64 cnt);
+
 #help_index ""
+
+#define TINKEROS 1

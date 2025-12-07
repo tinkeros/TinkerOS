@@ -50,6 +50,7 @@ extern U8 *EdSprite(I64 bin_num);
 extern I64 ExeDoc(CDoc *doc,I64 ccf_flags=0);
 extern I64 FindWiz();
 extern I64 GetI64(U8 *msg=NULL,I64 dft=0,I64 lo=I64_MIN,I64 hi=I64_MAX);
+extern U0 GrPaint(U8 *filename=NULL);
 extern Bool GrPlot0(CDC *dc,I64 x,I64 y);
 extern I64 ISO9660ISO(U8 *_filename=NULL,U8 *src_files_find_mask,
     U8 *fu_flags=NULL,U8 *_stage2_filename=NULL);
@@ -67,6 +68,7 @@ extern I64 PopUpColorDither(U8 *header=NULL);
 extern I64 PopUpColorLighting(U8 *header=NULL);
 extern I64 PopUpFile(U8 *filename,
     Bool warn_ext=TRUE,CTask *parent=NULL,CTask **_pu_task=NULL);
+extern U8 *PopUpFileName(U8 *dft=NULL,I64 dof_flags=0);
 extern Bool PopUpForm(U8 *_d,U8 *class_name=lastclass,
     I64 dof_flags=DOF_SIZE_MIN,U8 *header=NULL,U8 *footer=NULL);
 extern I64 PopUpGetI64(U8 *msg,I64 dft,I64 lo=I64_MIN,I64 hi=I64_MAX);
@@ -74,6 +76,7 @@ extern U8 *PopUpGetStr(U8 *header=NULL);
 extern I64 PopUpMenu(CDoc *doc,I64 dof_flags=0, U8 *title=NULL);
 extern Bool PopUpNoYes(U8 *header=NULL,U8 *footer=NULL);
 extern Bool PopUpOk(U8 *header=NULL,U8 *footer=NULL);
+extern U8 *PopUpPickFile(U8 *dir=NULL);
 extern I64 PopUpRangeI64(I64 lo,I64 hi,I64 step=1,U8 *header=NULL,U8 *footer=NULL);
 extern Bool PopUpTransform(I64 *r);
 extern CPCIDev	*PCIDevFind(U16 class_code=NULL, U16 sub_code=NULL, U16 vendor_id=NULL,
@@ -95,6 +98,9 @@ extern Bool WinBorder(Bool val=OFF,CTask *task=NULL);
 extern CDoc *WinCursorPosSet(CTask *task,I64 msx,I64 msy,Bool set_cursor=TRUE);
 extern Bool WinHorz(I64 left,I64 right,CTask *task=NULL);
 extern U0 WinMax(CTask *task=NULL);
+extern U0 WinUnmax(CTask *task=NULL);
+extern CTaskSettings *SaveWinLoc(CTask *task=NULL);
+extern U0 RestoreWinLoc(CTask *task,CTaskSettings *tmpse);
 extern U0 WinScrollNull(CTask *task,CD3I64 *s);
 extern U0 WinScrollRestore(CTask *task,CD3I64 *s);
 extern U0 WinScrollsInit(CTask *task);
@@ -109,6 +115,4 @@ extern Bool BootMHDIns(U8 drv_let,U8 *drv_lst=NULL);
 extern I64 Hypervisor();
 extern U0 PCILookUpDevs();
 extern U0 PCILookUpDev(I64 vendor, I64 dev);
-extern Bool PciFindByID(U16 vendor_id, U16 device_id, U16 class_code=NULL, U16 sub_code=NULL,
-                 I64* bus_out=NULL, I64* dev_out=NULL, I64* fun_out=NULL);
 

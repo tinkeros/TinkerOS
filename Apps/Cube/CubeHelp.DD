@@ -38,4 +38,6 @@ Beginners cube solve guide with help from cheat key algorithms:
 3) Use $FG,4$u/U$FG$ and $FG,4$m/M$FG$ to complete middle layer.
 4) Use $FG,4$u/U$FG$ and $FG,4$c$FG$ to make cross on top layer.
 5) Use $FG,4$u/U$FG$ and $FG,4$e$FG$ then $FG,4$u/U$FG$ and $FG,4$p$FG$ to place top cubes in correct locations.
-6) Use $FG,4$u/U$FG$ and $FG,4$o$FG$ to re-orient the top layer corners to complete.
+6) Use $FG,4$u$FG$ to bring the first mis-oriented cube to the top front left
+7) Use $FG,4$o$FG$ to re-orient the top front left until correct, then repeat 6 and 7 until all the top is correct.
+8) Use $FG,4$u/d$FG$ as needed to align all layers (if needed)

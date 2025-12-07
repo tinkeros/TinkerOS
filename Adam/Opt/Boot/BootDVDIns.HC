@@ -1,9 +1,11 @@
 //See $LK,"Install Documentation",A="FI:::/Doc/Install.DD"$.
 //Study my account examples: $LK,"Cfg Strs",A="FL:::/Demo/AcctExample/TOS/TOSCfg.HC,1"$, $LK,"Update Funs",A="FL:::/Demo/AcctExample/TOS/TOSDistro.HC,1"$
 
+#ifndef BDVD_START
 #include "BootDVD"
 #include "DskISORedSea"
 #include "DskISO9660"
+#endif
 
 #help_index "Install"
 
@@ -35,3 +37,4 @@ public U0 BootDVDIns(U8 drv_let=0)
     Beep;
   }
 }
+

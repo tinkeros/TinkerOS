@@ -127,8 +127,16 @@ Bool MyPutKey(I64 ch,I64 sc)
         KeyDescSet("Cmd/WinMax");
       else
       {
-        WinBorder;
         WinMax;
+        WinBorder;
+      }
+      return TRUE;
+    case 'M':
+      if (sc&SCF_KEY_DESC)
+        KeyDescSet("Cmd/WinUnmaximize");
+      else
+      {
+        WinUnmax;
       }
       return TRUE;
     case 'v':

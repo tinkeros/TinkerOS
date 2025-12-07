@@ -54,7 +54,8 @@ U0 FAT32Fmt(U8 drv_let,Bool quick=TRUE)
   CFAT32Boot *br=CAlloc(BLK_SIZE);
   CFAT32FileInfoSect *fis=CAlloc(BLK_SIZE);
   CDrv *dv=Let2Drv(drv_let);
-  I64 i,l;
+  I64 i,l,type=Let2BlkDevType(drv_let);
+  U8 *tmp;
   try
   {
     DrvLock(dv);
@@ -65,10 +66,15 @@ U0 FAT32Fmt(U8 drv_let,Bool quick=TRUE)
     br->jump_and_nop[2]=OC_NOP;
     br->oem_name[0](I64)='MSWIN4.1';
     br->bytes_per_sect=BLK_SIZE;
-    if	  (dv->size<= 500000)
+    if (dv->size<= 500000)
       br->sects_per_clus=1;
     else if (dv->size<=2000000)
-      br->sects_per_clus=2;
+    {
+      if (BDT_SDHCI!=type)
+        br->sects_per_clus=2;
+      else
+        br->sects_per_clus=1;
+    }
     else if (dv->size<=6000000)
       br->sects_per_clus=4;
     else if (dv->size<=12000000)
@@ -90,7 +96,9 @@ U0 FAT32Fmt(U8 drv_let,Bool quick=TRUE)
     br->log_drv_num=0x80;
     br->ext_signature=0x29;
     br->serial_num=RandU32;
-    MemCpy(br->vol_name,"NONAME",11);
+    tmp=MStrPrint("TinkerOS %C",drv_let);
+    MemCpy(br->vol_name,tmp,StrLen(tmp)+1);
+    Free(tmp);
     br->fat_name[0](I64)='FAT32';
     br->signature=0xAA55;
     fis->signature1='RRaA';
@@ -102,7 +110,14 @@ U0 FAT32Fmt(U8 drv_let,Bool quick=TRUE)
       i=br->reserved_sects+2*l+4*br->sects_per_clus;
     else
       i=dv->size;
-    BlkWriteZero(dv,dv->drv_offset,i);
+    if (BDT_SDHCI==type)
+    {
+      "Using SdEraseBlks...";
+      if (SdEraseBlks(dv->drv_offset,i)) "OK!\n";
+      else "Failed, use different card or smaller SD card partitions!\n";
+    }
+    else
+      BlkWriteZero(dv,dv->drv_offset,i);
     BlkWrite(dv,fis,dv->drv_offset+br->file_system_info_sect,1);
     BlkWrite(dv,br,dv->drv_offset,1);
     FAT32Init(dv);

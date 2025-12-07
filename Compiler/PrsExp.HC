@@ -851,7 +851,9 @@ end:
       if (cc->lex_include_stk->flags&LFSF_DEFINE)
         paren_warn=FALSE;
       else
+      {
         paren_warn=TRUE;
+      }
       if (!PrsExpression(cc,paren_prec,FALSE,ps))
         throw('Compiler');
       if (!paren_warn)

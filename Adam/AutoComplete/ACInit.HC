@@ -12,7 +12,6 @@ public U0 ACDWordsLoad()
   if (in_ptr=FileRead(ACD_WORD_FILENAME,&size))
   {
     in_start=in_ptr;
-    Free(acd.word_lst);
     acd.word_lst=AMAlloc(size);
     MemCpy(acd.word_lst,in_start,size);
     acd.word_lst_size=size;
@@ -160,7 +159,6 @@ public U0 ACInit(U8 *mask=NULL)
   HashTableDel(ac.hash_table);
   ac.hash_table=HashTableNew(2048,adam_task);
   ac.num_words=0;
-  Free(ac.cur_word);
   ac.cur_word=NULL;
   if (mask)
     ACMainFileLstTraverse(mask);

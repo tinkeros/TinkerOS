@@ -7,6 +7,7 @@ U0 BlkDevLockFwdingSet(CBlkDev *bd)
   case BDT_RAM:
     break;
   case BDT_ISO_FILE_READ:
+    if (bd->RAM_dsk) break;
   case BDT_ISO_FILE_WRITE:
     bd->lock_fwding=Let2BlkDev(*bd->file_dsk_name);
     break;
@@ -68,6 +69,7 @@ I64 BlkDevAdd(CBlkDev *bd,I64 prt_num=I64_MIN,
     break;
   case BDT_OTHER:
   case BDT_SERIAL:
+  case BDT_SDHCI:
   case BDT_VIRTUAL:
   case BDT_ATA:
   case BDT_AHCI_SATA:
@@ -331,6 +333,12 @@ else
     legacy = BootDVDProbeAll(bd);
     if (!legacy)
     {
+
+      "\nCould not find ATAPI boot drive is SATA set to legacy mode?\n";
+      "\nThis image is not for USB, did you write an ISO to USB?\n";
+      "\n\nFor help with Baremetal installs on real hardware see:\n";
+      "https://github.com/tinkeros/TinkerOS/blob/main/Baremetal.md\n\n";
+
       "Failed to find any legacy or AHCI mode devices!\n\n";
       "Please Reboot!\n";
       while (TRUE)

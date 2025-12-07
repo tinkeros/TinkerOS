@@ -864,8 +864,8 @@ U0 EnumPcieDeviceIds(mcfg_entry *arr, I64 n)
                 }
                 else
                 {
-                  if (bar[bi] & ~0x1F>0)
-  "Bar %d Address: %x\n",bi,bar[bi] & ~0x1F;
+                  if (bar[bi] & ~0x0F>0)
+  "Bar %d Address: %x\n",bi,bar[bi] & ~0x0F;
                 }
               }
             }
@@ -929,11 +929,11 @@ U32 GetPcieDevBarSearch(mcfg_entry *arr, I64 n, I64 find_class, I64 find_subclas
                   }
                   else
                   {
-                    if (bar[bi] & ~0x1F>0)
+                    if (bar[bi] & ~0x0F>0)
                     {
                       if (cur == cnt)
                       {
-                        return bar[bi] & ~0x1F;
+                        return bar[bi] & ~0x0F;
                       }
                       else
                       {

@@ -64,6 +64,7 @@ public U0 DocTermNew()
 #define RIGHT_PLAIN	8
 #define RIGHT_INFILE	9
 #define RIGHT_VIEW	10
+#define RIGHT_PAINT	11
 
 I64 PopUpTermRight(U8 *header)
 {
@@ -73,8 +74,13 @@ I64 PopUpTermRight(U8 *header)
   DocPrint(doc,"\n\n"
            "TXT=%s\nDD=%s\nJIT=%s\nGR=%s",
            FILEMASK_TXT,FILEMASK_DD,FILEMASK_JIT,FILEMASK_GR);
+  if (!StrNCmp(".GR",FileExtDot(header),3))
+    DocPrint(doc,
+           "$$CM+LX,1,3 $$$$BT,\"PaintEditDD\",LE=RIGHT_PAINT$$");
+  else
+    DocPrint(doc,
+           "$$CM+LX,1,3 $$$$BT,\"IncludeJIT\",LE=RIGHT_INCLUDE$$");
   DocPrint(doc,
-           "$$CM+LX,1,3 $$$$BT,\"IncludeJIT\",LE=RIGHT_INCLUDE$$"
            "$$CM+LX,25,0$$$$BT,\"Adam IncludeJIT\",LE=RIGHT_AINCLUDE$$"
            "$$CM+LX,1,3 $$$$BT,\"Copy\",LE=RIGHT_COPY$$"
            "$$CM+LX,25,0$$$$BT,\"Moveor Rename\",LE=RIGHT_MOVE$$"
@@ -181,6 +187,10 @@ I64 TermRightClickLink(CDoc *doc,CDocEntry *doc_e)
         case RIGHT_VIEW:
           res=0;
           GrView(st);
+          break;
+        case RIGHT_PAINT:
+          res=0;
+          GrPaint(st);
           break;
         case RIGHT_ED:
           if (FileExtDot(st) && !FilesFindMatch(st,FILEMASK_DD))

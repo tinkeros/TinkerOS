@@ -2,6 +2,8 @@
 
 U8 *kernel_cfg_options="MemInit\0HeapInit\0VarInit\0StaffMode\0"
                        "HomeDir\0NoMP\0TextMode\0DontProbe\0MountIDEAuto\0DbgDistro\0Resolution\0ScreenSaver\0AHCIMode\0Help\0";
+#define CFG_OPTIONS_NUM		13
+#define CFG_HELP		13
 
 #define CFG_MEM_INIT		0
 #define CFG_HEAP_INIT		1
@@ -16,9 +18,6 @@ U8 *kernel_cfg_options="MemInit\0HeapInit\0VarInit\0StaffMode\0"
 #define CFG_RESOLUTION		10
 #define CFG_SCREEN_SAVER	11
 #define CFG_AHCI_MODE		12
-#define CFG_OPTIONS_NUM		13
-
-#define CFG_HELP		13
 
 class CKCfg
 {
@@ -99,6 +98,7 @@ U0 KCfgOptions(CKCfg *c)
         "$$PURPLE$$ScreenSaver$$FG$$ Change Screen Saver Timeout (%d seconds)\n",c->screen_saver_timeout;
       else
         "$$PURPLE$$ScreenSaver$$FG$$ Change Screen Saver Timeout (0=disabled)\n";
+      "$$PURPLE$$MemDisk$$FG$$ Make Syslinux memdisk kernel.\n"
       "\n";
     }
     else if (0<=i<CFG_OPTIONS_NUM)

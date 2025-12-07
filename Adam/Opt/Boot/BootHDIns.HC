@@ -1,7 +1,9 @@
 //See $LK,"Install Documentation",A="FI:::/Doc/Install.DD"$.
 //Study my account examples: $LK,"Cfg Strs",A="FL:::/Demo/AcctExample/TOS/TOSCfg.HC,1"$, $LK,"Update Funs",A="FL:::/Demo/AcctExample/TOS/TOSDistro.HC,1"$
 
+#ifndef BHD_START
 #include "BootHD"
+#endif
 
 #help_index "Install"
 
@@ -38,6 +40,7 @@ public U0 BootHDIns(U8 drv_let=0)
     case BDT_RAM:
     case BDT_AHCI_SATA:
     case BDT_ATA:
+    case BDT_SDHCI:
       Move("/Kernel/Kernel.BIN.Z","/" KERNEL_BIN_C);
       if (!FileFind("/" KERNEL_BIN_C,&de,FUF_JUST_FILES))
         "No Kernel.BIN.C\n";

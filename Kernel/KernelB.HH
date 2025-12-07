@@ -269,6 +269,8 @@ public _extern _LXCHG_U32 U32 LXchgU32(U32 *dst,U32 d); //Locked eXchange U32s.
 public _extern _LXCHG_U8  U8 LXchgU8(U8 *dst,U8 d); //Locked eXchange U8s.
 public _extern _SET_MSR U0 SetMSR(
 	I64 model_specific_reg,I64 val); //Model Specific Reg See $LK,"MSRs",A="MN:IA32_EFER"$.
+public _extern _GET_MSR I64 GetMSR(
+	I64 model_specific_reg); //Model Specific Reg See $LK,"MSRs",A="MN:IA32_EFER"$.
 public _extern _SYS_HLT U0 SysHlt(); //Loops doing HLT inst.
 public _extern _XCHG_I64 I64 XchgI64(I64 *dst,I64 d); //eXchange I64s.
 public _extern _XCHG_U16 U16 XchgU16(U16 *dst,U16 d); //eXchange U16s.

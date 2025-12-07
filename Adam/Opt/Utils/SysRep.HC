@@ -960,6 +960,7 @@ U8 *StrPrintFlags(U8 *dst,U8 *lst,I64 flags, Bool print_all=FALSE, I64 print_all
   no_warn print_all_length;
   StrPrintFlags2(dst,lst,flags);
 }
+
 public I64 SysRep(I64 type=SMBIOSt_ALL, I64 handle=0, Bool show_all_flags=FALSE,
     I64 memdev_handle=0xFFFF, I64 verbose2=2)
 {//Display info of SMBIOS structures.  Returns cnt of displayed structures.
@@ -1562,6 +1563,61 @@ loop_end:
   if (!handle)
     "$$FD,BLUE$$";
   return structure_cnt;
+}
+
+static U8 *sys_product=0;
+static U8 *sys_manufacturer=0;
+static U8 *sys_version=0;
+
+public U0 SetManProdVer(I64 type=SMBIOSt_SYSTEM, I64 handle=0)
+{// Populate basic system info
+
+  I64 i = 1;
+  CSMBIOSEntryPoint	*entry;
+  CSMBIOSHeader	*header;
+  if (!SMBIOSEntryScan(&entry))
+  {
+    "No SMBIOS data found.\n";
+    return;
+  }
+  header = entry->table_address;
+  while (header->type != 127)
+  {
+    if (handle && header->handle != handle)
+      goto loop_end;
+    if (type != 0xFF && header->type != type)
+      goto loop_end;
+    if (header->type == SMBIOSt_SYSTEM)
+    {
+      CSMBIOSSystemInfo *sys_info = header;
+      sys_manufacturer=StrNew(SMBIOSStr(header, sys_info->manufacturer));
+      sys_product=StrNew(SMBIOSStr(header, sys_info->product_name));
+      sys_version=StrNew(SMBIOSStr(header, sys_info->version));
+    }
+loop_end:
+    header = header(U8 *) + header->length;
+    for (i = 1; header(U8 *)[i - 1] || header(U8 *)[i]; i++);
+    header = header(U8 *) + i + 1;
+  }
+  return;
+}
+
+public U8 *GetSysMan()
+{
+  if (!sys_manufacturer) SetManProdVer;
+  return sys_manufacturer;
+}
+
+public U8 *GetSysProduct()
+{
+  if (!sys_product) SetManProdVer;
+  return sys_product;
+}
+
+public U8 *GetSysVer()
+{
+  if (!sys_version) SetManProdVer;
+  return sys_version;
 }
 
 public U0 SysRepLite()

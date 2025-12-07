@@ -12,7 +12,7 @@ class CPlannedDrv
   Bool pri;
 };
 
-public I64 DskPrt(U8 drv_let=0,...)
+public I64 DskPrtExt(U8 drv_let=0,I64 max_blks=0,I64 argc,I64 *argv)
 {//Partition disk
   /*Partition the disk containing partition drv_let.
 
@@ -57,7 +57,7 @@ public I64 DskPrt(U8 drv_let=0,...)
     "Failed to mount block device to partition!\n";
     return 0;
   }
-  if (bd->type!=BDT_ATA && bd->type!=BDT_AHCI_SATA)
+  if (bd->type!=BDT_ATA && bd->type!=BDT_AHCI_SATA && bd->type!=BDT_SDHCI)
   {
     "Unable to parition mounted block device type!\n";
     return 0;
@@ -96,6 +96,8 @@ public I64 DskPrt(U8 drv_let=0,...)
       else
         tmppp->size=CeilU64(GetI64("Size in Blocks:",
                                    remaining-DRV_HEADER)+DRV_HEADER,ROUND_DRV_TO);
+      if (max_blks>0 && tmppp->size > max_blks)
+        tmppp->size = max_blks;
     }
     while (!(ROUND_DRV_TO<=tmppp->size<=FloorU64(remaining,ROUND_DRV_TO)));
     QueIns(tmppp,head.last);
@@ -149,10 +151,14 @@ public I64 DskPrt(U8 drv_let=0,...)
     mbr.p[i].size=remaining;
     ext_base=offset;
   }
+  if (bd->type==BDT_SDHCI)
+    fp_sdhci_blkdev_write(&mbr, 0, 1);
+  else {
   if (AHCIMode)
     AHCIAtaBlksWrite(bd, &mbr, 0, 1);
   else
     ATAWriteBlks(bd,&mbr,0,1);
+  }
   while (tmppp!=&head)
   {
     start_offset=offset;
@@ -179,10 +185,14 @@ public I64 DskPrt(U8 drv_let=0,...)
       mbr.p[1].offset=offset-ext_base;
       mbr.p[1].size=tmppp->size;
     }
-    if (AHCIMode)
-      AHCIAtaBlksWrite(bd, &mbr, start_offset, 1);
-    else
-      ATAWriteBlks(bd,&mbr,start_offset,1);
+    if (bd->type==BDT_SDHCI)
+      fp_sdhci_blkdev_write(&mbr, start_offset, 1);
+    else {
+      if (AHCIMode)
+        AHCIAtaBlksWrite(bd, &mbr, start_offset, 1);
+      else
+        ATAWriteBlks(bd,&mbr,start_offset,1);
+    }
   }
   bd->flags&=~(BDF_INITIALIZED | BDF_INIT_IN_PROGRESS);
   BlkDevAdd(bd,,FALSE,TRUE);
@@ -198,3 +208,20 @@ pd_done:
   Fs->user_data=1;
   return total;
 }
+
+public I64 DskPrt(U8 drv_let=0,...)
+{
+  return DskPrtExt(drv_let, 0, argc, argv);
+}
+
+public I64 DskPrtOne(U8 drv_let=0,I64 max_blks)
+{
+  F64 percent=1.0;
+  return DskPrtExt(drv_let, max_blks, 1, &percent);
+}
+
+public I64 DskPrtMax(U8 drv_let=0,I64 max_blks,...)
+{
+  return DskPrtExt(drv_let, max_blks, argc, argv);
+}
+

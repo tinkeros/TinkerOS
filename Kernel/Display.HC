@@ -1,4 +1,3 @@
-
 // Null output for now
 U0 MyCommPutChar(I64 port, U8 ch)
 {
@@ -17,10 +16,11 @@ U0 RawPutChar(I64 ch, Bool serial=FALSE)
   the normal screen text output routine.
   See also $LK,"GrUpdateScreen",A="MN:GrUpdateScreen"$().
   */
-  I64 i,row,col,x,y;
+  I64 i,row,col,x,y,framebuffer_cnt;
   U8 *ptr;
   U32 *framebuffer;
   U64 ch_bitmap;
+  framebuffer_cnt=1;
   if (!(text.raw_flags&RWF_SHOW_DOLLAR))
   {
     if (ch=='$$')
@@ -107,7 +107,7 @@ U0 RawPutChar(I64 ch, Bool serial=FALSE)
       x = col * FONT_WIDTH;
       y = row * FONT_HEIGHT;
       ch_bitmap = text.font[ch & 0xFF];
-      framebuffer = text.fb_alias + sys_vbe_mode_pitch * y / 4 + x;
+      framebuffer = text.fb_alias + sys_vbe_mode_pitch * y / (4 * framebuffer_cnt) + x;
       PUSHFD
       CLI
       for (i = 0; i < FONT_WIDTH * FONT_HEIGHT; i++)
@@ -117,7 +117,7 @@ U0 RawPutChar(I64 ch, Bool serial=FALSE)
         else
           *framebuffer++ = BLACK32;
         if (i & (FONT_WIDTH-1) == FONT_WIDTH-1)
-          framebuffer += sys_vbe_mode_pitch / 4 - FONT_WIDTH;
+          framebuffer += sys_vbe_mode_pitch / (4 * framebuffer_cnt) - FONT_WIDTH;
         ch_bitmap >>= 1;
       }
       POPFD

@@ -439,7 +439,37 @@ CBlkDev *AHCIMount(U8 first_drv_let, I64 type, I64 port_num)
   return NULL;
 }
 
+public CBlkDev *SDHCIMount(U8 first_drv_let, I64 type)
+{
+  CBlkDev *res;
+  if (0 <= first_drv_let - 'A' < DRVS_NUM && (type == BDT_SDHCI))
+  {
+    res = BlkDevNextFreeSlot(first_drv_let, type);
+    if (BlkDevAdd(res,, FALSE, FALSE))
+      return res;
+  }
+  return NULL;
+}
 
+public I64 MountSDHCIAuto(U8 dv='W')
+{
+  SetDrvLetType(dv, BDT_SDHCI);
+  sdhci_drv=SdhciInit;
+  if (sdhci_drv)
+  {
+  if (SDHCIMount(dv, BDT_SDHCI))
+  {
+    "Mounted first SD partition as drive %C\n",dv;
+    return 0;
+  }
+    "Failed to mount SD card 1st partition!\n";
+    return 1;
+  }
+  else {
+     "Failed to mount SD card 1st partition!\n";
+     return 1;
+  }
+}
 
 I64 MountAHCIAuto()
 {//Try to mount hard drives and CD/DVD drives automatically. (Kernel.Config option).

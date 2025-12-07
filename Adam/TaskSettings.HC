@@ -1,5 +1,32 @@
 #help_index "Task/Settings"
 
+public CTaskSettings *SaveWinLoc(CTask *task=NULL)
+{//Saves window position
+//It saves many settings so they can be restored
+  CTaskSettings *tmpse;
+  if (!task) task=Fs;
+  if (!TaskValidate(task)) return NULL;
+  tmpse=CAlloc(sizeof(CTaskSettings),task);
+  tmpse->left=task->win_left;
+  tmpse->right=task->win_right;
+  tmpse->top=task->win_top;
+  tmpse->bottom=task->win_bottom;
+  tmpse->border=!Bt(&task->display_flags,DISPLAYf_NO_BORDER);
+  return tmpse;
+}
+
+public U0 RestoreWinLoc(CTask *task,CTaskSettings *tmpse)
+{//Restores window position
+  if (!task) task=Fs;
+  if (TaskValidate(task) && tmpse)
+  {
+    WinBorder(tmpse->border,task);
+    WinHorz(tmpse->left,tmpse->right,task);
+    WinVert(tmpse->top,tmpse->bottom,task);
+    Free(tmpse);
+  }
+}
+
 public CTaskSettings *SettingsPush(CTask *task=NULL,I64 flags=0)
 {//Typically, called at start of an application.
 //It saves many settings so they can be restored

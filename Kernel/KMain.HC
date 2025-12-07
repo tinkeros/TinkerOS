@@ -74,9 +74,6 @@ dev.mem64_ptr=mem_mapped_space;
 dbg.fun_seg_cache=CAlloc(FUN_SEG_CACHE_SIZE*sizeof(CFunSegCache));
 dbg.int_fault_code=IntFaultHndlrsNew;
 
-MemSet(sys_usb_devs,0,USB_NUM*sizeof(CUSB));
-sys_num_usb=0;
-
 for (i=0; i<26; i++)
   BlkDevLtrOverride[i]=BDT_NULL;
 }

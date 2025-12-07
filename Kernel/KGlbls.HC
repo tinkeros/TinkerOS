@@ -22,7 +22,7 @@ U8 *rev_bits_table, //Table with U8 bits revd
 *set_bits_table; //Table with count of set bits in a U8
 CDate local_time_offset;
 F64	*pow10_I64,
-    sys_os_version=5.190;
+    sys_os_version=5.200;
 
 CAutoCompleteDictGlbls acd;
 CAutoCompleteGlbls ac;
@@ -48,9 +48,6 @@ U0 (*fp_set_std_palette)();
 U8 *key_state, *sc_state;
 I64 sc_flags_state;
 
-I64 sys_num_usb=0;
-CUSB sys_usb_devs[USB_NUM];
-
 Bool BlkDevLtrOverride[26];
 Bool AHCIMode=FALSE;
 U32 hype_info[4];
@@ -63,6 +60,12 @@ Bool (*fp_serial_blkdev_read)(U8* buf, I64 blk, I64 cnt)=NULL;
 Bool (*fp_serial_blkdev_write)(U8* buf, I64 blk, I64 cnt)=NULL;
 I64 (*fp_serial_blkdev_get_max)()=NULL;
 
+Bool (*fp_sdhci_blkdev_init)()=NULL;
+Bool (*fp_sdhci_blkdev_deinit)()=NULL;
+Bool (*fp_sdhci_blkdev_read)(U8* buf, I64 blk, I64 cnt)=NULL;
+Bool (*fp_sdhci_blkdev_write)(U8* buf, I64 blk, I64 cnt)=NULL;
+I64 (*fp_sdhci_blkdev_get_max)()=NULL;
+
 Bool (*fp_virtual_blkdev_init)()=NULL;
 Bool (*fp_virtual_blkdev_deinit)()=NULL;
 Bool (*fp_virtual_blkdev_read)(U8* buf, I64 blk, I64 cnt)=NULL;
@@ -73,3 +76,9 @@ CDC *gr_alt_scrn=NULL;
 CBlkDev *initramfs=NULL;
 
 U8 kbd_last_leds=0;
+sd_drv *sdhci_drv=NULL;
+I64 boot_from_sdhci=0;
+I64 boot_first_sd_part=0;
+public Bool sd_quirk_reset_before_xfr=FALSE;
+I64 sd_quirk_clk_reset_freq=12500;
+

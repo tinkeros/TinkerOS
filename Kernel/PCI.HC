@@ -145,7 +145,7 @@ Bool PCIBts(U8 reg RDX *bit_field, I64 reg RBX bit)
 }
 
 public Bool PciFindByIDNoCC(U16 vendor_id, U16 device_id, 
-                 I64* bus_out=NULL, I64* dev_out=NULL, I64* fun_out=NULL)
+                 I64* bus_out=NULL, I64* dev_out=NULL, I64* fun_out=NULL, I64 cnt=0)
 {
   I64 vendor, device, b, d, f, timeout = 32 * 8 * 2;
   for (b = 0; b < sys_pci_busses; b++)
@@ -163,14 +163,18 @@ public Bool PciFindByIDNoCC(U16 vendor_id, U16 device_id,
             if (bus_out) *bus_out = b;
             if (dev_out) *dev_out = d;
             if (fun_out) *fun_out = f;
-            return TRUE;
+            if (!cnt)
+              return TRUE;
+            else cnt--;
           }
           if (0 == device_id)
           {
             if (bus_out) *bus_out = b;
             if (dev_out) *dev_out = d;
             if (fun_out) *fun_out = f;
-            return TRUE;
+            if (!cnt)
+              return TRUE;
+            else cnt--;
           }
           timeout = 32 * 8 * 2;
         }
@@ -186,11 +190,11 @@ public Bool PciFindByIDNoCC(U16 vendor_id, U16 device_id,
 }
 
 public Bool PciFindByID(U16 vendor_id, U16 device_id, U16 class_code=NULL, U16 sub_code=NULL,
-                 I64* bus_out=NULL, I64* dev_out=NULL, I64* fun_out=NULL)
-{
+                 I64* bus_out=NULL, I64* dev_out=NULL, I64* fun_out=NULL, I64 cnt=0)
+{// Find PCI device, use cnt to find more than one instance
   I64 vendor, device, cl, sub, b, d, f, timeout = 32 * 8 * 2;
   if (class_code==NULL && sub_code==NULL)
-    return PciFindByIDNoCC(vendor_id, device_id, bus_out, dev_out, fun_out);
+    return PciFindByIDNoCC(vendor_id, device_id, bus_out, dev_out, fun_out, cnt);
   for (b = 0; b < sys_pci_busses; b++)
   {
     for (d = 0; d < 32; d++)
@@ -211,14 +215,18 @@ public Bool PciFindByID(U16 vendor_id, U16 device_id, U16 class_code=NULL, U16 s
             if (bus_out) *bus_out = b;
             if (dev_out) *dev_out = d;
             if (fun_out) *fun_out = f;
-            return TRUE;
+            if (!cnt)
+              return TRUE;
+            else cnt--;
            }
            if (vendor == vendor_id && 0 == device_id)
            {
             if (bus_out) *bus_out = b;
             if (dev_out) *dev_out = d;
             if (fun_out) *fun_out = f;
-            return TRUE;
+            if (!cnt)
+              return TRUE;
+            else cnt--;
            }
           }
           timeout = 32 * 8 * 2;

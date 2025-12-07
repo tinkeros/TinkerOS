@@ -661,12 +661,13 @@ class CKernel
 #define IOREDTAB		0x10
 
 //Model specific regs.
-#define IA32F_SCE	0x001
-#define IA32F_LME	0x100
-#define IA32_LAPIC_BASE	0x01B
-#define IA32_EFER	0xC0000080
-#define IA32_FS_BASE	0xC0000100
-#define IA32_GS_BASE	0xC0000101
+#define IA32F_SCE        0x001
+#define IA32F_LME        0x100
+#define IA32_MISC_ENABLE 0x1A0
+#define IA32_LAPIC_BASE	 0x01B
+#define IA32_EFER        0xC0000080
+#define IA32_FS_BASE     0xC0000100
+#define IA32_GS_BASE     0xC0000101
 
 class CAP16BitInit
 {//AP Multicore
@@ -3096,11 +3097,12 @@ class CAtapiModeWriteList
 #define BDT_ATAPI		5
 #define BDT_HOSTFS		6
 #define BDT_AHCI_SATA		7
-#define BDT_AHCI_SATAPI	8
+#define BDT_AHCI_SATAPI		8
 #define BDT_OTHER		9
 #define BDT_SERIAL		10
 #define BDT_VIRTUAL		11
-#define BDT_TYPES_NUM	12	
+#define BDT_SDHCI		12
+#define BDT_TYPES_NUM 		13
 
 #define BDF_REMOVABLE		0x001
 #define BDF_INITIALIZED		0x002
@@ -3979,6 +3981,7 @@ public class CSysFixedArea
 #define CH_SHIFT_ESC	0x1C
 #define CH_SHIFT_SPACE	0x1F
 #define CH_SPACE	0x20
+#define CH_CTRL_SLASH	0x21
 
 #define ST_ERR_ST   "$$LTRED$$$$BK,1$$ERROR:$$FG$$$$BK,0$$ "
 #define ST_WARN_ST  "$$RED$$$$BK,1$$WARNING:$$FG$$$$BK,0$$ "
@@ -4498,58 +4501,51 @@ public class CGrGlbls
 	hide_row,hide_col,scrn_saver;
 };
 
-#help_index "USB"
-
-#define USBP_CMD        0x00
-#define USBP_STS        0x02
-#define USBP_INTR       0x04
-#define USBP_FRNUM      0x06
-#define USBP_FRBASEADD  0x08
-#define USBP_SOFMOD     0x0C
-#define USBP_PORTSC0    0x10
-#define USBP_PORTSC1    0x12
-#define USB_NUM 16
-
-//USB Pkt ID's
-#define PID_OUT         0xE1
-#define PID_IN          0x69
-#define PID_SOF         0xA5
-#define PID_SETUP       0x2D
-#define PID_DATA0       0xC3
-#define PID_DATA1       0x4B
-#define PID_DATA2       0x87
-#define PID_MDATA       0x0F
-#define PID_ACK         0xD2
-#define PID_NAK         0x5A
-#define PID_STALL       0x1E
-#define PID_NYET        0x96
-#define PID_PRE         0x3C
-#define PID_ERR         0x3C
-#define PID_SPLIT       0x78
-#define PID_PING        0xB4
-
-//USB Std Rqsts
-#define RQ_GET_STAT     0x0
-#define RQ_CLR_FEAT     0x1
-#define RQ_SET_FEAT     0x3
-#define RQ_SET_ADDR     0x5
-#define RQ_SET_DESC     0x7
-#define RQ_GET_CFG      0x8
-#define RQ_SET_CFG      0x9
-#define RQ_GET_INTERFACE 0xA
-#define RQ_SET_INTERFACE 0xB
-#define RQ_SYNC_FRAME   0xC
-
-class CUSBTD //Not implemented
+#help_index "SDHCI"
+class sdhci_regs
 {
-  U32 td[4];
+  U32 sdma_addr;
+  U16 block_size;
+  U16 block_count;
+  U32 arg;
+  U16 transfer_mode;
+  U16 cmd;
+  U32 response[4];
+  U32 data;
+  U32 present_state;
+  U8 host_control;
+  U8 power_control;
+  U8 block_gap_control;
+  U8 wakeup_control;
+  U16 clock_control;
+  U8 timeout_control;
+  U8 software_reset;
+  U16 irq_status;
+  U16 error_irq_status;
+  U16 irq_enable;
+  U16 error_irq_enable;
+  U16 irq_signal;
+  U16 error_signal;
+  U16 auto_cmd12;
+  U16 host_control2;
+  U32 cap_lo;
+  U32 cap_hi;
+  U64 max_current;
+  U16 force_auto_cmd12;
+  U16 force_error;
+  U8 adma_error;
+  U8 pad_55[3];
+  U64 adma_addr;
+  U8 pad_60[156];
+  U16 slot_irq;
+  U16 controller_version;
 };
 
-class CUSB //Not implemented
+class sd_drv
 {
-  U8 num, //USB dev num
-        bus,dev,fun;
-  U16 ports,pad;
-  U32 *frame_lst;
+  sdhci_regs *regs;
+  U64 sectors;
+  U16 blksize;
+  I32 card_type;
 };
 

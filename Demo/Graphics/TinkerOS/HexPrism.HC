@@ -6,7 +6,6 @@ static CD3I32 top_poly[NUM_SIDES];
 static CD3I32 bottom_poly[NUM_SIDES];
 static CD3I32 side_face[NUM_SIDES][4];
 
-
 U0 HexPrism()
 {
   CDC *dca=DCAlias;
@@ -28,7 +27,7 @@ U0 HexPrism()
 
       DCRst(dc);
       DCFill(dc,0);
-    
+
       dc->z=100;
 
       Mat4x4IdentEqu(dc->r);

@@ -31,11 +31,6 @@ U0 MakeMyISO(U8 *_out_iso_filename)
   //To save space, optionally delete dictionary.
   Del("/Distro/Adam/AutoComplete/ACDefs.DATA");
   Del("/Distro/Home/MakeHome.*");
-  DelTree("/Downloads/TemplarLetters");
-  DelTree("/Apps/Titanium");
-  Del("/Adam/TaskRep.HC");
-  Del("/Adam/CPURep.HC");
-  Del("/Adam/ABlkDev/ADskB.HC");
   CopyTree("/Downloads","/Distro/Downloads");	  //You can leave this out.
   DirMk("/Distro/Tmp");
   DirMk("/Distro/Tmp/ScrnShots");

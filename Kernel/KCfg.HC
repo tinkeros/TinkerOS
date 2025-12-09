@@ -98,7 +98,6 @@ U0 KCfgOptions(CKCfg *c)
         "$$PURPLE$$ScreenSaver$$FG$$ Change Screen Saver Timeout (%d seconds)\n",c->screen_saver_timeout;
       else
         "$$PURPLE$$ScreenSaver$$FG$$ Change Screen Saver Timeout (0=disabled)\n";
-      "$$PURPLE$$MemDisk$$FG$$ Make Syslinux memdisk kernel.\n"
       "\n";
     }
     else if (0<=i<CFG_OPTIONS_NUM)

@@ -93,7 +93,8 @@ U0 PaintSaveImage(U8 *fname=NULL)
     }
     Free(tmp);
   }
-  else {
+  else
+  {
     tmp = PopUpFileName("~/");
     filename = ExtChg(tmp, "GR"); // make sure file ends in .GR32
     Free(tmp);
@@ -107,8 +108,8 @@ U0 PaintLoadImage(U8 *fname=NULL)
 {
   CDC *dc;
   U8 ext[STR_LEN],
-   *file,
-   filename[STR_LEN];
+  *file,
+  filename[STR_LEN];
 
   draw_image=FALSE;
 
@@ -186,19 +187,19 @@ U0 DrawIt(CTask *, CDC *dc)
     GrBlot(dc,0,0,paint.dc);
   }
 
-    // draw the brush on the screen
-    if (circle_brush)
-    {
-      dc->color=paint.color;
-      for (i=0;i<=paint.thick/2+1;i++)
-        GrCircle(dc, ms.pos.x,ms.pos.y,i);
-    } 
-    else DrawScrnBrush(dc, ms.pos.x, ms.pos.y, paint.color, paint.thick);
+  // draw the brush on the screen
+  if (circle_brush)
+  {
+    dc->color=paint.color;
+    for (i=0; i<=paint.thick/2+1; i++)
+      GrCircle(dc, ms.pos.x,ms.pos.y,i);
+  }
+  else DrawScrnBrush(dc, ms.pos.x, ms.pos.y, paint.color, paint.thick);
 
-    cur_color = GrPaletteColorGet(paint.color);
+  cur_color = GrPaletteColorGet(paint.color);
 
-    if (draw_overlay)
-    {
+  if (draw_overlay)
+  {
 
     StrPrint(tmp_str, "Red:   %d", cur_color.r.u8[0]);
     DrawScrnStr(dc, 0, overlay_offset * FONT_HEIGHT, tmp_str);
@@ -235,7 +236,7 @@ U0 DrawIt(CTask *, CDC *dc)
       DrawScrnStr(dc, dc->width-16, (overlay_offset+2)*FONT_HEIGHT, tmp_str);
     }
 
-    }
+  }
 }
 
 Bool ProcessInput()
@@ -245,11 +246,11 @@ Bool ProcessInput()
   while (1)
   {
     msg = ScanMsg(&arg1,&arg2,
-   +1<<MSG_MS_L_DOWN
-   +1<<MSG_MS_L_UP
-   +1<<MSG_MS_L_DOWN_UP
-   +1<<MSG_MS_MOVE
-   +1<<MSG_KEY_DOWN);
+            +1<<MSG_MS_L_DOWN
+            +1<<MSG_MS_L_UP
+            +1<<MSG_MS_L_DOWN_UP
+            +1<<MSG_MS_MOVE
+            +1<<MSG_KEY_DOWN);
     switch (msg)
     {
     case 0:
@@ -263,110 +264,110 @@ start:
         if (circle_brush)
         {
           paint.dc->color=paint.color;
-          for (i=0;i<=paint.thick/2+1;i++)
+          for (i=0; i<=paint.thick/2+1; i++)
             GrCircle(paint.dc, ms.pos.x,ms.pos.y,i);
         }
         else
-         DrawImageBrush(arg1, arg2, paint.color, paint.thick);
+          DrawImageBrush(arg1, arg2, paint.color, paint.thick);
       break;
     case MSG_MS_L_DOWN_UP:
       if (circle_brush)
       {
         paint.dc->color=paint.color;
-        for (i=0;i<=paint.thick/2+1;i++)
+        for (i=0; i<=paint.thick/2+1; i++)
           GrCircle(paint.dc, ms.pos.x,ms.pos.y,i);
       }
       else
-       DrawImageBrush(arg1, arg2, paint.color, paint.thick);
+        DrawImageBrush(arg1, arg2, paint.color, paint.thick);
     case MSG_MS_L_UP:
       brush_down=FALSE;
       break;
     case MSG_KEY_DOWN:
-    last_ch=ch=arg1;
-    sc=arg2;
-    switch (ch)
-    {
-    case 0:
-      switch (sc.u8[0])
+      last_ch=ch=arg1;
+      sc=arg2;
+      switch (ch)
       {
-      case SC_CURSOR_LEFT:
-        ms.pos.x--;
+      case 0:
+        switch (sc.u8[0])
+        {
+        case SC_CURSOR_LEFT:
+          ms.pos.x--;
+          break;
+        case SC_CURSOR_RIGHT:
+          ms.pos.x++;
+          break;
+        case SC_CURSOR_UP:
+          ms.pos.y--;
+          break;
+        case SC_CURSOR_DOWN:
+          ms.pos.y++;
+          break;
+        }
         break;
-      case SC_CURSOR_RIGHT:
-        ms.pos.x++;
+      case 'p':
+        paint.color = PaintImagePeek(ms.pos.x, ms.pos.y);
         break;
-      case SC_CURSOR_UP:
-        ms.pos.y--;
+      case 't':
+        circle_brush=!circle_brush;
         break;
-      case SC_CURSOR_DOWN:
-        ms.pos.y++;
+      case 'o':
+        draw_overlay=!draw_overlay;
         break;
+      case '+':
+        paint.thick++;
+        break;
+      case '-':
+        paint.thick--;
+        break;
+      case 'v':
+        paint.color=AdjColorBrightness(paint.color);
+        break;
+      case 'V':
+        paint.color=AdjColorBrightness(paint.color,-1);
+        break;
+      case 's':
+        paint.color=AdjColorSat(paint.color);
+        break;
+      case 'S':
+        paint.color=AdjColorSat(paint.color,-1);
+        break;
+      case 'h':
+        paint.color=AdjColorHue(paint.color);
+        break;
+      case 'H':
+        paint.color=AdjColorHue(paint.color,-1);
+        break;
+      case 'r':
+        paint.color=AdjColorR(paint.color);
+        break;
+      case 'g':
+        paint.color=AdjColorG(paint.color);
+        break;
+      case 'b':
+        paint.color=AdjColorB(paint.color);
+        break;
+      case 'R':
+        paint.color=AdjColorR(paint.color,-1);
+        break;
+      case 'G':
+        paint.color=AdjColorG(paint.color,-1);
+        break;
+      case 'B':
+        paint.color=AdjColorB(paint.color,-1);
+        break;
+      case '0'...'9':
+        paint.color = ch - '0';
+        break;
+      case CH_CTRLS:
+        PaintSaveImage(cur_filename);
+        break;
+      case CH_CTRLL:
+        PaintLoadImage;
+        break;
+      case CH_SHIFT_ESC:
+        if (cur_filename) PaintSaveImage(cur_filename);
+        return FALSE;
       }
-      break;
-    case 'p':
-      paint.color = PaintImagePeek(ms.pos.x, ms.pos.y);
-      break;
-    case 't':
-      circle_brush=!circle_brush;
-      break;
-    case 'o':
-      draw_overlay=!draw_overlay;
-      break;
-    case '+':
-      paint.thick++;
-      break;
-    case '-':
-      paint.thick--;
-      break;
-    case 'v':
-      paint.color=AdjColorBrightness(paint.color);
-      break;
-    case 'V':
-      paint.color=AdjColorBrightness(paint.color,-1);
-      break;
-    case 's':
-      paint.color=AdjColorSat(paint.color);
-      break;
-    case 'S':
-      paint.color=AdjColorSat(paint.color,-1);
-      break;
-    case 'h':
-      paint.color=AdjColorHue(paint.color);
-      break;
-    case 'H':
-      paint.color=AdjColorHue(paint.color,-1);
-      break;
-    case 'r':
-      paint.color=AdjColorR(paint.color);
-      break;
-    case 'g':
-      paint.color=AdjColorG(paint.color);
-      break;
-    case 'b':
-      paint.color=AdjColorB(paint.color);
-      break;
-    case 'R':
-      paint.color=AdjColorR(paint.color,-1);
-      break;
-    case 'G':
-      paint.color=AdjColorG(paint.color,-1);
-      break;
-    case 'B':
-      paint.color=AdjColorB(paint.color,-1);
-      break;
-    case '0'...'9':
-      paint.color = ch - '0';
-      break;
-    case CH_CTRLS:
-      PaintSaveImage(cur_filename);
-      break;
-    case CH_CTRLL:
-      PaintLoadImage;
-      break;
-    case CH_SHIFT_ESC:
-      if (cur_filename) PaintSaveImage(cur_filename);
-      return FALSE;
-    }
 end:
       break;
     }
@@ -376,7 +377,7 @@ end:
 
 U0 MainLoop()
 {
-  while(ProcessInput)
+  while (ProcessInput)
   {
     Yield;
   }

@@ -582,7 +582,6 @@ public U0 WinMax(CTask *task=NULL)
   I64 no_border;
   if (!task) task=Fs;
   if (!TaskValidate(task)) return;
-  if (last_max_win_pos) Free(last_max_win_pos);
   PUSHFD
   CLI //TODO Multiprocessor safe
   last_max_win_pos=SaveWinLoc(task);

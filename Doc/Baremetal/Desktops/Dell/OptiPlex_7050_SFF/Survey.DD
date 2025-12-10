@@ -1,0 +1,80 @@
+$WW+H,1$Survey and System Results:
+
+OS: TinkerOS V5.160	07/28/24 13:55:22
+
+Current graphics mode: 640 x 480 (640 by 480 framebuffer)
+
+Current disk mode: AHCI
+
+Current boot drive: C
+
+Laptop: No
+
+Is AHCI mode supported in BIOS: Yes
+
+Is Legacy/IDE mode supported in BIOS: No
+
+Does PS/2 emulation of USB both keyboard and mouse work in TinkerOS: Yes
+
+Does your system have a PS/2 mouse or combo port: Yes
+
+Does your system have a serial port: Yes
+
+Does your system have a parallel port: No
+
+Can you install and run TinkerOS bare metal: Yes
+
+Can you install and run TempleOS bare metal: No
+
+Does PS/2 emulation of USB both keyboard and mouse work in TempleOS: No
+
+Is this a custom built PC / motherboard you installed: No
+
+Did this automatic installer work: No
+
+Did you manually partition and format the drive: Yes
+
+Did you manually have to enter IO port numbers: No
+
+Results from SysRepSurvey:
+
+SMBIOS version 3.0 (86 entries)
+$TR-C,"System"$
+$FD,3$$ID,3$Operating system:$FG,0$TinkerOS V5.160$FG$
+Manufacturer:$FG,0$Dell Inc.$FG$
+Product Name:$FG,0$OptiPlex 7050 SFF$FG$
+Version:$FG,0$None$FG$
+$ID,-3$$TR-C,"Memory Array"$
+$FD,3$$ID,3$Location:$FG,0$Motherboard$FG$
+Use:$FG,0$System Memory$FG$
+Error Correction:$FG,0$None$FG$
+Max Capacity:$FG,0$65536 MB$FG$
+Mem Device Count:$FG,0$4$FG$
+$ID,-3$$TR-C,"Processor"$
+$FD,3$$ID,3$Socket Name:$FG,0$U3E1$FG$
+Processor Type:$FG,0$Central Processor$FG$
+Status:$FG,0$Socket Populated, CPU Enabled$FG$
+Core Count:$FG,0$4$FG$
+Cores Enabled:$FG,0$4$FG$
+Manufacturer:$FG,0$Intel(R) Corporation$FG$
+Name:$FG,0$Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz$FG$
+Family:$FG,0$6$FG$
+Model:$FG,0$14$FG$
+Stepping:$FG,0$9$FG$
+Current Speed:$FG,0$3.4 GHz$FG$
+Max Speed:$FG,0$4.2 GHz$FG$
+Socket:$FG,0$Other$FG$
+Voltage:$FG,0$1.0V$FG$
+External Clock:$FG,0$100 MHz$FG$
+$ID,-3$$FD,1$
+Hypervisor present: 0
+
+Detected resolution options:
+
+  1280x1024
+  1024x768
+  640x480
+  800x600
+  1920x1080
+
+

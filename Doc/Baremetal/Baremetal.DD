@@ -6,23 +6,23 @@ $WW,1$It is recommended to pick only machines with real PS/2 ports. Working PS/2
 
 $TR,"Desktops"$
 $ID,2$
-$LK,"Dell OptiPlex 7010 SFF",A="FI:/Doc/Baremetal/Machines/Desktop/Dell/OptiPlex_7010_SFF/Survey.DD.Z"$
-$LK,"Dell OptiPlex 7050 MFF",A="FI:/Doc/Baremetal/Machines/Desktop/Dell/OptiPlex_7050_MFF/Survey.DD.Z"$
-$LK,"Dell OptiPlex 7050 SFF",A="FI:/Doc/Baremetal/Machines/Desktop/Dell/OptiPlex_7050_SFF/Survey.DD.Z"$
-$LK,"Dell OptiPlex 755 MT",A="FI:/Doc/Baremetal/Machines/Desktop/Dell/OptiPlex_755_MT/Survey.DD.Z"$
-$LK,"Dell OptiPlex 9010 SFF",A="FI:/Doc/Baremetal/Machines/Desktop/Dell/OptiPlex_9010_SFF/Survey.DD.Z"$
-$LK,"Dell OptiPlex 9020 MT * w/PS/2",A="FI:/Doc/Baremetal/Machines/Desktop/Dell/OptiPlex_9020_MT/Survey.DD.Z"$
-$LK,"Dell Precision WorkStation T7400 * w/PS/2",A="FI:/Doc/Baremetal/Machines/Desktop/Dell/Precision_WorkStation_T7400/Survey.DD.Z"$
-$LK,"HP Compaq Elite 8300 SFF * w/USB",A="FI:/Doc/Baremetal/Machines/Desktop/HP/Compaq_Elite_8300_SFF/Survey.DD.Z"$
-$LK,"Lenovo ThinkCentre M79 * w/PS/2",A="FI:/Doc/Baremetal/Machines/Desktop/Lenovo/ThinkCentre_M79/Survey.DD.Z"$
+$LK,"Dell OptiPlex 7010 SFF",A="FI:/Doc/Baremetal/Desktops/Dell/OptiPlex_7010_SFF/Survey.DD.Z"$
+$LK,"Dell OptiPlex 7050 MFF",A="FI:/Doc/Baremetal/Desktops/Dell/OptiPlex_7050_MFF/Survey.DD.Z"$
+$LK,"Dell OptiPlex 7050 SFF",A="FI:/Doc/Baremetal/Desktops/Dell/OptiPlex_7050_SFF/Survey.DD.Z"$
+$LK,"Dell OptiPlex 755 MT",A="FI:/Doc/Baremetal/Desktops/Dell/OptiPlex_755_MT/Survey.DD.Z"$
+$LK,"Dell OptiPlex 9010 SFF",A="FI:/Doc/Baremetal/Desktops/Dell/OptiPlex_9010_SFF/Survey.DD.Z"$
+$LK,"Dell OptiPlex 9020 MT * w/PS/2",A="FI:/Doc/Baremetal/Desktops/Dell/OptiPlex_9020_MT/Survey.DD.Z"$
+$LK,"Dell Precision WorkStation T7400 * w/PS/2",A="FI:/Doc/Baremetal/Desktops/Dell/Precision_T7400/Survey.DD.Z"$
+$LK,"HP Compaq Elite 8300 SFF * w/USB",A="FI:/Doc/Baremetal/Desktops/HP/Compaq_Elite_8300_SFF/Survey.DD.Z"$
+$LK,"Lenovo ThinkCentre M79 * w/PS/2",A="FI:/Doc/Baremetal/Desktops/Lenovo/ThinkCentre_M79/Survey.DD.Z"$
 $ID,-2$
 $TR,"Laptops"$
 $ID,2$
-$LK,"Dell Latitude D630 * w/USB",A="FI:/Doc/Baremetal/Machines/Laptop/Dell/Latitude_D630/Survey.DD.Z"$
-$LK,"HP HP 2000 Notebook PC",A="FI:/Doc/Baremetal/Machines/Laptop/HP/HP_2000_Notebook_PC/Survey.DD.Z"$
-$LK,"HP HP ProBook 655 G1",A="FI:/Doc/Baremetal/Machines/Laptop/HP/HP_ProBook_655_G1/Survey.DD.Z"$
-$LK,"Lenovo Lenovo IdeaPad Yoga 11S",A="FI:/Doc/Baremetal/Machines/Laptop/Lenovo/Lenovo_IdeaPad_Yoga_11S/Survey.DD.Z"$
-$LK,"Lenovo ThinkPad T420 * w/USB",A="FI:/Doc/Baremetal/Machines/Laptop/Lenovo/ThinkPad_T420/Survey.DD.Z"$
-$LK,"Lenovo ThinkPad T430",A="FI:/Doc/Baremetal/Machines/Laptop/Lenovo/ThinkPad_T430/Survey.DD.Z"$
-$LK,"Lenovo ThinkPad T440p",A="FI:/Doc/Baremetal/Machines/Laptop/Lenovo/ThinkPad_T440p/Survey.DD.Z"$
+$LK,"Dell Latitude D630 * w/USB",A="FI:/Doc/Baremetal/Laptops/Dell/Latitude_D630/Survey.DD.Z"$
+$LK,"HP HP 2000 Notebook PC",A="FI:/Doc/Baremetal/Laptops/HP/HP_2000_Notebook_PC/Survey.DD.Z"$
+$LK,"HP HP ProBook 655 G1",A="FI:/Doc/Baremetal/Laptops/HP/HP_ProBook_655_G1/Survey.DD.Z"$
+$LK,"Lenovo Lenovo IdeaPad Yoga 11S",A="FI:/Doc/Baremetal/Laptops/Lenovo/Lenovo_IdeaPad_Yoga_11S/Survey.DD.Z"$
+$LK,"Lenovo ThinkPad T420 * w/USB",A="FI:/Doc/Baremetal/Laptops/Lenovo/ThinkPad_T420/Survey.DD.Z"$
+$LK,"Lenovo ThinkPad T430",A="FI:/Doc/Baremetal/Laptops/Lenovo/ThinkPad_T430/Survey.DD.Z"$
+$LK,"Lenovo ThinkPad T440p",A="FI:/Doc/Baremetal/Laptops/Lenovo/ThinkPad_T440p/Survey.DD.Z"$
 $ID,-2$

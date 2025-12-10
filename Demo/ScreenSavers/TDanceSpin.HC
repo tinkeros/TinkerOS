@@ -2,9 +2,9 @@
 //
 // Instead run:
 //
-// AdamFile("TDance.HC");
+// AdamFile("TDanceSpin.HC");
 
-U0 TerryDanceTask(U8 *data)
+U0 TerryDanceSpinTask(U8 *data)
 {
   CDC *dc=data;
   I64 i,j,size,width,height,num_imgs,x=0,y=0,xdir=1,ydir=1;
@@ -14,6 +14,7 @@ U0 TerryDanceTask(U8 *data)
   height=(*imgbuf++)<<8 | *imgbuf++;
   num_imgs=(*imgbuf++)<<8 | *imgbuf++;
   CDC *tdance=DCNew(width, height);
+  U8 *elems=DC2Sprite(tdance);
   i=0;
   while(TRUE)
   {
@@ -24,7 +25,7 @@ U0 TerryDanceTask(U8 *data)
       x--;
       xdir=-1;
     }
-    if (x<0)
+    if (x<width/2)
     {
       x++;
       xdir=1;
@@ -40,11 +41,15 @@ U0 TerryDanceTask(U8 *data)
       ydir=1;
     }
     i=i%num_imgs;
+    Mat4x4IdentEqu(tdance->r);
+    Mat4x4RotY(tdance->r,tS*ã/8.0);
+
     MemCpy(dc->body,gr.dc2->body,GR_WIDTH*GR_HEIGHT);
     MemSetU8(tdance->body,0xff,tdance->width_internal*height);
     for (j=0; j<height; j++)
       MemCpy(tdance->body+j*tdance->width_internal,imgbuf+i*width*height+j*width,width);
-    GrBlot(dc,x,y,tdance);
+    UpdateSpriteDC(elems,tdance);
+    Sprite3Mat4x4B(dc,x,y,0,elems,tdance->r);
     i++;
     Sleep(20);
   }
@@ -60,13 +65,13 @@ U0 TerryDanceTask(U8 *data)
 // Here we just use it once to copy the
 // current screen and spawn a task to
 // draw the screen saved version.
-U0 ScreenSaverTerryDance(CDC *dc, I64 ss_cnts)
+U0 ScreenSaverTerryDanceSpin(CDC *dc, I64 ss_cnts)
 {
   if (!ss_cnts)
     {
     MemCpy(dc->body,gr.dc2->body,GR_WIDTH*GR_HEIGHT);
-    gr.scrn_saver_task=Spawn(&TerryDanceTask,dc,"Screen Saver Task");
+    gr.scrn_saver_task=Spawn(&TerryDanceSpinTask,dc,"Screen Saver Task");
   }
 }
 
-gr.fp_draw_ss=&ScreenSaverTerryDance;
+gr.fp_draw_ss=&ScreenSaverTerryDanceSpin;

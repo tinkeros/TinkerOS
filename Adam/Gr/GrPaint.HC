@@ -318,6 +318,11 @@ U0 PaintPalInit(CDC *dc)
               sorted_pal[x][y];
 }
 
+CDC *PaintPalGet()
+{
+  return paint_palette;
+}
+
 U0 DrawIt(CTask *, CDC *dc)
 {
 
@@ -589,10 +594,12 @@ U0 MainLoop()
   }
 }
 
-public U0 GrPaint(U8 *filename=NULL)
+public U0 GrPaint(U8 *filename=NULL, Bool show_help=TRUE)
 {
   Bool old_ac=AutoComplete(0);
-  PopUpOk("\n"
+  paint.color=BLACK;
+  if (show_help)
+    PopUpOk("\n"
         "$$GREEN$$0-9$$FG$$ to get colors from current palette.\n"
         "$$GREEN$$o$$FG$$ to toggle top banner overlay.\n"
         "$$GREEN$$p$$FG$$ to peek and set brush to color underneath it.\n"
@@ -618,6 +625,7 @@ public U0 GrPaint(U8 *filename=NULL)
   ms.show=0;
 
   if (filename) cur_filename=filename;
+  else paint.fb=NULL;
   EnumPaintStamps;
 
   Fs->draw_it=&DrawIt;
@@ -626,7 +634,13 @@ public U0 GrPaint(U8 *filename=NULL)
   Yield;
   AutoComplete(old_ac);
   DocCursor(1);
-
+  DCDel(paint_stamps);
+  DCDel(paint_palette);
+  paint_palette=NULL;
+  paint_stamps=NULL;
+  DCDel(paint.dc);
+  paint.dc=NULL;
+  paint.fb=NULL;
   DocClear;
   SettingsPop;
   MenuPop;

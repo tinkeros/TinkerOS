@@ -29,7 +29,6 @@ public U0 GrSetExtPalette()
   }
 }
 
-
 static I64 safe_levels[6]={0x00, 0x33, 0x66, 0x99, 0xCC, 0xFF};
 
 I64 NearestLvlIdx(I64 value)

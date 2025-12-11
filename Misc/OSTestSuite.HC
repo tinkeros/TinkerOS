@@ -28,7 +28,7 @@ U0 TS(U8 *desc)
            (PROGRESS_DESC_LEN-StrLen(st))>>1,CH_SPACE,st);
   Free(st);
   progress4=ts_i++;
-  progress4_max=183;
+  progress4_max=192;
   progress4_t0=ts_t0;
   *progress4_desc=0;
   RegExe("TempleOS/OSTestSuite");
@@ -66,17 +66,9 @@ U0 DoTicTacToe()
 {
   XTalkWait(task,"#include \"::/Demo/Games/TicTacToe\";\n");
 }
-U0 DoLife()
-{
-  XTalkWait(task,"#include \"::/Demo/Graphics/Life\";\n");
-}
 U0 DoZing()
 {
   XTalkWait(task,"#include \"::/Demo/Games/Zing\";\n");
-}
-U0 DoSlider()
-{
-  XTalkWait(task,"#include \"::/Demo/Graphics/Slider\";\n");
 }
 U0 DoScrollBars()
 {
@@ -119,6 +111,112 @@ U0 DoOnceDemo()
   XTalkWait(task,"#include \"::/Demo/OnceDemo\";\n");
 }
 */
+
+U0 DoLife()
+{
+  I64 i;
+  CTask *task=User;
+  XTalkWait(task,"#include \"::/Demo/Graphics/Life\";\n");
+  PostMsgWait(task,MSG_MS_L_DOWN,1*GR_WIDTH/4,GR_HEIGHT/2);
+  for (i=64;i<GR_WIDTH-64;i++)
+  {
+    MsSet(i,GR_HEIGHT/2,0);
+    Sleep(2);
+  }
+  Sleep(1000);
+  PostMsgWait(task,MSG_MS_L_UP,3*GR_WIDTH/4,GR_HEIGHT/2);
+  Sleep(2000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SHIFT_ESC,0);
+  DeathWait(&task,TRUE);
+}
+
+U0 DoHexPrism()
+{
+  CTask *task=User;
+  XTalkWait(task,"#include \"::/Demo/Graphics/TinkerOS/HexPrism\";\n");
+  Sleep(3000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SHIFT_ESC,0);
+  DeathWait(&task,TRUE);
+}
+
+U0 DoPaletteExt()
+{
+  CTask *task=User;
+  XTalkWait(task,"#include \"::/Demo/Graphics/TinkerOS/Palette\";\n");
+  Sleep(3000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SHIFT_ESC,0);
+  DeathWait(&task,TRUE);
+}
+
+U0 DoRandSquares()
+{
+  CTask *task=User;
+  XTalkWait(task,"#include \"::/Demo/Graphics/TinkerOS/RandSquares\";\n");
+  Sleep(3000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SHIFT_ESC,0);
+  DeathWait(&task,TRUE);
+}
+
+U0 DoGPSPAL()
+{
+  CTask *task=User;
+  XTalkWait(task,"#include \"::/Demo/Graphics/TinkerOS/GPSPAL\";\n");
+  Sleep(3000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SHIFT_ESC,0);
+  DeathWait(&task,TRUE);
+}
+
+U0 DoSlider()
+{
+  CTask *task=User;
+  XTalkWait(task,"#include \"::/Demo/Graphics/Slider\";\n");
+  Sleep(2000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SHIFT_ESC,0);
+  DeathWait(&task,TRUE);
+}
+
+U0 DoGrPaint()
+{
+  I64 cnt=0,i,j;
+  CTask *task=User;
+  XTalkWait(task,"GrPaint(0,0);\n");
+
+  Sleep(1000);
+
+  for (i=0;i<10;i++)
+    PostMsgWait(task,MSG_KEY_DOWN_UP,'r',0);Sleep(1);
+
+  Sleep(1000);
+
+  for (i=12;i<GR_WIDTH-8;i+=GR_WIDTH/20)
+  {
+    PostMsgWait(task,MSG_MS_L_UP,i,GR_HEIGHT/5);
+    Sleep(1);
+    PostMsgWait(task,MSG_MS_L_DOWN,i,GR_HEIGHT/5);
+    Sleep(20);
+    for (j=GR_HEIGHT/5;j<2*GR_HEIGHT/5;j+=6)
+    {
+      PostMsgWait(task,MSG_MS_L_DOWN_UP,i,j);
+    }
+    PostMsgWait(task,MSG_MS_L_DOWN,i,2*GR_HEIGHT/5);
+    Sleep(1);
+    PostMsgWait(task,MSG_MS_L_UP,i,2*GR_HEIGHT/5);
+    Sleep(20);
+
+    Sleep(20);
+    PostMsgWait(task,MSG_KEY_DOWN,'h',0);
+    Sleep(1);
+    PostMsgWait(task,MSG_KEY_UP,'h',0);
+    Sleep(20);
+    cnt++;
+    if (cnt==20) break;
+  }
+
+  Sleep(1000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SHIFT_ESC,0);
+  DeathWait(&task,TRUE);
+  DCFill;
+}
 
 U0 DoWordle()
 {
@@ -974,9 +1072,9 @@ U0 DoDunGen()
 U0 DoAfterEgypt()
 {
   I64 i;
-  CTask *task=User;
+  CTask *tmp_task,*task=User;
   XTalkWait(task,"#include \"::/Apps/AfterEgypt/Run\";\n");
-  Sleep(10000);
+  Sleep(8000);
   PostMsgWait(task,MSG_KEY_DOWN_UP,CH_ESC,0);
   Sleep(1000);
   // God Talk
@@ -996,12 +1094,15 @@ U0 DoAfterEgypt()
   }
   PostMsg(task,MSG_KEY_DOWN_UP,CH_ESC,0);
   Sleep(1000);
-  for (i=0; i<18; i++)
+  for (i=0; i<50; i++)
   {
     kbd.new_key_timestamp=GetTSC;
     Sleep(50);
     ms_hard.timestamp=GetTSC;
-    PostMsgWait(FindTaskByTitle("~/Tmp.DD.Z"),MSG_KEY_DOWN_UP,CH_SPACE,0);
+    tmp_task=FindTaskByTitle("~/Tmp.DD.Z");
+    if (TaskValidate(tmp_task))
+      PostMsgWait(tmp_task,MSG_KEY_DOWN_UP,CH_SPACE,0);
+    else if (i>10) break;
     Sleep(500);
   }
   PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SHIFT_ESC,0);
@@ -1811,6 +1912,20 @@ U0 OSTestSuite()
   ts_i=0;
   TS("PersonalMenu");
   DoPersonalMenu;
+  TS("HexPrism");
+  DoHexPrism;
+  TS("Life");
+  DoLife;
+  TS("Grand Prismatic Spring");
+  DoGPSPAL;
+  TS("Sliders");
+  DoSlider;
+  TS("GrPaint");
+  DoGrPaint;
+  TS("Random color squares");
+  DoRandSquares;
+  TS("TinkerOS ext. palette");
+  DoPaletteExt;
   TS("LineSandScreenSaver");
   DoLSScreenSaver;
   TS("NewGlassScreenSaver");
@@ -2214,10 +2329,22 @@ U0 OSTestSuite()
   ,tS-ts_t0;
 }
 
+static I64 old_ss_timeout=gr.scrn_saver_timeout;
+
+U0 SuiteKillCB()
+{
+  SetScreenSaverTimeout(old_ss_timeout);
+  DCFill;
+  progress3_max=0;
+  progress4_max=0;
+}
+
+Fs->task_end_cb=&SuiteKillCB;
 ms.show=0;
 SetScreenSaverTimeout(300);
 OSTestSuite;
 ms.show=1;
+progress3_max=0;
 progress4_max=0;
 old_silent=Silent;
 Del("~/DemoWebLog.DD.Z");
@@ -2229,3 +2356,4 @@ Del("~/DemoSortedF64.DATA.Z");
 Del("~/DemoOutPage.html");
 Del("~/DemoOutPage.TXT");
 Silent(old_silent);
+

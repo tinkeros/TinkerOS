@@ -10,7 +10,7 @@ U0 GPSpringPalette()
 {
   CDC *dc=DCNew(640,480);
   I64 s;
-  U8 *img_buf=FileRead("GPSPAL.BIN.Z",&s);
+  U8 *img_buf=FileRead("/Demo/Graphics/TinkerOS/GPSPAL.BIN.Z",&s);
 
   MemCpy(dc->body,img_buf,s);
   Free(img_buf);
@@ -21,6 +21,10 @@ U0 GPSpringPalette()
   for (s=0;s<480/8;s++) "\n";
 
   Free(elems);
+
+  Sleep(2000);
+
+  DCFill;
   DCDel(dc);
 }
 

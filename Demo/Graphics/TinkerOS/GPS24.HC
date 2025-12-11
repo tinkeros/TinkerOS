@@ -8,7 +8,7 @@ U0 GPSpring24BitColor(I64 seconds)
 {
   I64 tmp;
   I64 size,i;
-  U32 *image_buffer=FileRead("GPS24.BIN.Z",&size);
+  U32 *image_buffer=FileRead("/Demo/Graphics/TinkerOS/GPS24.BIN.Z",&size);
 
   for (i=0;i<640*480;i++)
   {
@@ -25,5 +25,7 @@ U0 GPSpring24BitColor(I64 seconds)
   Free(image_buffer);
 }
 
-GPSpring24BitColor(5);
+if (GR_WIDTH==640 && GR_HEIGHT==480 && FB_WIDTH==640 && FB_HEIGHT==480)
+  GPSpring24BitColor(5);
+else "Demo requires 640x480 framebuffer.\n";
 

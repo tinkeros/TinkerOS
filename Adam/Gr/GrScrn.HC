@@ -670,6 +670,8 @@ U0 GrUpdateVGAGraphics()
       }
       gr.scrn_saver_task=NULL;
     }
+    // Restore default ext. palette in case screen saver changed it.
+    GrSetExtPalette;
     src_start = gr.dc2->body;
   }
   if (gr.scrn_zoom == 1)

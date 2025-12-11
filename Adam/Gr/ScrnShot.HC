@@ -58,7 +58,7 @@ public U0 ScrnShotClip(U8 *filename)
   DCDel(dc3);
 }
 
-public U0 ScrnShot(Bool no_mouse=TRUE,Bool clip=FALSE)
+public U0 ScrnShot(Bool no_mouse=TRUE,Bool clip=FALSE, Bool to_paint=FALSE)
 {// Captures GR screenshot or clip saved to ~/ScrnShot if possible, otherwise B:/ScrnShot
   Bool prev_mouse=ms.show,old_silent=IsSilent;
   U8 *prefix,*filename,*dircur;
@@ -97,71 +97,13 @@ public U0 ScrnShot(Bool no_mouse=TRUE,Bool clip=FALSE)
     // Nothing
     Fs->catch_except=TRUE;
   }
-  Free(filename);
   Cd(dircur);
   Free(dircur);
   Silent(old_silent);
   if (no_mouse) ms.show=prev_mouse;
-}
-
-public U0 GrView(U8 *filename)
-{// Views GR file full screen, ESC to exit
-  I64 x=0,y=0;
-  CDC *dc,*dc2;
-  CTask *tmp;
-  dc=DCCopy(gr.dc);
-  dc2=GRRead(filename);
-  if (dc2)
-  {
-    if (gr.dc->width_internal==dc2->width_internal
-        &&gr.dc->height==dc2->height)
-    {
-      LBts(&sys_semas[SEMA_REFRESH_IN_PROGRESS],0);
-      tmp=User("InUntilChar(CH_ESC,CH_SHIFT_ESC,CH_SPACE);Exit;\n");
-      Yield;
-      SetAltScrn(dc2);
-      Yield;
-      while (TaskValidate(tmp))
-      {
-        if (sys_focus_task!=tmp)
-          Kill(tmp);
-        Yield;
-      }
-      SetAltScrn;
-      VGAFlush;
-      LBtr(&sys_semas[SEMA_REFRESH_IN_PROGRESS],0);
-    }
-    else
-    {
-      if (dc2->width<dc->width&&dc2->height<dc->height)
-      {
-        x=(dc->width-dc2->width)/2;
-        y=(dc->height-dc2->height)/2;
-      }
-      DCFill(dc,WHITE);
-      GrBlot(dc,x,y,dc2);
-      LBts(&sys_semas[SEMA_REFRESH_IN_PROGRESS],0);
-      tmp=User("InUntilChar(CH_ESC,CH_SHIFT_ESC,CH_SPACE);Exit;\n");
-      Yield;
-      SetAltScrn(dc);
-      Yield;
-      while (TaskValidate(tmp))
-      {
-        if (sys_focus_task!=tmp)
-          Kill(tmp);
-        Yield;
-      }
-      SetAltScrn;
-      VGAFlush;
-      LBtr(&sys_semas[SEMA_REFRESH_IN_PROGRESS],0);
-    }
-  }
-  else
-  {
-    "Could not load %s\n",filename;
-  }
-  DCDel(dc);
-  DCDel(dc2);
+  if (to_paint)
+    User("GrPaint(\"%s\");\n",filename);
+  Free(filename);
 }
 
 #help_index ""

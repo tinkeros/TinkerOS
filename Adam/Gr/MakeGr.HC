@@ -25,9 +25,9 @@ Cd(__DIR__);;
 #include "SpriteSideBar"
 #include "SpriteEd"
 #include "SpriteMain"
-#include "ScrnShot"
 #include "PalGen"
 #include "GrPaint"
+#include "ScrnShot"
 GrSetExtPalette;
 
 #include "GrEnd"

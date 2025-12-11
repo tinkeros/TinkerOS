@@ -239,7 +239,7 @@ ej_doc:
       if (!(edf_dof_flags&EDF_BAIL) && !(LK_DOC<=i<=LK_DOC_LINE) &&
           FilesFindMatch(filename,FILEMASK_GR))
       {
-        GrView(filename);
+        GrPaint(filename);
         cont=FALSE;
       }
       else if (!(edf_dof_flags&EDF_BAIL) && !(LK_DOC<=i<=LK_DOC_LINE) &&

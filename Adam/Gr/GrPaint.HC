@@ -7,6 +7,7 @@ class CPaint
   I64 height;
   I64 width_internal;
   U64 thick;
+  I64 stamp;
   U64 last_x;
   U64 last_y;
   U64 last_thick;
@@ -19,9 +20,13 @@ static Bool draw_image=FALSE;
 static Bool draw_overlay=TRUE;
 static Bool overlay_bottom=TRUE;
 static Bool show_palette=FALSE;
-static I64 last_ch=0;
+static Bool show_stamps=FALSE;
+static I64 last_ch=0, max_stamps=0,stamp_cnt=0, stamp_max_h=0, stamp_max_w=0,
+           stamps_per_row=0, stamps_per_column=0;
 static U8 *cur_filename=0;
 static CDC *paint_palette=NULL;
+static CDC *paint_stamps=NULL;
+static CDC **stamps;
 
 static I64 sorted_pal[25][10]=
 {
@@ -51,6 +56,93 @@ static I64 sorted_pal[25][10]=
   {131, 125, 174, 168, 162, 217, 211, 205, 199, 198},
   {88, 124, 167, 161, 160, 210, 204, 203, 197, 196}
 };
+
+U0 EnumPaintStamps()
+{
+  CDC *tmpdc;
+  CDirEntry *tmpde1=NULL,*tmpde2;
+  I64 res=0;
+  U8 *files_find_mask="/Misc/Paint/Stamps/*.GR.Z";
+
+  tmpde1=FilesFind(files_find_mask);
+  if (tmpde1)
+  {
+    tmpde2=tmpde1;
+    while (tmpde2)
+    {
+      tmpdc=GRRead(tmpde2->full_name);
+      if (tmpdc->width>stamp_max_w)
+        stamp_max_w=tmpdc->width;
+      if (tmpdc->height>stamp_max_h)
+        stamp_max_h=tmpdc->height;
+      DCDel(tmpdc);
+      tmpde2=tmpde2->next;
+      res++;
+    }
+  }
+  stamp_cnt=res;
+
+  stamps_per_row=GR_WIDTH/(stamp_max_w+1);
+  stamps_per_column=GR_HEIGHT/(stamp_max_h+1);
+  max_stamps=stamps_per_row*stamps_per_column;
+
+  if (stamp_cnt<max_stamps) max_stamps=stamp_cnt;
+
+  if (stamp_cnt>0)
+  {
+    stamps=CAlloc(max_stamps*sizeof(CDC*));
+    tmpde1=FilesFind(files_find_mask);
+    res=0;
+    if (tmpde1)
+    {
+      tmpde2=tmpde1;
+      while (tmpde2 && res<max_stamps)
+      {
+        tmpdc=GRRead(tmpde2->full_name);
+        stamps[res]=tmpdc;
+        tmpde2=tmpde2->next;
+        res++;
+      }
+    }
+    if (res>max_stamps) res=max_stamps;
+    max_stamps=res;
+  }
+}
+
+U0 PaintStampsInit(CDC *dc)
+{
+  I64 cnt=0,x,y,xoff,yoff,xsize,ysize,sxoff,syoff;
+
+
+  xsize = stamp_max_w+1;
+  ysize = stamp_max_h+1;
+
+  xoff = (GR_WIDTH - xsize * stamps_per_row) / 2;
+  yoff = (GR_HEIGHT - ysize * stamps_per_column) / 2;
+
+  paint_stamps=DCCopy(dc);
+  DCFill(paint_stamps,15);
+
+
+  for (y=0; y<stamps_per_column; y++)
+    for (x=0; x<stamps_per_row; x++)
+    {
+      if (cnt==max_stamps) return;
+      else
+      {
+        sxoff=(stamp_max_w-stamps[cnt]->width)/2;
+        syoff=(stamp_max_h-stamps[cnt]->height)/2;
+        GrBlot(paint_stamps,x*xsize+xoff+sxoff,y*ysize+yoff+syoff,stamps[cnt++]);
+      }
+    }
+}
+
+I64 PaintStampPeek(I64 x, I64 y)
+{
+  I64 res=stamps_per_row * (y/(stamp_max_h+1)) + x/(stamp_max_w+1);
+  if (res>max_stamps-1) return max_stamps-1;
+  return res;
+}
 
 U0 DrawImagePixel(I64 x, I64 y, U8 color)
 {
@@ -196,10 +288,11 @@ U0 PaintGlblsInit(CDC *dc)
   paint.last_x = ms.pos.x;
   paint.last_y = ms.pos.y;
   paint.last_thick = paint.thick;
-  paint.width=dc->width;
-  paint.height=dc->height;
-  paint.width_internal=dc->width_internal;
+  paint.stamp=-1;
   if (cur_filename) PaintLoadImage(cur_filename);
+  paint.width=paint.dc->width;
+  paint.height=paint.dc->height;
+  paint.width_internal=paint.dc->width_internal;
   draw_image=TRUE;
 }
 
@@ -217,11 +310,12 @@ U0 PaintPalInit(CDC *dc)
   DCFill(paint_palette,15);
 
 
-  for (x=0;x<25;x++)
-    for (y=0;y<10;y++)
-      for (j=0;j<ysize-4;j++)
-        for (i=0;i<xsize-4;i++)
-          paint_palette->body[(y*ysize+yoff+j)*paint_palette->width_internal+x*xsize+xoff+i]=sorted_pal[x][y];
+  for (x=0; x<25; x++)
+    for (y=0; y<10; y++)
+      for (j=0; j<ysize-4; j++)
+        for (i=0; i<xsize-4; i++)
+          paint_palette->body[(y*ysize+yoff+j)*paint_palette->width_internal+x*xsize+xoff+i]=
+              sorted_pal[x][y];
 }
 
 U0 DrawIt(CTask *, CDC *dc)
@@ -233,8 +327,15 @@ U0 DrawIt(CTask *, CDC *dc)
   CBGR48 cur_color, tmp_clr;
 
   if (!paint_palette) PaintPalInit(dc);
+  if (!paint_stamps) PaintStampsInit(dc);
+
   if (overlay_bottom) overlay_offset=GR_HEIGHT/FONT_HEIGHT-4;
   if (!paint.fb) PaintGlblsInit(dc);
+  else if (show_stamps)
+  {
+    DCFill(dc,WHITE);
+    GrBlot(dc,0,0,paint_stamps);
+  }
   else if (show_palette)
   {
     DCFill(dc,WHITE);
@@ -250,19 +351,28 @@ U0 DrawIt(CTask *, CDC *dc)
   }
 
   // draw the brush on the screen
-  if (circle_brush)
+  if (paint.stamp>=0)
+  {
+    GrBlot(dc,ms.pos.x,ms.pos.y,stamps[paint.stamp]);
+  }
+  else if (circle_brush)
   {
     dc->color=paint.color;
     for (i=0; i<=paint.thick/2+1; i++)
       GrCircle(dc, ms.pos.x,ms.pos.y,i);
   }
-  else DrawScrnBrush(dc, ms.pos.x, ms.pos.y, paint.color, paint.thick);
+  else
+  {
+    if (show_stamps)
+      DrawScrnBrush(dc, ms.pos.x, ms.pos.y, BLACK, paint.thick);
+    else
+      DrawScrnBrush(dc, ms.pos.x, ms.pos.y, paint.color, paint.thick);
+  }
 
   cur_color = GrPaletteColorGet(paint.color);
 
   if (draw_overlay)
   {
-
     StrPrint(tmp_str, "Red:   %d", cur_color.r.u8[0]);
     DrawScrnStr(dc, 0, overlay_offset * FONT_HEIGHT, tmp_str);
 
@@ -297,7 +407,6 @@ U0 DrawIt(CTask *, CDC *dc)
       StrPrint(tmp_str,"%c",last_ch.u8[0]);
       DrawScrnStr(dc, dc->width-16, (overlay_offset+2)*FONT_HEIGHT, tmp_str);
     }
-
   }
 }
 
@@ -320,7 +429,11 @@ Bool ProcessInput()
       break;
 start:
     case MSG_MS_L_DOWN:
-      if (show_palette)
+      if (show_stamps)
+      {
+        paint.stamp=PaintStampPeek(ms.pos.x, ms.pos.y);
+      }
+      else if (show_palette)
         paint.color=PaintPalPeek(ms.pos.x, ms.pos.y);
       else brush_down=TRUE;
     case MSG_MS_MOVE:
@@ -333,11 +446,18 @@ start:
             GrCircle(paint.dc, ms.pos.x,ms.pos.y,i);
         }
         else
-          DrawImageBrush(arg1, arg2, paint.color, paint.thick);
+        {
+          if (paint.stamp>=0) GrBlot(paint.dc,ms.pos.x,ms.pos.y,stamps[paint.stamp]);
+          else DrawImageBrush(arg1, arg2, paint.color, paint.thick);
+        }
       }
       break;
     case MSG_MS_L_DOWN_UP:
-      if (show_palette)
+      if (show_stamps)
+      {
+        paint.stamp=PaintStampPeek(ms.pos.x, ms.pos.y);
+      }
+      else if (show_palette)
         paint.color=PaintPalPeek(ms.pos.x, ms.pos.y);
       else if (circle_brush)
       {
@@ -346,7 +466,10 @@ start:
           GrCircle(paint.dc, ms.pos.x,ms.pos.y,i);
       }
       else
-        DrawImageBrush(arg1, arg2, paint.color, paint.thick);
+      {
+        if (paint.stamp>=0) GrBlot(paint.dc,ms.pos.x,ms.pos.y,stamps[paint.stamp]);
+        else DrawImageBrush(arg1, arg2, paint.color, paint.thick);
+      }
     case MSG_MS_L_UP:
       brush_down=FALSE;
       break;
@@ -373,15 +496,18 @@ start:
         }
         break;
       case 'p':
+        paint.stamp=-1;
         if (show_palette)
           paint.color = PaintPalPeek(ms.pos.x, ms.pos.y);
         else
           paint.color = PaintImagePeek(ms.pos.x, ms.pos.y);
         break;
       case 'P':
+        paint.stamp=-1;
         show_palette=!show_palette;
         break;
       case 't':
+        paint.stamp=-1;
         circle_brush=!circle_brush;
         break;
       case 'o':
@@ -392,6 +518,12 @@ start:
         break;
       case '-':
         paint.thick--;
+        break;
+      case 'x':
+        if (stamp_cnt)
+          show_stamps=!show_stamps;
+        else
+          show_stamps=FALSE;
         break;
       case 'v':
         paint.color=AdjColorBrightness(paint.color);
@@ -464,7 +596,8 @@ public U0 GrPaint(U8 *filename=NULL)
         "$$GREEN$$0-9$$FG$$ to get colors from current palette.\n"
         "$$GREEN$$o$$FG$$ to toggle top banner overlay.\n"
         "$$GREEN$$p$$FG$$ to peek and set brush to color underneath it.\n"
-        "$$GREEN$$P$$FG$$ to toggle the palette.\n"
+        "$$GREEN$$P$$FG$$ to toggle the color palette.\n"
+        "$$GREEN$$x$$FG$$ to toggle the stamp palette.\n"
         "$$GREEN$$t$$FG$$ to toggle brush shape.\n"
         "$$GREEN$$R, G, or B$$FG$$ to increase color values.\n"
         "$$GREEN$$Shift-R, Shift-G, or Shift-B$$FG$$ to decrease.\n"
@@ -485,6 +618,7 @@ public U0 GrPaint(U8 *filename=NULL)
   ms.show=0;
 
   if (filename) cur_filename=filename;
+  EnumPaintStamps;
 
   Fs->draw_it=&DrawIt;
   MainLoop;
@@ -498,4 +632,3 @@ public U0 GrPaint(U8 *filename=NULL)
   MenuPop;
   ms.show=1;
 }
-

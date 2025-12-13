@@ -223,6 +223,22 @@ U0 MeshTriSelAll(CMeshFrame *e,Bool val)
   }
 }
 
+U0 MeshTriSelSameColor(CMeshFrame *e, Bool val)
+{
+  CMeshEdTri *tmpt=e->tri_head.next;
+  while (tmpt!=&e->tri_head)
+  {
+    if (e->cur_color.c0.color == tmpt->mt.color.u8[0])
+    {
+      if (val)
+        tmpt->flags|=TF_SEL;
+      else
+        tmpt->flags&=~TF_SEL;
+    }
+    tmpt=tmpt->next;
+  }
+}
+
 U0 MeshVertexIgnoreSet(CMeshFrame *e,Bool val)
 {
   CMeshEdVertex *tmpv=e->vertex_head.next;
@@ -1076,6 +1092,7 @@ See $LK,"::/Demo/Graphics/SpritePlot3D.HC"$.
       "  Paste(,CH_CTRLV);"
       "  SelectAll(,'A');"
       "  UnSelectAll(,'U');"
+      "  SelectSameColor(,'S');"
       "  SelectRect(,'a');"
       "  UnSelectRect(,'u');"
       "  OrSelectRect(,'o');"
@@ -1099,6 +1116,7 @@ See $LK,"::/Demo/Graphics/SpritePlot3D.HC"$.
       "View {"
       "  ZoomIn(,'z');"
       "  ZoomOut(,'Z');"
+      "  Center(,'+');"
       "  NullAngles(,'N');"
       "  FlipY(,'y');"
       "  Grid(,'g');"
@@ -1235,6 +1253,14 @@ me_chain:
             MeshVertexSelAll(&e,FALSE);
           make_tri_vertex_num=0;
           break;
+        case 'S':
+          MeshTriSelSameColor(&e,TRUE);
+          if (e.ed_mode!='t')
+            MeshVertexSelAll(&e,TRUE);
+          else
+            MeshVertexSelAll(&e,FALSE);
+          make_tri_vertex_num=0;
+          break;
         case 'U':
           MeshTriSelAll(&e,FALSE);
           MeshVertexSelAll(&e,FALSE);
@@ -1341,6 +1367,10 @@ me_clip_cut:
           break;
         case 'Z':
           MeshScaleZoom(&e,1/1.5);
+          break;
+        case '+':
+          Fs->horz_scroll.pos=0;
+          Fs->vert_scroll.pos=0;
           break;
         case 'c':
           e.cur_color=PopUpColorLighting;

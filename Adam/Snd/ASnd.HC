@@ -231,7 +231,7 @@ public I8 Ona2Octave(I8 ona)
     return octave;
 }
 
-public U0 PlayMD(U8 *st, U8 *words=NULL, I64 ch_start=0, I64 ch_end=0, I64 delay=0)
+public U0 PlayMD(U8 *st, U8 *words=NULL, I64 ch_start=0, I64 ch_end=0, I64 delay=0, Bool dbg_notes=FALSE)
 {// Multi-channel Play with delay for delay/reverb like effect
 
   // TODO create array of music objects, 1 for each channel
@@ -267,11 +267,13 @@ public U0 PlayMD(U8 *st, U8 *words=NULL, I64 ch_start=0, I64 ch_end=0, I64 delay
   per second.It defaults to
   2.5 and gets faster when bigger.
   */
-  U8 *word,*last_st;
+  U8 *word,*last_st,*dbg_note_ptr,dbg_note_buf[STR_LEN];
   I64 note,octave,i=0,j,ona,timeout_val,timeout_val2;
   Bool tie;
   F64 d,on_jiffies,off_jiffies;
   music.play_note_num=0;
+
+  dbg_note_ptr=st;
 
   while (*st)
   {
@@ -317,8 +319,40 @@ public U0 PlayMD(U8 *st, U8 *words=NULL, I64 ch_start=0, I64 ch_end=0, I64 delay
     }
     else
       ona=0;
-    if (words && (word=LstSub(i++,words)) && StrCmp(word,""))
-      "%s",word;
+
+    if (words)
+      word=LstSub(i++,words);
+
+    if (words && word && StrCmp(word,""))
+    {
+      if (dbg_notes)
+      {
+      MemCpy(dbg_note_buf,dbg_note_ptr,st-dbg_note_ptr);
+      dbg_note_buf[st-dbg_note_ptr]=0;
+      if (word[StrLen(word)-1]=='\n')
+      {
+        word[StrLen(word)-1]=0;
+        "%s [%s]\n",word, dbg_note_buf;
+        word[StrLen(word)]='\n';
+      }
+      else {
+        "%s [%s] ",word, dbg_note_buf;
+      }
+      dbg_note_ptr=st;
+      }
+      else {
+        "%s",word;
+      }
+    }
+
+    if ((!word || !StrCmp(word,"")) && dbg_notes)
+    {
+      MemCpy(dbg_note_buf,dbg_note_ptr,st-dbg_note_ptr);
+      dbg_note_buf[st-dbg_note_ptr+1]=0;
+      "NULL [%s] ", dbg_note_buf;
+      dbg_note_ptr=st;
+    }
+
     d=JIFFY_FREQ*music.note_len/music.tempo;
     on_jiffies	=d*music.stacatto_factor;
     off_jiffies =d*(1.0-music.stacatto_factor);
@@ -344,14 +378,14 @@ public U0 PlayMD(U8 *st, U8 *words=NULL, I64 ch_start=0, I64 ch_end=0, I64 delay
   }
 }
 
-public U0 PlayM(U8 *st,U8 *words=NULL, I64 ch_start=0, I64 ch_end=0)
+public U0 PlayM(U8 *st,U8 *words=NULL, I64 ch_start=0, I64 ch_end=0, Bool dbg_notes=FALSE)
 {// Multi-channel Play
- PlayMD(st,words,ch_start,ch_end,0);
+ PlayMD(st,words,ch_start,ch_end,0,dbg_notes);
 }
 
-public U0 Play(U8 *st,U8 *words=NULL)
+public U0 Play(U8 *st,U8 *words=NULL, Bool dbg_notes=FALSE)
 {// Single Channel 0 Play
-  PlayM(st,words,0,0);
+  PlayM(st,words,0,0,dbg_notes);
 }
 
 U0 MusicSettingsRst()

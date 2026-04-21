@@ -4,6 +4,7 @@ Cd(__DIR__);;
 #include "Gr.HH"
 #include "GrExt"
 #include "GrGlbls"
+#include "PalGen"
 #include "GrPalette"
 #include "GrDC"
 #include "GrInitB"
@@ -25,7 +26,6 @@ Cd(__DIR__);;
 #include "SpriteSideBar"
 #include "SpriteEd"
 #include "SpriteMain"
-#include "PalGen"
 #include "GrPaint"
 #include "ScrnShot"
 GrSetExtPalette;

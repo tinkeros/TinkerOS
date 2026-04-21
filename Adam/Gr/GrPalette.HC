@@ -26,6 +26,7 @@ public CBGR24 gr32_palette_std[COLORS_NUM]=
 public U0 PaletteSetStd(Bool persistent=TRUE)
 {//Activate std palette.
   GrPaletteSet32(gr32_palette_std);
+  GrSetExtPalette;
   if (persistent)
     fp_set_std_palette = &PaletteSetStd;
   VGAFlush;

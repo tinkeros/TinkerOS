@@ -119,25 +119,56 @@ public U0 UncachedDevFree(U8 *d)
   else Free(d);
 }
 
-U8 *MemMove(U8 *dst, U8 *src, I64 n) {
-    I64 i;
-    U8 *d = dst, *s = src;
+U8 *MemMove(U8 *dst, U8 *src, I64 n)
+{
+  I64 i;
+  U8 *d = dst, *s = src;
 
-    if (d == s || n == 0) {
-        return dst;
-    }
-
-    if (d < s) {
-        for (i = 0; i < n; i++) {
-            d[i] = s[i];
-        }
-    } else {
-        for (i = n; i > 0; i--) {
-            d[i - 1] = s[i - 1];
-        }
-    }
-
+  if (d == s || n == 0)
+  {
     return dst;
+  }
+
+  if (d < s)
+  {
+    for (i = 0; i < n; i++)
+    {
+      d[i] = s[i];
+    }
+  }
+  else
+  {
+    for (i = n; i > 0; i--)
+    {
+      d[i - 1] = s[i - 1];
+    }
+  }
+
+  return dst;
+}
+
+U8 *REalloc(U8 *ptr, I64 size)
+{
+  U8 *ptr2=MAlloc(size);
+  if (!size && ptr) Free(ptr);
+  if (ptr2)
+  {
+    MemCpy(ptr2,ptr,size);
+    Free(ptr);
+    return ptr2;
+  }
+  return 0;
+}
+
+U8 *REallocArray(U8 *ptr, I64 n_elem, I64 bytes_per_elem)
+{
+  return REalloc(ptr, n_elem*bytes_per_elem);
+}
+
+I64 SizeofArray(U8 *ptr, I64 bytes_per_elem)
+{
+  if (!ptr) return MSize(ptr)/bytes_per_elem;
+  return 0;
 }
 
 U0 MemZero(U8 *dst, I64 cnt)

@@ -432,7 +432,7 @@ I64 PrsFunCall(CCmpCtrl *cc,CPrsStk *ps,Bool indirect,CHashFun *tmpf)
   I64 i,argc_cnt,dft_val;
   Bool is_first_arg=TRUE,needs_right_paren,is_print,is_putchars,
        is_template_fun;
-  CHashClass *tmpc2,*last_class=NULL;
+  CHashClass *tmpc2,*first_class=NULL,*last_class=NULL;
   CMemberLst *tmpm;
   CCodeCtrl *tmpcbh,*tmpcbh1;
   CCodeMisc *cm;
@@ -527,7 +527,13 @@ I64 PrsFunCall(CCmpCtrl *cc,CPrsStk *ps,Bool indirect,CHashFun *tmpf)
         cc->flags|=CCF_HAS_MISC_DATA;
       }
       else
+      {
+        if (tmpm->flags & MLF_FIRSTSIZE && first_class)
+        {
+          dft_val=(first_class-first_class->ptr_stars_cnt)->size;
+        }
         ICAdd(cc,IC_IMM_I64,dft_val,tmpm->member_class);
+      }
     }
     else
     {
@@ -542,6 +548,8 @@ I64 PrsFunCall(CCmpCtrl *cc,CPrsStk *ps,Bool indirect,CHashFun *tmpf)
         tmpi=OptPass012(cc);
         COCPop(cc);
         last_class=OptClassFwd(tmpi->ic_class);
+        if (is_first_arg)
+          first_class=last_class;
         tmpc2=OptClassFwd(tmpm->member_class);
         if (tmpc2->raw_type==RT_F64 && !tmpm->dim.next &&
             last_class->raw_type!=RT_F64)

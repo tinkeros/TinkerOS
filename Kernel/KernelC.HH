@@ -993,6 +993,9 @@ public extern U64 ThisFunc();
 public extern U8 *ThisFuncName();
 public extern U8 *MemMove(U8 *dst, U8 *src, I64 n);
 public extern U0 MemZero(U8 *dst, I64 cnt);
+public extern U8 *REalloc(U8 *ptr, I64 size);
+public extern U8 *REallocArray(U8 *ptr, I64 n_elem, I64 bytes_per_elem);
+public extern I64 SizeofArray(U8 *ptr, I64 bytes_per_elem);
 
 #help_index ""
 

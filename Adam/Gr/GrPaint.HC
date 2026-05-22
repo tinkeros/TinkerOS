@@ -8,6 +8,7 @@ class CPaint
   I64 width_internal;
   U64 thick;
   I64 stamp;
+  I64 emoji;
   U64 last_x;
   U64 last_y;
   U64 last_thick;
@@ -21,12 +22,20 @@ static Bool draw_overlay=TRUE;
 static Bool overlay_bottom=TRUE;
 static Bool show_palette=FALSE;
 static Bool show_stamps=FALSE;
-static I64 last_ch=0, max_stamps=0,stamp_cnt=0, stamp_max_h=0, stamp_max_w=0,
-           stamps_per_row=0, stamps_per_column=0;
+static Bool show_emojis=FALSE;
+static I64 last_ch=0;
 static U8 *cur_filename=0;
 static CDC *paint_palette=NULL;
-static CDC *paint_stamps=NULL;
-static CDC **stamps;
+
+
+class GrPalPage {
+  I64 grs_max,gr_cnt,gr_max_h,gr_max_w,grs_per_row,grs_per_column;
+  CDC *paint_grs, *grs_paint, **grs;
+};
+
+// TODO make multiple pages that you can cycle through
+static GrPalPage *gr_stamp=CAlloc(sizeof(GrPalPage));
+static GrPalPage *gr_emoji=CAlloc(sizeof(GrPalPage));
 
 static I64 sorted_pal[25][10]=
 {
@@ -57,12 +66,11 @@ static I64 sorted_pal[25][10]=
   {88, 124, 167, 161, 160, 210, 204, 203, 197, 196}
 };
 
-U0 EnumPaintStamps()
+U0 EnumPaintGrs(GrPalPage *gr_pal_page=gr_stamp,  U8 *files_find_mask="/Misc/Paint/Stamps/*.GR.Z")
 {
   CDC *tmpdc;
   CDirEntry *tmpde1=NULL,*tmpde2;
   I64 res=0;
-  U8 *files_find_mask="/Misc/Paint/Stamps/*.GR.Z";
 
   tmpde1=FilesFind(files_find_mask);
   if (tmpde1)
@@ -71,76 +79,97 @@ U0 EnumPaintStamps()
     while (tmpde2)
     {
       tmpdc=GRRead(tmpde2->full_name);
-      if (tmpdc->width>stamp_max_w)
-        stamp_max_w=tmpdc->width;
-      if (tmpdc->height>stamp_max_h)
-        stamp_max_h=tmpdc->height;
+      if (tmpdc->width>gr_pal_page->gr_max_w)
+        gr_pal_page->gr_max_w=tmpdc->width;
+      if (tmpdc->height>gr_pal_page->gr_max_h)
+        gr_pal_page->gr_max_h=tmpdc->height;
       DCDel(tmpdc);
       tmpde2=tmpde2->next;
       res++;
     }
   }
-  stamp_cnt=res;
+  gr_pal_page->gr_cnt=res;
 
-  stamps_per_row=GR_WIDTH/(stamp_max_w+1);
-  stamps_per_column=GR_HEIGHT/(stamp_max_h+1);
-  max_stamps=stamps_per_row*stamps_per_column;
+  gr_pal_page->grs_per_row=GR_WIDTH/(gr_pal_page->gr_max_w+1);
+  gr_pal_page->grs_per_column=GR_HEIGHT/(gr_pal_page->gr_max_h+1);
+  gr_pal_page->grs_max=gr_pal_page->grs_per_row*gr_pal_page->grs_per_column;
 
-  if (stamp_cnt<max_stamps) max_stamps=stamp_cnt;
+  if (gr_pal_page->gr_cnt<gr_pal_page->grs_max) gr_pal_page->grs_max=gr_pal_page->gr_cnt;
 
-  if (stamp_cnt>0)
+  if (gr_pal_page->gr_cnt>0)
   {
-    stamps=CAlloc(max_stamps*sizeof(CDC*));
+    gr_pal_page->grs=CAlloc(gr_pal_page->grs_max*sizeof(CDC*));
     tmpde1=FilesFind(files_find_mask);
     res=0;
     if (tmpde1)
     {
       tmpde2=tmpde1;
-      while (tmpde2 && res<max_stamps)
+      while (tmpde2 && res<gr_pal_page->grs_max)
       {
         tmpdc=GRRead(tmpde2->full_name);
-        stamps[res]=tmpdc;
+        gr_pal_page->grs[res]=tmpdc;
         tmpde2=tmpde2->next;
         res++;
       }
     }
-    if (res>max_stamps) res=max_stamps;
-    max_stamps=res;
+    if (res>gr_pal_page->grs_max) res=gr_pal_page->grs_max;
+    gr_pal_page->grs_max=res;
   }
 }
 
-U0 PaintStampsInit(CDC *dc)
+U0 EnumPaintStamps()
+{
+  EnumPaintGrs;
+}
+
+U0 EnumPaintEmojis()
+{
+  EnumPaintGrs(gr_emoji, "/Misc/Paint/Emojis/*.GR.Z");
+}
+
+U0 PaintGrsInit(CDC *dc, GrPalPage *gr_pal_page=gr_stamp)
 {
   I64 cnt=0,x,y,xoff,yoff,xsize,ysize,sxoff,syoff;
 
 
-  xsize = stamp_max_w+1;
-  ysize = stamp_max_h+1;
+  xsize = gr_pal_page->gr_max_w+1;
+  ysize = gr_pal_page->gr_max_h+1;
 
-  xoff = (GR_WIDTH - xsize * stamps_per_row) / 2;
-  yoff = (GR_HEIGHT - ysize * stamps_per_column) / 2;
+  xoff = (GR_WIDTH - xsize * gr_pal_page->grs_per_row) / 2;
+  yoff = (GR_HEIGHT - ysize * gr_pal_page->grs_per_column) / 2;
 
-  paint_stamps=DCCopy(dc);
-  DCFill(paint_stamps,15);
+  gr_pal_page->grs_paint=DCCopy(dc);
+  DCFill(gr_pal_page->grs_paint,15);
 
 
-  for (y=0; y<stamps_per_column; y++)
-    for (x=0; x<stamps_per_row; x++)
+  for (y=0; y<gr_pal_page->grs_per_column; y++)
+    for (x=0; x<gr_pal_page->grs_per_row; x++)
     {
-      if (cnt==max_stamps) return;
+      if (cnt==gr_pal_page->grs_max) return;
       else
       {
-        sxoff=(stamp_max_w-stamps[cnt]->width)/2;
-        syoff=(stamp_max_h-stamps[cnt]->height)/2;
-        GrBlot(paint_stamps,x*xsize+xoff+sxoff,y*ysize+yoff+syoff,stamps[cnt++]);
+        sxoff=(gr_pal_page->gr_max_w-gr_pal_page->grs[cnt]->width)/2;
+        syoff=(gr_pal_page->gr_max_h-gr_pal_page->grs[cnt]->height)/2;
+        GrBlot(gr_pal_page->grs_paint,x*xsize+xoff+sxoff,y*ysize+yoff+syoff,gr_pal_page->grs[cnt++]);
       }
     }
 }
 
-I64 PaintStampPeek(I64 x, I64 y)
+U0 PaintStampsInit(CDC *dc)
 {
-  I64 res=stamps_per_row * (y/(stamp_max_h+1)) + x/(stamp_max_w+1);
-  if (res>max_stamps-1) return max_stamps-1;
+  PaintGrsInit(dc);
+}
+
+U0 PaintEmojisInit(CDC *dc)
+{
+  PaintGrsInit(dc,gr_emoji);
+}
+
+
+I64 PaintGrPeek(I64 x, I64 y, GrPalPage *gr_pal_page=gr_stamp)
+{
+  I64 res=gr_pal_page->grs_per_row * (y/(gr_pal_page->gr_max_h+1)) + x/(gr_pal_page->gr_max_w+1);
+  if (res>gr_pal_page->grs_max-1) return gr_pal_page->grs_max-1;
   return res;
 }
 
@@ -289,6 +318,7 @@ U0 PaintGlblsInit(CDC *dc)
   paint.last_y = ms.pos.y;
   paint.last_thick = paint.thick;
   paint.stamp=-1;
+  paint.emoji=-1;
   if (cur_filename) PaintLoadImage(cur_filename);
   paint.width=paint.dc->width;
   paint.height=paint.dc->height;
@@ -332,14 +362,21 @@ U0 DrawIt(CTask *, CDC *dc)
   CBGR48 cur_color, tmp_clr;
 
   if (!paint_palette) PaintPalInit(dc);
-  if (!paint_stamps) PaintStampsInit(dc);
+  if (!gr_stamp->grs_paint) PaintStampsInit(dc);
+  if (!gr_emoji->grs_paint) PaintEmojisInit(dc);
+
 
   if (overlay_bottom) overlay_offset=GR_HEIGHT/FONT_HEIGHT-4;
   if (!paint.fb) PaintGlblsInit(dc);
   else if (show_stamps)
   {
     DCFill(dc,WHITE);
-    GrBlot(dc,0,0,paint_stamps);
+    GrBlot(dc,0,0,gr_stamp->grs_paint);
+  }
+  else if (show_emojis)
+  {
+    DCFill(dc,WHITE);
+    GrBlot(dc,0,0,gr_emoji->grs_paint);
   }
   else if (show_palette)
   {
@@ -358,7 +395,11 @@ U0 DrawIt(CTask *, CDC *dc)
   // draw the brush on the screen
   if (paint.stamp>=0)
   {
-    GrBlot(dc,ms.pos.x,ms.pos.y,stamps[paint.stamp]);
+    GrBlot(dc,ms.pos.x,ms.pos.y,gr_stamp->grs[paint.stamp]);
+  }
+  else if (paint.emoji>=0)
+  {
+    GrBlot(dc,ms.pos.x,ms.pos.y,gr_emoji->grs[paint.emoji]);
   }
   else if (circle_brush)
   {
@@ -368,7 +409,7 @@ U0 DrawIt(CTask *, CDC *dc)
   }
   else
   {
-    if (show_stamps)
+    if (show_stamps||show_emojis)
       DrawScrnBrush(dc, ms.pos.x, ms.pos.y, BLACK, paint.thick);
     else
       DrawScrnBrush(dc, ms.pos.x, ms.pos.y, paint.color, paint.thick);
@@ -436,7 +477,11 @@ start:
     case MSG_MS_L_DOWN:
       if (show_stamps)
       {
-        paint.stamp=PaintStampPeek(ms.pos.x, ms.pos.y);
+        paint.stamp=PaintGrPeek(ms.pos.x, ms.pos.y);
+      }
+      else if (show_emojis)
+      {
+        paint.emoji=PaintGrPeek(ms.pos.x, ms.pos.y, gr_emoji);
       }
       else if (show_palette)
         paint.color=PaintPalPeek(ms.pos.x, ms.pos.y);
@@ -452,7 +497,8 @@ start:
         }
         else
         {
-          if (paint.stamp>=0) GrBlot(paint.dc,ms.pos.x,ms.pos.y,stamps[paint.stamp]);
+          if (paint.stamp>=0) GrBlot(paint.dc,ms.pos.x,ms.pos.y,gr_stamp->grs[paint.stamp]);
+          else if (paint.emoji>=0) GrBlot(paint.dc,ms.pos.x,ms.pos.y,gr_emoji->grs[paint.emoji]);
           else DrawImageBrush(arg1, arg2, paint.color, paint.thick);
         }
       }
@@ -460,7 +506,11 @@ start:
     case MSG_MS_L_DOWN_UP:
       if (show_stamps)
       {
-        paint.stamp=PaintStampPeek(ms.pos.x, ms.pos.y);
+        paint.stamp=PaintGrPeek(ms.pos.x, ms.pos.y);
+      }
+      else if (show_emojis)
+      {
+        paint.emoji=PaintGrPeek(ms.pos.x, ms.pos.y, gr_emoji);
       }
       else if (show_palette)
         paint.color=PaintPalPeek(ms.pos.x, ms.pos.y);
@@ -472,7 +522,8 @@ start:
       }
       else
       {
-        if (paint.stamp>=0) GrBlot(paint.dc,ms.pos.x,ms.pos.y,stamps[paint.stamp]);
+        if (paint.stamp>=0) GrBlot(paint.dc,ms.pos.x,ms.pos.y,gr_stamp->grs[paint.stamp]);
+        else if (paint.emoji>=0) GrBlot(paint.dc,ms.pos.x,ms.pos.y,gr_emoji->grs[paint.emoji]);
         else DrawImageBrush(arg1, arg2, paint.color, paint.thick);
       }
     case MSG_MS_L_UP:
@@ -502,6 +553,7 @@ start:
         break;
       case 'p':
         paint.stamp=-1;
+        paint.emoji=-1;
         if (show_palette)
           paint.color = PaintPalPeek(ms.pos.x, ms.pos.y);
         else
@@ -509,10 +561,12 @@ start:
         break;
       case 'P':
         paint.stamp=-1;
+        paint.emoji=-1;
         show_palette=!show_palette;
         break;
       case 't':
         paint.stamp=-1;
+        paint.emoji=-1;
         circle_brush=!circle_brush;
         break;
       case 'o':
@@ -525,10 +579,20 @@ start:
         paint.thick--;
         break;
       case 'x':
-        if (stamp_cnt)
+        show_emojis=FALSE;
+        paint.emoji=-1;
+        if (gr_stamp->gr_cnt)
           show_stamps=!show_stamps;
         else
           show_stamps=FALSE;
+        break;
+      case 'e':
+        show_stamps=FALSE;
+        paint.stamp=-1;
+        if (gr_emoji->gr_cnt)
+          show_emojis=!show_emojis;
+        else
+          show_emojis=FALSE;
         break;
       case 'v':
         paint.color=AdjColorBrightness(paint.color);
@@ -604,6 +668,7 @@ public U0 GrPaint(U8 *filename=NULL, Bool show_help=TRUE)
         "$$GREEN$$o$$FG$$ to toggle top banner overlay.\n"
         "$$GREEN$$p$$FG$$ to peek and set brush to color underneath it.\n"
         "$$GREEN$$P$$FG$$ to toggle the color palette.\n"
+        "$$GREEN$$e$$FG$$ to toggle the emoji palette.\n"
         "$$GREEN$$x$$FG$$ to toggle the stamp palette.\n"
         "$$GREEN$$t$$FG$$ to toggle brush shape.\n"
         "$$GREEN$$R, G, or B$$FG$$ to increase color values.\n"
@@ -627,6 +692,7 @@ public U0 GrPaint(U8 *filename=NULL, Bool show_help=TRUE)
   if (filename) cur_filename=filename;
   else paint.fb=NULL;
   EnumPaintStamps;
+  EnumPaintEmojis;
 
   Fs->draw_it=&DrawIt;
   MainLoop;
@@ -634,10 +700,14 @@ public U0 GrPaint(U8 *filename=NULL, Bool show_help=TRUE)
   Yield;
   AutoComplete(old_ac);
   DocCursor(1);
-  DCDel(paint_stamps);
+  DCDel(gr_stamp->grs_paint);
+  DCDel(gr_emoji->grs_paint);
+
   DCDel(paint_palette);
   paint_palette=NULL;
-  paint_stamps=NULL;
+  gr_stamp->grs_paint=NULL;
+  gr_emoji->grs_paint=NULL;
+
   DCDel(paint.dc);
   paint.dc=NULL;
   paint.fb=NULL;

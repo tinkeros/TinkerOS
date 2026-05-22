@@ -184,3 +184,48 @@ public Bool HeapWalk(CTask *task=NULL)
   else
     return TRUE;
 }
+
+U8 *ReAlloc(U8 *ptr, I64 size=firstsize)
+{
+  U8 *ptr2=MAlloc(size);
+  if (!size && ptr) Free(ptr);
+  if (ptr2)
+  {
+    MemCpy(ptr2,ptr,size);
+    Free(ptr);
+    return ptr2;
+  }
+  return 0;
+}
+
+// Functions that allocate/modify an array require
+// a pointer to it as the first parameter (&array, not array)
+Bool ArrayMAlloc(U8 **ptr, I64 n_elem, I64 s_elem=firstsize)
+{// Alloc array of class ptr elements
+  *ptr=MAlloc(n_elem*s_elem);
+  if (*ptr) return TRUE;
+  return FALSE;
+}
+
+Bool ArrayCAlloc(U8 **ptr, I64 n_elem, I64 s_elem=firstsize)
+{// CAlloc array of class ptr elements
+  *ptr=CAlloc(n_elem*s_elem);
+  if (*ptr) return TRUE;
+  return FALSE;
+}
+
+Bool ArrayReAlloc(U8 **ptr, I64 n_elem, I64 s_elem=firstsize)
+{// ReAlloc array of class ptr elements
+  U8 *n_ptr=ReAlloc(ptr, n_elem*s_elem);
+  if (!n_ptr) return FALSE;
+  *ptr=n_ptr;
+  return TRUE;
+}
+
+// Functions that do NOT allocate/modify an array (or return a new pointer)
+// take just the normal array pointer as the first parameter (array, not &array)
+I64 ArraySize(U8 *ptr, I64 s_elem=firstsize)
+{
+  if (ptr) return MSize(ptr)/s_elem;
+  return 0;
+}

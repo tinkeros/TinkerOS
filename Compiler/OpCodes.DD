@@ -185,6 +185,7 @@ KEYWORD interrupt	44;
 KEYWORD haserrcode	45;
 KEYWORD argpop		46;
 KEYWORD noargpop	47;
+KEYWORD firstsize	48;
 
 ASM_KEYWORD ALIGN	64;
 ASM_KEYWORD ORG		65;

@@ -30,6 +30,7 @@ Cd(__DIR__);;
 #include "ScrnShot"
 GrSetExtPalette;
 
+#include "GrMisc"
 #include "GrEnd"
 
 Cd("..");;

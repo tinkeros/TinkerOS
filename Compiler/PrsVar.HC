@@ -710,6 +710,11 @@ pvl_restart3:
             tmpm->flags|=MLF_LASTCLASS;
             Lex(cc);
           }
+          else if (PrsKeyWord(cc)==KW_FIRSTSIZE)
+          {
+            tmpm->flags|=MLF_FIRSTSIZE;
+            Lex(cc);
+          }
           else
           {
             old_flags2=cc->flags;

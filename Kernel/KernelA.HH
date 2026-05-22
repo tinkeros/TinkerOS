@@ -907,6 +907,7 @@ public class CHashImport:CHashSrcSym
 #define MLF_DOT_DOT_DOT		16
 #define MLF_NO_UNUSED_WARN	32
 #define MLF_STATIC		64
+#define MLF_FIRSTSIZE		128
 
 public class CArrayDim
 {

@@ -284,6 +284,7 @@ class CIntermediateStruct
 #define KW_HASERRCODE	45
 #define KW_ARGPOP	46
 #define KW_NOARGPOP	47
+#define KW_FIRSTSIZE	48
 
 #define AKW_ALIGN	64
 #define AKW_ORG		65

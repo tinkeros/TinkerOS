@@ -35,6 +35,7 @@ Bool ClassRep2(CDoc *doc,U8 *_d,U8 *class_name=lastclass,
     if (tmpc2->type & HTT_INTERNAL_TYPE)
     {
       DocPrint(doc,"$$GREEN$$%-20ts:$$FG$$",ml->str);
+      if (ml->bf_size>0) DocPrint(doc, " BF %d:%d ",ml->bf_offset, ml->bf_size);
       if (stars==1 && (tmpc2->raw_type==RT_I8 || tmpc2->raw_type==RT_U8))
       {
         ptr=*ptr;

@@ -457,7 +457,7 @@ U0 PrsDotDotDot(CCmpCtrl *cc,CHashFun *tmpf,I64 _reg)
 
 U0 PrsVarLst(CCmpCtrl *cc,CHashClass *tmpc,I64 mode,I64 union_base=0)
 {
-  I64 i,k,old_flags=cc->flags,old_flags2,type,_reg;
+  I64 i,k,old_flags=cc->flags,old_flags2,type,_reg,bf_offset=0;
   CHashClass *tmpc1,*tmpc2;
   CHash *tmph;
   CMemberLst *tmpm;
@@ -476,6 +476,8 @@ U0 PrsVarLst(CCmpCtrl *cc,CHashClass *tmpc,I64 mode,I64 union_base=0)
       cc->class_dol_offset=union_base;
     else
       cc->class_dol_offset=tmpc->size;
+
+
     while (cc->token==';')
       Lex(cc);
     while (cc->token=='$$')
@@ -797,6 +799,11 @@ pvl_restart3:
       case '}':
         Lex(cc);
         goto pvl_done;
+      case ':':
+        Lex(cc);
+        tmpm->bf_size=LexExpressionI64(cc);
+        tmpm->bf_offset=bf_offset;
+        bf_offset+=tmpm->bf_size;
       case ';':
         cc->flags=cc->flags&~CCF_DONT_MAKE_RES|
             old_flags&CCF_DONT_MAKE_RES;

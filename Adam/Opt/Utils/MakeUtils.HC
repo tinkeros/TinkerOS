@@ -20,4 +20,5 @@ Cd(__DIR__);;
 #include "SethUtil"
 #include "SysRep"
 #include "SysSurvey"
+#include "BitField"
 Cd("..");;

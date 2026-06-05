@@ -528,9 +528,9 @@ I64 FCmpHash(U8 *filename, U8* remote_name=NULL, Bool silent=TRUE)
   ClientPutChar(CMD_CMP_HASH);
   ClientPutLenStrAndFree(len_str);
   if (remote_name)
-    ClientPutLenAndStr(remote_name);
+    lenlen=ClientPutLenAndStr(remote_name);
   else
-    ClientPutLenAndStr(filename);
+    lenlen=ClientPutLenAndStr(filename);
   ClientPutBlk(data,len);
   Free(data);
   Sleep(ACK_WAIT_DELAY_MS);

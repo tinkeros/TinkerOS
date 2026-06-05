@@ -933,7 +933,7 @@ public class CMemberLst
   CMemberLstMeta *meta;
   U32	use_cnt;
   U16	flags;
-  I8	reg,pad;
+  I8	reg,pad,bf_offset,bf_size;
   I64	offset,size;
   CArrayDim dim;
   U8	*static_data;

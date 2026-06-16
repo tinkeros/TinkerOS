@@ -1,0 +1,32 @@
+$WW,1$$FG,14$$TX+CX,"Tetris"$$FG$
+
+$TX+CX,"Classic Falling Block Puzzle"$
+
+Rotate and place falling pieces to complete solid horizontal lines.
+Completed lines vanish and everything above drops down.  Do not let the stack
+reach the top!
+
+$FG,10$Controls$FG$
+  $FG,11$Left / Right$FG$   - Move piece
+  $FG,11$Up$FG$             - Rotate piece
+  $FG,11$Down$FG$           - Soft drop (fall faster)
+  $FG,11$Space$FG$          - Hard drop (instantly place)
+  $FG,11$P$FG$              - Pause / unpause
+  $FG,11$Enter$FG$          - Restart
+  $FG,11$ESC$FG$            - Quit
+
+$FG,10$Scoring$FG$
+  Clearing 1 line  = 100 pts x Level.
+  Clearing 4 lines = 800 pts x Level.
+
+  Level increases every 10 lines; speed increases with each level.
+
+$FG,10$Pieces$FG$
+  I (cyan), O (yellow), T (purple), S (green), Z (red), J (blue), L (orange)
+
+$FG,10$Tips$FG$
+  Keep the stack flat and low.
+  Try to leave room for the I-piece to score 4 lines at a time.
+  Use the next-piece preview to plan rotations in advance.
+  Plant crosses standing up to destroy surrounding rows and columns.
+

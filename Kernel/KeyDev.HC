@@ -142,7 +142,7 @@ Bool KDInputFilterPutS(U8 *st)
     return FALSE;
 }
 
-U0 CtrlAltDel(I64)
+public U0 CtrlAltDel(I64)
 {
   LBts(sys_ctrl_alt_flags,CTRL_ALT_DEL);
 }

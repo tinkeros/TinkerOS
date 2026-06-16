@@ -570,10 +570,13 @@ public extern CJob *TaskMsg(CTask *srv,CTask *master,
 #help_file "::/Doc/KeyDev"
 public extern U0 CtrlAltCBSet(U8 ch,U0 (*fp_hndlr)(I64 sc),
 	U8 *no_shift_desc=NULL,U8 *shift_desc=NULL,Bool in_irq=FALSE);
+public extern U0 CtrlAltDel(I64);
 public extern U0 KeyDescSet(U8 *fmt,...);
 public extern CKeyDevEntry *KeyDevAdd(Bool (*fp_put_key)(I64 ch,I64 sc),
 	Bool (*fp_puts)(U8 *st),I64 priority,Bool key_descs=FALSE);
 public extern U0 KeyDevRem(CKeyDevEntry *tmpk);
+public extern U0 KbdLEDsSet(I64 sc);
+
 extern CKeyDevGlbls keydev;
 extern CJob sys_macro_head;
 extern CTask *sys_macro_task;

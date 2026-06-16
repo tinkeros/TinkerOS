@@ -30,10 +30,10 @@ static CDC *paint_palette=NULL;
 
 class GrPalPage {
   I64 grs_max,gr_cnt,gr_max_h,gr_max_w,grs_per_row,grs_per_column;
-  CDC *paint_grs, *grs_paint, **grs;
+  I64 grs_per_page,page_cnt,cur_page;
+  CDC *paint_grs,**page_dcs,**grs;
 };
 
-// TODO make multiple pages that you can cycle through
 static GrPalPage *gr_stamp=CAlloc(sizeof(GrPalPage));
 static GrPalPage *gr_emoji=CAlloc(sizeof(GrPalPage));
 
@@ -92,9 +92,15 @@ U0 EnumPaintGrs(GrPalPage *gr_pal_page=gr_stamp,  U8 *files_find_mask="/Misc/Pai
 
   gr_pal_page->grs_per_row=GR_WIDTH/(gr_pal_page->gr_max_w+1);
   gr_pal_page->grs_per_column=GR_HEIGHT/(gr_pal_page->gr_max_h+1);
-  gr_pal_page->grs_max=gr_pal_page->grs_per_row*gr_pal_page->grs_per_column;
+  gr_pal_page->grs_per_page=gr_pal_page->grs_per_row*gr_pal_page->grs_per_column;
 
-  if (gr_pal_page->gr_cnt<gr_pal_page->grs_max) gr_pal_page->grs_max=gr_pal_page->gr_cnt;
+  // Compute how many pages are needed to show all images.
+  if (gr_pal_page->grs_per_page>0 && gr_pal_page->gr_cnt>0)
+    gr_pal_page->page_cnt=(gr_pal_page->gr_cnt+gr_pal_page->grs_per_page-1)/gr_pal_page->grs_per_page;
+  else
+    gr_pal_page->page_cnt=0;
+
+  gr_pal_page->grs_max=gr_pal_page->gr_cnt;
 
   if (gr_pal_page->gr_cnt>0)
   {
@@ -112,8 +118,12 @@ U0 EnumPaintGrs(GrPalPage *gr_pal_page=gr_stamp,  U8 *files_find_mask="/Misc/Pai
         res++;
       }
     }
-    if (res>gr_pal_page->grs_max) res=gr_pal_page->grs_max;
     gr_pal_page->grs_max=res;
+    // Recompute page_cnt in case fewer images were actually loaded.
+    if (gr_pal_page->grs_per_page>0 && gr_pal_page->grs_max>0)
+      gr_pal_page->page_cnt=(gr_pal_page->grs_max+gr_pal_page->grs_per_page-1)/gr_pal_page->grs_per_page;
+    else
+      gr_pal_page->page_cnt=0;
   }
 }
 
@@ -129,8 +139,10 @@ U0 EnumPaintEmojis()
 
 U0 PaintGrsInit(CDC *dc, GrPalPage *gr_pal_page=gr_stamp)
 {
-  I64 cnt=0,x,y,xoff,yoff,xsize,ysize,sxoff,syoff;
+  I64 page,page_start,cnt,x,y,xoff,yoff,xsize,ysize,sxoff,syoff,idx;
+  CDC *page_dc;
 
+  if (gr_pal_page->page_cnt<=0) return;
 
   xsize = gr_pal_page->gr_max_w+1;
   ysize = gr_pal_page->gr_max_h+1;
@@ -138,21 +150,27 @@ U0 PaintGrsInit(CDC *dc, GrPalPage *gr_pal_page=gr_stamp)
   xoff = (GR_WIDTH - xsize * gr_pal_page->grs_per_row) / 2;
   yoff = (GR_HEIGHT - ysize * gr_pal_page->grs_per_column) / 2;
 
-  gr_pal_page->grs_paint=DCCopy(dc);
-  DCFill(gr_pal_page->grs_paint,15);
+  gr_pal_page->page_dcs=CAlloc(gr_pal_page->page_cnt*sizeof(CDC*));
 
+  for (page=0; page<gr_pal_page->page_cnt; page++)
+  {
+    page_dc=DCCopy(dc);
+    DCFill(page_dc,15);
+    gr_pal_page->page_dcs[page]=page_dc;
 
-  for (y=0; y<gr_pal_page->grs_per_column; y++)
-    for (x=0; x<gr_pal_page->grs_per_row; x++)
-    {
-      if (cnt==gr_pal_page->grs_max) return;
-      else
+    page_start=page*gr_pal_page->grs_per_page;
+    cnt=0;
+
+    for (y=0; y<gr_pal_page->grs_per_column && page_start+cnt<gr_pal_page->grs_max; y++)
+      for (x=0; x<gr_pal_page->grs_per_row && page_start+cnt<gr_pal_page->grs_max; x++)
       {
-        sxoff=(gr_pal_page->gr_max_w-gr_pal_page->grs[cnt]->width)/2;
-        syoff=(gr_pal_page->gr_max_h-gr_pal_page->grs[cnt]->height)/2;
-        GrBlot(gr_pal_page->grs_paint,x*xsize+xoff+sxoff,y*ysize+yoff+syoff,gr_pal_page->grs[cnt++]);
+        idx=page_start+cnt;
+        sxoff=(gr_pal_page->gr_max_w-gr_pal_page->grs[idx]->width)/2;
+        syoff=(gr_pal_page->gr_max_h-gr_pal_page->grs[idx]->height)/2;
+        GrBlot(page_dc,x*xsize+xoff+sxoff,y*ysize+yoff+syoff,gr_pal_page->grs[idx]);
+        cnt++;
       }
-    }
+  }
 }
 
 U0 PaintStampsInit(CDC *dc)
@@ -165,10 +183,13 @@ U0 PaintEmojisInit(CDC *dc)
   PaintGrsInit(dc,gr_emoji);
 }
 
-
+// Returns the absolute grs[] index for the item under screen position (x,y)
+// on the currently displayed page.
 I64 PaintGrPeek(I64 x, I64 y, GrPalPage *gr_pal_page=gr_stamp)
 {
-  I64 res=gr_pal_page->grs_per_row * (y/(gr_pal_page->gr_max_h+1)) + x/(gr_pal_page->gr_max_w+1);
+  I64 page_offset, res;
+  page_offset=gr_pal_page->cur_page*gr_pal_page->grs_per_page;
+  res=page_offset+gr_pal_page->grs_per_row*(y/(gr_pal_page->gr_max_h+1))+x/(gr_pal_page->gr_max_w+1);
   if (res>gr_pal_page->grs_max-1) return gr_pal_page->grs_max-1;
   return res;
 }
@@ -362,8 +383,8 @@ U0 DrawIt(CTask *, CDC *dc)
   CBGR48 cur_color, tmp_clr;
 
   if (!paint_palette) PaintPalInit(dc);
-  if (!gr_stamp->grs_paint) PaintStampsInit(dc);
-  if (!gr_emoji->grs_paint) PaintEmojisInit(dc);
+  if (gr_stamp->gr_cnt>0 && !gr_stamp->page_dcs) PaintStampsInit(dc);
+  if (gr_emoji->gr_cnt>0 && !gr_emoji->page_dcs) PaintEmojisInit(dc);
 
 
   if (overlay_bottom) overlay_offset=GR_HEIGHT/FONT_HEIGHT-4;
@@ -371,12 +392,22 @@ U0 DrawIt(CTask *, CDC *dc)
   else if (show_stamps)
   {
     DCFill(dc,WHITE);
-    GrBlot(dc,0,0,gr_stamp->grs_paint);
+    GrBlot(dc,0,0,gr_stamp->page_dcs[gr_stamp->cur_page]);
+    if (gr_stamp->page_cnt>1)
+    {
+      StrPrint(tmp_str,"Page %d/%d  [X: next page]",gr_stamp->cur_page+1,gr_stamp->page_cnt);
+      DrawScrnStr(dc,0,0,tmp_str);
+    }
   }
   else if (show_emojis)
   {
     DCFill(dc,WHITE);
-    GrBlot(dc,0,0,gr_emoji->grs_paint);
+    GrBlot(dc,0,0,gr_emoji->page_dcs[gr_emoji->cur_page]);
+    if (gr_emoji->page_cnt>1)
+    {
+      StrPrint(tmp_str,"Page %d/%d  [E: next page]",gr_emoji->cur_page+1,gr_emoji->page_cnt);
+      DrawScrnStr(dc,0,0,tmp_str);
+    }
   }
   else if (show_palette)
   {
@@ -582,7 +613,19 @@ start:
         show_emojis=FALSE;
         paint.emoji=-1;
         if (gr_stamp->gr_cnt)
-          show_stamps=!show_stamps;
+        {
+          if (!show_stamps)
+          {
+            show_stamps=TRUE;
+            gr_stamp->cur_page=0;
+          }
+          else
+          {
+            gr_stamp->cur_page++;
+            if (gr_stamp->cur_page>=gr_stamp->page_cnt)
+              show_stamps=FALSE;
+          }
+        }
         else
           show_stamps=FALSE;
         break;
@@ -590,7 +633,19 @@ start:
         show_stamps=FALSE;
         paint.stamp=-1;
         if (gr_emoji->gr_cnt)
-          show_emojis=!show_emojis;
+        {
+          if (!show_emojis)
+          {
+            show_emojis=TRUE;
+            gr_emoji->cur_page=0;
+          }
+          else
+          {
+            gr_emoji->cur_page++;
+            if (gr_emoji->cur_page>=gr_emoji->page_cnt)
+              show_emojis=FALSE;
+          }
+        }
         else
           show_emojis=FALSE;
         break;
@@ -661,6 +716,7 @@ U0 MainLoop()
 public U0 GrPaint(U8 *filename=NULL, Bool show_help=TRUE)
 {
   Bool old_ac=AutoComplete(0);
+  I64 p;
   paint.color=BLACK;
   if (show_help)
     PopUpOk("\n"
@@ -668,8 +724,8 @@ public U0 GrPaint(U8 *filename=NULL, Bool show_help=TRUE)
         "$$GREEN$$o$$FG$$ to toggle top banner overlay.\n"
         "$$GREEN$$p$$FG$$ to peek and set brush to color underneath it.\n"
         "$$GREEN$$P$$FG$$ to toggle the color palette.\n"
-        "$$GREEN$$e$$FG$$ to toggle the emoji palette.\n"
-        "$$GREEN$$x$$FG$$ to toggle the stamp palette.\n"
+        "$$GREEN$$e$$FG$$ to cycle emoji pages (press again to advance, closes after last).\n"
+        "$$GREEN$$x$$FG$$ to cycle stamp pages (press again to advance, closes after last).\n"
         "$$GREEN$$t$$FG$$ to toggle brush shape.\n"
         "$$GREEN$$R, G, or B$$FG$$ to increase color values.\n"
         "$$GREEN$$Shift-R, Shift-G, or Shift-B$$FG$$ to decrease.\n"
@@ -700,13 +756,51 @@ public U0 GrPaint(U8 *filename=NULL, Bool show_help=TRUE)
   Yield;
   AutoComplete(old_ac);
   DocCursor(1);
-  DCDel(gr_stamp->grs_paint);
-  DCDel(gr_emoji->grs_paint);
+
+  // Free all page DCs for stamps.
+  if (gr_stamp->page_dcs)
+  {
+    for (p=0; p<gr_stamp->page_cnt; p++)
+      DCDel(gr_stamp->page_dcs[p]);
+    Free(gr_stamp->page_dcs);
+    gr_stamp->page_dcs=NULL;
+  }
+
+  // Free all page DCs for emojis.
+  if (gr_emoji->page_dcs)
+  {
+    for (p=0; p<gr_emoji->page_cnt; p++)
+      DCDel(gr_emoji->page_dcs[p]);
+    Free(gr_emoji->page_dcs);
+    gr_emoji->page_dcs=NULL;
+  }
+
+  // Free loaded image arrays.
+  if (gr_stamp->grs)
+  {
+    for (p=0; p<gr_stamp->grs_max; p++)
+      DCDel(gr_stamp->grs[p]);
+    Free(gr_stamp->grs);
+    gr_stamp->grs=NULL;
+    gr_stamp->grs_max=0;
+    gr_stamp->gr_cnt=0;
+    gr_stamp->page_cnt=0;
+    gr_stamp->cur_page=0;
+  }
+  if (gr_emoji->grs)
+  {
+    for (p=0; p<gr_emoji->grs_max; p++)
+      DCDel(gr_emoji->grs[p]);
+    Free(gr_emoji->grs);
+    gr_emoji->grs=NULL;
+    gr_emoji->grs_max=0;
+    gr_emoji->gr_cnt=0;
+    gr_emoji->page_cnt=0;
+    gr_emoji->cur_page=0;
+  }
 
   DCDel(paint_palette);
   paint_palette=NULL;
-  gr_stamp->grs_paint=NULL;
-  gr_emoji->grs_paint=NULL;
 
   DCDel(paint.dc);
   paint.dc=NULL;

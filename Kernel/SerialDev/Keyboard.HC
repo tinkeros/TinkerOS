@@ -52,7 +52,7 @@ public U0 KbdCmdFlush()
     InU8(KBD_PORT);
 }
 
-U0 KbdLEDsSet(I64 sc)
+public U0 KbdLEDsSet(I64 sc)
 {
   U8 v=0;
   BEqu(&v,0,Bt(&sc,SCf_SCROLL));

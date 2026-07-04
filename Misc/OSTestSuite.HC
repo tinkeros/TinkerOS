@@ -28,7 +28,7 @@ U0 TS(U8 *desc)
            (PROGRESS_DESC_LEN-StrLen(st))>>1,CH_SPACE,st);
   Free(st);
   progress4=ts_i++;
-  progress4_max=192;
+  progress4_max=197;
   progress4_t0=ts_t0;
   *progress4_desc=0;
   RegExe("TempleOS/OSTestSuite");
@@ -213,6 +213,11 @@ U0 DoGrPaint()
   }
 
   Sleep(1000);
+  for (i=0;i<3;i++)
+  {
+    PostMsgWait(task,MSG_KEY_DOWN,'e',0);
+    Sleep(1000);
+  }
   PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SHIFT_ESC,0);
   DeathWait(&task,TRUE);
   DCFill;
@@ -255,7 +260,6 @@ U0 DoWordle()
   DeathWait(&task,TRUE);
 }
 
-
 U0 DoSudoku()
 {
   I64 i;
@@ -267,6 +271,32 @@ U0 DoSudoku()
     PostMsgWait(task,MSG_KEY_DOWN_UP,'H',0);
   }
   Sleep(1000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_ESC,0);
+  DeathWait(&task,TRUE);
+}
+
+U0 DoTetris()
+{
+  I64 i;
+  CTask *task=User;
+  XTalkWait(task,"#include \"::/Apps/Tetris/Tetris\";\n");
+  for (i=0; i<6; i++)
+  {
+    Sleep(250);
+    PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SPACE,0);
+  }
+  Sleep(1500);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_ESC,0);
+  DeathWait(&task,TRUE);
+}
+
+U0 DoScorch()
+{
+  CTask *task=User;
+  XTalkWait(task,"#include \"::/Apps/Scorch/Scorch\";\n");
+  Sleep(1000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SPACE,0);
+  Sleep(3000);
   PostMsgWait(task,MSG_KEY_DOWN_UP,CH_ESC,0);
   DeathWait(&task,TRUE);
 }
@@ -1920,8 +1950,14 @@ U0 OSTestSuite()
   DoGPSPAL;
   TS("Sliders");
   DoSlider;
+  TS("GrDir");
+  TSFile("::/Demo/Graphics/TinkerOS/GrDir",1000);
   TS("GrPaint");
   DoGrPaint;
+  TS("Scorch");
+  DoScorch;
+  TS("Tetris");
+  DoTetris;
   TS("Random color squares");
   DoRandSquares;
   TS("TinkerOS ext. palette");
@@ -2269,6 +2305,10 @@ U0 OSTestSuite()
   TSFile("::/Demo/Asm/BuzzFizz");
   TS("PutDec");
   TSFile("::/Demo/Asm/PutDec");
+  TS("Memory");
+  TSFile("::/Demo/Memory",1000);
+  TS("FirstSize");
+  TSFile("::/Demo/FirstSize",1000);
   task=User;
   TS("Prof");
   XTalkWait(task,"DocMax;Prof;HeapLog(ON);\n");

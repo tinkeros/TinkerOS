@@ -397,21 +397,3 @@ Bool E(U8 *addr,I64 cnt=512,I64 edf_dof_flags=0)
   return res;
 }
 
-Bool Man(U8 *st,I64 edf_dof_flags=0)
-{//Owner's manual for symbol.  Edit src code for symbol.
-  Bool res=FALSE;
-  U8 **st2;
-  CHashSrcSym *tmph;
-  if (IsRaw)
-  {
-    if ((tmph=HashFind(st,Fs->hash_table,HTG_SRC_SYM)) && tmph->src_link)
-      res=EdLiteFileLine(tmph->src_link,edf_dof_flags);
-  }
-  else
-  {
-    st2=MStrPrint("MN:%s",st);
-    res=Ed(st2,edf_dof_flags);
-    Free(st2);
-  }
-  return res;
-}

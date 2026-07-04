@@ -1,9 +1,4 @@
 #help_index "AutoComplete"
-#help_file "::/Doc/AutoComplete"
-public extern CAutoCompleteGlbls ac;
-
-#help_index "AutoComplete/Dictionary"
-public extern CAutoCompleteDictGlbls acd;
 
 #help_index "Bit"
 public extern I64 BCnt(I64 d);
@@ -44,13 +39,7 @@ public extern U8 *Char2KeyName(I64 ch,Bool include_ctrl=TRUE);
 public extern I64 Char2ScanCode(I64 ch,I64 sc_flags=0);
 public extern U8 ScanCode2Char(I64 sc);
 public extern U8 *ScanCode2KeyName(I64 sc);
-public extern F64 Str2F64(U8 *src,U8 **_end_ptr=NULL);
 public extern I64 Str2I64(U8 *st,I64 radix=10,U8 **_end_ptr=NULL);
-public extern U8 *StrScan(U8 *src,U8 *fmt,...);
-public extern I64 ToLower(I64 ch);
-
-#help_index "Char/Conversion;Time/Date/CDate;Date/CDate"
-public extern CDate Str2Date(U8 *src);
 
 #help_index "Char/Flags"
 public extern U0 ScanFlags(U8 *_dst_flags,U8 *lst,U8 *src);
@@ -68,7 +57,6 @@ public extern U8 *ScaleIndent(U8 *src,F64 indent_scale_factor);
 public extern I64 Spaces2Tabs(U8 *dst,U8 *src);
 public _extern _STRCMP I64 StrCmp(U8 *st1,U8 *st2);
 public _extern _STRCPY U0 StrCpy(U8 *dst,U8 *src);
-public extern U8 *StrFind(U8 *needle,U8 *haystack_str,I64 flags=0);
 public extern U8 *StrFirstOcc(U8 *src,U8 *marker);
 public extern U8 *StrFirstRem(U8 *src,U8 *marker,U8 *dst=NULL);
 public _extern _STRICMP I64 StrICmp(U8 *st1,U8 *st2);
@@ -81,8 +69,6 @@ public _extern _STRNICMP I64 StrNICmp(U8 *st1,U8 *st2,I64 n);
 public extern I64 StrOcc(U8 *src, U8 ch);
 public extern U8 *StrPrint(U8 *dst,U8 *fmt,...);
 public extern U8 *StrPrintJoin(U8 *dst,U8 *fmt,I64 argc,I64 *argv);
-public extern U8 *StrReplace(U8 *str, U8 *old, U8 *new,
-                             I64 sff_flags=0, Bool free_str=FALSE);
 public extern U8 *StrUtil(U8 *_src,I64 flags);
 public extern U8 *Tabs2Spaces(U8 *src);
 public extern Bool WildMatch(U8 *test_str,U8 *wild_str);
@@ -200,10 +186,6 @@ public extern U0 G2(U8 *ms=INVALID_PTR,CTask *task=NULL);
 public extern Bool IsDbgMode();
 public extern U0 S(U8 *ms=INVALID_PTR,CTask *task=NULL);
 
-#help_index "Debugging/Debugger;DolDoc/Cmd Line (Typically);"\
-	"Cmd Line (Typically);Help System"
-public extern Bool Man(U8 *st,I64 edf_dof_flags=0);
-
 #help_index "Debugging/Dump"
 public extern U0 CallerRep(U8 **rbp=NULL,CTask *task=NULL);
 public extern U0 D(U8 *addr,I64 cnt=0x80,Bool show_offset=TRUE);
@@ -276,9 +258,6 @@ extern Bool DiscLoad( U8 drv_let);
 extern Bool SwitchToAHCI();
 extern Bool SwitchToIDE();
 public extern Bool AHCIInit(I64 addr=NULL);
-
-#help_index "DolDoc/Clip"
-public extern CDoc *sys_clip_doc;
 
 #help_index "DolDoc/Task;StdOut/Task"
 #help_file "::/Doc/StdOutTask"
@@ -361,9 +340,6 @@ public extern U0 PutFileLink(U8 *filename,U8 *full_name=NULL,
 	I64 line=0,Bool plain_text=FALSE);
 public extern U0 ToFileLine(U8 *_fl_file_line,U8 **_filename,I64 *_linenum);
 public extern U8 *ToggleZorNotZ(U8 *name);
-
-#help_index "File/FileNames;Misc"
-public extern U8 *FileNameTmpTxt();
 
 #help_index "File/Internal"
 public extern U0 DirContextDel(CDirContext *dirc,Bool restore=TRUE);
@@ -449,18 +425,6 @@ public extern CBlkDevGlbls blkdev;
 
 #help_index "Graphics/Color"
 extern U0 (*fp_set_std_palette)();
-public extern U8 *Color2Str(U8 *buf,CColorROPU32 c);
-public extern CColorROPU16 Str2ColorU16(U8 *st);
-public extern CColorROPU32 Str2ColorU32(U8 *st);
-public extern U0 GrZoomInScrn();
-public extern U0 GrScaleZoom(F64 scale);
-public extern U0 GrFixZoomScale();
-public _extern _GR_ROP_EQU_U8_NO_CLIPPING U0 GrRopEquU8NoClipping(I64 ch,
-        U8 *dst,I64 width_internal);
-public _extern _IS_PIX_COVERED0 Bool IsPixCovered0(
-        CTask *task,I64 x,I64 y);//No clipping
-public _extern _DC_BLOT_COLOR4 U0 DCBlotColor4(
-  U8 *dst,I64 *img,I64 *img_cache,I64 cnt);
 
 #help_index "Hash"
 #help_file "::/Doc/Hash"
@@ -504,6 +468,9 @@ public extern I64 HashDefineLstAdd(U8 *dname,I64 type,CHashTable *table);
 
 #help_index "Help System;Debugging/Debugger"
 public extern U0 Help();
+
+#help_index "History"
+public extern U0 (*fp_hist)(U8 *item);
 
 #help_index "Info;File/Cmd Line (Typically);Cmd Line (Typically);Install"
 public extern Bool DrvMounted(I64 drv_let);
@@ -583,7 +550,6 @@ extern CTask *sys_macro_task;
 
 #help_index "Keyboard Devices;Char/Input;StdIn"
 extern U8  *(*fp_getstr2)(I64 flags=0); //GetStr $LK,"Flags",A="MN:GSF_SHIFT_ESC_EXIT"$
-public extern Bool AreYouSure();
 public extern U0	DisableMouse();
 public extern U0	EnableMouse();
 public extern I64 GetChar(I64 *_scan_code=NULL,Bool echo=TRUE,
@@ -610,10 +576,8 @@ extern U0	KbdMsRst();
 public extern U0 KbdModLEDs(U8 v);
 public extern U0 KbdTypeMatic(U8 delay);
 extern Bool	MsHardDrvrInstall();
-public extern I64 PressAKey();
 public extern I64 ScanChar();
 public extern Bool ScanKey(I64 *_ch=NULL,I64 *_scan_code=NULL,Bool echo=FALSE);
-public extern Bool YorN(I64 enter_default=0);
 public extern CKbdStateGlbls	kbd;
 public extern U0 MsPktInject(U8 *pkt);
 public extern U0 KbdPktInject(U8 *pkt);
@@ -627,15 +591,6 @@ public extern U64 FloorU64(U64 num,U64 to);
 public extern F64 Max(F64 n1,F64 n2);
 public extern F64 Min(F64 n1,F64 n2);
 public extern F64 Pow10I64(I64 i);
-public extern F64 Rand(); //With timestamp
-public extern I16 RandI16();
-public extern I32 RandI32();
-public extern I64 RandI64();
-public extern U16 RandU16();
-public extern U32 RandU32();
-public extern U64 RandU64();
-public extern I64 RandRange(I64 min=0, I64 max);
-public extern I64 RandRangeSeed(I64 min=0, I64 max, I64 seed);
 public extern I64 RoundI64(I64 num,I64 to);
 public extern I64 Seed(I64 seed=0,CTask *task=NULL);
 
@@ -690,8 +645,6 @@ public extern I64 ScanMsg(I64 *_arg1=NULL,I64 *_arg2=NULL,
 public extern I64 EndianI64(I64 d);
 public extern U16 EndianU16(U16 d);
 public extern U32 EndianU32(U32 d);
-public extern U0 QSort(U8 *base,I64 num, I64 width,
-	I64 (*fp_compare)(U8 *e1,U8 *e2));
 public extern U0 QSortI64(I64 *base,I64 num,
 	I64 (*fp_compare)(I64 e1,I64 e2));
 public extern F64 sys_os_version;
@@ -789,14 +742,11 @@ public extern CScrnCastGlbls scrncast;
 #help_file "::/Doc/Snd"
 public extern U0 Beep(I8 ona=62,Bool busy=FALSE);
 public extern I8 Freq2Ona(F64 freq);
-public extern I64 GetVolume();
 public extern Bool IsMute();
 public extern Bool Mute(Bool val);
 public extern F64 Ona2Freq(I64 ona);
-public extern U0 ShowVolume();
 public extern U0 Snd(I8 ona=0);
 public extern U0 SndM(I8 ona=0,I64 chan=0);
-public extern U0 SndRst();
 public extern U0 VolumeDown();
 public extern U0 VolumeUp();
 
@@ -834,7 +784,6 @@ public extern CTask *last_init_task;
 public extern CTask *LastTask();
 public extern I64 sys_num_spawned_tasks;
 extern CTask *sys_winmgr_task,*sys_task_being_scrn_updated;
-public extern CGrGlbls gr;
 public extern CWinMgrGlbls winmgr;
 public extern CTask *SetSysFocusTask(CTask *task=Fs, Bool check_raw=TRUE);
 
@@ -888,27 +837,12 @@ public extern U16 mon_start_days2[12];
 public extern I64 SysTimerRead();//18.33333*65536Hz (SYS_TIMER_FREQ)
 
 #help_index "Time/Seconds"
-public extern Bool Blink(F64 Hz=2.5);
 public extern F64 tS(); //From SysTimerFreq.
-
-#help_index "Windows"
-public extern Bool WinInside(I64 x,I64 y,CTask *task=NULL,I64 border=0);
 
 #help_index "Sound"
 public extern CSndGlbls snd;
 
 #help_index "Graphics"
-public _extern _TEXT_CHAR Bool TextChar(CTask *task, Bool allow_border=FALSE,
-                                        I64 x, I64 y, I64 d);
-public _extern _TEXT_LEN_STR Bool TextLenStr(CTask *task, I64 x, I64 y,
-                                             I64 len, I64 attr, U8 *s);
-public _extern _TEXT_LEN_ATTR_STR Bool TextLenAttrStr(CTask *task, I64 x, I64 y,
-                                                      I64 len, U32 *_attr);
-public _extern _TEXT_LEN_ATTR Bool TextLenAttr(CTask *task, I64 x, I64 y,
-                                               I64 len, I64 attr);
-public extern U0 TextPrint(CTask *task, I64 x, I64 y, I64 attr, U8 *fmt, ...);
-public extern U0 TextBorder(CTask *task=NULL,I64 l,I64 r,I64 t,I64 b,I64 attr,Bool solid);
-public extern U0 TextRect(I64 l,I64 r,I64 t,I64 b,I64 d);
 public extern CDC *gr_alt_scrn;
 public extern U0 SetAltScrn(CDC *scrn=NULL);
 
@@ -918,14 +852,6 @@ public extern I64 sc_flags_state;
 public extern U0 KeyStateRst();
 public extern U0 SetScanCodeEntry(U8 idx, U8 scan_code);
 public extern U8 GetScanCodeEntry(U8 idx);
-
-#help_index "Bit field"
-public extern U0 BitFieldSet(U8 *bit_field, U8 offset, U8 size, U8 value);
-public extern U64 BitFieldGet(U8 *bit_field, U8 offset, U8 size);
-
-#help_index "Virtualization"
-public extern U8 *HypeInfo();
-public extern Bool IsHypervisorPresent();
 
 #help_index "Serial Block Device"
 public extern Bool (*fp_serial_blkdev_init)();
@@ -991,12 +917,32 @@ public extern U0 UncachedDevFree(U8 *d);
 #help_index "OPL"
 #help_file "::/Doc/OPL"
 
-#help_index "Misc"
-public extern U64 ThisFunc();
-public extern U8 *ThisFuncName();
-public extern U8 *MemMove(U8 *dst, U8 *src, I64 n);
-public extern U0 MemZero(U8 *dst, I64 cnt);
+#help_index "SDHCI"
+public extern sd_drv *sdhci_drv;
+public extern sd_drv *SdhciInit(I64 vendor_id=NULL, I64 device_id=NULL, Bool setup_drvs=TRUE);
+public extern CBlkDev *SDHCIMount(U8 first_drv_let, I64 type, Bool gpt=FALSE);
+public extern U0 SetupSdhciDrvs();
+public extern I64 MountSDHCIAuto(U8 dv='W');
+public extern U0 SdSetResetClk(I64 freq);
+public extern I64 SdSetBusWidth4();
+public extern U0 SdSetDMA(I64 val);
+public extern U0 SdSetDMAMode(I64 val);
+public extern Bool SdEraseBlks(I64 start_blk, I64 cnt);
+public extern U0 SdStats();
 
 #help_index ""
+public extern I64 boot_gpt_part_num;
+public extern I64 boot_gpt_part_start; 
+public extern I64 boot_gpt_part_end;
+public extern U8 boot_gpt_part_let;
 
+public extern U0 MountGPTPart(I64 num);
+public extern U0 MountGPTRange(I64 first, I64 last);
+
+public extern U8 slow_safer_gfx;
+public extern U0 SYield();
+public extern I64 HPET();
+public extern U8 *FindAcpiTable(U8 *name);
+public extern U8 *FindHPETAddr();
+public extern U32 hype_info[4];
 #define TINKEROS 1

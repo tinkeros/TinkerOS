@@ -54,7 +54,7 @@ U0 FAT32Fmt(U8 drv_let,Bool quick=TRUE)
   CFAT32Boot *br=CAlloc(BLK_SIZE);
   CFAT32FileInfoSect *fis=CAlloc(BLK_SIZE);
   CDrv *dv=Let2Drv(drv_let);
-  I64 i,l,type=Let2BlkDevType(drv_let);
+  I64 i,l,type=Let2BlkDevType(drv_let),tsc=GetTSC;
   U8 *tmp;
   try
   {
@@ -95,7 +95,7 @@ U0 FAT32Fmt(U8 drv_let,Bool quick=TRUE)
     br->file_system_info_sect=1;
     br->log_drv_num=0x80;
     br->ext_signature=0x29;
-    br->serial_num=RandU32;
+    br->serial_num=tsc.u32[0]^tsc.u32[1];
     tmp=MStrPrint("TinkerOS %C",drv_let);
     MemCpy(br->vol_name,tmp,StrLen(tmp)+1);
     Free(tmp);

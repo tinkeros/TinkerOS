@@ -96,12 +96,6 @@ U0 GetOutOfDollar()
   }
 }
 
-I64 PressAKey()
-{//Print "Press a key" and wait for non-zero $LK,"ASCII",A="MN:CH_CTRLA"$ key.
-  "$$BK,1$$PRESS A KEY$$BK,0$$\n";
-  return GetChar(,FALSE);
-}
-
 U0 Help()
 {//Dbg help or master help index file.
   if (IsDbgMode)

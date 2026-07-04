@@ -16,6 +16,7 @@ U0 MakeMyISO(U8 *_out_iso_filename)
   DirMk("/Distro");
   In(STD_DISTRO_DVD_CFG);
   BootDVDIns;
+  CopyTree("/Downloads","/Distro/Downloads");	  //You can leave this out.
   Copy("/*","/Distro");
   Del("/Distro/" KERNEL_BIN_C);
   CopyTree(BOOT_DIR,	"/Distro" BOOT_DIR);
@@ -31,7 +32,6 @@ U0 MakeMyISO(U8 *_out_iso_filename)
   //To save space, optionally delete dictionary.
   Del("/Distro/Adam/AutoComplete/ACDefs.DATA");
   Del("/Distro/Home/MakeHome.*");
-  CopyTree("/Downloads","/Distro/Downloads");	  //You can leave this out.
   DirMk("/Distro/Tmp");
   DirMk("/Distro/Tmp/ScrnShots");
   RedSeaISO(out_iso_filename,"/Distro","/Distro" BOOT_DIR_KERNEL_BIN_C);

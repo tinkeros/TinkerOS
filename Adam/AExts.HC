@@ -1,5 +1,7 @@
 extern U0 ACDDef(I64 n,CTask *parent=NULL);
 extern U0 ACDDefsPut(CDoc *doc=NULL,U8 *st,I64 num=-1);
+extern U0 ACHistoryFillIn(I64 n);
+extern Bool ACIsHistoryMode();
 extern U0 ACDFillin(I64 n);
 extern U0 ACFillIn(I64 n);
 extern U0 ACMan(I64 n,CTask *parent_task=NULL);
@@ -93,6 +95,7 @@ extern I64 SATARep(I64 bd_type=BDT_NULL, I64 *first_hdd=NULL);
 extern U0 SettingsPop(CTask *task=NULL,I64 flags=0);
 extern CTaskSettings *SettingsPush(CTask *task=NULL,I64 flags=0);
 extern U0 TemplateCtrlSlider(CDoc *doc);
+extern U0 ToggleHistory();
 extern Bool View();
 extern U0 ViewAnglesDel(CTask *task=NULL);
 extern CCtrl *ViewAnglesNew(CTask *task=NULL);

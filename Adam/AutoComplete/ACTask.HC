@@ -7,6 +7,78 @@ I64 AC_ctr_win_y = 3;
 I64 AC_ctr_win_x_override = -1;
 I64 AC_ctr_win_y_override = -1;
 
+public U0 PushHistoryItem(U8 *item)
+{//Add item to top of history. Oldest item is discarded when max is reached.
+  I64 i;
+  if (!item || !*item) return;
+
+  // Help avoid history contamination
+  if (StrLen(item)<3) return;
+
+  if (!StrCmp("DocTe",item)) return;
+  if (!StrCmp("ClearHistory;",item)) return;
+  if (!StrCmp("EnableHistory;",item)) return;
+  if (!StrCmp("Adam Task CPU",item)) return;
+  if (!StrCmp("Cd;#include \"Once\";",item)) return;
+
+  for (i=0;i<ac_history_cnt;i++)
+    if (ac_history_items[i])
+      if (!StrCmp(ac_history_items[i],item))
+        return;
+
+  // Drop the oldest (last) entry if already at capacity.
+  if (ac_history_cnt>=AC_HISTORY_MAX)
+  {
+    Free(ac_history_items[AC_HISTORY_MAX-1]);
+    ac_history_cnt=AC_HISTORY_MAX-1;
+  }
+  // Shift everything toward the end to make room at index 0 (newest = top).
+  for (i=ac_history_cnt; i>0; i--)
+    ac_history_items[i]=ac_history_items[i-1];
+  ac_history_items[0]=AStrNew(item);
+  ac_history_cnt++;
+  ac_history_dirty=TRUE;
+}
+
+public U0 EnableHistory()
+{
+  PUSHFD
+  CLI
+  fp_hist=&PushHistoryItem;
+  POPFD
+}
+
+public U0 ClearHistory()
+{
+  I64 i;
+  PUSHFD
+  CLI
+  for (i=0;i<ac_history_cnt;i++)
+    if (ac_history_items[i])
+      Free(ac_history_items[i]);
+  POPFD
+}
+
+public U0 ToggleHistory()
+{//Toggle AutoComplete between normal completion view and history view.
+  ac_show_history=!ac_show_history;
+  ac_history_dirty=TRUE;
+  // Force completions to redraw when switching back to normal mode.
+  Free(ac.cur_word);
+  ac.cur_word=NULL;
+}
+
+public U0 ACHistoryFillIn(I64 n)
+{//Inject history item n (1-indexed) as synthetic keystrokes.
+  if (0<=--n<ac_history_cnt)
+    In(ac_history_items[n]);
+}
+
+public Bool ACIsHistoryMode()
+{//Return TRUE if AutoComplete is displaying history instead of completions.
+  return ac_show_history;
+}
+
 #help_index "AutoComplete/Dictionary"
 U0 ACDDictWordsAdd(U8 *st)
 {
@@ -116,6 +188,25 @@ U0 ACFillInAdd(CHashAC *tmpw)
   }
 }
 
+U0 ACShowHistory()
+{
+  I64 i;
+  if (!ac_history_dirty) return;
+  ACDocRst(AC_def_win_x,AC_def_win_y);
+  "$$PURPLE$$History:\n$$FG$$\n";
+  if (ac_history_cnt==0)
+    "$$DKGRAY$$  (empty)$$FG$$\n";
+  else
+    for (i=0; i<ac_history_cnt; i++)
+    {
+      if (i<10)
+        "$$GREEN$$F%02d$$FG$$ %s\n",i+1,ac_history_items[i];
+      else
+        "     %s\n",ac_history_items[i];
+    }
+  ac_history_dirty=FALSE;
+}
+
 U0 ACPutChoices(CDoc *focus_l,CDocEntry *doc_e,CTask *focus_task,
                 Bool force_refresh)
 {
@@ -191,6 +282,14 @@ U0 ACTaskNormal(I64 sc,I64 last_sc,
 {
   CDoc *doc;
   CDocEntry *doc_e;
+  // History mode: show the history list instead of completions.
+  if (ac_show_history)
+  {
+    ACShowHistory;
+    if (!LBts(&Fs->display_flags,DISPLAYf_SHOW))
+      WinZBufUpdate;
+    return;
+  }
   if ((doc=DocPut(focus_task)) &&
       focus_task!=Fs && Bt(&focus_task->display_flags,DISPLAYf_SHOW))
   {
@@ -247,6 +346,8 @@ U0 ACTaskCtrl(I64 sc,I64 last_sc,
     if (!LBts(&Fs->display_flags,DISPLAYf_SHOW))
       WinZBufUpdate;
   }
+  if (ac_show_history)
+    ac_history_dirty=TRUE;
 }
 
 U0 ACTaskAlt(I64 sc,I64 last_sc,
@@ -261,6 +362,8 @@ U0 ACTaskAlt(I64 sc,I64 last_sc,
   }
   if (!LBts(&Fs->display_flags,DISPLAYf_SHOW))
     WinZBufUpdate;
+  if (ac_show_history)
+    ac_history_dirty=TRUE;
 }
 
 U0 ACTaskEndCB()
@@ -282,6 +385,8 @@ U0 ACTask(I64)
   Fs->win_inhibit=WIG_NO_FOCUS_TASK_DFT;
   Free(ac.cur_word);
   ac.cur_word=NULL;
+  // Ensure history redraws on first cycle if history mode is active.
+  ac_history_dirty=TRUE;
   while (TRUE)
   {
     if (scan_code&(SCF_CTRL|SCF_ALT) ||

@@ -93,3 +93,5 @@ U0 Tmp()
 
 //#exe { if (SNAILNET_NATIVE_DRIVER != NULL) StreamPrint("Netcfg;\n"); }
 Tmp;
+EnableHistory;
+

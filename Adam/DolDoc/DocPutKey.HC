@@ -280,6 +280,8 @@ public U0 DocPutKey(CDoc *doc,I64 ch=0,I64 sc=0)
               {
                 if (sc&SCF_SHIFT)
                   ACMan(sc.u8[0]-SC_F1+1,Fs);
+                else if (ACIsHistoryMode())
+                  ACHistoryFillIn(sc.u8[0]-SC_F1+1);
                 else
                   ACFillIn(sc.u8[0]-SC_F1+1);
               }
@@ -449,7 +451,7 @@ public U0 DocPutKey(CDoc *doc,I64 ch=0,I64 sc=0)
               if (sc&SCF_KEY_DESC)
               {
                 if (sc&SCF_SHIFT)
-                  KeyDescSet("Cmd/Toggle Blink/Scroll");
+                  KeyDescSet("Cmd/Toggle AutoComplete/History");
                 else
                   KeyDescSet("Edit/Paste last command");
               }
@@ -457,8 +459,7 @@ public U0 DocPutKey(CDoc *doc,I64 ch=0,I64 sc=0)
               {
                 if (sc&SCF_SHIFT)
                 {
-                  ToggleBlink;
-                  ToggleScroll;
+                  ToggleHistory;
                 }
                 else
                 {

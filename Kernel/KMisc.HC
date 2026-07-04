@@ -112,13 +112,6 @@ F64 tS()
   return SysTimerRead/ToF64(SYS_TIMER_FREQ);
 }
 
-Bool Blink(F64 Hz=2.5)
-{//Return TRUE, then FALSE, then TRUE at given frequency.
-  if (!Hz) return 0;
-  if (!blink_master_flag) return 0;
-  return ToI64(cnts.jiffies*2*Hz/JIFFY_FREQ)&1;
-}
-
 U0 Busy(I64 uS)
 {//Loosely timed.
   I64 i;
@@ -235,20 +228,6 @@ Bool ScrnCast(Bool val=ON,Bool just_audio=FALSE,U8 *print_fmt="B:/Tmp/%X.GR")
   return old_val;
 }
 
-U0 SndRst()
-{//Fix stuck sound.
-  if (Bt(&sys_semas[SEMA_SND],0))
-  {
-    Sleep(1);
-    if (Bt(&sys_semas[SEMA_SND],0))
-    {
-      Sleep(1);
-      LBtr(&sys_semas[SEMA_SND],0);
-    }
-  }
-  Snd;
-}
-
 U0 Beep(I8 ona=62,Bool busy=FALSE)
 {//Make beep at given ona freq.
   Snd(ona);
@@ -288,13 +267,6 @@ Bool Mute(Bool val)
 Bool IsMute()
 {//Return is-mute flag.
   return Bt(&sys_semas[SEMA_MUTE],0);
-}
-
-I64 GetVolume()
-{// Returns system volume
-  // Override me, if changing from PC speaker
-  if (IsMute) return 0;
-  return 100;
 }
 
 U0 VolumeUp()
@@ -414,37 +386,6 @@ U0 KeyStateRst()
   MemSetI64(key_state,0,16);
   MemSetI64(sc_state,0,32);
   sc_flags_state=0;
-}
-
-public U0 BitFieldSet(U8 *bit_field, U8 offset, U8 size, U8 value)
-{//Sets values in a bit field
-  I64 i;
-  for (i=0; i<size; i++)
-    BEqu(bit_field,offset+i,value>>i);
-}
-
-public U64 BitFieldGet(U8 *bit_field, U8 offset, U8 size)
-{//Gets values from a bit field
-  I64 i;
-  U64 val=0;
-  for (i=0; i<size; i++)
-    BEqu(&val,i,Bt(bit_field,offset+i));
-  return val;
-}
-
-public Bool IsHypervisorPresent()
-{
-  CRAXRBXRCXRDX regs;
-  CPUId(1, &regs);
-  I64 hyper=(regs.rcx>>31)&1;
-  if (hyper)
-    return 1;
-  return 0;
-}
-
-U8 *HypeInfo()
-{
-  return hype_info;
 }
 
 public U0 SYield()

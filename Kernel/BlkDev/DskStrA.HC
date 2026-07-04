@@ -312,11 +312,6 @@ U8 *ToggleZorNotZ(U8 *name)
   return res;
 }
 
-U8 *FileNameTmpTxt()
-{//Make pretty-safe tmp filename in home dir.
-  return MStrPrint("~/SysTmp%X.DD.Z",GetTSC>>8&0xFFFFFFFF);
-}
-
 U8 *DirCur(CTask *task=NULL,CTask *mem_task=NULL)
 {//MAlloc copy of cur dir with drv letter.
   U8 *st;

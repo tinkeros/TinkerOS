@@ -3,16 +3,15 @@
 
 CJob sys_macro_head;
 CTask *sys_macro_task;
-CDoc *sys_clip_doc;
 
 I64 fps_master=30;
 I64 blink_master_flag=1;
 I64 scroll_master_flag=1;
+U0 (*fp_hist)(U8 *item)=NULL;
 
 CTask *adam_task;
 CTask *last_init_task=NULL;
 
-CGrGlbls gr;
 CWinMgrGlbls winmgr= {0,0,0,WINMGR_FPS,0,0,NULL,FALSE,FALSE,FALSE};
 
 I64 sys_num_spawned_tasks;
@@ -24,8 +23,6 @@ CDate local_time_offset;
 F64	*pow10_I64,
     sys_os_version=5.200;
 
-CAutoCompleteDictGlbls acd;
-CAutoCompleteGlbls ac;
 CBlkDevGlbls	blkdev;
 CCntsGlbls	cnts= {1,0,2676302000,2676302,2676302000,FALSE};
 CDbgGlbls	dbg;

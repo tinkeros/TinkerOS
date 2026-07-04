@@ -502,7 +502,7 @@ end:
 I64 Cmp(U8 *filename,U8 *map_name=NULL,U8 *out_name=NULL,U8 mapfile_drv_let=0)
 {//AOT Compile HC or PRJ file a and output BIN file. Returns err_cnt.
   U8 *ptr,*fbuf=NULL,*fbuf2=NULL,*fbuf3=NULL,
-           *patch_table=MAlloc(0x20000);
+           *patch_table=MAlloc(0x30000);
   CAOT *tmpaot;
   I64 i,cnt,size=0,error_cnt=0,warning_cnt=0,aot_U8s=0;
   CBinFile *bfh;

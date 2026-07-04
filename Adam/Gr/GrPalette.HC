@@ -106,3 +106,106 @@ public U0 SetBrightness(U64 p)
     GrPaletteColorSet(i,c);
   }
 }
+
+U8 *Color2Str(U8 *buf,CColorROPU32 c)
+{//$LK,"CColorROPU32",A="MN:CColorROPU32"$ with flags to $LK,"DCLighting",A="MN:DCLighting"$ str.
+  *buf=0;
+  if (c.c0.rop&ROPBF_TWO_SIDED)
+    CatPrint(buf,"TWO|");
+  if (c.c0.rop&ROPBF_HALF_RANGE_COLOR)
+    CatPrint(buf,"HALF|");
+  if (0<=c.c0.color<16)
+    CatPrint(buf,DefineSub(c.c0.color,"ST_COLORS"));
+  else if (c.c0.color==TRANSPARENT)
+    CatPrint(buf,"TRANSPARENT");
+  else
+    CatPrint(buf,"INVALID");
+  if (c&ROPF_DITHER)
+  {
+    CatPrint(buf,"/");
+    if (c.c1.rop&ROPBF_TWO_SIDED)
+      CatPrint(buf,"TWO|");
+    if (c.c1.rop&ROPBF_HALF_RANGE_COLOR)
+      CatPrint(buf,"HALF|");
+    if (0<=c.c1.color<16)
+      CatPrint(buf,DefineSub(c.c1.color,"ST_COLORS"));
+    else if (c.c1.color==TRANSPARENT)
+      CatPrint(buf,"TRANSPARENT");
+    else
+      CatPrint(buf,"INVALID");
+  }
+  return buf;
+}
+
+U8 *str2color_lst="/,)}>";
+
+CColorROPU16 Str2ColorU16(U8 *st)
+{//$LK,"DCLighting",A="MN:DCLighting"$ color str with flags to $LK,"CColorROPU16",A="MN:CColorROPU16"$.
+  CColorROPU16 res=COLOR_INVALID;
+  I64 i;
+  U8 *ptr,*ptr2,*st2;
+  if (!st) return COLOR_INVALID;
+  while (TRUE)
+  {
+    if (!*st||StrOcc(str2color_lst,*st))
+      return res;
+    if (Bt(char_bmp_alpha,*st))
+    {
+      ptr=st;
+      while (Bt(char_bmp_alpha_numeric,*ptr))
+        ptr++;
+      st2=ptr2=MAlloc(ptr-st+1);
+      while (st<ptr)
+        *ptr2++=*st++;
+      *ptr2++=0;
+      if (!StrICmp(st2,"TWO"))
+        res.rop|=ROPBF_TWO_SIDED;
+      else if (!StrICmp(st2,"HALF"))
+        res.rop|=ROPBF_HALF_RANGE_COLOR;
+      else if ((i=DefineMatch(st2,"ST_COLORS",LMF_IGNORE_CASE))>=0)
+        res.color=i;
+      else if (!StrICmp(st2,"TRANSPARENT"))
+        res.color=TRANSPARENT;
+      else
+      {
+        Free(st2);
+        return COLOR_INVALID;
+      }
+      Free(st2);
+    }
+    else if (*st=='+'||*st=='|'||Bt(char_bmp_white_space,*st))
+      st++;
+    else if ('0'<=*st<='9')
+    {
+      i=Str2I64(st,10,&ptr);
+      if (0<=i<=0xFF)
+      {
+        res.color=i;
+        st=ptr;
+      }
+      else
+        return COLOR_INVALID;
+    }
+    else
+      return COLOR_INVALID;
+  }
+}
+
+CColorROPU32 Str2ColorU32(U8 *st)
+{//$LK,"DCLighting",A="MN:DCLighting"$ color str with flags to $LK,"CColorROPU32",A="MN:CColorROPU32"$.
+  U8 *st2;
+  CColorROPU32 res=0;
+  if (!st) return COLOR_INVALID;
+  st2=MAlloc(StrLen(st)+1);
+  StrFirstRem(st,str2color_lst,st2);
+  res.c0=Str2ColorU16(st2);
+  if (*st)
+  {
+    res.c1=Str2ColorU16(st);
+    res|=ROPF_DITHER;
+  }
+  if (res.c0.color==COLOR_INVALID||res.c1.color==COLOR_INVALID)
+    return COLOR_INVALID;
+  else
+    return res;
+}

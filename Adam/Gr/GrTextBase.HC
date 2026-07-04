@@ -27,7 +27,7 @@ asm
   JG	@@05
   TEST	RBX,RBX
   JS	@@05
-  CMP	RBX,TEXT_COLS
+  CMP	RBX,U64 [&text.cols]
   JGE	@@05
   TEST	RAX,RAX		//Check Y
   JS	@@05
@@ -36,7 +36,7 @@ asm
   JG	@@05
   TEST	RAX,RAX
   JS	@@05
-  CMP	RAX,TEXT_ROWS
+  CMP	RAX, U64 [&text.rows]
   JGE	@@05
   JMP	@@15
 
@@ -55,7 +55,7 @@ asm
   JG	@@05
   TEST	RBX,RBX
   JS	@@05
-  CMP	RBX,TEXT_COLS
+  CMP	RBX, U64 [&text.cols]
   JGE	@@05
   MOV	RDX,-1		//Check Y
   CMP	RAX,RDX
@@ -67,10 +67,10 @@ asm
   JG	@@05
   TEST	RAX,RAX
   JS	@@05
-  CMP	RAX,TEXT_ROWS
+  CMP	RAX, U64 [&text.rows]
   JGE	@@05
 
-@@15:	IMUL2	RAX,TEXT_COLS
+@@15:	IMUL2	RAX, U64 [&text.cols]
   ADD	RBX,RAX
   SHL	RBX,2
   ADD	RBX,U64 [&gr.text_base]
@@ -116,7 +116,7 @@ asm
   SUB	RSI,RDI
   XOR	RDI,RDI
 @@15:	INC	RDX
-  SUB	RDX,TEXT_COLS
+  SUB	RDX,U64 [&text.cols]
   JLE	@@20
   SUB	RCX,RDX
 @@20:	CMP	RCX,1
@@ -132,10 +132,10 @@ asm
   JG	@@30
   TEST	RAX,RAX
   JS	@@30
-  CMP	RAX,TEXT_ROWS
+  CMP	RAX, U64 [&text.rows]
   JGE	@@30
 
-  IMUL2	RAX,TEXT_COLS
+  IMUL2	RAX, U64 [&text.cols]
   ADD	RDI,RAX
   SHL	RDI,2
   ADD	RDI,U64 [&gr.text_base]
@@ -194,7 +194,7 @@ asm
   SUB	RSI,RDI
   XOR	RDI,RDI
 @@15:	INC	RDX
-  SUB	RDX,TEXT_COLS
+  SUB	RDX, U64 [&text.cols]
   JLE	@@20
   SUB	RCX,RDX
 @@20:	CMP	RCX,1
@@ -210,10 +210,10 @@ asm
   JG	@@30
   TEST	RAX,RAX
   JS	@@30
-  CMP	RAX,TEXT_ROWS
+  CMP	RAX, U64 [&text.rows]
   JGE	@@30
 
-  IMUL2	RAX,TEXT_COLS
+  IMUL2	RAX, U64 [&text.cols]
   ADD	RDI,RAX
   SHL	RDI,2
   ADD	RDI,U64 [&gr.text_base]
@@ -264,7 +264,7 @@ asm
   ADD	RCX,RDI
   XOR	RDI,RDI
 @@15:	INC	RDX
-  SUB	RDX,TEXT_COLS
+  SUB	RDX, U64 [&text.cols]
   JLE	@@20
   SUB	RCX,RDX
 @@20:	CMP	RCX,1
@@ -280,10 +280,10 @@ asm
   JG	@@35
   TEST	RAX,RAX
   JS	@@35
-  CMP	RAX,TEXT_ROWS
+  CMP	RAX, U64 [&text.rows]
   JGE	@@35
 
-  IMUL2	RAX,TEXT_COLS
+  IMUL2	RAX, U64 [&text.cols]
   ADD	RDI,RAX
   SHL	RDI,2
   ADD	RDI,U64 [&gr.text_base]
@@ -310,7 +310,7 @@ asm
   RET1	40
 }
 public _extern _TEXT_CHAR Bool TextChar(CTask *task,Bool allow_border=FALSE,
-                                        I64 x,I64 y,I64 d); //Plot char. 30fps in Fs->draw_it() callback.
+                       I64 x,I64 y,I64 d); //Plot char. 30fps in Fs->draw_it() callback.
 public _extern _TEXT_LEN_STR Bool TextLenStr(CTask *task,I64 x,I64 y,I64 len,
     I64 attr,U8 *s); //Plot str with len.  30fps in Fs->draw_it() callback.
 public _extern _TEXT_LEN_ATTR_STR Bool TextLenAttrStr(CTask *task,I64 x,I64 y,
@@ -319,7 +319,7 @@ public _extern _TEXT_LEN_ATTR Bool TextLenAttr(CTask *task,I64 x,I64 y,I64 len,
     I64 attr); //Plot attrs with len.  30fps in Fs->draw_it() callback.
 
 public U0 TextPrint(CTask *task,I64 x,I64 y,I64 attr,U8 *fmt,...)
-{//Plot chars. 30fps in Fs->draw_it() callback.
+{//Plot chars. 30fps in Fs->draw_it() callback.
 //You probably want $LK,"GrPrint",A="MN:GrPrint"$() or just $LK,"Print",A="MN:Print"$().
   U8 *buf=StrPrintJoin(NULL,fmt,argc,argv);
   TextLenStr(task,x,y,StrLen(buf),attr<<8,buf);
@@ -355,11 +355,11 @@ public U0 TextRect(I64 l,I64 r,I64 t,I64 b,I64 d)
   I64 y,w;
   if (l>r || t>b) return;
   if (t<0) t=0;
-  if (b>=TEXT_ROWS) b=TEXT_ROWS-1;
+  if (b>=text.rows) b=text.rows-1;
   if (l<0) l=0;
-  if (r>=TEXT_COLS) r=TEXT_COLS-1;
+  if (r>=text.cols) r=text.cols-1;
   if (w=r-l+1)
     for (y=t; y<=b; y++)
-      MemSetU32(gr.text_base(U8 *)+(y*TEXT_COLS+l)*sizeof(U32),d,w);
+      MemSetU32(gr.text_base(U8 *)+(y*text.cols+l)*sizeof(U32),d,w);
 }
 

@@ -216,7 +216,7 @@ Bool ArrayCAlloc(U8 **ptr, I64 n_elem, I64 s_elem=firstsize)
 
 Bool ArrayReAlloc(U8 **ptr, I64 n_elem, I64 s_elem=firstsize)
 {// ReAlloc array of class ptr elements
-  U8 *n_ptr=ReAlloc(ptr, n_elem*s_elem);
+  U8 *n_ptr=ReAlloc(*ptr, n_elem*s_elem);
   if (!n_ptr) return FALSE;
   *ptr=n_ptr;
   return TRUE;

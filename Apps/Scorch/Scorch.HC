@@ -432,7 +432,7 @@ U0 EndRound()
     }
     if (scores[winner] >= WINS_NEEDED)
     {
-      StrPrint(msg, "%s wins the match!", tanks[winner].name);
+      StrPrint(msg, "%s wins!", tanks[winner].name);
       SaveBests;
       state = S_GAMEOVER;
     }

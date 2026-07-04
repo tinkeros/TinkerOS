@@ -308,7 +308,7 @@ U0 TaskDerivedValsUpdate(CTask *task=NULL,Bool update_z_buf=TRUE)
 I64 ExeCmdLine(CCmpCtrl *cc)
 {//Terminal JIT-compile-and-execute loop for CCmpCtrl.
   I64 res=0,type,old_title_src=Fs->title_src;
-  U8 *ptr,*ptr2,*ptr3,*machine_code,*old_task_title=StrNew(Fs->task_title);
+  U8 *last_cmd,*ptr,*ptr2,*ptr3,*machine_code,*old_task_title=StrNew(Fs->task_title);
   F64 t0;
   CDocEntry *doc_e;
   CDoc *doc;
@@ -319,6 +319,16 @@ I64 ExeCmdLine(CCmpCtrl *cc)
   {
     if (Fs->title_src==TTS_CUR_LEX)
     {
+      if (fp_hist) {
+        last_cmd=StrNew(Fs->task_title);
+        if (StrLen(Fs->task_title)>2)
+        {
+          last_cmd[StrLen(Fs->task_title)-2]=0;
+          fp_hist(last_cmd);
+        }
+        Free(last_cmd);
+      }
+
       ptr2=&Fs->task_title;
       ptr3=ptr2+STR_LEN-1;
       if (cc->lex_include_stk->flags & LFSF_DOC)

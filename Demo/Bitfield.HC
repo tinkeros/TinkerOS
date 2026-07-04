@@ -1,3 +1,27 @@
+// TinkerOS has functions to use a I64
+// as a simple 64-bit bitfield as done below.
+
+I64 my_bitfield=0;
+"\n";
+"my_bitfield in binary is %b\n\n",my_bitfield;
+"Setting 4 high bits to 4-bit integer 15.\n\n";
+
+// Use the 4 high bits as an integer
+// whose size is 4 bits with value 15
+
+BitFieldSet(&my_bitfield, 59, 4, 15);
+
+// Show high bits are now 4 ones in
+// binary
+"my_bitfield in binary is now %b\n\n",my_bitfield;
+
+// Get the value of the 4-bit integer
+// stored in the bitfield
+
+"The four high bits as a 4-bit bitfield = %d\n",BitFieldGet(&my_bitfield, 59, 4);
+
+// TinkerOS also supports parsing bitfield info from classes:
+
 class BFtest {
 // bitfield variables should be a union!
 union {
@@ -19,15 +43,20 @@ union {
 };
 
 BFtest bftest;
-// Normal HolyC behaves like default, has no awareness of bitfields
+
+// Normal HolyC behaves just like default, has no awareness of bitfields
 bftest.bit_0=0x55;  // sets full U8 union to 0x55 
 bftest.nibble_0=0xf0f0; // sets full U16 union to 0xff00
 
 "The normal value of bftest.bit_0 is %02x\n",bftest.bit_0;
 "The normal value of bftest.nibble_0 is %04x\n",bftest.nibble_0;
 
-// TinkerOS extension to read/write bitfield values via CBFG/CBFS
+"ClassRep shows bitfield info:\n";
+ClassRep(&bftest);
 
+// TinkerOS extension to read/write bitfield values via CBFG/CBFS
+// Crashes QEMU on some machines, might be a bug, don't use yet
+/*
 "The bitfield value of bit_0 is %d\n",CBFG("bftest.bit_0");
 "The bitfield value of bit_1 is %d\n",CBFG("bftest.bit_1");
 "The bitfield value of bit_2 is %d\n",CBFG("bftest.bit_2");
@@ -60,27 +89,5 @@ CBFS("bftest.nibble_3",3);
 // all nibbles of the full U16
 "The normal value of bftest.bit_0 is now %02x\n",bftest.bit_0;
 "The normal value of bftest.nibble_0 is now %04x\n",bftest.nibble_0;
-
-
-// TinkerOS laso has functions to use a I64
-// as a simple 64-bit bitfield as done below.
-
-I64 my_bitfield=0;
-"\n";
-"my_bitfield in binary is %b\n\n",my_bitfield;
-"Setting 4 high bits to 4-bit integer 15.\n\n";
-
-// Use the 4 high bits as an integer
-// whose size is 4 bits with value 15
-
-BitFieldSet(&my_bitfield, 59, 4, 15);
-
-// Show high bits are now 4 ones in
-// binary
-"my_bitfield in binary is now %b\n\n",my_bitfield;
-
-// Get the value of the 4-bit integer
-// stored in the bitfield
-
-"The four high bits as a 4-bit bitfield = %d\n",BitFieldGet(&my_bitfield, 59, 4);
+*/
 

@@ -1616,54 +1616,6 @@ public class CWinMgrGlbls
   Bool	show_menu,grab_scroll,grab_scroll_closed;
 };
 
-#help_index "AutoComplete"
-#define ACf_INIT_IN_PROGRESS	0
-#define AC_FILLINS_NUM 10
-public class CAutoCompleteGlbls
-{
-  I64	num_words;
-  CHashTable *hash_table;
-  U8	*cur_word;
-  I64	flags;
-  CTask	*task;
-  I64	partial_len,num_fillins,
-	fillin_hits	[AC_FILLINS_NUM+1];
-  CHashAC *fillin_matches[AC_FILLINS_NUM+1];
-};
-
-#help_index "AutoComplete/Dictionary"
-#define ACD_WORD_FILENAME	"/Adam/AutoComplete/ACWords.DATA.Z"
-#define ACD_DEF_FILENAME	"/Adam/AutoComplete/ACDefs.DATA"
-#define ACD_DEF_FILENAME_Z	"/Adam/AutoComplete/ACDefs.DATA.Z"
-
-#define ACD_H1			0
-#define ACD_H1_END		1
-#define ACD_DEF			2
-#define ACD_DEF_END		3
-#define ACD_PRONUNCIATION	4
-#define ACD_PRONUNCIATION_END	5
-#define ACD_POS			6
-#define ACD_POS_END		7
-#define ACD_EXTRA		8
-#define ACD_EXTRA_END		9
-#define ACD_BLK_SIZE		0x4000
-
-#define ACD_END_CHAR		0x00
-#define ACD_WORD_CHAR		0x01
-#define ACD_DEF_CHAR		0x02
-#define ACD_PRONUNCIATION_CHAR	0x03
-#define ACD_POS_CHAR		0x04
-#define ACD_EXTRA_CHAR		0x05
-
-#define ACD_FILLINS_NUM 10
-public class CAutoCompleteDictGlbls
-{
-  U8	*word_lst;
-  I64	word_lst_size,num_words,num_fillins;
-  U8	*fillins[ACD_FILLINS_NUM];
-  Bool	has_words,has_defs;
-};
-
 #help_index "Compiler/Directive"
 //Compiler $LK,"Option",A="MN:Option"$()s
 //You might need to do #exe {Option();}
@@ -4455,51 +4407,6 @@ public class CInsReg
   U8	initials[8]	format "$$DA-P,A=\"Your Initials:%s\"$$\n";
   I64	machine_num	format
 			"$$DA-TRM,A=\"This Machine Num (Choose Any):%d\"$$\n";
-};
-
-public class CGrGlbls
-{
-  I64	pitch,*to_8_bits,*to_8_colors;
-  CDC	*scrn_image,	//Read only.
-	*dc,		//Persistent
-	*dc1,
-	*dc2,		//Updated every refresh
-	*ss,		//Screen Saver
-	*dc_cache,
-	*zoomed_dc;
-  U32	*text_base;	//See $LK,"TextBase Layer",A="HI:TextBase Layer"$. (Similar to 0xB8000 but 32 bits)
-  U16	*win_z_buf;
-
-  #define SPHT_ELEM_CODE	1
-  CHashTable *sprite_hash;
-
-  U16	*win_uncovered_bitmap;
-  I64	highest_uncovered;
-  U16	*vga_text_cache;
-  I64	pan_text_x,pan_text_y;	//[-7,7]
-  U0	(*fp_final_scrn_update)(CDC *dc);//Mouse cursor is handled here.
-  U0	(*fp_wall_paper)(CTask *task);
-  U0	(*fp_draw_ms)(CDC *dc,I64 x,I64 y);
-  U0	(*fp_draw_ss)(CDC *dc,I64 x);
-  U0	(*fp_draw_grab_ms)(CDC *dc,I64 x,I64 y,Bool closed);
-  U8	*empty_sprite; //Gets assigned $LK,"gr.empty_sprite",A="FF:::/Adam/AMouse.HC,empty_sprite"$
-  U8    *screen_cache;
-
-  #define GR_PEN_BRUSHES_NUM 64
-  CDC	*pen_brushes[GR_PEN_BRUSHES_NUM],
-	*collision_pen_brushes[GR_PEN_BRUSHES_NUM],
-	*even_pen_brushes[GR_PEN_BRUSHES_NUM],
-	*odd_pen_brushes[GR_PEN_BRUSHES_NUM];
-  I8	circle_lo[GR_PEN_BRUSHES_NUM][GR_PEN_BRUSHES_NUM],
-	circle_hi[GR_PEN_BRUSHES_NUM][GR_PEN_BRUSHES_NUM];
-
-  #define GR_SCRN_ZOOM_MAX	16
-  I64	scrn_zoom,sx,sy,scrn_saver_cnts,scrn_saver_timeout;
-  CTask *scrn_saver_task;
-
-  //When zoomed, this keeps the mouse centered.
-  Bool	continuous_scroll,
-	hide_row,hide_col,scrn_saver;
 };
 
 #help_index "SDHCI"

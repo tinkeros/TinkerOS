@@ -104,6 +104,8 @@ I64 EdLeftClickLink(CDoc *doc,CDocEntry *doc_e)
     DocUnlock(doc);
     if (doc_e->de_flags & DOCEF_POPUP)
       res=PopUpEd(st);
+    else if (FilesFindMatch(st,"*.ER.TXT"))
+      res=Plain(st);
     else
       res=Ed(st);
     Free(st);

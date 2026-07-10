@@ -4455,5 +4455,7 @@ class sd_drv
   U64 sectors;
   U16 blksize;
   I32 card_type;
+  U8  *dma_buf;
+  I64 dma_buf_size;
 };
 

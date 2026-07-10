@@ -6,4 +6,5 @@ Cd(__DIR__);;
 #include "DskChk"
 #include "FileMgr"
 #include "AFile"
+#include "SD"
 Cd("..");;

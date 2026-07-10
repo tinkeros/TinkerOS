@@ -12,6 +12,8 @@ public CWinMgrGlbls winmgr= {0,0,0,WINMGR_FPS,tS,tS,NULL,FALSE,FALSE,FALSE};
 
 CTaskSettings *last_max_win_pos=NULL;
 
+public Bool ms_xor_invert=TRUE;
+
 F64 cur_tS=tS;
 SetFPS(30);
 winmgr.fps=WINMGR_FPS;
@@ -195,6 +197,11 @@ public U0 WinScrollRestore(CTask *task,CD3I64 *s)
   task->scroll_z=s->z;
 }
 
+U0 ToggleMsXorInvert()
+{
+  ms_xor_invert^=1;
+}
+
 U0 DrawMs(CDC *dc)
 {
   I64 x,y;
@@ -211,12 +218,14 @@ U0 DrawMs(CDC *dc)
     {
       if (gr.fp_draw_ms)
       {
-        if (ms.lb)
-          dc->color=ROP_XOR+LTPURPLE^TRANSPARENT;
+        if (!ms_xor_invert)
+          dc->color=BLACK;
+        else if (ms.lb)
+          dc->color=ROP_XOR+(LTPURPLE^TRANSPARENT)&0xf;
         else if (ms.rb)
-          dc->color=ROP_XOR+LTCYAN^TRANSPARENT;
+          dc->color=ROP_XOR+(LTCYAN^TRANSPARENT)&0xf;
         else
-          dc->color=ROP_XOR+BLACK^TRANSPARENT;
+          dc->color=ROP_XOR+(BLACK^TRANSPARENT)&0xf;
         if (winmgr.grab_scroll && gr.fp_draw_grab_ms)
           (*gr.fp_draw_grab_ms)(dc,x,y,winmgr.grab_scroll_closed);
         else

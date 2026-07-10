@@ -1,5 +1,20 @@
 #help_index "DolDoc/Output;StdOut/DolDoc"
 
+U0 DocPutSBackupRaw(CDoc *doc,U8 *st)
+{//An unclosed $$ cmd makes the scan in DocPutS() run to the end of the
+//buf w/o finding a match, silently dropping everything from the bad $$
+//to EOF.  Stash the untouched raw text so it isn't lost for good.
+  U8 *base,*backup_name;
+  if (!doc->filename.name[0])
+    return;
+  base=StrNew(doc->filename.name);
+  FileExtRem(base);
+  backup_name=MStrPrint("%s.ER.TXT",base);
+  FileWrite(backup_name,st,StrLen(st),0,doc->file_attr);
+  Free(backup_name);
+  Free(base);
+}
+
 CDocEntry *DocPutS(CDoc *doc,U8 *st)
 {//Don't use this.  Use $LK-UL,"DocPrint",A="MN:DocPrint"$().
 //Does not handle partial Doc entries.
@@ -145,6 +160,8 @@ CDocEntry *DocPutS(CDoc *doc,U8 *st)
           }
           *ptr++='$$';
         }
+        else
+          DocPutSBackupRaw(doc,st);
         break;
       default:
         doc_e=DocEntryNewBase(doc,

@@ -116,8 +116,7 @@ U0 FAT32Fmt(U8 drv_let,Bool quick=TRUE)
       if (SdEraseBlks(dv->drv_offset,i)) "OK!\n";
       else "Failed, use different card or smaller SD card partitions!\n";
     }
-    else
-      BlkWriteZero(dv,dv->drv_offset,i);
+    BlkWriteZero(dv,dv->drv_offset,i);
     BlkWrite(dv,fis,dv->drv_offset+br->file_system_info_sect,1);
     BlkWrite(dv,br,dv->drv_offset,1);
     FAT32Init(dv);

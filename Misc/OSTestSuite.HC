@@ -28,7 +28,7 @@ U0 TS(U8 *desc)
            (PROGRESS_DESC_LEN-StrLen(st))>>1,CH_SPACE,st);
   Free(st);
   progress4=ts_i++;
-  progress4_max=197;
+  progress4_max=198;
   progress4_t0=ts_t0;
   *progress4_desc=0;
   RegExe("TempleOS/OSTestSuite");
@@ -297,6 +297,32 @@ U0 DoScorch()
   Sleep(1000);
   PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SPACE,0);
   Sleep(3000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_ESC,0);
+  DeathWait(&task,TRUE);
+}
+
+U0 DoGlowUFOs()
+{
+  I64 i;
+  CTask *task=User;
+  XTalkWait(task,"#include \"::/Apps/GlowUFOs/GlowUFOs\";\n");
+  Sleep(500);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SPACE,0); //Dismiss instructions screen
+  Sleep(1000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,'b',0); //BK boost kills nearby enemies
+  for (i=0; i<10; i++)
+  {
+    PostMsgWait(task,MSG_KEY_DOWN_UP,0,SC_CURSOR_RIGHT);
+    PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SPACE,0);
+    Sleep(100);
+  }
+  for (i=0; i<5; i++)
+  {
+    PostMsgWait(task,MSG_KEY_DOWN_UP,0,SC_CURSOR_UP);
+    PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SPACE,0);
+    Sleep(100);
+  }
+  Sleep(500);
   PostMsgWait(task,MSG_KEY_DOWN_UP,CH_ESC,0);
   DeathWait(&task,TRUE);
 }
@@ -1956,6 +1982,8 @@ U0 OSTestSuite()
   DoGrPaint;
   TS("Scorch");
   DoScorch;
+  TS("GlowUFOs");
+  DoGlowUFOs;
   TS("Tetris");
   DoTetris;
   TS("Random color squares");

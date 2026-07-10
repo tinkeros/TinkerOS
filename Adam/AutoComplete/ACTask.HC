@@ -14,6 +14,7 @@ public U0 PushHistoryItem(U8 *item)
 
   // Help avoid history contamination
   if (StrLen(item)<3) return;
+  if (item[StrLen(item)-1]!=';' && item[StrLen(item)-1]!='"') return;
 
   if (!StrCmp("DocTe",item)) return;
   if (!StrCmp("ClearHistory;",item)) return;

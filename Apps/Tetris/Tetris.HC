@@ -472,7 +472,7 @@ U0 Tetris()
   WinMax;
   DocCursor;
   DocClear;
-  Type("Tetris.DD");
+  Type("Help.DD");
   "\n$FG,14$Press any key to start...$FG$\n";
   arg1 = GetKey;
   DocClear;

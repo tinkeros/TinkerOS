@@ -874,6 +874,10 @@ public extern U0 SetupSdhciDrvs();
 public extern U0 SdSetResetClk(I64 freq);
 public extern Bool SdEraseBlks(I64 start_blk, I64 cnt);
 public extern U0 SdStats();
+public extern U0 SdSetDma(Bool on);
+public extern Bool SdGetDma();
+public extern U0 SdSet4Bit(Bool on);
+public extern Bool SdGet4Bit();
 
 #help_index "Virtual Block Device"
 public extern Bool (*fp_virtual_blkdev_init)();
@@ -917,32 +921,7 @@ public extern U0 UncachedDevFree(U8 *d);
 #help_index "OPL"
 #help_file "::/Doc/OPL"
 
-#help_index "SDHCI"
-public extern sd_drv *sdhci_drv;
-public extern sd_drv *SdhciInit(I64 vendor_id=NULL, I64 device_id=NULL, Bool setup_drvs=TRUE);
-public extern CBlkDev *SDHCIMount(U8 first_drv_let, I64 type, Bool gpt=FALSE);
-public extern U0 SetupSdhciDrvs();
-public extern I64 MountSDHCIAuto(U8 dv='W');
-public extern U0 SdSetResetClk(I64 freq);
-public extern I64 SdSetBusWidth4();
-public extern U0 SdSetDMA(I64 val);
-public extern U0 SdSetDMAMode(I64 val);
-public extern Bool SdEraseBlks(I64 start_blk, I64 cnt);
-public extern U0 SdStats();
-
 #help_index ""
-public extern I64 boot_gpt_part_num;
-public extern I64 boot_gpt_part_start; 
-public extern I64 boot_gpt_part_end;
-public extern U8 boot_gpt_part_let;
-
-public extern U0 MountGPTPart(I64 num);
-public extern U0 MountGPTRange(I64 first, I64 last);
-
 public extern U8 slow_safer_gfx;
 public extern U0 SYield();
-public extern I64 HPET();
-public extern U8 *FindAcpiTable(U8 *name);
-public extern U8 *FindHPETAddr();
-public extern U32 hype_info[4];
 #define TINKEROS 1

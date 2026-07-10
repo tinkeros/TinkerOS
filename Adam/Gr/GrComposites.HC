@@ -356,21 +356,54 @@ mesh_done:
 }
 
 #help_index "Graphics/Misc;Mouse/Ptr"
-public U0 DrawStdMs(CDC *dc,I64 x,I64 y)
-{//This is a callback. See $LK,"::/Demo/Graphics/Grid.HC"$.
-//Called by $LK,"DrawMs",A="MN:DrawMs"$() which is
-  //called by $LK,"WinFinalUpdate",A="MN:WinFinalUpdate"$().
-  I64 old_color=dc->color;
-  dc->color=BLACK;
-  dc->thick=2;
-  dc->flags&=~(DCF_TRANSFORMATION|DCF_SYMMETRY);
-  GrArrow3(dc,x+8,y+8,0,x+1,y+1,0,2.0);
-  GrArrow3(dc,x+9,y+9,0,x+2,y+2,0,1.5);
-  GrArrow3(dc,x+10,y+10,0,x+3,y+3,0,0.75);
-  dc->color=old_color;
+#define MS_ICON_DIM	24
+#define MS_ICON_OFS	8
+
+static I64 ms_type=0;
+
+public U0 ToggleMsType()
+{
+  ms_type=(ms_type+1) % 3;
 }
 
-gr.fp_draw_ms=&DrawStdMs;
+public U0 SetMsType(I64 type)
+{// Sets mouse shape, 0=TempleOS original
+  ms_type=type;
+}
+
+public U0 DrawStdTempleOSMs(CDC *dc,I64 x,I64 y)
+{//This is a callback. See ::/Demo/Graphics/Grid.HC.
+//Called by DrawMs() which is
+  //called by WinFinalUpdate().
+  dc->thick=1;
+  dc->flags&=~(DCF_TRANSFORMATION|DCF_SYMMETRY);
+  GrArrow3(dc,x+8,y+8,0,x,y,0);
+}
+
+public U0 DrawStdTinkerOSMs(CDC *dc,I64 x,I64 y)
+{//This is a callback. See ::/Demo/Graphics/Grid.HC.
+  CDC *mask;
+  I64 i,j;
+  if (!ms_type) DrawStdTempleOSMs(dc,x,y);
+  else {
+    mask=DCNew(MS_ICON_DIM,MS_ICON_DIM);
+    mask->thick=2;
+    mask->color=WHITE;
+    GrArrow3(mask,MS_ICON_OFS+8,MS_ICON_OFS+8,0,MS_ICON_OFS+1,MS_ICON_OFS+1,0,2.0);
+    GrArrow3(mask,MS_ICON_OFS+9,MS_ICON_OFS+9,0,MS_ICON_OFS+2,MS_ICON_OFS+2,0,1.5);
+    if (ms_type==2)
+      GrArrow3(mask,MS_ICON_OFS+10,MS_ICON_OFS+10,0,MS_ICON_OFS+3,MS_ICON_OFS+3,0,0.75);
+    dc->thick=1;
+    dc->flags&=~(DCF_TRANSFORMATION|DCF_SYMMETRY);
+    for (i=0; i<MS_ICON_DIM; i++)
+      for (j=0; j<MS_ICON_DIM; j++)
+        if (GrPeek0(mask,i,j))
+          GrPlot3(dc,x-MS_ICON_OFS+i,y-MS_ICON_OFS+j,0);
+    DCDel(mask);
+  }
+}
+
+gr.fp_draw_ms=&DrawStdTinkerOSMs;
 
 public U0 DrawWaitMs(CDC *dc,I64 x,I64 y)
 {//This is a callback. See $LK,"::/Demo/Graphics/Grid.HC"$.

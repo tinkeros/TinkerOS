@@ -1,0 +1,32 @@
+$WW,1$$FG,14$$TX+CX,"Scorch"$$FG$
+
+$TX+CX,"Scorched Earth Clone"$
+
+Four tanks battle across a procedurally generated landscape.  Adjust barrel angle
+and fire power, then launch your shell and watch the trajectory arc.  First to
+win three rounds wins the match!
+
+$FG,10$Controls$FG$
+  $FG,11$Left / Right$FG$   - Adjust barrel angle
+  $FG,11$Up / Down$FG$      - Increase / decrease fire power
+  $FG,11$Space / Enter$FG$  - Fire!
+  $FG,11$R$FG$              - New game
+  $FG,11$ESC$FG$            - Quit
+
+$FG,10$Players$FG$
+  Up to 4 players take turns.  Each player sets angle and power then fires.
+  Terrain is destroyed by shell impacts -- the landscape changes as the battle
+  progresses.
+
+$FG,10$Objective$FG$
+  Game ends after one player wins 3 rounds.
+  Direct hits score the most damage; near misses still deal splash damage.
+  Score by hitting and killings tanks.
+  Terry is the better AI player and worth more points.
+
+$FG,10$Tips$FG$
+  Account for wind (shown in HUD) when aiming.
+  High power and steep angles can drop shells behind hills.
+  Destroy terrain beneath enemies to hurt them also.
+  Terry regenerates health and aims better as number of players decreases.
+  You lose points for dying, damaging yourself, or not winning a round.

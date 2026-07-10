@@ -11,6 +11,7 @@ U0 (*fp_hist)(U8 *item)=NULL;
 
 CTask *adam_task;
 CTask *last_init_task=NULL;
+CHeapCtrl *sys_dma_heap=NULL;
 
 CWinMgrGlbls winmgr= {0,0,0,WINMGR_FPS,0,0,NULL,FALSE,FALSE,FALSE};
 

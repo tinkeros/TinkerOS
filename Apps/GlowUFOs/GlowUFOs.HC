@@ -1757,7 +1757,7 @@ U0 GlowUFOs()
 
   ms.show=0;
   DocClear;
-  Type("GlowUFOs.DD");
+  Type("Help.DD");
   "\n$FG,12$Press any key to start...$FG$\n";
   ch = GetKey;
   DocClear;

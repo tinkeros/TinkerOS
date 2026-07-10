@@ -1,8 +1,5 @@
 // PCI SD Host Controller Interface (only works with a few models)
-// Was targeting Lenovo Thinkpad T420/T430, but sadly found out PIO
-// mode sucks, in fact the Linux driver sets a quirk that only
-// allows DMA mode.  Seems to work slow, but does work, occasionally
-// the controller needs to be reset which this code handles.
+// Was targeting Lenovo Thinkpad T420/T430
 //
 // Will my controller work?
 //
@@ -11,9 +8,15 @@
 
 #define VERBOSE_SDHCI 0
 #define VERBOSE_SDHCI_FREQ 1
+#define SDHCI_DMA_BUF_BLKS 128
+#define SDHCI_DMA_BOUNDARY (512*1024)
 
 static I64 ok_count=0;
 static I64 rst_count=0;
+static I64 dma_ok_count=0;
+static I64 dma_rst_count=0;
+static Bool sd_dma_enabled=TRUE;
+static Bool sd_4bit_enabled=TRUE;
 static I64 sd_max_xfr_blk_size=128;
 
 public U0 SetSdXfrBlkSize(I64 size)
@@ -24,6 +27,26 @@ public U0 SetSdXfrBlkSize(I64 size)
 public I64 GetSdXfrBlkSize()
 {
   return sd_max_xfr_blk_size;
+}
+
+public U0 SdSetDma(Bool on)
+{
+  sd_dma_enabled=on;
+}
+
+public Bool SdGetDma()
+{
+  return sd_dma_enabled;
+}
+
+public U0 SdSet4Bit(Bool on)
+{
+  sd_4bit_enabled=on;
+}
+
+public Bool SdGet4Bit()
+{
+  return sd_4bit_enabled;
 }
 
 static U32 TimerCalc(U32 t)
@@ -179,7 +202,7 @@ static I64 SdPIOApp(sdhci_regs *regs,I32 cmd,U32 *param)
 }
 
 static I64 SdPIOXfr(sd_drv *drive,I32 cmd,U32 addr,U8 *data,I32 count)
-{// Do SD PIO transfer
+{
   I64 i, isread, ret;
   U16 cbit,tmode;
   U32 param[4];
@@ -241,7 +264,7 @@ static I64 SdPIOXfr(sd_drv *drive,I32 cmd,U32 addr,U8 *data,I32 count)
 }
 
 static I64 SdPIOXfrTry(sd_drv *drive,I32 cmd,U32 addr,U8 *data,I32 count)
-{// Try SD PIO transfer, if fails reset and try again for quirky hardware
+{
   I64 res=SdPIOXfr(drive,cmd,addr,data,count);
   if (!res) 
   {
@@ -259,14 +282,137 @@ static I64 SdPIOXfrTry(sd_drv *drive,I32 cmd,U32 addr,U8 *data,I32 count)
   return SdPIOXfr(drive,cmd,addr,data,count);
 }
 
+static Bool SdDmaBufInit(sd_drv *drive)
+{
+  U32 cap=MInU32D(&drive->regs->cap_lo);
+  I64 len=SDHCI_DMA_BUF_BLKS*512;
+
+  if (!(cap & 1 << 22)) return FALSE;
+
+  drive->dma_buf=CAllocAligned(len,32,sys_dma_heap);
+  if (!drive->dma_buf) return FALSE;
+
+  if (drive->dma_buf+len > 0x100000000)
+  {
+    Free(drive->dma_buf);
+    drive->dma_buf=NULL;
+    return FALSE;
+  }
+
+  drive->dma_buf_size=len;
+
+  return TRUE;
+}
+
+static I64 SdDmaWait(sdhci_regs *regs)
+{
+  I64 ret;
+  U32 next;
+  U16 err;
+
+  while (1)
+  {
+    ret=SdWaitW(&regs->irq_status,2 | 8 | 1 << 15);
+
+    if (ret < 0) return ret;
+
+    if (ret & 1 << 15)
+    {
+      err=MInU16D(&regs->error_irq_status);
+
+      SdRst(regs,0x02 | 0x04);
+
+      MOutU16D(&regs->error_irq_status,err);
+      return -1;
+    }
+
+    if (ret & 2)
+    {
+      MOutU16D(&regs->irq_status,ret & (2 | 8));
+      return 0;
+    }
+
+    if (ret & 8)
+    {
+      next=MInU32D(&regs->sdma_addr)+SDHCI_DMA_BOUNDARY & ~(SDHCI_DMA_BOUNDARY-1);
+      MOutU16D(&regs->irq_status,8);
+      MOutU32D(&regs->sdma_addr,next);
+    }
+  }
+}
+
+static I64 SdDmaXfr(sd_drv *drive,I32 cmd,U32 addr,U8 *data,I32 count)
+{
+  I64 isread,ret,len=count*512;
+  U16 tmode;
+  U32 param[4];
+
+  isread = cmd != 24 << 8 | 0x3a && cmd != 25 << 8 | 0x3a;
+
+  if (!isread)
+    MemCpy(drive->dma_buf,data,len);
+
+  MOutU16D(&drive->regs->block_size,512 | 7 << 12);
+  MOutU16D(&drive->regs->block_count,count);
+  MOutU32D(&drive->regs->sdma_addr,drive->dma_buf);
+
+  tmode = 1;
+
+  if (count > 1)
+    tmode |= 1 << 5 | 1 << 2 | 1 << 1;
+
+  if (isread)
+    tmode |= 1 << 4;
+
+  MOutU16D(&drive->regs->transfer_mode,tmode);
+  if (!(drive->card_type & 2))
+    addr *= 512;
+  param[0] = addr;
+  ret = SdPIO(drive->regs,cmd,param);
+
+  if (ret) return ret;
+
+  ret = SdDmaWait(drive->regs);
+
+  if (ret) return ret;
+
+  if (isread)
+    MemCpy(data,drive->dma_buf,len);
+
+  return 0;
+}
+
+static I64 SdXfrTry(sd_drv *drive,I32 cmd,U32 addr,U8 *data,I32 count)
+{
+  I64 res;
+
+  if (sd_dma_enabled && drive->dma_buf && count*512 <= drive->dma_buf_size)
+  {
+    res = SdDmaXfr(drive,cmd,addr,data,count);
+    if (!res)
+    {
+      dma_ok_count++;
+      return 0;
+    }
+
+    dma_rst_count++;
+    SdRst(drive->regs,6);
+    SdSetFreq(drive->regs,12500);
+  }
+
+  return SdPIOXfrTry(drive,cmd,addr,data,count);
+}
+
 public U0 SdStats()
 {
-  I64 total=ok_count+rst_count;
+  I64 total=ok_count+rst_count+dma_ok_count+dma_rst_count;
   "Total Xfr Request: %d\n",total;
   if (total>0)
   {
-    "OK  percent: %1.2f\n",100.0*ToF64(ok_count)/ToF64(total);
-    "RST percent: %1.2f\n",100.0*ToF64(rst_count)/ToF64(total);
+    "DMA OK  percent: %1.2f\n",100.0*ToF64(dma_ok_count)/ToF64(total);
+    "DMA RST percent: %1.2f\n",100.0*ToF64(dma_rst_count)/ToF64(total);
+    "PIO OK  percent: %1.2f\n",100.0*ToF64(ok_count)/ToF64(total);
+    "PIO RST percent: %1.2f\n",100.0*ToF64(rst_count)/ToF64(total);
   }
 }
 
@@ -289,7 +435,7 @@ static I64 SdBlkRW(sd_drv *drive, I32 iswrite, I64 lba, I64 count, U8 *data)
       cmd = 17 << 8 | 0x3a;
   }
 
-  ret = SdPIOXfrTry(drive,cmd,lba,data,count);
+  ret = SdXfrTry(drive,cmd,lba,data,count);
 
   if (ret) return 0xc;
 
@@ -367,7 +513,6 @@ public Bool SdEraseBlks(I64 start_blk, I64 cnt)
   if (!sdhci_drv) return FALSE;
   if (cnt <= 0) return TRUE;
 
-  // For non-HC cards, addresses are byte-based
   if (!(drive->card_type & 2)) {
     start_blk *= 512;
     end_blk   *= 512;
@@ -405,6 +550,23 @@ public Bool SdEraseBlks(I64 start_blk, I64 cnt)
     if (TimerCheck(end_ts)) return FALSE;
     Sleep(10);
   }
+
+  return TRUE;
+}
+
+static Bool SdSetBusWidth4(sd_drv *drive,U16 rca)
+{
+  U32 param[4];
+
+  if (drive->card_type & 1) return FALSE;
+
+  param[0] = rca << 16;
+  if (SdPIO(drive->regs,55 << 8 | 0x1a,param)) return FALSE;
+
+  param[0] = 2;
+  if (SdPIO(drive->regs,6 << 8 | 0x1a,param)) return FALSE;
+
+  MOutU8D(&drive->regs->host_control,MInU8D(&drive->regs->host_control) | 1 << 1);
 
   return TRUE;
 }
@@ -520,6 +682,8 @@ static I64 SdCardSetup(sd_drv *drive,I32 volt)
 
   if (ret) return ret;
 
+  if (sd_4bit_enabled) SdSetBusWidth4(drive,rca);
+
   ret = SdSetFreq(regs,12500);
 
   if (ret) return ret;
@@ -568,6 +732,8 @@ static sd_drv SdCtrlSetup(sdhci_regs *regs)
     UncachedDevFree(drive);
     goto fail;
   }
+
+  SdDmaBufInit(drive);
 
   return drive;
 

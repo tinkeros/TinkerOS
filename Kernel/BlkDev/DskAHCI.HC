@@ -836,10 +836,10 @@ U0 AHCIPortInit(CBlkDev *bd, CAHCIPort *port, I64 port_num)
   AHCIPortCmdStop(port_num);
   //'1K-byte' align as per SATA spec.
   port->cmd_lst_base = CAllocAligned(sizeof(CPortCmdHeader) * blkdev.cmd_slot_cnt, 1024,
-          adam_task->code_heap);
+          sys_dma_heap);
   port->cmd_lst_base_upper = 0;
   //Alloc where received FISes will be copied to. '256-byte' align as per spec.
-  port->fis_base = CAllocAligned(sizeof(CFisReceived), 256, adam_task->code_heap);
+  port->fis_base = CAllocAligned(sizeof(CFisReceived), 256, sys_dma_heap);
   port->fis_base_upper = 0;
   cmd_header_base = port->cmd_lst_base;
   for (i = 0; i < blkdev.cmd_slot_cnt; i++)
@@ -849,7 +849,7 @@ U0 AHCIPortInit(CBlkDev *bd, CAHCIPort *port, I64 port_num)
     cmd_header->desc = sizeof(CFisH2D) / sizeof(U32);
     //'128-byte' align as per SATA spec, minus 1 since length is 1-based.
     cmd_header->cmd_table_base = CAllocAligned(sizeof(CPortCmdTable) +
-            sizeof(CPrdtEntry) * (AHCI_PRDT_MAX_LEN - 1), 128, adam_task->code_heap);
+            sizeof(CPrdtEntry) * (AHCI_PRDT_MAX_LEN - 1), 128, sys_dma_heap);
     cmd_header->cmd_table_base_upper = 0;
   }
   AHCIPortCmdStart(port_num);

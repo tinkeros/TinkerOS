@@ -774,8 +774,6 @@ U0 GrUpdateScrn()
     GrUpdateTextModeText;
   else
   {
-    DCBlotColor4(gr.dc1->body,gr.dc2->body,gr.dc_cache->body,
-                 gr.dc2->height*gr.dc2->width_internal>>3);
     GrUpdateVGAGraphics;
   }
   lock GrSethHelperSema=0;

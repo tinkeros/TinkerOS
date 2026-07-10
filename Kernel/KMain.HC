@@ -137,6 +137,7 @@ U0 KMain()
   SysGlblsInit;
   Mem32DevInit;
   UncachedAliasAlloc;
+  DmaHeapInit;
   LoadKernel;
   SysGrInit;
   StrCpy(Fs->task_name,"Adam Task CPU00");

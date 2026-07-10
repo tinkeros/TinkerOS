@@ -98,6 +98,8 @@ extern U0 RedSeaFreeFreeLst(CDrv *dv);
 extern U0 RedSeaInit(CDrv *dv);
 extern Bool RedSeaValidate(U8 drv_let);
 extern I64 Seg2Linear(U32 *ptr);
+extern CHeapCtrl *sys_dma_heap;
+extern U0 DmaHeapInit();
 extern CTask *SpawnQue(U0 (*fp_addr)(U8 *data),U8 *data=NULL,
                        U8 *task_name=NULL,I64 target_cpu,CTask *parent=NULL, //NULL means adam
                        I64 stk_size=0,I64 flags=1<<JOBf_ADD_TO_QUE);

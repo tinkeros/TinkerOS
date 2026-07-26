@@ -625,6 +625,7 @@ public _extern _MSIZE2 I64 MSize2(U8 *src); //Internal size
 public extern U0 HeapCtrlDel(CHeapCtrl *hc);
 public extern CHeapCtrl *HeapCtrlInit(CHeapCtrl *hc=NULL,
 	CTask *task=NULL,CBlkPool *bp);
+public extern CHeapCtrl *sys_dma_heap;
 
 #help_index "Memory/Segmentation"
 public extern U8 *Seg2Linear(U32 *ptr);

@@ -9,7 +9,7 @@ public I64 Hypervisor()
     return 'Hyper-V';
   if (!StrCmp(HypeInfo,"prl hyperv"))
     return 'Parallel';
-  if (PciFindByID(0x80ee,0xcafe))
+  if (VBoxPciPresent)
     return 'VBox';
   
   return 0;

@@ -3283,18 +3283,6 @@ class CMemBlk
   U32	mb_signature,pags;
 };
 
-#define MRT_UNUSED	0
-#define MRT_RAM		1
-#define MRT_DEV		2
-
-class CMemRange
-{
-  CMemRange *next,*last;
-  U32	type,flags;
-  U8	*base;
-  I64	size;
-};
-
 #define MEM_PAG_BITS		9
 #define MEM_PAG_SIZE		(1<<MEM_PAG_BITS)
 #define MEM_HEAP_HASH_SIZE	1024
@@ -3346,7 +3334,6 @@ public class CDevGlbls
   U8	*mem64_ptr;
   U8	*uncached_alias; //Alias of lowest 4Gig.
   U8	mp_apic_ids[MP_PROCESSORS_NUM];
-  CMemRange mem32_head;
   CPCIDev pci_head;
 };
 

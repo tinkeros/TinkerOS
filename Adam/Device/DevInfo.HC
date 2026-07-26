@@ -313,21 +313,9 @@ public U0 MemBIOSRep()
 {//Report the memory ranges reported by the BIOS at boot.
   U16	*m01=MEM_E801;
   CMemE820	*m20=MEM_E820;
-  CMemRange	*tmpmr;
   "Standard Addresses\n"
   "000A0000-000BFFFF VGA\n"
-  "FEE00000-FEE00FFF See $$LK,\"APIC\",A=\"MN:LAPIC_BASE\"$$\n\n"
-  "32 Bit Device Mem\n";
-  while (LBts(&sys_semas[SEMA_DEV_MEM],0))
-    Yield;
-  tmpmr=dev.mem32_head.next;
-  while (tmpmr!=&dev.mem32_head)
-  {
-    "%02X:%016X-%016X\n",
-    tmpmr->type,tmpmr->base,tmpmr->base+tmpmr->size-1;
-    tmpmr=tmpmr->next;
-  }
-  LBtr(&sys_semas[SEMA_DEV_MEM],0);
+  "FEE00000-FEE00FFF See $$LK,\"APIC\",A=\"MN:LAPIC_BASE\"$$\n\n";
   "\nBIOS Memory Report 15:E801\n"
   "01:0000000000000000-%016X\n"
   ,0x100000+m01[0]<<10-1;

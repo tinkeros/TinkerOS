@@ -9,7 +9,7 @@ public U8 *ACDDefGet(U8 *st,I64 def_num=1)
   Free(st2);
   if (tmph)
   {
-    if (f=FOpen(ACD_DEF_FILENAME,"r"))
+    if (f=FOpenCached(ACD_DEF_FILENAME,"r"))
     {
       buf=MAlloc(ACD_BLK_SIZE*2+1);
       buf[ACD_BLK_SIZE*2]=0; //terminate
@@ -62,7 +62,7 @@ public U8 *ACDDefsGet(U8 *st)
   Free(st2);
   if (tmph)
   {
-    if (f=FOpen(ACD_DEF_FILENAME,"r"))
+    if (f=FOpenCached(ACD_DEF_FILENAME,"r"))
     {
       buf=MAlloc(ACD_BLK_SIZE*2+1);
       buf[ACD_BLK_SIZE*2]=0; //terminate

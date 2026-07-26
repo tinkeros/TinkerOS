@@ -23,7 +23,7 @@ $FG,2$Merge(\"C:/*\",\"D:/*\",\"+r+d\");$FG$ to check my changes.
 
 * $FG,2$<CTRL-m>$FG$ at the cmd line to access your PersonalMenu.  Place macros there with $FG,2$<CTRL-l>$FG$, or icon-like sprites with $FG,2$<CTRL-r>$FG$.  Use the $FG,2$Pop-Up$FG$ option on macros to $LK,"Spawn",A="MN:Spawn"$() a task to run a file.  It dies when it is finished.  This returns mem to the system.  Be sure to press $FG,2$<CTRL-s>$FG$ to save your macro/menu area after making changes.
 
-* You can use $FG,2$ans$FG$ in cmd line expressions.  It holds the res the last cmd line operation.  You can use the cmd prompt as a calculator by just entering expressions like $FG,2$1+2*3;$FG$.  $FG,2$F64$FG$ ress can be accessed with $FG,2$ansf$FG$.
+* You can use $FG,2$ans$FG$ in cmd line expressions.  It holds the res of the last cmd line operation.  You can use the cmd prompt as a calculator by just entering expressions like $FG,2$1+2*3;$FG$.  $FG,2$F64$FG$ ress can be accessed with $FG,2$ansf$FG$.
 
 * Use the PullDown menu at the top of the scrn to learn commands, or for finding the keyboard controls to games.
 
@@ -119,7 +119,7 @@ $FG,2$Merge(\"C:/*\",\"D:/*\",\"+r+d\");$FG$ to check my changes.
 
 * You can customize the $FG,2$wallpaper$FG$.  See $LK,"::/Demo/Graphics/WallPaperFish.HC"$.
 
-* Your RAM disks will not be reformated when you reboot if the memory location has not changed and it finds the disk intacted.
+* Your RAM disks will not be reformatted when you reboot if the memory location has not changed and it finds the disk intact.
 
 * $FG,2$try{} catch{}$FG$ in a function will cause all vars to be non-reg.
 

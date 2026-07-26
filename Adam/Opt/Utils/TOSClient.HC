@@ -658,7 +658,7 @@ public I64 URLGet(U8 *url, U8 *filename)
     return 0;
   }
   "Fetching %d bytes from URL\n",len;
-  if (data = MReadBlock(len+1,2500))
+  if (data = MReadBlock(len,2500))
   {
     FileWrite(filename,data,len);
     Free(data);
@@ -686,7 +686,7 @@ public U8 *URLGetTextStr(U8 *url)
     return 0;
   }
   "Fetching %d bytes from URL\n",len;
-  if (data = MReadBlock(len+1,2500))
+  if (data = MReadBlock(len,2500))
   {
     return data;
   }
@@ -918,7 +918,7 @@ public U8 *HExecToStr(U8 *cmd)
       "Failed to get result string (or got 0 bytes)!\n";
       return 0;
     }
-    if (data = MReadBlock(len+1))
+    if (data = MReadBlock(len))
     {
       return data;
     }

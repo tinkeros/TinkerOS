@@ -1,10 +1,14 @@
 Cd(__DIR__);
 #include "/Demo/Snd/Midi.HH"
 
-// Pick one, then configure below
+// Pick one, then configure below. Or leave all four commented out to
+// auto-detect: if Demo/Snd/OPL2EmuHDA.HC (which needs Demo/Snd/HDAudio.HC
+// already up and configured -- see that file's header comment) was
+// already loaded before this file, HDA_OPL is picked automatically;
+// otherwise ISA_OPL is the default.
 
 // QEMU / Real ISA Adlib or compatible card
-#define ISA_OPL
+//#define ISA_OPL
 
 // For OPT2LPT or OPL3LPT connected via a parallel port
 // comment ISA_OPL define above, uncomment and setup
@@ -17,6 +21,42 @@ Cd(__DIR__);
 // next two lines (CommRep might help finding port)
 //#define SERIAL_OPL
 //#define SERIAL_OPL_PORT 2
+
+// For a software OPL2 emulator rendered through Intel HD Audio -- no
+// real/emulated Adlib hardware needed. Comment ISA_OPL define above,
+// uncomment this, and load Demo/Snd/OPL2EmuHDA.HC (which needs
+// Demo/Snd/HDAudio.HC already up and configured -- see that file's
+// header comment) before this one. Auto-detected below if you just
+// load OPL2EmuHDA.HC first and leave this commented.
+//#define HDA_OPL
+
+// Anti-click.  Notes snapping on and off at full amplitude -- and, worse,
+// SndM changing note/freq, which key-offs and key-ons the channel back to
+// back -- put a step in the waveform that is heard as a click.  With this
+// defined, every key transition gets a brief linear fade out/in instead of
+// an instant switch.  A retriggered note waits out the fade-out first, so a
+// note change costs up to OPL_CLICK_FADE_mS of latency.  A note-off is only
+// faded when the instrument's release is quicker than the fade, so long
+// release tails are left alone.  Raise the time if clicks remain, lower it
+// if notes sound soft or late; OPLClickFade(mS) changes it at runtime for
+// tuning by ear.  Comment out OPL_CLICK_FADE for instant on/off.
+// Only the software emulator backend (HDA_OPL) does this -- on real OPL
+// hardware the envelope generator is on the chip, where the equivalent
+// knob is the instrument's attack/release rate (SetAttack/SetRelease).
+#define OPL_CLICK_FADE
+#define OPL_CLICK_FADE_mS 4.0
+
+// Nothing picked above -- auto-detect. OPL2EmuInit is defined by
+// OPL2EmuHDA.HC, so its presence in scope means that file was loaded
+// first; default to the software HDA_OPL backend in that case, else
+// fall back to real/emulated ISA hardware.
+#if !defined(ISA_OPL) && !defined(OPL2LPT) && !defined(SERIAL_OPL) && !defined(HDA_OPL)
+#ifdef OPL2EmuInit
+#define HDA_OPL 1
+#else
+#define ISA_OPL
+#endif
+#endif
 
 // Common OPL IO ports:
 // QEMU/ISA sound card 0x388
@@ -71,6 +111,10 @@ static I64 old_block[9];
 // only first channel goes to screencast
 // all are kept track of here
 static I64 playing_onas[9];
+
+// "ST_INSTRUMENTS" define number of the last instrument loaded.
+// -1 when the instrument didn't come from the define lst.
+static I64 opl_inst_num=-1;
 
 #help_index "OPL"
 
@@ -163,6 +207,21 @@ U0 OPLReplay()
 {//CommPutChar(SERIAL_OPL_PORT,137);
   WriteOPL(0,0,2);
   PortNop;
+}
+#endif
+
+#ifdef HDA_OPL
+public U0 WriteOPL(I64 r, U8 data, I64 port=0)
+{//No real hardware -- decode straight into the software synth core in
+ //Demo/Snd/OPL2EmuHDA.HC, rendered through HD Audio's fp_snd_fill_buf.
+  no_warn port;
+  OPLEmuWriteReg(r,data);
+}
+
+public U0 OPLClickFade(F64 mS)
+{//Set the anti-click fade length in milliseconds. 0.0 turns it off.
+  if (mS<0.0) mS=0.0;
+  opl2_fade_mS=mS;
 }
 #endif
 
@@ -286,6 +345,39 @@ U0 SetInst(U8 *instrument, I64 chan=0)
   }
 }
 
+public I64 GetInstNum()
+{//"ST_INSTRUMENTS" define num of the current instrument. -1 if not a define.
+  return opl_inst_num;
+}
+
+public U8 *GetInstName()
+{//"ST_INSTRUMENTS" name of the current instrument.  "Unknown" if not a define.
+ //Points at the define lst or a literal.  Don't Free it.
+  U8 *res=NULL;
+  if (opl_inst_num>=0)
+    res=DefineSub(opl_inst_num,"ST_INSTRUMENTS");
+  if (!res)
+    res="Unknown";
+  return res;
+}
+
+public U0 SetInstNum(I64 num, I64 chan=0)
+{//Load a standard instrument by "ST_INSTRUMENTS" define num.
+ //Out of range just marks the instrument unknown, loading nothing.
+  if (0<=num<127)
+  {
+    opl_inst_num=num;
+    SetInst(instruments[num],chan);
+  }
+  else
+    opl_inst_num=-1;
+}
+
+public U0 SetInstName(U8 *name, I64 chan=0)
+{//Load a standard instrument by its "ST_INSTRUMENTS" name.
+  SetInstNum(DefineMatch(name,"ST_INSTRUMENTS",LMF_IGNORE_CASE),chan);
+}
+
 U8 SetFnum(I64 val, I64 chan=0)
 {
   I64 r,c=ClampI64(chan,0,8);
@@ -370,6 +462,7 @@ public U0 U64Inst(U64 inst, I64 chan=0)
     inst/=opl_inst_mod2[i];
   }
   SetInst(opl2inst,chan);
+  SetInstNum(-1);   //not one of the "ST_INSTRUMENTS" defines
 }
 
 public U64 RandInst(I64 chan=0)
@@ -387,7 +480,7 @@ public I64 PickInst(I64 chan=0)
   I64 ins;
   ins=PopUpPickDefineSub("ST_INSTRUMENTS");
   if (0<=ins<=127)
-    SetInst(instruments[ins],chan);
+    SetInstNum(ins,chan);
   return ins;
 }
 
@@ -471,7 +564,7 @@ public U0 OPLInit()
   OPLReset;
   for (i=0;i<1;i++)
   {
-    SetInst(SQUARWAV,i);
+    SetInstName("SQUARWAV",i);
     SetAttack(0xf,i);
     SetDecay(0xf,i);
     SetSustain(0,i);
@@ -550,6 +643,20 @@ AdamLog("Assuming OPL serial device is connected to com port %d\n",SERIAL_OPL_PO
 
 HijackSndSystem;
 
+#endif
+
+#ifdef HDA_OPL
+if (snd_dev==SD_HD_AUDIO) {
+#ifdef OPL_CLICK_FADE
+  OPLClickFade(OPL_CLICK_FADE_mS);
+#else
+  OPLClickFade(0.0);
+#endif
+  OPL2EmuInit;      //must run before HijackSndSystem's OPLInit->OPLReset
+  HijackSndSystem;
+  AdamLog("OPL2 module loaded.\n");
+} else
+  "OPL2: needs HD Audio.\n";
 #endif
 
 #help_index ""

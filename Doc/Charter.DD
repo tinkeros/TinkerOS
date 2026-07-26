@@ -2,13 +2,13 @@ $FG,5$$WW,1$$TX+CX,"TinkerOS Charter"$$FG$
 
 Why make TinkerOS?  TempleOS is a unique operating system, one man's attempt to make something pleasing to God.  This OS really shines when run baremetal on a real machine, but sadly the number of machines that can run it is growing increasingly small.  TinkerOS attempts to maintain a backwards compatible TempleOS like experience with the ability to run it on more machines.
 
-* TinkerOS is not a temple to God.  If you want to communitcate with God, pray, do not expect Him to respond to you by spamming a random number generator for random words.
+* TinkerOS is not a temple to God.  If you want to communicate with God, pray, do not expect Him to respond to you by spamming a random number generator for random words.
 
 * The TinkerOS default is $FG,2$640x480 16 color$FG$ graphics out of respect for Terry and maintaining a TempleOS like look and feel.  You are free to use higher resolutions and 254 different colors if you want.
 
-* Single-voice 8-bit signed MIDI-like samples for sound (because that is what TempleOS apps expect to have available).
+* Single-voice 8-bit signed MIDI-like samples for sound (because that is what TempleOS apps expect to have available).  This has been extended for demonstration purposes, however the default is still single-voice 8-bit.
 
-* TinkerOS attempts to be backwards compatible with TempleOS to the maximum extent possible.  It can compile the TempleOS compiler and kernel, can install TempleOS and the TempleOS userspace (Adam) can even run on top of a modifed TinkerOS kernel (this is how the USB boot version of TempleOS works).
+* TinkerOS attempts to be backwards compatible with TempleOS to the maximum extent possible.  It can compile the TempleOS compiler and kernel, can install TempleOS and the TempleOS userspace (Adam) can even run on top of a modified TinkerOS kernel (this is how the USB boot version of TempleOS works).
 
 * TinkerOS shall be able to run the vast majority of the TempleOS OS Test Suite.
 
@@ -18,13 +18,13 @@ Why make TinkerOS?  TempleOS is a unique operating system, one man's attempt to 
 
 * The vision is the same usage model and niche as the Commodore 64 -- a simple machine where programming was the goal, not just a means to an end.  However, it is modern, 64-bit and $FG,2$multi-cored$FG$.  It is special purpose, not general purpose, so some things it will not do.  Also, it's a kayak, not a Titanic. The priority is $FG,2$user developers$FG$, not $FG,2$3rd party developers$FG$.
 
-* Low line count is the highest good, so it is easy to learn the whole thing.  Users should see the light at the end of the tunnel.  One file system, for example, is better than many file systems.
+* Low line count is the highest good, so it is easy to learn the whole thing.  Variable and function names should short and not overly verbose.  No excessive code comments (the code is the documentation).
 
-* There is no line limit and integration of apps is allowed.
+* There is no line limit and integration of apps is allowed provided all code is public domain, no GPL, no MIT, etc.
  
-* Minimal abstraction is a goal.  Sheep are fools.  They always respect a design that is more complicated than another.  Any genius can make it complicated.  Like in physics, it takes a supra-genius to make it simple.
+* Minimal abstraction is a goal.  Any genius can make it complicated.  Like in physics, it takes a supra-genius to make it simple.
 
-* It is for one platformc -- $FG,4$$TX,"x86_64",HTML="http://en.wikipedia.org/wiki/Amd64#AMD64"$$FG$ desktop PC compatibles, more like super-computers than battery efficient wimpy mobiles.
+* It is for one platform -- $FG,4$$TX,"x86_64",HTML="http://en.wikipedia.org/wiki/Amd64#AMD64"$$FG$ desktop PC compatibles, more like super-computers than battery efficient wimpy mobiles.
 
 * $FG,2$Ring-0-only$FG$.  Everything runs in kernel mode, including user applications.
 

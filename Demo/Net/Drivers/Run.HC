@@ -6,6 +6,7 @@
 
 #define PCIV_E1000      0x8086
 #define PCID_82545EM    0x100F
+#define PCID_82579LM    0x1502  // Intel 82579LM Gigabit Network Connection (e1000e, PCH-based)
 
 
 #define PCIV_VIRTIO     0x1AF4
@@ -36,6 +37,11 @@ U0 NetDriverInit()
     "Found Virtio network card\n";
     found=TRUE;
   }
+  if (PciFindByID(PCIV_E1000,0, PCIC_NETWORK,NULL, &b, &d, &f))
+  {
+    "Found E1000 network card\n";
+    found=TRUE;
+  }
   if (found)
   {
     PciGetDevInfo(&net_driver_pci,b,d,f);
@@ -55,6 +61,7 @@ U0 NetDriverInit()
       switch (net_driver_pci.device_id)
       {
       case PCID_82545EM:
+      case PCID_82579LM:
         NetDriverInclude("E1000");
         found = TRUE;
         break;

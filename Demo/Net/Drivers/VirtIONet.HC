@@ -95,8 +95,8 @@ I64 rx_buffer_ptr = 0;
 I64 tx_buffer_ptr = 0;
 I64 rx_buffer_cnt = 255;
 I64 tx_buffer_cnt = 256;
-U64 rx_buffers = MAlloc(ETHERNET_FRAME_SIZE * rx_buffer_cnt);
-U64 tx_buffers = MAlloc(ETHERNET_FRAME_SIZE * tx_buffer_cnt);
+U64 rx_buffers = MAlloc(ETHERNET_FRAME_SIZE * rx_buffer_cnt, sys_dma_heap);
+U64 tx_buffers = MAlloc(ETHERNET_FRAME_SIZE * tx_buffer_cnt, sys_dma_heap);
 
 class @virtio_net
 {
@@ -127,7 +127,7 @@ class @virtio_net_header
 @virtio_net VirtioNet;
 MemSet(&VirtioNet, 0, sizeof(@virtio_net));
 
-@virtio_net_header *def_pkt_hdr = CAlloc(sizeof(@virtio_net_header));
+@virtio_net_header *def_pkt_hdr = CAlloc(sizeof(@virtio_net_header), sys_dma_heap);
 
 static I64 @virtio_net_alloc_tx_packet(U8 **buffer_out, I64 length/*, I64 flags*/)
 {// FIXME: validate length
@@ -230,20 +230,20 @@ I64 @virtio_net_init()
   // Set up receive queue
   OutU16(VirtioNet.port + VIRTIO_PCI_QUEUE_SEL, 0);
   VirtioNet.rq_size = InU16(VirtioNet.port + VIRTIO_PCI_QUEUE_SIZE); // 256
-  VirtioNet.rq = CAllocAligned(sizeof(@virtio_queue), 4096, Fs->code_heap);
+  VirtioNet.rq = CAllocAligned(sizeof(@virtio_queue), 4096, sys_dma_heap);
   OutU32(VirtioNet.port + VIRTIO_PCI_QUEUE_PFN, VirtioNet.rq / 4096);
   // Set up send queue
   OutU16(VirtioNet.port + VIRTIO_PCI_QUEUE_SEL, 1);
   VirtioNet.sq_size = InU16(VirtioNet.port + VIRTIO_PCI_QUEUE_SIZE); // 256
-  VirtioNet.sq = CAllocAligned(sizeof(@virtio_queue), 4096, Fs->code_heap);
+  VirtioNet.sq = CAllocAligned(sizeof(@virtio_queue), 4096, sys_dma_heap);
   OutU32(VirtioNet.port + VIRTIO_PCI_QUEUE_PFN, VirtioNet.sq / 4096);
   for (i = 0; i < 128; i++)
   {
-    VirtioNet.rq->buffers[i * 2].address = CAlloc(sizeof(@virtio_net_header));
+    VirtioNet.rq->buffers[i * 2].address = CAlloc(sizeof(@virtio_net_header), sys_dma_heap);
     VirtioNet.rq->buffers[i * 2].length = sizeof(@virtio_net_header);
     VirtioNet.rq->buffers[i * 2].flags = VRING_DESC_F_NEXT | VRING_DESC_F_WRITE;
     VirtioNet.rq->buffers[i * 2].next = (i * 2) + 1;
-    VirtioNet.rq->buffers[(i * 2) + 1].address = CAlloc(ETHERNET_FRAME_SIZE);
+    VirtioNet.rq->buffers[(i * 2) + 1].address = CAlloc(ETHERNET_FRAME_SIZE, sys_dma_heap);
     VirtioNet.rq->buffers[(i * 2) + 1].length = ETHERNET_FRAME_SIZE;
     VirtioNet.rq->buffers[(i * 2) + 1].flags = VRING_DESC_F_WRITE;
     VirtioNet.rq->buffers[(i * 2) + 1].next = 0;

@@ -121,12 +121,45 @@ public U64 BitFieldGet(U8 *bit_field, U8 offset, U8 size)
 
 #help_index "Virtualization"
 
+#define VBOX_PCI_VENDOR_ID	0x80EE
+#define VBOX_PCI_VMMDEV_ID	0xCAFE
+#define VBOX_PCI_GFX_ID		0xBEEF
+
+static I64 vbox_pci_present=-1;	//-1 until probed
+
+public Bool VBoxPciPresent()
+{//Is a VirtualBox PCI device on bus 0? Probed once, then remembered.
+ //Scanned directly instead of with PciFindByID because sys_pci_busses is
+ //zero on a UEFI boot, and both VBox devices always sit on bus 0.
+  I64 d,f,device;
+  if (vbox_pci_present>=0)
+    return vbox_pci_present;
+  vbox_pci_present=0;
+  for (d=0; d<32; d++)
+    for (f=0; f<8; f++)
+      if (PCIReadU16(0,d,f,PCIR_VENDOR_ID)==VBOX_PCI_VENDOR_ID)
+      {
+        device=PCIReadU16(0,d,f,PCIR_DEVICE_ID);
+        if (device==VBOX_PCI_VMMDEV_ID || device==VBOX_PCI_GFX_ID)
+        {
+          vbox_pci_present=1;
+          return TRUE;
+        }
+      }
+  return FALSE;
+}
+
 public Bool IsHypervisorPresent()
 {
   CRAXRBXRCXRDX regs;
+  I64 hyper;
   CPUId(1, &regs);
-  I64 hyper=regs.rcx>>31;
+  hyper=regs.rcx>>31;
   if (hyper&1)
+    return 1;
+  //VirtualBox leaves the CPUID hypervisor bit clear, so fall back to
+  //looking for its PCI devices.
+  if (VBoxPciPresent)
     return 1;
   return 0;
 }
@@ -212,6 +245,42 @@ Bool Man(U8 *st,I64 edf_dof_flags=0)
 U8 *FileNameTmpTxt()
 {//Make pretty-safe tmp filename in home dir.
   return MStrPrint("~/SysTmp%X.DD.Z",GetTSC>>8&0xFFFFFFFF);
+}
+
+U8 *FileReadCached(U8 *filename,I64 *_size=NULL,I64 *_attr=NULL)
+{//FileRead(), but prefers a copy on RAM disk B: when booted from SD
+ //(boot drv letter 'W' or later, see MountSDAuto) and B: is mounted,
+ //since B: is much faster than the SD card.
+  U8 *b_name,*res=NULL;
+  if (filename[1]!=':' && blkdev.boot_drv_let>='W' && DrvMounted('B'))
+  {
+    b_name=MStrPrint("B:%s",filename);
+    if (FileFind(b_name))
+      res=FileRead(b_name,_size,_attr);
+    Free(b_name);
+  }
+  if (!res)
+    res=FileRead(filename,_size,_attr);
+  return res;
+}
+
+CFile *FOpenCached(U8 *filename,U8 *flags,I64 cnt=0)
+{//FOpen(), but prefers a copy on RAM disk B: when booted from SD
+ //(boot drv letter 'W' or later, see MountSDAuto) and B: is mounted,
+ //since B: is much faster than the SD card (read mode only)
+  U8 *b_name;
+  CFile *f=NULL;
+  if (!StrOcc(flags,'w') && filename[1]!=':' &&
+      blkdev.boot_drv_let>='W' && DrvMounted('B'))
+  {
+    b_name=MStrPrint("B:%s",filename);
+    if (FileFind(b_name))
+      f=FOpen(b_name,flags,cnt);
+    Free(b_name);
+  }
+  if (!f)
+    f=FOpen(filename,flags,cnt);
+  return f;
 }
 
 #help_index ""

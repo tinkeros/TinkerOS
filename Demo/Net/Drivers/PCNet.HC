@@ -83,13 +83,18 @@ class CPCNet
   I64 current_rx_de_index;  // Current Receive DE being processed.  Gets incremented, wrapped to 0 at max of PCNET_RX_BUFF_COUNT.
   I64 current_tx_de_index;  // Current Transmit DE being processed. Gets incremented, wrapped to 0 at max of PCNET_TX_BUFF_COUNT.
 
-  U8 *rx_de_buffer;         // Uncached-alias of pointer to the buffer of RX Descriptor Entries.
-  U8 *tx_de_buffer;         // Uncached-alias of pointer to the buffer of TX Descriptor Entries.
-  U8 *rx_de_buffer_phys;        // Pointer to the buffer of RX Descriptor Entries. (Code Heap, lower 2Gb)
-  U8 *tx_de_buffer_phys;        // Pointer to the buffer of TX Descriptor Entries. (Code Heap, lower 2Gb)
+  // All 4 buffers are allocated straight out of sys_dma_heap, which hands back
+  // memory that is already both uncached and directly usable as-is by the
+  // card's DMA engine -- there is no separate physical/uncached-alias pair to
+  // track (see EthernetFrameAllocate/PCNetPacketReceive: previously these
+  // handed around a code_heap physical address and added dev.uncached_alias
+  // at the point of CPU access; with sys_dma_heap that same pointer already
+  // works for both, so those call sites no longer add the alias).
+  U8 *rx_de_buffer;      // Buffer of RX Descriptor Entries.
+  U8 *tx_de_buffer;      // Buffer of TX Descriptor Entries.
 
-  U32 rx_buffer_addr_phys;  // Physical address of actual receive buffers  (< 4 Gb)
-  U32 tx_buffer_addr_phys;  // Physical address of actual transmit buffers (< 4 Gb)
+  U8 *rx_buffer_addr;    // Address of actual receive buffers  (< 4 Gb, PCNet BADRL/U is 32-bit only)
+  U8 *tx_buffer_addr;    // Address of actual transmit buffers (< 4 Gb, PCNet BADTL/U is 32-bit only)
 
 } pcnet; // pcnet is the global variable we store all of this into.
 
@@ -118,11 +123,6 @@ class CPCNetBufferSetup
   U32 rxbuf;
   U32 txbuf;
 };
-
-CPCIDev *PCNetPCIDevFind()
-{// Find and return PCNetII card as a CPCIDev pointer.
-  return PCIDevFind(,, PCIV_PCNET, PCID_PCNET);
-}
 
 U32 PCNetIOBaseGet()
 {
@@ -262,30 +262,25 @@ U0 PCNetBuffersAllocate()
   /*    AMD PCNet datasheet p.1-913, p.1-990
     When SSIZE32=1, Descriptor Ring Entry Base Address
     must be on 16-byte boundary. (TDRA[3:0]=0, RDRA[3:0]=0) */
-  pcnet.rx_de_buffer_phys = CAllocAligned(sizeof(CPCNetDescriptorEntry) * PCNET_RX_BUFF_COUNT,
-                                          16,
-                                          Fs->code_heap);
-  pcnet.tx_de_buffer_phys = CAllocAligned(sizeof(CPCNetDescriptorEntry) * PCNET_TX_BUFF_COUNT,
-                                          16,
-                                          Fs->code_heap);
-  //Shrine does a check and returns -1 here, if the end of either buffer exceeds 0x100000000
-  pcnet.rx_de_buffer = dev.uncached_alias + pcnet.rx_de_buffer_phys; // we want uncached
-  pcnet.tx_de_buffer = dev.uncached_alias + pcnet.tx_de_buffer_phys; // access to these.
-  pcnet.rx_buffer_addr_phys = CAllocAligned(ETHERNET_FRAME_SIZE * PCNET_RX_BUFF_COUNT, 16, Fs->code_heap);
-  pcnet.tx_buffer_addr_phys = CAllocAligned(ETHERNET_FRAME_SIZE * PCNET_TX_BUFF_COUNT, 16, Fs->code_heap);
-  //Shrine does a check and returns -1 here, if the end of either buffer exceeds 0x100000000
+  pcnet.rx_de_buffer = CAllocAligned(sizeof(CPCNetDescriptorEntry) * PCNET_RX_BUFF_COUNT,
+                                     16, sys_dma_heap);
+  pcnet.tx_de_buffer = CAllocAligned(sizeof(CPCNetDescriptorEntry) * PCNET_TX_BUFF_COUNT,
+                                     16, sys_dma_heap);
+  pcnet.rx_buffer_addr = CAllocAligned(ETHERNET_FRAME_SIZE * PCNET_RX_BUFF_COUNT, 16, sys_dma_heap);
+  pcnet.tx_buffer_addr = CAllocAligned(ETHERNET_FRAME_SIZE * PCNET_TX_BUFF_COUNT, 16, sys_dma_heap);
+  //sys_dma_heap addresses are always < 4Gb (see DmaHeapInit), satisfying PCNet's 32-bit-only ring/buffer addressing.
   CPCNetDescriptorEntry *entry = pcnet.rx_de_buffer;
   for (de_index = 0; de_index < PCNET_RX_BUFF_COUNT; de_index++)
   {
     PCNetDescriptorEntryInit(&entry[de_index],
-                             pcnet.rx_buffer_addr_phys + de_index * ETHERNET_FRAME_SIZE,
+                             pcnet.rx_buffer_addr + de_index * ETHERNET_FRAME_SIZE,
                              TRUE); // TRUE for is_rx.
   }
   entry = pcnet.tx_de_buffer;
   for (de_index = 0; de_index < PCNET_TX_BUFF_COUNT; de_index++)
   {
     PCNetDescriptorEntryInit(&entry[de_index],
-                             pcnet.tx_buffer_addr_phys + de_index * ETHERNET_FRAME_SIZE,
+                             pcnet.tx_buffer_addr + de_index * ETHERNET_FRAME_SIZE,
                              FALSE); // FALSE for is_rx.
   }
 }
@@ -342,11 +337,11 @@ PCNetCSRWrite(PCNET_CSR_MODE, 0);
     Bitshift right of 16 will replace
     first 16 bits  with upper 16 bits,
     remaining bits cleared.*/
-PCNetCSRWrite(PCNET_CSR_BADRL, pcnet.rx_buffer_addr_phys & 0xFFFF);
-PCNetCSRWrite(PCNET_CSR_BADRU, pcnet.rx_buffer_addr_phys >> 16);
+PCNetCSRWrite(PCNET_CSR_BADRL, pcnet.rx_buffer_addr & 0xFFFF);
+PCNetCSRWrite(PCNET_CSR_BADRU, pcnet.rx_buffer_addr >> 16);
 
-PCNetCSRWrite(PCNET_CSR_BADTL, pcnet.tx_buffer_addr_phys & 0xFFFF);
-PCNetCSRWrite(PCNET_CSR_BADTU, pcnet.tx_buffer_addr_phys >> 16);
+PCNetCSRWrite(PCNET_CSR_BADTL, pcnet.tx_buffer_addr & 0xFFFF);
+PCNetCSRWrite(PCNET_CSR_BADTU, pcnet.tx_buffer_addr >> 16);
 
 /*  AMD PCNet datasheet p. 1-967
     Dft value at hardware init is
@@ -368,20 +363,18 @@ PCNetCSRWrite(PCNET_CSR_TXRINGLEN, -PCNET_TX_BUFF_COUNT & 0xFFFF);
 
 U8 *PCNetInitBlockSetup()
 {
-  U8                    *setup   = CAllocAligned(sizeof(CPCNetBufferSetup), 16, Fs->code_heap);
-  CPCNetBufferSetup *u_setup = setup + dev.uncached_alias;
-  U32                    p_setup;
+  U8                    *setup   = CAllocAligned(sizeof(CPCNetBufferSetup), 16, sys_dma_heap);
+  CPCNetBufferSetup *u_setup = setup;
   u_setup->mode     = 0;
   u_setup->rlen     = 6 << 4;
   u_setup->tlen     = 6 << 4;
   MemCpy(u_setup->mac, pcnet.mac_address, 6);
   u_setup->reserved = 0;
   MemSet(u_setup->ladr, 0, 8);
-  u_setup->rxbuf        = pcnet.rx_de_buffer_phys;
-  u_setup->txbuf        = pcnet.tx_de_buffer_phys;
-  p_setup = setup;
-  PCNetCSRWrite(1, p_setup & 0xFFFF);
-  PCNetCSRWrite(2, p_setup >> 16);
+  u_setup->rxbuf        = pcnet.rx_de_buffer;
+  u_setup->txbuf        = pcnet.tx_de_buffer;
+  PCNetCSRWrite(1, setup & 0xFFFF);
+  PCNetCSRWrite(2, setup >> 16);
   return setup;
 }
 
@@ -490,7 +483,7 @@ I64 PCNetTransmitPacketAllocate(U8 **packet_buffer_out, I64 length)
   entry->status1 |= buffer_byte_cnt;    // Sets BCNT reg (first 12 bits) in DE TMD1.
   entry->status1 |= 0xF000;             // Sets bits 12-15 (ONES) in DE TMD1 as all ones.
   pcnet.current_tx_de_index = (pcnet.current_tx_de_index + 1) & (PCNET_TX_BUFF_COUNT - 1);
-  *packet_buffer_out = pcnet.tx_buffer_addr_phys + de_index * ETHERNET_FRAME_SIZE;
+  *packet_buffer_out = pcnet.tx_buffer_addr + de_index * ETHERNET_FRAME_SIZE;
   NetLog("PCNET ALLOCATE TX PACKET: de_index: %X.", de_index);
   return de_index;
 }
@@ -529,7 +522,7 @@ I64 PCNetPacketReceive(U8 **packet_buffer_out, U16 *packet_length_out)
   NetDbg("PCNET RECEIVE PACKET: de_index = 0x%0X", de_index);
   pcnet.current_rx_de_index = (pcnet.current_rx_de_index + 1) & (PCNET_RX_BUFF_COUNT - 1);
   NetDbg("PCNET RECEIVE PACKET: de_index incremented = 0x%0X", pcnet.current_rx_de_index);
-  *packet_buffer_out = pcnet.rx_buffer_addr_phys + de_index * ETHERNET_FRAME_SIZE;
+  *packet_buffer_out = pcnet.rx_buffer_addr + de_index * ETHERNET_FRAME_SIZE;
   *packet_length_out = packet_length;
   return de_index;
 }
@@ -567,8 +560,8 @@ interrupt U0 PCNetIRQ()
       {
         NetLog("PCNET IRQ: Pushing copy into Net Que, releasing receive packet.");
       }
-      // uncached read
-      NetQuePush(packet_buffer + dev.uncached_alias, packet_length);
+      // packet_buffer is already a sys_dma_heap (uncached) pointer.
+      NetQuePush(packet_buffer, packet_length);
       PCNetReceivePacketRelease(de_index);
     }
     Bts(&csr, PCNET_CTRL_RINT);
@@ -694,7 +687,7 @@ I64 EthernetFrameAllocate(U8 **packet_buffer_out,
     packet_length = ETHERNET_MIN_FRAME_SIZE;
   }
   de_index = PCNetTransmitPacketAllocate(&ethernet_frame, ETHERNET_MAC_HEADER_LENGTH + packet_length);
-  ethernet_frame += dev.uncached_alias; // Mk write uncached
+  // ethernet_frame is already a sys_dma_heap (uncached) pointer.
   if (de_index < 0)
   {
     NetErr("ETHERNET FRAME ALLOCATE: Failure");

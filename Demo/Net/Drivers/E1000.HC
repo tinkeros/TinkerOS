@@ -14,8 +14,6 @@
     -   Clear documentation.
 */
 
-// TODO: clean up entire driver
-
 #define E1000_REG_CTRL  0x0000
 #define E1000_REG_EERD  0x0014  // EEPROM Read
 #define E1000_REG_ICR   0x00C0  // Interrupt Cause Read
@@ -33,6 +31,15 @@
 #define E1000_REG_TDH   0x3810
 #define E1000_REG_TDT   0x3818
 #define E1000_REG_MTA   0x5200  // Multicast Table Array
+#define E1000_REG_RAL0  0x5400  // Receive Address Low, register set 0
+#define E1000_REG_RAH0  0x5404  // Receive Address High, register set 0
+// RAL0/RAH0 hold the MAC address firmware/BIOS already programmed at reset on
+// every e1000/e1000e part. We read the MAC from here rather than via NVM/EEPROM
+// (E1000EEPROMRead) because PCH-based parts (82577/82578/82579, I217-I219, incl.
+// the 82579LM this driver targets) don't expose their NVM through the legacy
+// EERD interface at all -- it's backed by shared SPI flash accessed through a
+// completely different (ICH "flash") register interface that this driver does
+// not implement. Reading RAL/RAH works uniformly across the whole family.
 
 #define E1000_CTRLf_SLU 6 // Set Link Up ?
 
@@ -74,11 +81,21 @@
 //#define E1000_RCTLF_BSIZE_16384
 #define E1000_RCTLF_SECRC           (1 << E1000_RCTLf_SECRC)
 
-#define E1000_TCTLf_EN  1
-#define E1000_TCTLf_PSP 3
+#define E1000_TCTLf_EN    1
+#define E1000_TCTLf_PSP   3
+#define E1000_TCTLf_CT    4   // bits  4-11: Collision Threshold
+#define E1000_TCTLf_COLD  12  // bits 12-21: Collision Distance
 
-#define E1000_TCTLF_EN  (1 << E1000_TCTLf_EN)
-#define E1000_TCTLF_PSP (1 << E1000_TCTLf_PSP)
+#define E1000_TCTLF_EN    (1 << E1000_TCTLf_EN)
+#define E1000_TCTLF_PSP   (1 << E1000_TCTLf_PSP)
+#define E1000_TCTLF_CT    (0x0F << E1000_TCTLf_CT)    // Linux/spec default
+#define E1000_TCTLF_COLD  (0x40 << E1000_TCTLf_COLD)  // full-duplex default
+
+#define PCI_CMDf_MEM  1  // Memory Space Enable
+#define PCI_CMDf_BM   2  // Bus Master Enable
+
+#define PCI_CMDF_MEM  (1 << PCI_CMDf_MEM)
+#define PCI_CMDF_BM   (1 << PCI_CMDf_BM)
 
 #define E1000_RDESC_STATUSf_EOP 1 // End of Packet: Last Descriptor for an incoming packet
 
@@ -174,7 +191,7 @@ class CE1000DescriptorEntryTX
 
 class CE1000
 {
-  CPCIDev *pci;
+  CPciDevInfo *pci;
 
   U8    mac_address[6];
   U64   mmio_address;
@@ -182,33 +199,28 @@ class CE1000
   I64 current_rx_de_index;  // Current Receive DE being processed.  Gets incremented, wrapped to 0 at max of E1000_RX_BUFF_COUNT.
   I64 current_tx_de_index;  // Current Transmit DE being processed. Gets incremented, wrapped to 0 at max of E1000_TX_BUFF_COUNT.
 
-  U8 *rx_de_buffer;         // Uncached-alias of pointer to the buffer of RX Descriptor Entries.
-  U8 *tx_de_buffer;         // Uncached-alias of pointer to the buffer of TX Descriptor Entries.
-  U8 *rx_de_buffer_phys;        // Pointer to the buffer of RX Descriptor Entries. (Code Heap, lower 2Gb)
-  U8 *tx_de_buffer_phys;        // Pointer to the buffer of TX Descriptor Entries. (Code Heap, lower 2Gb)
+  // All 4 buffers below are allocated straight out of sys_dma_heap, which hands
+  // back memory that is already both uncached (safe for the CPU to read/write
+  // without stale-cache surprises) and directly usable as-is by the NIC's DMA
+  // engine -- unlike the old Fs->code_heap + dev.uncached_alias split, there is
+  // no separate "_phys" address to track: this same pointer goes into hardware
+  // descriptor/base-address registers AND is what the CPU reads/writes through.
+  U8 *rx_de_buffer;      // Buffer of RX Descriptor Entries.
+  U8 *tx_de_buffer;      // Buffer of TX Descriptor Entries.
 
-  U64 rx_buffer_addr;           // Uncached-alias of address of receive buffers.
-  U64 tx_buffer_addr;           // Uncached-alias of address of transmit buffers.
-  U64 rx_buffer_addr_phys;  // Physical address of actual receive buffers  (< 4 Gb)
-  U64 tx_buffer_addr_phys;  // Physical address of actual transmit buffers (< 4 Gb)
-
-
+  U8 *rx_buffer_addr;    // Address of receive buffers.
+  U8 *tx_buffer_addr;    // Address of transmit buffers.
 } e1000; // e1000 is the global variable we store all of this into.
 
-CPCIDev *E1000PCIDevFind()
-{// Find and return E1000 card as a CPCIDev pointer.
-  CPCIDev *pci = PCIDevFind(PCIC_NETWORK,, PCIV_E1000);
-  if (!pci)
-    return NULL;
-  ClassRep(pci);
-  switch (pci->device_id)
+Bool E1000DeviceIDValid(U16 device_id)
+{
+  switch (device_id)
   {
   case PCID_82545EM:
-    break;
-  default:
-    pci = NULL;
+  case PCID_82579LM:
+    return TRUE;
   }
-  return pci;
+  return FALSE;
 }
 
 U32 E1000MMIORead(U32 offset)
@@ -239,17 +251,19 @@ U16 E1000EEPROMRead(U8 word)
 }
 
 U0 E1000MACGet()
-{
-  I64 i;
-  U16 mac;
+{// Read the MAC address out of RAL0/RAH0, see E1000_REG_RAL0/RAH0 comment above.
+  U32 ral = E1000MMIORead(E1000_REG_RAL0);
+  U32 rah = E1000MMIORead(E1000_REG_RAH0);
   NetLog("E1000 MAC GET: Getting MAC Address.");
-  for (i = 0; i < 3; i++)
-  {
-    mac = E1000EEPROMRead(i);
-    e1000.mac_address[2*i]   = mac.u8[0];
-    e1000.mac_address[2*i+1] = mac.u8[1];
-    NetLog(" %02X %02X", mac.u8[0], mac.u8[1]);
-  }
+  e1000.mac_address[0] = ral.u8[0];
+  e1000.mac_address[1] = ral.u8[1];
+  e1000.mac_address[2] = ral.u8[2];
+  e1000.mac_address[3] = ral.u8[3];
+  e1000.mac_address[4] = rah.u8[0];
+  e1000.mac_address[5] = rah.u8[1];
+  NetLog(" %02X %02X %02X %02X %02X %02X",
+         e1000.mac_address[0], e1000.mac_address[1], e1000.mac_address[2],
+         e1000.mac_address[3], e1000.mac_address[4], e1000.mac_address[5]);
 }
 
 I64 E1000PacketReceive(U8 **packet_buffer_out, U16 *packet_length_out)
@@ -262,7 +276,7 @@ I64 E1000PacketReceive(U8 **packet_buffer_out, U16 *packet_length_out)
     NetErr("E1000 PACKET RECEIVE: Short Packet");
     drop = TRUE;
   }
-  if (PCIBt(&entry->status, E1000_RDESC_STATUSf_EOP))
+  if (!PCIBt(&entry->status, E1000_RDESC_STATUSf_EOP))
   {
     NetErr("E1000 PACKET RECEIVE: No EOP Set");
     drop = TRUE;
@@ -408,21 +422,21 @@ U0 E1000InterruptsSetup()
 U0 E1000InitRX()
 {
   I64 de_index;
-  e1000.rx_de_buffer_phys = CAllocAligned(sizeof(CE1000DescriptorEntryRX) * E1000_RX_BUFF_COUNT,
-                                          16,
-                                          Fs->code_heap);
-  e1000.rx_de_buffer = dev.uncached_alias + e1000.rx_de_buffer_phys;
-  e1000.rx_buffer_addr_phys = CAlloc(ETHERNET_FRAME_SIZE * E1000_RX_BUFF_COUNT, Fs->code_heap);
-  e1000.rx_buffer_addr = dev.uncached_alias + e1000.rx_buffer_addr_phys;
+  e1000.rx_de_buffer = CAllocAligned(sizeof(CE1000DescriptorEntryRX) * E1000_RX_BUFF_COUNT,
+                                     16,
+                                     sys_dma_heap);
+  e1000.rx_buffer_addr = CAllocAligned(ETHERNET_FRAME_SIZE * E1000_RX_BUFF_COUNT, 16, sys_dma_heap);
   // iterate de's and make packet buffers for each
   CE1000DescriptorEntryRX *entry = e1000.rx_de_buffer;
   for (de_index = 0; de_index < E1000_RX_BUFF_COUNT; de_index++)
   {
-    entry->address = e1000.rx_buffer_addr + de_index * ETHERNET_FRAME_SIZE; // is this right? might need to change ?..
-    // 01000101 MAlloc's 8208 for each DE
+    entry->address = e1000.rx_buffer_addr + de_index * ETHERNET_FRAME_SIZE;
+    entry++;
   }
-  // setup rx de ring buffer
-  E1000MMIOWrite(E1000_REG_RDBAH, e1000.rx_de_buffer >> 32);            // should we be using uncached addr here ?
+  // setup rx de ring buffer.  rx_de_buffer is a sys_dma_heap pointer, so it
+  // IS the real address the NIC's DMA engine should use -- no separate
+  // physical/uncached-alias pair needed (see CE1000 comment above).
+  E1000MMIOWrite(E1000_REG_RDBAH, e1000.rx_de_buffer >> 32);
   E1000MMIOWrite(E1000_REG_RDBAL, e1000.rx_de_buffer & 0xFFFFFFFF);
   // set receive buffer length
   E1000MMIOWrite(E1000_REG_RDLEN, E1000_RX_BUFF_COUNT * 16);
@@ -430,7 +444,7 @@ U0 E1000InitRX()
   E1000MMIOWrite(E1000_REG_RDH, 0);
   E1000MMIOWrite(E1000_REG_RDT, E1000_RX_BUFF_COUNT);
   // set receive control reg
-  E1000MMIOWrite(E1000_REG_RCTL,    E1000_RCTLF_SBP         |
+  E1000MMIOWrite(E1000_REG_RCTL,    E1000_RCTLF_EN          |
 //                                  E1000_RCTLF_UPE         |
 //                                  E1000_RCTLF_RDMTS_HALF  |
 //                                  E1000_RCTLF_BSIZE_2048  |
@@ -442,22 +456,21 @@ U0 E1000InitRX()
 
 U0 E1000InitTX()
 {
-  e1000.tx_de_buffer_phys = CAllocAligned(sizeof(CE1000DescriptorEntryTX) * E1000_TX_BUFF_COUNT,
-                                          16,
-                                          Fs->code_heap);
-  e1000.tx_de_buffer = dev.uncached_alias + e1000.tx_de_buffer_phys;
-  e1000.tx_buffer_addr_phys = CAlloc(ETHERNET_FRAME_SIZE * E1000_TX_BUFF_COUNT, Fs->code_heap);
-  e1000.tx_buffer_addr = dev.uncached_alias + e1000.tx_buffer_addr_phys;
-  // setup tx de ring buffer
-  E1000MMIOWrite(E1000_REG_TDBAH, e1000.tx_de_buffer >> 32);            // should we be using uncached addr here ?
+  e1000.tx_de_buffer = CAllocAligned(sizeof(CE1000DescriptorEntryTX) * E1000_TX_BUFF_COUNT,
+                                     16,
+                                     sys_dma_heap);
+  e1000.tx_buffer_addr = CAllocAligned(ETHERNET_FRAME_SIZE * E1000_TX_BUFF_COUNT, 16, sys_dma_heap);
+  // setup tx de ring buffer (see E1000InitRX comment re: sys_dma_heap addressing)
+  E1000MMIOWrite(E1000_REG_TDBAH, e1000.tx_de_buffer >> 32);
   E1000MMIOWrite(E1000_REG_TDBAL, e1000.tx_de_buffer & 0xFFFFFFFF);
   // set tx buffer length
   E1000MMIOWrite(E1000_REG_TDLEN, E1000_TX_BUFF_COUNT * 16);
   // set head tail pointers
   E1000MMIOWrite(E1000_REG_TDH, 0);
-  E1000MMIOWrite(E1000_REG_TDT, E1000_RX_BUFF_COUNT);
+  E1000MMIOWrite(E1000_REG_TDT, E1000_TX_BUFF_COUNT);  // was wrongly E1000_RX_BUFF_COUNT
   // set transmit control reg
-  E1000MMIOWrite(E1000_REG_TCTL, E1000_TCTLF_EN | E1000_TCTLF_PSP);
+  E1000MMIOWrite(E1000_REG_TCTL, E1000_TCTLF_EN   | E1000_TCTLF_PSP |
+                 E1000_TCTLF_CT   | E1000_TCTLF_COLD);
 }
 
 
@@ -465,16 +478,21 @@ U0 E1000Init()
 {
   I64 i;
   MemSet(&e1000, 0, sizeof(CE1000)); // e1000 global var will hold member data the driver uses often.
-  "\nE1000 driver WIP\n\n";
-  e1000.pci = E1000PCIDevFind;
-  if (!e1000.pci)
-    return; // if we don't find the card, quit.
-  e1000.mmio_address = dev.uncached_alias + e1000.pci->base[0] & ~0xF;
-  // Assuming card supports MMIO... lower 4 bits are hardwired zero (?)
+  // net_driver_pci (global, filled in by Run.HC's NetDriverInit via PciGetDevInfo)
+  // is a CPciDevInfo, which is the struct that actually carries bar[]/device_id.
+  // CPCIDev (from PCIDevFind) has neither field, so the old E1000PCIDevFind()
+  // path here was reading pci->device_id/pci->base[0] off the wrong struct type.
+  e1000.pci = &net_driver_pci;
+  if (!E1000DeviceIDValid(e1000.pci->device_id))
+    return; // if we don't find a supported card, quit.
+  // Enable Memory Space + Bus Master before touching MMIO/DMA: on real hardware
+  // (unlike some permissive emulators) the NIC won't do either until the OS
+  // turns these on in the PCI Command register.
+  PCIWriteU16(e1000.pci->bus, e1000.pci->dev, e1000.pci->fun,
+              PCIR_COMMAND, PCI_CMDF_MEM | PCI_CMDF_BM);
+  e1000.mmio_address = dev.uncached_alias + PCIGetFirstMMIO32(e1000.pci);
   "\nMMIO address: 0x%0X\n"
   , e1000.mmio_address;
-  // init rx/tx addrs? (linux)
-  // eeprom? MAC ?
   E1000MACGet;
   // setup link? (01000101's driver)
   E1000MMIOWrite(E1000_REG_CTRL, E1000MMIORead(E1000_REG_CTRL) | E1000_CTRLF_SLU);
@@ -501,7 +519,6 @@ U0 E1000Init()
   E1000InitRX;
   E1000InitTX;
   E1000InterruptsSetup;
-  NetErr("TODO E1000");
   "\n";
   ClassRep(&e1000);
 }

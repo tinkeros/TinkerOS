@@ -233,7 +233,7 @@ $FG$$ID,-2$
 
 * There is no $FG,2$continue$FG$ stmt.  Use $FG,2$goto$FG$.
 
-* $FG,2$lock{}$FG$ can be used to apply asm $FG,2$LOCK$FG$ prefixes to code for safe multicore read-modify-write accesses.  The code bracked with have $FG,2$LOCK$FG$ asm prefix's applied to relevant insts within.  It's a little shoddy.  See $LK,"::/Demo/MultiCore/Lock.HC"$.
+* $FG,2$lock{}$FG$ can be used to apply asm $FG,2$LOCK$FG$ prefixes to code for safe multicore read-modify-write accesses.  The code bracketed with have $FG,2$LOCK$FG$ asm prefix's applied to relevant insts within.  It's a little shoddy.  See $LK,"::/Demo/MultiCore/Lock.HC"$.
 
 * There is a function called $LK,"MSize",A="MN:MSize"$() which gives the size of an object alloced off the heap.  For larger size allocations, the system rounds-up to a power of two, so $FG,2$MSize()$FG$ lets you know the real size and you can take full advantage of it.
 

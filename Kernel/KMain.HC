@@ -135,7 +135,7 @@ U0 KMain()
   adam_task=Fs;
   BlkPoolsInit;
   SysGlblsInit;
-  Mem32DevInit;
+  ApicMemInit;
   UncachedAliasAlloc;
   DmaHeapInit;
   LoadKernel;

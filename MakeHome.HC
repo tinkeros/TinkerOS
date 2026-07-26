@@ -38,25 +38,76 @@ U0 AutoSBC()
   "Failed to mount C or find bootable kernel!\n";
 }
 
-// Experimental FM 801 sound card OPL support
+// Experimental FM 801 sound card OPL support. Kept as a plain #include
+// outside AudioInit: FM801.HC defines public FM801SetVol/FM801GetVol
+// (global volume-key hotkey handlers) and, if a card is found,
+// synchronously #defines FM801_OPL_BASE via Adam() -- the #ifdef
+// FM801_OPL_BASE check inside AudioInit below relies on that define
+// already being resolved at compile time, which only holds if this
+// stays a top-level #include compiled before AudioInit's body.
 #include "/Demo/Snd/FM801"
 
-if (IsHypervisorPresent) {
-  // AC97 sound support
-  AdamFile("/Demo/VM/AC97");
-  // Enable experimental Virtualbox guest additions if detected
-  // SethFile("/Demo/VM/VBoxAdd",-2);
-  //
-  // Enable VMW mouse if detected
-  // Better mouse performance, but breaks raw mouse mode
-  AdamFile("/Demo/VM/VMMouse");
-  // Try enabling ISA OPL sounds if VM detected
-  AdamFile("/Demo/Snd/OPL2");
-}
-else {
+U0 AudioInit()
+{
+  Bool hda_present,hda_cfg_ok;
+
+  // Intel HD Audio (PCI class 04, subclass 03 -- same 0x040300 probe
+  // HDAudio.HC itself uses). When a controller is present the HDA stack
+  // below takes precedence: AC97 and the standalone Demo/Snd/OPL2 are
+  // skipped (OPL2EmuHDA pulls in OPL2.HC itself, routed through HDA).
+  hda_present=PCIClassFind(0x040300,0)>=0;
+
+  if (IsHypervisorPresent) {
+    if (!hda_present) {
+      // AC97 sound support
+      AdamFile("/Demo/VM/AC97");
+      // Try enabling ISA OPL sounds if VM detected
+      AdamFile("/Demo/Snd/OPL2");
+    }
+  }
+  else {
 #ifdef FM801_OPL_BASE
-  AdamFile("/Demo/Snd/OPL2");
+    if (!hda_present)
+      AdamFile("/Demo/Snd/OPL2");
 #endif
+  }
+
+  // Bring up the whole HDA sound stack -- driver, codec routing config,
+  // mixer, speech (TMS5220/TTS), Wav/Mp3 playback, and the software OPL2
+  // (Adlib) FM synth. Order matters: HDAudio must init first; OPL2EmuHDA
+  // hijacks Snd() last so everything before it still compiles against
+  // plain tones.
+  if (hda_present) {
+    AdamFile("/Demo/Snd/HDAudio");
+    // First boot on this machine? Generate /Home/HDAudioCfg.HC.Z by
+    // running HDCfg.HC, whose trailing HDCfgAuto call probes the codec,
+    // auto-wires Speaker pins and saves the file -- queued after HDAudio
+    // above, so the codec is up when it runs. Adam runs its queue in
+    // order, so the file exists by the time the include below executes.
+    hda_cfg_ok=IsFile("/Home/HDAudioCfg.HC.Z");
+    if (!hda_cfg_ok && DrvIsWritable && IsHypervisorPresent) {
+      // Run automatic HDA config if in VM
+      AdamFile("/Demo/Snd/HDCfgNew");
+      hda_cfg_ok=TRUE;
+    }
+    if (hda_cfg_ok)
+      AdamFile("/Home/HDAudioCfg.HC.Z");
+    AdamFile("/Demo/Snd/HDMixer");
+    AdamFile("/Demo/Snd/TMS5220");
+    AdamFile("/Demo/Snd/TTS");
+    AdamFile("/Demo/Snd/Wav");
+    AdamFile("/Demo/Snd/Mp3");
+    AdamFile("/Demo/Snd/OPL2EmuHDA");
+  }
+}
+
+if (IsHypervisorPresent) {
+  // Enable experimental QEMU/VBox/VMware mouse help
+  if (VBoxPciPresent)
+    SethFile("/Demo/VM/VBoxAdd",-2);
+  else
+    AdamFile("/Demo/VM/VMMouse");
+  if (mp_cnt>1) AudioInit;
 }
 
 #include "~/HomeWrappers"

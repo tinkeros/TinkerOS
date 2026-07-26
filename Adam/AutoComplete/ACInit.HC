@@ -9,7 +9,7 @@ public U0 ACDWordsLoad()
   U8 *in_ptr,*in_start,*st2;
   U16 *d;
   acd.num_words=0;
-  if (in_ptr=FileRead(ACD_WORD_FILENAME,&size))
+  if (in_ptr=FileReadCached(ACD_WORD_FILENAME,&size))
   {
     in_start=in_ptr;
     acd.word_lst=AMAlloc(size);
@@ -102,12 +102,17 @@ U0 ACSingleFileAdd(U8 *buf)
 }
 
 U0 ACMainFileLstTraverse(U8 *files_find_mask)
-{
-  U8 *buf;
+{//When booted from SD (boot_drv_let>='W', see MountSDAuto) and RAM disk
+ //B: is mounted, traverse B:'s copy of the tree directly instead of the
+ //SD card, since B: is a full mirror of the boot image and much faster.
+  U8 *buf,*mask=files_find_mask;
   CDirEntry *tmpde,*tmpde1;
+  Bool use_ram=blkdev.boot_drv_let>='W' && DrvMounted('B');
+  if (use_ram)
+    mask=MStrPrint("B:%s",files_find_mask);
   try
   {
-    tmpde=tmpde1=FilesFind(files_find_mask,
+    tmpde=tmpde1=FilesFind(mask,
                            FUF_RECURSE|FUF_JUST_TXT|FUF_JUST_FILES|FUF_CLUS_ORDER);
     while (tmpde)
     {
@@ -121,6 +126,8 @@ U0 ACMainFileLstTraverse(U8 *files_find_mask)
   catch
     Fs->catch_except=TRUE;
   DirTreeDel(tmpde1);
+  if (use_ram)
+    Free(mask);
 }
 
 U0 ACProgressTask(Bool *_start_flag)

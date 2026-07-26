@@ -1,0 +1,42 @@
+$WW,1$$FG,14$$TX+CX,"TempleNES"$$FG$
+
+$TX+CX,"NES Emulator for TinkerOS"$
+
+Play NES (.nes) ROMs in a TinkerOS window.  Emulates the
+6502 CPU, the 2C02 PPU, the 2A03 APU and mappers 0 (NROM),
+1 (MMC1), 2 (UNROM), 3 (CNROM), 4 (MMC3) and 7 (AxROM).
+
+$FG,10$Controller$FG$
+  $FG,11$Arrow Keys$FG$ - D-Pad          $FG,11$Enter$FG$ - Start
+  $FG,11$Alt or X$FG$   - A button       $FG,11$Tab$FG$   - Select
+  $FG,11$Ctrl or Z$FG$  - B button
+
+$FG,10$Emulator Keys$FG$
+  $FG,11$P$FG$ - Pick ROM file         $FG,11$S$FG$ - Save state
+  $FG,11$R$FG$ - Reset the console     $FG,11$L$FG$ - Load state
+  $FG,11$Space$FG$ - Pause / resume
+  $FG,11$1 / 2$FG$ - Window scale: 1x (256x240) or 2x (512x448,
+          TV overscan crop).  Dragging the window border
+          also switches the scale.
+  $FG,11$ESC / Q$FG$ - Quit
+
+$FG,10$Saves$FG$
+  $FG,11$S$FG$ writes the machine state next to the ROM
+  ("Game.nes" -> "Game.BIN.Z"); $FG,11$L$FG$ restores it.  Carts
+  with battery SRAM (Zelda and friends) also save
+  "Game.SRM" automatically on quit or ROM switch.
+
+$FG,10$Sound$FG$
+  Load /Demo/Snd/HDAudio.HC and /Demo/Snd/HDMixer.HC before
+  TempleNES; the APU appears as the "NES" mixer source.
+  Without them the emulator runs silent.
+
+$FG,10$ROMs$FG$
+  ROMs are not included.  Put .NES (or compressed .NES.Z)
+  files in this app's "Roms" subdirectory.  The picker
+  lists them at startup and $FG,11$P$FG$ reopens it any time:
+  $FG,11$Arrows$FG$ move, $FG,11$Space$FG$/$FG,11$Enter$FG$ pick, $FG,11$ESC$FG$ backs out.
+
+
+$CYAN$Special thanks to Alec for his original TempleNES!$FG$
+

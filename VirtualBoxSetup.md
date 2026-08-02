@@ -40,3 +40,7 @@
    - Slide reverb to 30% and click Risen (because you have to at least once for Terry)
 <img src="https://raw.githubusercontent.com/tinkeros/tinkeros.github.io/refs/heads/master/Images/VB6.jpg">
 
+#### Sound trouble?
+  - If you didn't pick the right VM OS type (or VirtualBox changes things), it might not have defaulted to Intel HD Audio
+  - Check Settings Audio tab, it should look like this:
+<img src="https://raw.githubusercontent.com/tinkeros/tinkeros.github.io/refs/heads/master/Images/VB7.jpg">

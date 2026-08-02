@@ -1,4 +1,4 @@
-# Installing TinkerOS on Windows using VirtualBox
+# Installing TinkerOS in VirtualBox
 
 ## Setup Steps:
 1) Enable Virtualization in your BIOS (this step may not be necessary, skip if you don't know what you're doing)

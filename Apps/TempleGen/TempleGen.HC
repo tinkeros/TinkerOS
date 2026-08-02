@@ -11,3 +11,4 @@ Cd(__DIR__);;
 #include "Emu"
 
 TempleGen;
+Exit;

@@ -10,3 +10,4 @@ Cd(__DIR__);;
 #include "Emu"
 
 TempleNES;
+Exit;

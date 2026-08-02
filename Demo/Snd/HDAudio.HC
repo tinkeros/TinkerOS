@@ -48,6 +48,7 @@ I64 snd_flags;
 #define HD_RIRB_ENTRIES	256
 #define HD_BDL_ENTRIES	256
 
+#define HD_GCAP		0x00
 #define HD_GCTL		0x08
 #define HD_STATESTS	0x0E
 #define HD_GSTS		0x10
@@ -57,12 +58,20 @@ I64 snd_flags;
 #define HD_CORBRP	0x4A
 #define HD_CORBCTL	0x4C
 #define HD_CORBST	0x4D
+#define HD_CORBSIZE	0x4E
 #define HD_RIRBLBASE	0x50
 #define HD_RIRBUBASE	0x54
 #define HD_RIRBWP	0x58
 #define HD_RINTCNT	0x5A
 #define HD_RIRBCTL	0x5C
 #define HD_RIRBSTS	0x5D
+#define HD_RIRBSIZE	0x5E
+#define HD_DPLBASE	0x70
+#define HD_DPUBASE	0x74
+
+#define HD_PCI_TCSEL	0x44
+#define HD_PCI_DEVC	0x78
+#define HD_DEVC_NOSNOOP	0x0800
 
 #define STRCTL		0x00
 #define STRSTS		0x03
@@ -75,14 +84,11 @@ I64 snd_flags;
 #define STRBDPL		0x18
 #define STRBDPU		0x1C
 
-#define ISTR0		0x080
-#define ISTR1		0x0A0
-#define ISTR2		0x0C0
-#define ISTR3		0x0E0
-#define OSTR0		0x100
-#define OSTR1		0x120
-#define OSTR2		0x140
-#define OSTR3		0x160
+#define HD_STR_BASE	0x080
+#define HD_STR_SIZE	0x020
+
+#define HD_DFT_ISS	4
+#define HD_DFT_OSS	4
 
 #define VERB_GET_PARAM		0xF0000
 #define VERB_CONNECT_SEL_GET	0xF0100
@@ -262,6 +268,36 @@ DefineLstLoad("ST_PIN_LOCATION",
 "Other Top\0Other Bottom\0Reserved\0Reserved\0Reserved\0"
 "Reserved\0Reserved\0Reserved\0Reserved\0Reserved\0Reserved\0");
 
+#define AWCAP_IN_AMP		1
+#define AWCAP_OUT_AMP		2
+#define AWCAP_AMP_OVRD		3
+#define AWCAP_FORMAT_OVRD	4
+#define AWCAP_CONN_LST		8
+#define AWCAP_POWER		10
+
+#define PINCAP_IMPEDANCE_SENSE	0
+#define PINCAP_TRIGGER_REQD	1
+#define PINCAP_PRESENCE_DETECT	2
+#define PINCAP_HEADPHONE	3
+#define PINCAP_OUTPUT		4
+#define PINCAP_INPUT		5
+#define PINCAP_BALANCED		6
+#define PINCAP_VREF_HIZ		8
+#define PINCAP_VREF_50		9
+#define PINCAP_VREF_GND		10
+#define PINCAP_VREF_80		12
+#define PINCAP_VREF_100		13
+#define PINCAP_EAPD		16
+
+#define PWC_VREF_HIZ	0
+#define PWC_VREF_50	1
+#define PWC_VREF_GND	2
+#define PWC_VREF_80	4
+#define PWC_VREF_100	5
+#define PWC_IN_EN	0x20
+#define PWC_OUT_EN	0x40
+#define PWC_HP_EN	0x80
+
 class CHDBufDesc
 {
   I32 *buf;
@@ -284,7 +320,15 @@ class CHDAudioCtrl
   I64 waveform;
   F64 freq,amp;
   CSndWaveCtrl *tone_swcs[HD_TONES];
-  U8 rirb_rp,corb_wp;
+  I64 rirb_rp,corb_wp;
+  I64 corb_mask,rirb_mask;
+  I64 iss,oss,bss;
+  I64 istr_idx,ostr_idx;
+  I64 istr,ostr;
+  U32 *posbuf;
+  U32 *opos,*ipos;
+  I64 out_fmt,in_fmt;
+  Bool out_fmt_chosen;
   Bool audio_task_started,in_running,out_running;
 } hda;
 MemSet(&hda,0,sizeof(CHDAudioCtrl));
@@ -295,17 +339,18 @@ U0 HDSyncCORB()
   wp =hda.bar+HD_CORBWP;
   *wp=hda.corb_wp;
   rp =hda.bar+HD_CORBRP;
-  while (*rp&255!=hda.corb_wp)
+  while ((*rp&hda.corb_mask)!=hda.corb_wp)
     Yield;
 }
 
 U0 HDWriteCORB(I64 cad,I64 nid,U32 val)
 {
-  val|=cad<<28+nid<<20;
+  val|=(cad<<28)+(nid<<20);
 #ifdef HD_DBG_LOG_VERBS
   "CORB cad=%d nid=%02X val=%06X\n",cad,nid,val&0xFFFFF;
 #endif
-  hda.corb[++hda.corb_wp]=val;
+  hda.corb_wp=(hda.corb_wp+1)&hda.corb_mask;
+  hda.corb[hda.corb_wp]=val;
 }
 
 I64 HDSyncRIRB()
@@ -314,9 +359,11 @@ I64 HDSyncRIRB()
   U8 *_b;
   I64 wp,res=0;
   _w=hda.bar+HD_RIRBWP;
-  wp=*_w;
-  while (hda.rirb_rp!=wp)
-    res=hda.rirb[++hda.rirb_rp];
+  wp=*_w&hda.rirb_mask;
+  while (hda.rirb_rp!=wp) {
+    hda.rirb_rp=(hda.rirb_rp+1)&hda.rirb_mask;
+    res=hda.rirb[hda.rirb_rp];
+  }
   _b=hda.bar+HD_RIRBSTS;
   *_b=0x05;
   return res;
@@ -330,9 +377,10 @@ I64 HDReadRIRB()
   _w=hda.bar+HD_RIRBWP;
   do {
     Yield;
-    wp=*_w;
+    wp=*_w&hda.rirb_mask;
   } while (wp==hda.rirb_rp);
-  res=hda.rirb[++hda.rirb_rp];
+  hda.rirb_rp=(hda.rirb_rp+1)&hda.rirb_mask;
+  res=hda.rirb[hda.rirb_rp];
   _b=hda.bar+HD_RIRBSTS;
   *_b=0x05;
   return res;
@@ -359,7 +407,7 @@ Bool HDTestCORBSync(I64 cad,I64 nid,U32 val)
 
   Sleep(1);
   _w=hda.bar+HD_RIRBWP;
-  wp=*_w;
+  wp=*_w&hda.rirb_mask;
   if (wp==hda.rirb_rp)
     return FALSE;
   HDReadRIRB;
@@ -367,8 +415,7 @@ Bool HDTestCORBSync(I64 cad,I64 nid,U32 val)
 }
 
 I64 HDRateCapBit(I64 rate)
-{//Bit in P_SAMPLE_SIZE_RATE_CAP that stands for a sample rate, or -1 if the
- //rate isn't one the spec has a bit for at all.
+{
   I64 res=-1;
   if (rate==8000)
     res=PCM_RATE_8kHz;
@@ -413,15 +460,49 @@ I64 HDSizeCapBit(I64 bits)
   return res;
 }
 
+I64 HDAmpMaxGain(U32 cap)
+{
+  I64 res;
+  if (!cap)
+    res=0x7F;
+  else
+    res=(cap>>8)&0x7F;
+  return res;
+}
+
+I64 HDPickOutFmtBits(U32 cap)
+{
+  I64 res=HD_32_BIT;
+  U32 cap_bits=cap;
+  if (cap) {
+    if (Bt(&cap_bits,PCM_SIZE_32_BIT))
+      res=HD_32_BIT;
+    else if (Bt(&cap_bits,PCM_SIZE_24_BIT))
+      res=HD_24_BIT;
+    else if (Bt(&cap_bits,PCM_SIZE_20_BIT))
+      res=HD_20_BIT;
+  }
+  return res;
+}
+
+I64 HDFmtBits2Size(I64 code)
+{//Sample size in bits for an HD_*_BIT stream-format code.
+  I64 res=32;
+  if (code==HD_8_BIT)
+    res=8;
+  else if (code==HD_16_BIT)
+    res=16;
+  else if (code==HD_20_BIT)
+    res=20;
+  else if (code==HD_24_BIT)
+    res=24;
+  return res;
+}
+
 Bool hd_warned_out_fmt=FALSE,hd_warned_in_fmt=FALSE;
 
 U0 HDChkFmtCap(I64 nid,U32 cap,I64 rate,I64 bits,U8 *dir,Bool *warned)
-{//Warn if the stream format this driver hardwires (HD_DFT_OUT_FMT /
- //HD_DFT_IN_FMT) asks a converter for a rate or container size it never
- //said it could do. Nothing here changes the format -- a codec that can't
- //do what it was asked usually just produces garbage or silence rather
- //than refusing, so the point is to make that visible instead of leaving
- //it as an unexplained audio fault.
+{
   I64 rate_bit,size_bit;
   U32 cap_bits=cap;
 
@@ -451,65 +532,151 @@ U0 HDChkFmtCap(I64 nid,U32 cap,I64 rate,I64 bits,U8 *dir,Bool *warned)
 }
 
 U32 hd_afg_pcm_cap=0;
+U32 hd_afg_in_amp=0,hd_afg_out_amp=0;
+
+U0 HDPowerUp(I64 cad,I64 nid,Bool wait=FALSE)
+{
+  I64 i,st=0;
+  HDWriteCORBSync(cad,nid,VERB_POWER_STATE_SET+0x00);
+  if (!wait)
+    return;
+  for (i=0;i<100;i++) {
+    st=HDWriteCORBSync(cad,nid,VERB_POWER_STATE_GET);
+    if (!(st&0x0F))
+      return;
+    Sleep(1);
+  }
+  "HD Audio: node 0x%02X never reported D0 (power state 0x%02X).\n",
+	nid,st&0xFF;
+}
 
 U0 HDTraverse(I64 cad,I64 nid)
 {
-  I64 i,len,aud_cap,type;
-  U32 pcm_cap=0,outer_pcm_cap=0;
-  HDWriteCORBSync(cad,nid,VERB_POWER_STATE_SET+0x00);
-  HDWriteCORBSync(cad,nid,VERB_EAPDBTL_ENABLE_SET+0x02);
-  HDWriteCORBSync(cad,nid,VERB_PROCESS_STATE_SET+0x02);
-  HDWriteCORBSync(cad,nid,VERB_CONNECT_SEL_SET+0x00);
+  I64 i,len,aud_cap,type,g,fmt_bits,fmt;
+  U32 pcm_cap=0,outer_pcm_cap=0,pin_cap=0;
+  U32 in_amp=0,out_amp=0,outer_in_amp=0,outer_out_amp=0;
+  I64 pin_ctl;
   aud_cap=HDWriteCORBSync(cad,nid,VERB_GET_PARAM+P_SUBNODE_CNT);
   if (aud_cap.u16[0]) {
-    outer_pcm_cap=hd_afg_pcm_cap;
     if (nid)
+      HDPowerUp(cad,nid,TRUE);
+    HDWriteCORBSync(cad,nid,VERB_PROCESS_STATE_SET+0x02);
+    outer_pcm_cap=hd_afg_pcm_cap;
+    outer_in_amp =hd_afg_in_amp;
+    outer_out_amp=hd_afg_out_amp;
+    if (nid) {
       hd_afg_pcm_cap=
 	    HDWriteCORBSync(cad,nid,VERB_GET_PARAM+P_SAMPLE_SIZE_RATE_CAP);
+      hd_afg_in_amp =HDWriteCORBSync(cad,nid,VERB_GET_PARAM+P_INPUT_AMP_CAP);
+      hd_afg_out_amp=HDWriteCORBSync(cad,nid,VERB_GET_PARAM+P_OUTPUT_AMP_CAP);
+    }
     for (i=aud_cap.u16[1];i<aud_cap.u16[1]+aud_cap.u16[0];i++)
       HDTraverse(cad,i);
     hd_afg_pcm_cap=outer_pcm_cap;
+    hd_afg_in_amp =outer_in_amp;
+    hd_afg_out_amp=outer_out_amp;
   } else {
     aud_cap=HDWriteCORBSync(cad,nid,VERB_GET_PARAM+P_AUDIO_WIDGET_CAP);
-    type=aud_cap>>20&15;
-    if (Bt(&aud_cap,8))
+    type=(aud_cap>>20)&15;
+    if (Bt(&aud_cap,AWCAP_POWER))
+      HDPowerUp(cad,nid);
+    HDWriteCORBSync(cad,nid,VERB_PROCESS_STATE_SET+0x02);
+    HDWriteCORBSync(cad,nid,VERB_CONNECT_SEL_SET+0x00);
+    if (Bt(&aud_cap,AWCAP_CONN_LST))
       len=HDWriteCORBSync(cad,nid,VERB_GET_PARAM+P_CONNECT_LST_LEN)&127;
     else
       len=0;
-    HDWriteCORBSync(cad,nid,VERB_AMPLIFIER_GAIN_SET+0xF07F);
-    for (i=1;i<len;i++)
-      HDWriteCORBSync(cad,nid,VERB_AMPLIFIER_GAIN_SET+0x7080+i<<8);
+
+    in_amp =0;
+    out_amp=0;
+    if (Bt(&aud_cap,AWCAP_IN_AMP) || Bt(&aud_cap,AWCAP_OUT_AMP)) {
+      if (Bt(&aud_cap,AWCAP_AMP_OVRD)) {
+	in_amp =HDWriteCORBSync(cad,nid,VERB_GET_PARAM+P_INPUT_AMP_CAP);
+	out_amp=HDWriteCORBSync(cad,nid,VERB_GET_PARAM+P_OUTPUT_AMP_CAP);
+      } else {
+	in_amp =hd_afg_in_amp;
+	out_amp=hd_afg_out_amp;
+      }
+    }
+    if (Bt(&aud_cap,AWCAP_OUT_AMP)) {
+      g=HDAmpMaxGain(out_amp);
+      HDWriteCORBSync(cad,nid,VERB_AMPLIFIER_GAIN_SET+(0xB000|g));
+    }
+    if (Bt(&aud_cap,AWCAP_IN_AMP)) {
+      g=HDAmpMaxGain(in_amp);
+      HDWriteCORBSync(cad,nid,VERB_AMPLIFIER_GAIN_SET+(0x7000|g));
+      for (i=1;i<len;i++)
+	HDWriteCORBSync(cad,nid,VERB_AMPLIFIER_GAIN_SET+(0x7080|(i<<8)));
+    }
+
     if (type==AWT_OUTPUT || type==AWT_INPUT) {
       pcm_cap=HDWriteCORBSync(cad,nid,VERB_GET_PARAM+P_SAMPLE_SIZE_RATE_CAP);
-      if (!Bt(&aud_cap,4) && hd_afg_pcm_cap)
+      if (!Bt(&aud_cap,AWCAP_FORMAT_OVRD) && hd_afg_pcm_cap)
 	pcm_cap=hd_afg_pcm_cap;
     }
     switch (type) {
       case AWT_OUTPUT:
-	if (FALSE)
-	  HDWriteCORBSync(cad,nid,VERB_CHAN_STREAM_ID_SET+0x00);
-	else
-	  HDWriteCORBSync(cad,nid,VERB_CHAN_STREAM_ID_SET+0x10);
-	HDWriteCORBSync(cad,nid,VERB_STREAM_FMT_SET+HD_DFT_OUT_FMT);
+	if (!hda.out_fmt_chosen) {
+	  fmt_bits=HDPickOutFmtBits(pcm_cap);
+	  hda.out_fmt=HD_2_CHAN+(fmt_bits<<4)+(HD_48kHz<<8);
+	  hda.out_fmt_chosen=TRUE;
+	}
+	fmt=hda.out_fmt;
+	HDWriteCORBSync(cad,nid,VERB_CHAN_STREAM_ID_SET+0x10);
+	HDWriteCORBSync(cad,nid,VERB_STREAM_FMT_SET+fmt);
 	HDWriteCORBSync(cad,nid,VERB_PROCESS_STATE_SET+0x01);
 	HDChkFmtCap(nid,pcm_cap,SND_SAMPLE_RATE,
-	      sizeof(SND_OUT_CONTAINER)*8,"output",&hd_warned_out_fmt);
+	      HDFmtBits2Size((fmt>>4)&7),"output",&hd_warned_out_fmt);
 	break;
       case AWT_INPUT:
-	if (TRUE)
-	  HDWriteCORBSync(cad,nid,VERB_CHAN_STREAM_ID_SET+0x00);
-	else
-	  HDWriteCORBSync(cad,nid,VERB_CHAN_STREAM_ID_SET+0x20);
-	HDWriteCORBSync(cad,nid,VERB_STREAM_FMT_SET+HD_DFT_IN_FMT);
+	HDWriteCORBSync(cad,nid,VERB_CHAN_STREAM_ID_SET+0x00);
+	HDWriteCORBSync(cad,nid,VERB_STREAM_FMT_SET+hda.in_fmt);
 	HDWriteCORBSync(cad,nid,VERB_PROCESS_STATE_SET+0x01);
 	HDChkFmtCap(nid,pcm_cap,SND_SAMPLE_RATE,
 	      sizeof(SND_IN_CONTAINER)*8,"input",&hd_warned_in_fmt);
 	break;
       case AWT_PIN_COMPLEX:
-	HDWriteCORBSync(cad,nid,VERB_PIN_WIDGET_CTL_SET+0xE2);
+	pin_cap=HDWriteCORBSync(cad,nid,VERB_GET_PARAM+P_PIN_CAP);
+	pin_ctl=0;
+	if (Bt(&pin_cap,PINCAP_OUTPUT)) {
+	  pin_ctl=PWC_OUT_EN;
+	  if (Bt(&pin_cap,PINCAP_HEADPHONE))
+	    pin_ctl=pin_ctl|PWC_HP_EN;
+	} else if (Bt(&pin_cap,PINCAP_INPUT))
+	  pin_ctl=PWC_IN_EN;
+	HDWriteCORBSync(cad,nid,VERB_PIN_WIDGET_CTL_SET+pin_ctl);
+	if (Bt(&pin_cap,PINCAP_EAPD))
+	  HDWriteCORBSync(cad,nid,VERB_EAPDBTL_ENABLE_SET+0x02);
 	break;
     }
   }
+}
+
+U0 HDStreamRst(I64 str)
+{
+  U8 *_b;
+  U32 *_d;
+  I64 i;
+  _d=hda.bar+str+STRCTL;
+  *_d=0;
+  _b=hda.bar+str+STRSTS;
+  *_b=0x1C;
+
+  *_d=0x01;
+  for (i=0;i<100;i++) {
+    if (*_d&0x01)
+      goto rst_entered;
+    Sleep(1);
+  }
+  "HD Audio: stream at 0x%03X would not enter reset.\n",str;
+rst_entered:
+  *_d=0;
+  for (i=0;i<100;i++) {
+    if (!(*_d&0x01))
+      return;
+    Sleep(1);
+  }
+  "HD Audio: stream at 0x%03X would not leave reset.\n",str;
 }
 
 U0 HDRun(Bool in,Bool out)
@@ -517,12 +684,12 @@ U0 HDRun(Bool in,Bool out)
   U32 *_d;
   if (hda.bar) {
     if (out) {
-      _d=hda.bar+OSTR0+STRCTL;
+      _d=hda.bar+hda.ostr+STRCTL;
       *_d=0x100002;
       hda.out_running=TRUE;
     }
     if (in) {
-      _d=hda.bar+ISTR0+STRCTL;
+      _d=hda.bar+hda.istr+STRCTL;
       *_d=0x200002;
       hda.in_running=TRUE;
     }
@@ -534,12 +701,12 @@ U0 HDStop(Bool in,Bool out)
   U32 *_d;
   if (hda.bar) {
     if (out) {
-      _d=hda.bar+OSTR0+STRCTL;
+      _d=hda.bar+hda.ostr+STRCTL;
       *_d=0;
       hda.out_running=FALSE;
     }
     if (in) {
-      _d=hda.bar+ISTR0+STRCTL;
+      _d=hda.bar+hda.istr+STRCTL;
       *_d=0;
       hda.in_running=FALSE;
     }
@@ -622,11 +789,60 @@ public U0 HDTonesInit()
   }
 }
 
+U0 HDValidatePosBuf()
+{
+  U32 *lpib;
+  I64 p0,p1,l0,l1,i;
+  if (!hda.opos)
+    return;
+  lpib=hda.bar+hda.ostr+STRLPIB;
+  p0=*hda.opos;
+  l0=*lpib;
+  p1=p0;
+  l1=l0;
+  for (i=0;i<50;i++) {
+    Sleep(1);
+    p1=*hda.opos;
+    l1=*lpib;
+    if (p1!=p0)
+      return;
+  }
+  if (l1!=l0) {
+    "HD Audio: DMA position buffer is not counting, falling back to LPIB.\n";
+    hda.opos=NULL;
+    hda.ipos=NULL;
+  }
+}
+
+I64 HDOutPos()
+{
+  U32 *_d;
+  I64 res;
+  if (hda.opos)
+    res=*hda.opos;
+  else {
+    _d=hda.bar+hda.ostr+STRLPIB;
+    res=*_d;
+  }
+  return res;
+}
+
+I64 HDInPos()
+{
+  U32 *_d;
+  I64 res;
+  if (hda.ipos)
+    res=*hda.ipos;
+  else {
+    _d=hda.bar+hda.istr+STRLPIB;
+    res=*_d;
+  }
+  return res;
+}
+
 U0 HDAudioTask(I64)
 {
   I64 i,ob,last_ob=0,ib,last_ib=0;
-  U32 *pos_in_obuf=hda.bar+OSTR0+STRLPIB,
-	*pos_in_ibuf=hda.bar+ISTR0+STRLPIB;
   Fs->task_end_cb=&HDAudioTaskEndCB;
   for (i=0;i<HD_TONES;i++)
     hda.tone_swcs[i]=SndWaveCtrlNew(SND_SAMPLE_RATE,SND_SAMPLE_BITS,
@@ -640,9 +856,10 @@ U0 HDAudioTask(I64)
   snd_obuf_num=1;
   snd_ibuf_num=1;
   HDRun(FALSE,TRUE);
+  HDValidatePosBuf;
   hda.audio_task_started=TRUE;
   while (TRUE) {
-    ob=*pos_in_obuf/(SND_BUF_LEN*sizeof(SND_OUT_CONTAINER))&1;
+    ob=HDOutPos/(SND_BUF_LEN*sizeof(SND_OUT_CONTAINER))&1;
     if (ob!=last_ob) {
       last_ob=ob;
       i=ob^1;
@@ -656,7 +873,7 @@ U0 HDAudioTask(I64)
       }
       snd_obuf_num++;
     }
-    ib=*pos_in_ibuf/(SND_BUF_LEN*sizeof(SND_IN_CONTAINER))&1;
+    ib=HDInPos/(SND_BUF_LEN*sizeof(SND_IN_CONTAINER))&1;
     if (ib!=last_ib) {
       last_ib=ib;
       if (fp_snd_copy_buf)
@@ -670,7 +887,10 @@ U0 HDAudioTask(I64)
 U0 HDRst()
 {
   U32 d,*_d;
+  U16 *_w;
   HDStop(TRUE,TRUE);
+  _w=hda.bar+HD_STATESTS;
+  *_w=0x7FFF;
   _d=hda.bar+HD_GCTL;
   *_d=0;
   do {
@@ -687,6 +907,7 @@ U0 HDRst()
 
 public U0 HDAudioEnd(Bool rst=TRUE)
 {
+  U32 *_d;
   snd_dev=SD_PC_SPEAKER;
   if (hda.bar) {
     if (snd.fp_alt_snd_dev==&HDAltSndDev)
@@ -697,6 +918,14 @@ public U0 HDAudioEnd(Bool rst=TRUE)
     hda.task=NULL;
     if (rst)
       HDRst;
+    _d=hda.bar+HD_DPLBASE;
+    *_d=0;
+    _d=hda.bar+HD_DPUBASE;
+    *_d=0;
+    hda.opos=NULL;
+    hda.ipos=NULL;
+    Free(hda.posbuf);
+    hda.posbuf=NULL;
     Free(hda.corb);
     Free(hda.rirb);
     Free(hda.o_tmp_buf);
@@ -706,13 +935,95 @@ public U0 HDAudioEnd(Bool rst=TRUE)
     Free(hda.istr0_buf[1]);
     Free(hda.ostr0_bdl);
     Free(hda.istr0_bdl);
+    hda.corb=NULL;
+    hda.rirb=NULL;
+    hda.o_tmp_buf=NULL;
+    hda.ostr0_buf[0]=NULL;
+    hda.ostr0_buf[1]=NULL;
+    hda.istr0_buf[0]=NULL;
+    hda.istr0_buf[1]=NULL;
+    hda.ostr0_bdl=NULL;
+    hda.istr0_bdl=NULL;
     hda.bar=NULL;
   }
 }
 
+U0 HDPCIUpdate(I64 bus,I64 dev,I64 fun,I64 rg,I64 mask,I64 val)
+{
+  I64 dw_rg,shift,dw;
+  dw_rg=rg&~3;
+  shift=(rg&3)*8;
+  dw=PCIReadU32(bus,dev,fun,dw_rg);
+  dw=dw&~(mask<<shift);
+  dw=dw|((val&mask)<<shift);
+  PCIWriteU32(bus,dev,fun,dw_rg,dw);
+}
+
+U0 HDInitPCI(I64 hd_bus,I64 hd_dev,I64 hd_fun,I64 vendor)
+{
+  HDPCIUpdate(hd_bus,hd_dev,hd_fun,0x04,0x0406,0x0406);
+
+  HDPCIUpdate(hd_bus,hd_dev,hd_fun,HD_PCI_TCSEL,0x07,0x00);
+
+  if (vendor==0x8086)
+    HDPCIUpdate(hd_bus,hd_dev,hd_fun,HD_PCI_DEVC,HD_DEVC_NOSNOOP,0);
+  else if (vendor==0x1002 || vendor==0x1022)
+    HDPCIUpdate(hd_bus,hd_dev,hd_fun,0x42,0x07,0x02);
+  else if (vendor==0x10DE) {
+    HDPCIUpdate(hd_bus,hd_dev,hd_fun,0x4E,0x0F,0x0F);
+    HDPCIUpdate(hd_bus,hd_dev,hd_fun,0x4D,0x01,0x01);
+    HDPCIUpdate(hd_bus,hd_dev,hd_fun,0x4C,0x01,0x01);
+  }
+}
+
+U0 HDInitStreamLayout()
+{//Work out where the stream descriptors actually are, from GCAP.
+  U16 *_w;
+  I64 gcap;
+  _w=hda.bar+HD_GCAP;
+  gcap=*_w;
+  hda.iss=(gcap>>8)&0x0F;
+  hda.oss=(gcap>>12)&0x0F;
+  hda.bss=(gcap>>3)&0x1F;
+  if (!hda.iss && !hda.oss) {
+    hda.iss=HD_DFT_ISS;
+    hda.oss=HD_DFT_OSS;
+  }
+  hda.istr_idx=0;
+  hda.ostr_idx=hda.iss;
+  hda.istr=HD_STR_BASE+hda.istr_idx*HD_STR_SIZE;
+  hda.ostr=HD_STR_BASE+hda.ostr_idx*HD_STR_SIZE;
+}
+
+I64 HDRingSize(U8 *sz_reg,I64 *_mask)
+{
+  I64 cap,ents;
+  cap=(*sz_reg>>4)&0x0F;
+  if (cap&0x04) {
+    *sz_reg=(*sz_reg&~0x03)|0x02;
+    ents=256;
+  } else if (cap&0x02) {
+    *sz_reg=(*sz_reg&~0x03)|0x01;
+    ents=16;
+  } else if (cap&0x01) {
+    *sz_reg=*sz_reg&~0x03;
+    ents=2;
+  } else {
+    cap=*sz_reg&0x03;
+    if (cap==2)
+      ents=256;
+    else if (cap==1)
+      ents=16;
+    else
+      ents=2;
+  }
+  *_mask=ents-1;
+  return ents;
+}
+
 public Bool HDAudioInit(I64 hd_bus,I64 hd_dev,I64 hd_fun)
 {
-  I64 i;
+  I64 i,vendor,bar_lo,bar_hi,pos_sz;
   U32 *_d;
   U16 w,*_w;
   U8 *_b;
@@ -722,16 +1033,26 @@ public Bool HDAudioInit(I64 hd_bus,I64 hd_dev,I64 hd_fun)
     else
       MemSet(&hda,0,sizeof(CHDAudioCtrl));
   }
-  if (PCIReadU16(hd_bus,hd_dev,hd_fun,0)==0x8086 &&
-	(hda.bar=PCIReadU32(hd_bus,hd_dev,hd_fun,0x10) & ~(0x1F))) {
-    PCIWriteU16(hd_bus,hd_dev,hd_fun,0x04,
-	  PCIReadU16(hd_bus,hd_dev,hd_fun,0x04)|0x406);
+  vendor=PCIReadU16(hd_bus,hd_dev,hd_fun,0);
+  bar_lo=PCIReadU32(hd_bus,hd_dev,hd_fun,0x10);
+  hda.bar=bar_lo&~0xF;
+  if ((bar_lo&0x06)==0x04) {
+    bar_hi=PCIReadU32(hd_bus,hd_dev,hd_fun,0x14);
+    hda.bar=hda.bar+(bar_hi<<32);
+  }
+  if (hda.bar) {
+    HDInitPCI(hd_bus,hd_dev,hd_fun,vendor);
 
     *MemPageTable(hda.bar)=*MemPageTable(hda.bar)&~0x18 |0x11;
     *MemPageTable(hda.bar+mem_page_size)=
 	  *MemPageTable(hda.bar+mem_page_size)&~0x18 |0x11;
     InvlPg(hda.bar);
     InvlPg(hda.bar+mem_page_size);
+
+    HDInitStreamLayout;
+    hda.in_fmt =HD_DFT_IN_FMT;
+    hda.out_fmt=HD_DFT_OUT_FMT;
+    hda.out_fmt_chosen=FALSE;
 
     HDRst;
 
@@ -740,12 +1061,16 @@ public Bool HDAudioInit(I64 hd_bus,I64 hd_dev,I64 hd_fun)
     *_d=hda.corb(I64).u32[0];
     _d=hda.bar+HD_CORBUBASE;
     *_d=hda.corb(I64).u32[1];
+    _b=hda.bar+HD_CORBSIZE;
+    HDRingSize(_b,&hda.corb_mask);
 
     hda.rirb=CAllocAligned(HD_RIRB_ENTRIES*sizeof(I64),128,sys_dma_heap);
     _d=hda.bar+HD_RIRBLBASE;
     *_d=hda.rirb(I64).u32[0];
     _d=hda.bar+HD_RIRBUBASE;
     *_d=hda.rirb(I64).u32[1];
+    _b=hda.bar+HD_RIRBSIZE;
+    HDRingSize(_b,&hda.rirb_mask);
 
     _w=hda.bar+HD_CORBRP;
     *_w=0x8000;
@@ -771,15 +1096,27 @@ public Bool HDAudioInit(I64 hd_bus,I64 hd_dev,I64 hd_fun)
     *_b=0x03;
 
     _w=hda.bar+HD_CORBWP;
-    hda.corb_wp=*_w;
+    hda.corb_wp=*_w&hda.corb_mask;
     _w=hda.bar+HD_RIRBWP;
-    hda.rirb_rp=*_w;
+    hda.rirb_rp=*_w&hda.rirb_mask;
 
+    pos_sz=8*(hda.iss+hda.oss+hda.bss);
+    if (pos_sz<8)
+      pos_sz=8;
+    hda.posbuf=CAllocAligned(pos_sz,128,sys_dma_heap);
+    _d=hda.bar+HD_DPUBASE;
+    *_d=hda.posbuf(I64).u32[1];
+    _d=hda.bar+HD_DPLBASE;
+    *_d=hda.posbuf(I64).u32[0]|1;
+    hda.opos=&hda.posbuf[2*hda.ostr_idx];
+    hda.ipos=&hda.posbuf[2*hda.istr_idx];
+
+    HDStreamRst(hda.ostr);
     hda.ostr0_bdl =CAllocAligned(
 	  HD_BDL_ENTRIES*sizeof(CHDBufDesc),128,sys_dma_heap);
-    _d=hda.bar+OSTR0+STRBDPL;
+    _d=hda.bar+hda.ostr+STRBDPL;
     *_d=hda.ostr0_bdl(I64).u32[0];
-    _d=hda.bar+OSTR0+STRBDPU;
+    _d=hda.bar+hda.ostr+STRBDPU;
     *_d=hda.ostr0_bdl(I64).u32[1];
     for (i=0;i<2;i++) {
       hda.ostr0_bdl[i].buf=hda.ostr0_buf[i]=
@@ -789,11 +1126,12 @@ public Bool HDAudioInit(I64 hd_bus,I64 hd_dev,I64 hd_fun)
       hda.ostr0_bdl[i].ctrl=1;
     }
 
+    HDStreamRst(hda.istr);
     hda.istr0_bdl =CAllocAligned(
 	  HD_BDL_ENTRIES*sizeof(CHDBufDesc),128,sys_dma_heap);
-    _d=hda.bar+ISTR0+STRBDPL;
+    _d=hda.bar+hda.istr+STRBDPL;
     *_d=hda.istr0_bdl(I64).u32[0];
-    _d=hda.bar+ISTR0+STRBDPU;
+    _d=hda.bar+hda.istr+STRBDPU;
     *_d=hda.istr0_bdl(I64).u32[1];
     for (i=0;i<2;i++) {
       hda.istr0_bdl[i].buf=hda.istr0_buf[i]=CAllocAligned(
@@ -810,25 +1148,37 @@ public Bool HDAudioInit(I64 hd_bus,I64 hd_dev,I64 hd_fun)
 	hd_warned_out_fmt=FALSE;
 	hd_warned_in_fmt=FALSE;
 	hd_afg_pcm_cap=0;
+	hd_afg_in_amp=0;
+	hd_afg_out_amp=0;
+	hda.out_fmt_chosen=FALSE;
 	HDTraverse(hda.cad,0);
+	"HD Audio: %04X:%04X bus %d dev %d fun %d, %d in/%d out streams, "
+	      "codec %d, out fmt 0x%04X (%d-bit).\n",
+	      vendor,PCIReadU16(hd_bus,hd_dev,hd_fun,2),hd_bus,hd_dev,hd_fun,
+	      hda.iss,hda.oss,hda.cad,hda.out_fmt,
+	      HDFmtBits2Size((hda.out_fmt>>4)&7);
 
-	_d=hda.bar+OSTR0+STRLPIB;
+	_d=hda.bar+hda.ostr+STRLPIB;
 	*_d=0;
-	_d=hda.bar+OSTR0+STRCBL;
+	_d=hda.bar+hda.ostr+STRCBL;
 	*_d=2*SND_BUF_LEN*sizeof(SND_OUT_CONTAINER);
-	_w=hda.bar+OSTR0+STRLVI;
+	_w=hda.bar+hda.ostr+STRLVI;
 	*_w=1;
-	_w=hda.bar+OSTR0+STRFMT;
-	*_w=HD_DFT_OUT_FMT;
+	_w=hda.bar+hda.ostr+STRFMT;
+	*_w=hda.out_fmt;
+	_w=hda.bar+hda.ostr+STRFIFOS;
+	if (!*_w)
+	  "HD Audio: output stream did not accept format 0x%04X "
+		"(SDnFIFOS still 0).\n",hda.out_fmt;
 
-	_d=hda.bar+ISTR0+STRLPIB;
+	_d=hda.bar+hda.istr+STRLPIB;
 	*_d=0;
-	_d=hda.bar+ISTR0+STRCBL;
+	_d=hda.bar+hda.istr+STRCBL;
 	*_d=2*SND_BUF_LEN*sizeof(SND_IN_CONTAINER);
-	_w=hda.bar+ISTR0+STRLVI;
+	_w=hda.bar+hda.istr+STRLVI;
 	*_w=1;
-	_w=hda.bar+ISTR0+STRFMT;
-	*_w=HD_DFT_IN_FMT;
+	_w=hda.bar+hda.istr+STRFMT;
+	*_w=hda.in_fmt;
 
 	LBts(&sys_semas[SEMA_SND],0);
 	LBtr(&snd_flags,Sf_FILLING_OUT);
@@ -855,15 +1205,23 @@ public Bool HDAudioInit(I64 hd_bus,I64 hd_dev,I64 hd_fun)
 
 Bool HDAudioScan()
 {
-  I64 i=-1,j;
-  while (TRUE) {
-    j=PCIClassFind(0x040300,++i);
-    if (j<0)
-      return FALSE;
-
-    if (HDAudioInit(j.u8[2],j.u8[1],j.u8[0]))
-      return TRUE;
+  I64 i,j,pass;
+  Bool scanning;
+  for (pass=0;pass<2;pass++) {
+    i=-1;
+    scanning=TRUE;
+    while (scanning) {
+      j=PCIClassFind(0x040300,++i);
+      if (j<0)
+	scanning=FALSE;
+      else if (HDAudioInit(j.u8[2],j.u8[1],j.u8[0])) {
+	if (pass || hda.iss)
+	  return TRUE;
+	HDAudioEnd;
+      }
+    }
   }
+  return FALSE;
 }
 
 HDAudioScan;

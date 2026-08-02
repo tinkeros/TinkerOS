@@ -1,29 +1,8 @@
 #help_index "Snd/HDCfgNew"
 
-#define CONNECTS_NUM	16
+#ifdef SD_HD_AUDIO
 
-#define PINCAP_IMPEDANCE_SENSE	0
-#define PINCAP_TRIGGER_REQD	1
-#define PINCAP_PRESENCE_DETECT	2
-#define PINCAP_HEADPHONE	3
-#define PINCAP_OUTPUT		4
-#define PINCAP_INPUT		5
-#define PINCAP_BALANCED		6
-#define PINCAP_VREF_HIZ		8
-#define PINCAP_VREF_50		9
-#define PINCAP_VREF_GND		10
-#define PINCAP_VREF_80		12
-#define PINCAP_VREF_100		13
-#define PINCAP_EAPD		16
-
-#define PWC_VREF_HIZ	0
-#define PWC_VREF_50	1
-#define PWC_VREF_GND	2
-#define PWC_VREF_80	4
-#define PWC_VREF_100	5
-#define PWC_IN_EN	0x20
-#define PWC_OUT_EN	0x40
-#define PWC_HP_EN	0x80
+#define CONNECTS_NUM	32
 
 #define HD_MENU_AUTO		-1
 #define HD_MENU_ADVANCED	-2
@@ -71,16 +50,6 @@ Bool HDWIsInputDevice(I64 dev)
   return res;
 }
 
-I64 HDAmpMaxGain(U32 cap)
-{//Highest in-range gain index for an amp: the Num Steps field, bits 14:8.
-  I64 res;
-  if (!cap)
-    res=0x7F;
-  else
-    res=(cap>>8)&0x7F;
-  return res;
-}
-
 U0 HDCfgReset()
 {
   MemSet(hd_widgets,0,sizeof(CHDWidget)*256);
@@ -89,30 +58,57 @@ U0 HDCfgReset()
   hd_afg_out_amp_cap=0;
 }
 
+U0 HDCfgAddConnect(CHDWidget *w,I64 nid)
+{
+  if (w->num_connects<CONNECTS_NUM && nid>0 && nid<=255) {
+    w->connect_lst[w->num_connects]=nid;
+    w->num_connects++;
+  }
+}
+
 U0 HDCfgConnectLst(CHDWidget *w,I64 cad,I64 nid)
 {
-  I64 i,j,connection_lst_len;
-  j=HDWriteCORBSync(cad,nid,VERB_GET_PARAM+P_CONNECT_LST_LEN);
-  connection_lst_len=j&127;
-  if (j&128) {
-    for (i=0;i<connection_lst_len;i+=2) {
-      j=HDWriteCORBSync(cad,nid,VERB_GET_CONNECT_LST+i);
-      w->connect_lst[w->num_connects++]=j.u16[0];
-      if (i+1<connection_lst_len)
-	w->connect_lst[w->num_connects++]=j.u16[1];
-    }
+  I64 i,j,parm,len,shift,num_elems,mask,val,n,prev;
+  Bool range;
+
+  parm=HDWriteCORBSync(cad,nid,VERB_GET_PARAM+P_CONNECT_LST_LEN);
+  len=parm&127;
+  if (!len)
+    return;
+  if (parm&128) {
+    shift=16;
+    num_elems=2;
   }
   else {
-    for (i=0;i<connection_lst_len;i+=4) {
-      j=HDWriteCORBSync(cad,nid,VERB_GET_CONNECT_LST+i);
-      w->connect_lst[w->num_connects++]=j.u8[0];
-      if (i+1<connection_lst_len)
-	w->connect_lst[w->num_connects++]=j.u8[1];
-      if (i+2<connection_lst_len)
-	w->connect_lst[w->num_connects++]=j.u8[2];
-      if (i+3<connection_lst_len)
-	w->connect_lst[w->num_connects++]=j.u8[3];
+    shift=8;
+    num_elems=4;
+  }
+  mask=(1<<(shift-1))-1;
+
+  if (len==1) {
+    j=HDWriteCORBSync(cad,nid,VERB_GET_CONNECT_LST+0);
+    HDCfgAddConnect(w,j&mask);
+    return;
+  }
+
+  j=0;
+  prev=0;
+  for (i=0;i<len;i++) {
+    if (!(i%num_elems))
+      j=HDWriteCORBSync(cad,nid,VERB_GET_CONNECT_LST+i)&0xFFFFFFFF;
+    range=FALSE;
+    if (j&(1<<(shift-1)))
+      range=TRUE;
+    val=j&mask;
+    j=j>>shift;
+    if (range) {
+      if (prev && prev<val)
+	for (n=prev+1;n<=val;n++)
+	  HDCfgAddConnect(w,n);
     }
+    else
+      HDCfgAddConnect(w,val);
+    prev=val;
   }
 }
 
@@ -122,7 +118,7 @@ U0 HDCfgTraverse(I64 cad,I64 nid,I64 depth=0)
   U32 outer_in_cap,outer_out_cap;
   CHDWidget *w;
 
-  if (depth<=8 && nid>=0 && nid<=255) {
+  if (depth<=8 && nid>=0 && nid<=255 && hd_count<256) {
     w=&hd_widgets[nid];
     w->nid=nid;
     w->valid=TRUE;
@@ -671,8 +667,8 @@ I64 HDCfgMainMenu()
   return res;
 }
 
-U0 HDCfgSave()
-{
+U0 HDCfgSave(U8 *filename=NULL)
+{//filename=NULL means the default, "~/HDAudioCfg.HC.Z".
   CDoc *doc=DocNew;
   I64 idx,nid,i,dev,conn,loc,g;
   CHDWidget *w;
@@ -795,15 +791,19 @@ U0 HDCfgSave()
   DocPrint(doc,"  LBtr(&sys_semas[SEMA_SND],0);\n"
 	"}\n\nif (snd_dev==SD_HD_AUDIO)\n"
 	"  MyHDCfg;\n");
-  StrCpy(doc->filename.name,"~/HDAudioCfg.HC.Z");
+  if (filename)
+    StrCpy(doc->filename.name,filename);
+  else
+    StrCpy(doc->filename.name,"~/HDAudioCfg.HC.Z");
   DocWrite(doc);
   DocDel(doc);
 }
 
-public U0 HDCfgAuto()
+public U0 HDCfgAuto(U8 *filename=NULL)
 {
   I64 idx,nid,n_out,n_in;
   CHDWidget *w;
+  U8 *out_name;
 
   if (snd_dev!=SD_HD_AUDIO) {
     "HD Audio not detected\n";
@@ -823,12 +823,16 @@ public U0 HDCfgAuto()
 	n_in++;
     }
   }
-  HDCfgSave;
-  "HD Audio config: %d out, %d in -> ~/HDAudioCfg.HC.Z\n",n_out,n_in;
+  HDCfgSave(filename);
+  if (filename)
+    out_name=filename;
+  else
+    out_name="~/HDAudioCfg.HC.Z";
+  "HD Audio config: %d out, %d in -> %s\n",n_out,n_in,out_name;
 }
 
-public U0 HDCfgGui()
-{
+public U0 HDCfgGui(U8 *filename=NULL)
+{//filename=NULL means the default, "~/HDAudioCfg.HC.Z".
   I64 res;
   Bool looping;
 
@@ -844,7 +848,7 @@ public U0 HDCfgGui()
     while (looping) {
       res=HDCfgMainMenu;
       if (res==HD_MENU_SAVE) {
-	HDCfgSave;
+	HDCfgSave(filename);
 	looping=FALSE;
       }
       else if (res==HD_MENU_CANCEL)
@@ -870,4 +874,16 @@ public U0 HDCfgGui()
 	"$$BK,0$$\n";
 }
 
+#ifdef hd_cfg_out_file
+HDCfgAuto(hd_cfg_out_file);
+#else
 HDCfgAuto;
+#endif
+
+#else
+
+"HDCfgNew: the HD Audio driver isn't loaded, so there's nothing to "
+      "configure.\nBring up ::/Demo/Snd/HDAudio.HC first, then run "
+      "::/Demo/Snd/HDCfgNew.HC again.\n";
+
+#endif

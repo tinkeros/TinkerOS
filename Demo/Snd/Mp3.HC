@@ -1360,6 +1360,9 @@ Bool mp3_playing=FALSE;
 I64 mp3_mixer_idx=-1;
 Bool mp3_verbose=TRUE;
 
+I64 *mp3_abort_ptr=NULL;
+I64 mp3_abort_gen=0;
+
 U0 MP3FillBuf(SND_OUT_CONTAINER *buf,I64)
 {
   I64 j,l,c,idx,samp,t;
@@ -1395,6 +1398,137 @@ U0 MP3FillBuf(SND_OUT_CONTAINER *buf,I64)
   }
 }
 
+#define MP3_FFT_LG	10
+#define MP3_FFT_N	(1<<MP3_FFT_LG)
+#define MP3_VIS_DB_FLOOR (-54.0)
+
+F64 mp3_vis_re[MP3_FFT_N],mp3_vis_im[MP3_FFT_N],
+    mp3_vis_win[MP3_FFT_N],
+    mp3_vis_cos[MP3_FFT_N>>1],
+    mp3_vis_sin[MP3_FFT_N>>1];
+I64 mp3_vis_rev[MP3_FFT_N];
+Bool mp3_vis_tabs=FALSE;
+
+F64 mp3_vis_lag_mS=2*SND_BUF_TIME_mS;
+
+U0 Mp3VisInitTables()
+{
+  I64 i,j,k;
+  for (i=0;i<MP3_FFT_N;i++)
+    mp3_vis_win[i]=0.5-0.5*Cos(2*MP3_PI*i/(MP3_FFT_N-1));
+  for (k=0;k<MP3_FFT_N>>1;k++) {
+    mp3_vis_cos[k]=Cos(-2*MP3_PI*k/MP3_FFT_N);
+    mp3_vis_sin[k]=Sin(-2*MP3_PI*k/MP3_FFT_N);
+  }
+  for (i=0;i<MP3_FFT_N;i++) {
+    j=0;
+    for (k=0;k<MP3_FFT_LG;k++)
+      if (i>>k&1)
+	j|=1<<(MP3_FFT_LG-1-k);
+    mp3_vis_rev[i]=j;
+  }
+  mp3_vis_tabs=TRUE;
+}
+
+Bool Mp3VisLoad()
+{//Mono-sum, window and bit-reverse-permute the MP3_FFT_N samples playing
+  I64 i,idx,start;
+  F64 s;
+  if (!mp3_song || !mp3_playing || mp3_song_samps<MP3_FFT_N)
+    return FALSE;
+  start=(mp3_play_pos>>32)-ToI64(mp3_vis_lag_mS*mp3_song_hz/1000.0)
+	-MP3_FFT_N;
+  if (start<0)
+    start=0;
+  if (start>mp3_song_samps-MP3_FFT_N)
+    start=mp3_song_samps-MP3_FFT_N;
+  for (i=0;i<MP3_FFT_N;i++) {
+    idx=start+i;
+    if (mp3_song_ch==2)
+      s=(mp3_song[idx*2]+mp3_song[idx*2+1])/65536.0;
+    else
+      s=mp3_song[idx*mp3_song_ch]/32768.0;
+    mp3_vis_re[mp3_vis_rev[i]]=s*mp3_vis_win[i];
+    mp3_vis_im[mp3_vis_rev[i]]=0;
+  }
+  return TRUE;
+}
+
+U0 Mp3VisFFT()
+{//In-place radix-2 decimation-in-time FFT.
+  I64 len,half,step,i,j,k,a,b;
+  F64 wr,wi,tr,ti;
+  for (len=2;len<=MP3_FFT_N;len<<=1) {
+    half=len>>1;
+    step=MP3_FFT_N/len;
+    for (i=0;i<MP3_FFT_N;i+=len)
+      for (j=0;j<half;j++) {
+	k=j*step;
+	wr=mp3_vis_cos[k];
+	wi=mp3_vis_sin[k];
+	a=i+j;
+	b=a+half;
+	tr=mp3_vis_re[b]*wr-mp3_vis_im[b]*wi;
+	ti=mp3_vis_re[b]*wi+mp3_vis_im[b]*wr;
+	mp3_vis_re[b]=mp3_vis_re[a]-tr;
+	mp3_vis_im[b]=mp3_vis_im[a]-ti;
+	mp3_vis_re[a]+=tr;
+	mp3_vis_im[a]+=ti;
+      }
+  }
+}
+
+public Bool MP3Spectrum(F64 *bands,I64 n_bands,F64 f_lo=50.0,
+	F64 f_hi=16000.0)
+{//Fill bands[0..n_bands-1] with 0.0..1.0 loudness
+  I64 b,k,k0,k1,k_top;
+  F64 mag,best,db,f0,f1,ratio,scale,nyq;
+  if (!bands || n_bands<1)
+    return FALSE;
+  MemSet(bands,0,n_bands*sizeof(F64));
+  if (!mp3_vis_tabs)
+    Mp3VisInitTables;
+  if (!Mp3VisLoad)
+    return FALSE;
+  Mp3VisFFT;
+
+  nyq=mp3_song_hz/2.0;
+  if (f_lo<mp3_song_hz*1.0/MP3_FFT_N)
+    f_lo=mp3_song_hz*1.0/MP3_FFT_N;
+  if (f_hi>nyq*0.98)
+    f_hi=nyq*0.98;
+  if (f_hi<=f_lo)
+    return FALSE;
+  scale=4.0/MP3_FFT_N;
+  ratio=Pow(f_hi/f_lo,1.0/n_bands);
+  k_top=(MP3_FFT_N>>1)-1;
+  f0=f_lo;
+  for (b=0;b<n_bands;b++) {
+    f1=f0*ratio;
+    k0=ToI64(f0*MP3_FFT_N/mp3_song_hz);
+    k1=ToI64(f1*MP3_FFT_N/mp3_song_hz);
+    if (k0<1)
+      k0=1;
+    if (k1<k0)
+      k1=k0;
+    if (k1>k_top)
+      k1=k_top;
+    best=0;
+    for (k=k0;k<=k1;k++) {
+      mag=Sqrt(Sqr(mp3_vis_re[k])+Sqr(mp3_vis_im[k]));
+      if (mag>best)
+	best=mag;
+    }
+    best*=scale;
+    if (best<0.0000001)
+      best=0.0000001;
+    db=20*Log10(best);
+    bands[b]=Clamp((db-MP3_VIS_DB_FLOOR)/-MP3_VIS_DB_FLOOR,0.0,1.0);
+    f0=f1;
+  }
+  return TRUE;
+}
+
 public I16 *MP3Decode(U8 *data,I64 size,I64 *_samps=NULL,I64 *_hz=NULL,
 	I64 *_nch=NULL)
 {
@@ -1419,6 +1553,10 @@ public I16 *MP3Decode(U8 *data,I64 size,I64 *_samps=NULL,I64 *_hz=NULL,
     frames++;
     if (!(frames&127) && mp3_verbose)
       ".";
+    if (mp3_abort_ptr && *mp3_abort_ptr!=mp3_abort_gen) {
+      Free(out);
+      return NULL;
+    }
     n=Mp3NextFrame;
   }
   if (!total) {

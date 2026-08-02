@@ -24,6 +24,8 @@ I32 clockticks6502 = 0, clockgoal6502 = 0;
 U16 oldpc, ea, reladdr, value, result;
 U8 opcode, oldcpustatus, useaccum;
 
+U8 penalty_addr, penalty_op;
+
 U0 setcarry()
 {
   cpustatus |= FLAG_CARRY;
@@ -133,7 +135,7 @@ U0 reset6502()
   y = 0;
   sp = 0xFD;
 
-  cpustatus = FLAG_CONSTANT;
+  cpustatus = FLAG_CONSTANT | FLAG_INTERRUPT;
 }
 
 U0 imp()
@@ -157,12 +159,12 @@ U0 zp()
 
 U0 zpx()
 {
-  ea = (readRAM(pc++)(U16) + x(U16)) & 0xFF;
+  ea = (readRAM(pc++)(U16) + (x & 0xFF)) & 0xFF;
 }
 
 U0 zpy()
 {
-  ea = (readRAM(pc++)(U16) + y(U16)) & 0xFF;
+  ea = (readRAM(pc++)(U16) + (y & 0xFF)) & 0xFF;
 }
 
 U0 rel()
@@ -179,13 +181,21 @@ U0 abso()
 
 U0 absx()
 {
-  ea = (readRAM(pc)(U16) | (readRAM(pc+1)(U16) << 8)) + x(U16);
+  U16 base;
+  base = readRAM(pc)(U16) | (readRAM(pc+1)(U16) << 8);
+  ea = base + (x & 0xFF);
+  if ((base & 0xFF00) != (ea & 0xFF00))
+    penalty_addr = 1;
   pc += 2;
 }
 
 U0 absy()
 {
-  ea = (readRAM(pc)(U16) | (readRAM(pc+1)(U16) << 8)) + y(U16);
+  U16 base;
+  base = readRAM(pc)(U16) | (readRAM(pc+1)(U16) << 8);
+  ea = base + (y & 0xFF);
+  if ((base & 0xFF00) != (ea & 0xFF00))
+    penalty_addr = 1;
   pc += 2;
 }
 
@@ -201,21 +211,50 @@ U0 ind()
 U0 indx()
 {
   U16 eahelp;
-  eahelp = ((readRAM(pc++)(U16) + x(U16)) & 0xFF)(U16);
+  eahelp = ((readRAM(pc++)(U16) + (x & 0xFF)) & 0xFF)(U16);
   ea = readRAM(eahelp & 0x00FF)(U16) | (readRAM((eahelp+1) & 0x00FF)(U16) << 8);
 }
 
 U0 indy()
 {
-  U16 eahelp, eahelp2;
+  U16 eahelp, eahelp2, base;
+#ifdef NES_DIAG
+  U8 dg_lo, dg_hi;
+  U16 dg_pc = pc;
+#endif
   eahelp = readRAM(pc++)(U16);
   eahelp2 = (eahelp & 0xFF00) | ((eahelp + 1) & 0x00FF);
-  ea = (readRAM(eahelp)(U16) | (readRAM(eahelp2)(U16) << 8)) + y(U16);
+#ifdef NES_DIAG
+  dg_lo = readRAM(eahelp);
+  dg_hi = readRAM(eahelp2);
+  base = dg_lo(U16) | (dg_hi(U16) << 8);
+#else
+  base = readRAM(eahelp)(U16) | (readRAM(eahelp2)(U16) << 8);
+#endif
+  ea = base + (y & 0xFF);
+  if ((base & 0xFF00) != (ea & 0xFF00))
+    penalty_addr = 1;
+#ifdef NES_DIAG
+  if (nes_dg_indy_cnt < NES_INDY_MAX)
+  {
+    nes_dg_indy_instr[nes_dg_indy_cnt] = instructions;
+    nes_dg_indy_pc[nes_dg_indy_cnt] = dg_pc;
+    nes_dg_indy_eah[nes_dg_indy_cnt] = eahelp;
+    nes_dg_indy_eah2[nes_dg_indy_cnt] = eahelp2;
+    nes_dg_indy_lo[nes_dg_indy_cnt] = dg_lo;
+    nes_dg_indy_hi[nes_dg_indy_cnt] = dg_hi;
+    nes_dg_indy_base[nes_dg_indy_cnt] = base;
+    nes_dg_indy_y[nes_dg_indy_cnt] = y;
+    nes_dg_indy_p[nes_dg_indy_cnt] = cpustatus;
+    nes_dg_indy_ea[nes_dg_indy_cnt] = ea;
+    nes_dg_indy_cnt++;
+  }
+#endif
 }
 
 static U16 getvalue()
 {
-  if (useaccum) return (a(U16));
+  if (useaccum) return (a & 0xFF);
   else return (readRAM(ea)(U16));
 }
 
@@ -232,8 +271,9 @@ U0 putvalue(U16 saveval)
 
 U0 adc()
 {
+  penalty_op = 1;
   value = getvalue;
-  result = a(U16) + value + (cpustatus & FLAG_CARRY)(U16);
+  result = (a & 0xFF) + value + (cpustatus & FLAG_CARRY)(U16);
 
   carrycalc(result);
   zerocalc(result);
@@ -264,8 +304,9 @@ U0 adc()
 
 U0 op_and()
 {
+  penalty_op = 1;
   value = getvalue;
-  result = a(U16) & value;
+  result = (a & 0xFF) & value;
 
   zerocalc(result);
   signcalc(result);
@@ -321,7 +362,7 @@ U0 beq()
 U0 op_bit()
 {
   value = getvalue;
-  result = a(U16) & value;
+  result = (a & 0xFF) & value;
 
   zerocalc(result);
   cpustatus = (cpustatus & 0x3F) | (value & 0xC0)(U8);
@@ -413,8 +454,9 @@ U0 clv()
 
 U0 _cmp()
 {
+  penalty_op = 1;
   value = getvalue;
-  result = a(U16) - value;
+  result = (a & 0xFF) - value;
 
   if (a >= (value & 0x00FF)(U8)) setcarry;
   else clearcarry;
@@ -426,7 +468,7 @@ U0 _cmp()
 U0 cpx()
 {
   value = getvalue;
-  result = x(U16) - value;
+  result = (x & 0xFF) - value;
 
   if (x >= (value & 0x00FF)(U8)) setcarry;
   else clearcarry;
@@ -438,7 +480,7 @@ U0 cpx()
 U0 cpy()
 {
   value = getvalue;
-  result = y(U16) - value;
+  result = (y & 0xFF) - value;
 
   if (y >= (value & 0x00FF)(U8)) setcarry;
   else clearcarry;
@@ -476,8 +518,9 @@ U0 dey()
 
 U0 eor()
 {
+  penalty_op = 1;
   value = getvalue;
-  result = a(U16) ^ value;
+  result = (a & 0xFF) ^ value;
 
   zerocalc(result);
   signcalc(result);
@@ -525,6 +568,7 @@ U0 jsr()
 
 U0 lda()
 {
+  penalty_op = 1;
   value = getvalue;
   a = (value & 0x00FF)(U8);
 
@@ -534,6 +578,7 @@ U0 lda()
 
 U0 ldx()
 {
+  penalty_op = 1;
   value = getvalue;
   x = (value & 0x00FF)(U8);
 
@@ -543,6 +588,7 @@ U0 ldx()
 
 U0 ldy()
 {
+  penalty_op = 1;
   value = getvalue;
   y = (value & 0x00FF)(U8);
 
@@ -565,12 +611,14 @@ U0 lsr()
 
 U0 nop()
 {
+  penalty_op = 1;
 }
 
 U0 ora()
 {
+  penalty_op = 1;
   value = getvalue;
-  result = a(U16) | value;
+  result = (a & 0xFF) | value;
 
   zerocalc(result);
   signcalc(result);
@@ -641,8 +689,9 @@ U0 rts()
 
 U0 sbc()
 {
+  penalty_op = 1;
   value = getvalue() ^ 0x00FF;
-  result = a(U16) + value + (cpustatus & FLAG_CARRY)(U16);
+  result = (a & 0xFF) + value + (cpustatus & FLAG_CARRY)(U16);
 
   carrycalc(result);
   zerocalc(result);
@@ -750,6 +799,7 @@ U0 tya()
 #ifdef UNDOCUMENTED
 U0 lax()
 {
+  penalty_op = 1;
   lda;
   ldx;
 }
@@ -858,8 +908,15 @@ U0 exec6502(I32 tickcount)
 #endif
     opcode = readRAM(pc++);
     cpustatus |= FLAG_CONSTANT;
+#ifdef NES_DIAG
+    nes_dg_cur_instr = instructions;
+    nes_dg_cur_pc = pc;
+#endif
 
     useaccum = 0;
+    clockticks6502 = 0;
+    penalty_addr = 0;
+    penalty_op = 0;
 
     switch (opcode)
     {
@@ -1419,6 +1476,10 @@ U0 exec6502(I32 tickcount)
       imm;
       sbc;
       break;
+    case 0xEA:
+      imp;
+      nop;
+      break;
     case 0xEB:
       imm;
       sbc;
@@ -1467,9 +1528,18 @@ U0 exec6502(I32 tickcount)
       absx;
       inc;
       break;
+    default:
+      nes_badop_cnt++;
+      nes_badop_last = opcode;
+      nes_badop_pc = pc - 1;
+      nes_badop_bank = nes_last_ld16_bank;
+      nes_badop_seq = nes_ld16_seq;
+      break;
     }
+    if (penalty_addr && penalty_op)
+      clockticks6502++;
 #ifdef USE_TIMING
-    clockgoal6502 -= ticktable[opcode](I32);
+    clockgoal6502 -= ticktable[opcode](I32) + clockticks6502;
 #endif
     instructions++;
   }

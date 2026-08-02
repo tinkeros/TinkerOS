@@ -173,6 +173,12 @@ U0 renderPixel(PPU2C02state *state)
     sprite_color_index = (bit_1 << 1) | bit_0;
   }
 
+  if (state->dot < 8)
+  {
+    if (!(MMU.RAM[0x2001] & (1 << 1))) bg_color_index = 0;
+    if (!(MMU.RAM[0x2001] & (1 << 2))) sprite_color_index = 0;
+  }
+
   U16 palette_base;
   U8 color_value;
 
@@ -396,11 +402,8 @@ U0 fetchAttribute(PPU2C02state *state)
 
 I64 initPPU2C02(PPU2C02state *state)
 {
+  MemSet(state, 0, sizeof(PPU2C02state));
   state->scanline = 241;
-  state->dot = 0;
-  state->odd_frame = 0;
-  state->nmi_occurred = 0;
-  state->nmi_output = 0;
 
   return 1;
 }
@@ -476,12 +479,6 @@ U0 handleVisibleScanline(PPU2C02state *state)
 
 U8 PPUcycle(PPU2C02state *state)
 {
-  if (state->nmi_output && state->nmi_occurred)
-  {
-    state->nmi_occurred = 0;
-    nmi6502;
-  }
-
   state->dot += 1;
   if (state->dot == 341)
   {
@@ -489,6 +486,12 @@ U8 PPUcycle(PPU2C02state *state)
     state->dot = 0;
   }
   state->scanline %= 262;
+#ifdef NES_DIAG
+  if (state->scanline == 0 && state->dot == 0)
+    nes_dg_render_busy = 1;
+  else if (state->scanline == 240 && state->dot == 0)
+    nes_dg_render_busy = 0;
+#endif
 
   if (state->scanline == 0 && state->dot == 0 && state->odd_frame == 1
       && rendering_enabled())
@@ -516,7 +519,14 @@ U8 PPUcycle(PPU2C02state *state)
     if (state->dot == 1)
     {
       state->nmi_occurred = 1;
+      if (state->nmi_output)
+      {
+        state->nmi_pending = 1;
+      }
       state->odd_frame ^= 1;
+#ifdef NES_DIAG
+      nes_dg_nmi_set++;
+#endif
       return 1;
     }
   }
@@ -529,6 +539,9 @@ U8 PPUcycle(PPU2C02state *state)
     {
       state->sprite_zero_hit = 0;
       state->nmi_occurred = 0;
+#ifdef NES_DIAG
+      nes_dg_nmi_clr++;
+#endif
     }
     else if (state->dot >= 280 && state->dot <= 304 && rendering_enabled())
     {

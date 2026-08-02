@@ -95,7 +95,17 @@ U0 writeVRAM(U16 address, U8 value)
       break;
     }
   }
+  if (numCHRROM && (address & 0x3FFF) < 0x2000)
+    return;
   MMU.VRAM[address & 0x3FFF] = value;
+#ifdef NES_DIAG
+  if ((address & 0x3FFF) >= 0x3F00 && (address & 0x3FFF) <= 0x3F1F)
+  {
+    nes_dg_palw++;
+    if (nes_dg_palw_frame < 0)
+      nes_dg_palw_frame = nes_dg_frame;
+  }
+#endif
 }
 
 I64 MMC1_regBuffer = 0;
@@ -135,6 +145,9 @@ I64 MMC1_getRegNumber(U16 address)
 U0 LoadPrgBank16k(I64 bank, U16 address)
 {
   bank = bank % numPRGROM;
+  nes_last_ld16_bank = bank;
+  nes_last_ld16_addr = address;
+  nes_ld16_seq++;
   MemCpy(MMU.RAM + address, cartridgebuffer + 0x10 + 0x4000 * bank, 0x4000);
 }
 
@@ -520,12 +533,36 @@ U0 MMUInit()
   MMU.VRAM = CAlloc(0x10000);
   MMU.OAM = MAlloc(0x100);
   MemSet(MMU.OAM, 0xFF, 0x100);
+#ifdef NES_DIAG
+  if (!nes_dg_ram_written)
+    nes_dg_ram_written = CAlloc(0x800);
+  else
+    MemSet(nes_dg_ram_written, 0, 0x800);
+  if (!nes_dg_ram_mirror)
+    nes_dg_ram_mirror = CAlloc(0x800);
+  else
+    MemSet(nes_dg_ram_mirror, 0, 0x800);
+  if (!nes_dg_oam_mirror)
+    nes_dg_oam_mirror = MAlloc(0x100);
+  MemSet(nes_dg_oam_mirror, 0xFF, 0x100);
+  MemSet(nes_dg_ppureg_mirror, 0, 8);
+  nes_dg_ppureg_addr = -1;
+  nes_dg_oamm_addr = -1;
+  nes_dg_uninit_rd = 0;
+  nes_dg_uninit_addr = -1;
+  nes_dg_mirror_addr = -1;
+  nes_dg_mirror_frame = -1;
+  if (nes_heap_jitter)
+    MAlloc(nes_heap_jitter);
+#endif
 
   MMU.internal_buffer = 0;
   MMU.VRAM_address = 0;
 
   MMU.w = 0;
   MMU.t = 0;
+  MMU.x = 0;
+  MMU.y = 0;
 }
 
 U0 MMUFree()
@@ -536,11 +573,23 @@ U0 MMUFree()
   MMU.RAM = NULL;
   MMU.VRAM = NULL;
   MMU.OAM = NULL;
+#ifdef NES_DIAG
+  Free(nes_dg_ram_written);
+  Free(nes_dg_ram_mirror);
+  Free(nes_dg_oam_mirror);
+  nes_dg_ram_written = NULL;
+  nes_dg_ram_mirror = NULL;
+  nes_dg_oam_mirror = NULL;
+#endif
 }
 
 U0 writeSPRRAM(U8 address, U8 value)
 {
   MMU.OAM[address] = value;
+#ifdef NES_DIAG
+  if (nes_dg_oam_mirror)
+    nes_dg_oam_mirror[address] = value;
+#endif
 }
 U8 readSPRRAM(U8 address)
 {
@@ -550,6 +599,10 @@ U8 readSPRRAM(U8 address)
 U8 writeRAM(U16 address, U8 value)
 {
   U16 val;
+  U8 old_nmi_output;
+#ifdef NES_DIAG
+  U16 nes_dg_raw = address;
+#endif
   while (address >= 0x2008 && address < 0x4000)
   {
     address -= 8;
@@ -559,18 +612,44 @@ U8 writeRAM(U16 address, U8 value)
     address -= 0x0800;
   }
 
+#ifdef NES_DIAG
+  if (address == 0x2000)
+  {
+    nes_dg_w2000++;
+    nes_dg_w2000_val = value;
+  }
+  if (address == 0x2001)
+  {
+    nes_dg_w2001++;
+    nes_dg_w2001_val = value;
+  }
+  if (address == 0x2000 && value & 0x04 && nes_dg_inc32_frame < 0)
+  {
+    nes_dg_inc32_frame = nes_dg_frame;
+    nes_dg_inc32_val = value;
+  }
+#endif
   if (address == 0x2000)
   {
     val = value & 3;
     MMU.t &= 0xF3FF;
     MMU.t |= (val << 10);
+    old_nmi_output = PPU_state.nmi_output;
     PPU_state.nmi_output = ((value & (1 << 7)) >> 7);
+    if (!old_nmi_output && PPU_state.nmi_output &&
+        PPU_state.nmi_occurred)
+    {
+      PPU_state.nmi_pending = 1;
+    }
   }
 
   else if (address == 0x2004)
   {
     writeSPRRAM(MMU.RAM[0x2003], value);
     MMU.RAM[0x2003] = MMU.RAM[0x2003] + 1;
+#ifdef NES_DIAG
+    nes_dg_ppureg_mirror[3] = MMU.RAM[0x2003];
+#endif
   }
 
   else if (address == 0x2005)
@@ -630,23 +709,32 @@ U8 writeRAM(U16 address, U8 value)
     I64 i;
     for (i = 0; i <= 0xFF; ++i)
     {
+#ifdef NES_DIAG
+      if (MMU.RAM[0x2003] + i > 0xFF)
+        nes_dg_oamdma_over++;
+#endif
       writeSPRRAM(MMU.RAM[0x2003] + i, MMU.RAM[(value << 8) | i]);
     }
-    return 513 + PPU_state.odd_frame;
+    cpu_stall_cycles += 513 + PPU_state.odd_frame;
+    return 0;
   }
 
-  if (address > 0x3fff && address < 0x4018)
-  {
-    PAPU_writeReg(&PAPU, address, value);
-  }
-
-  else if (address == 0x4016)
+  if (address == 0x4016)
   {
     JoypadWrite(&nes_joypad, value);
   }
 
+  else if (address > 0x3fff && address < 0x4018)
+  {
+    PAPU_writeReg(&PAPU, address, value);
+  }
+
   else if (address > 0x7FFF)
   {
+#ifdef NES_DIAG
+    nes_dg_mapw++;
+    nes_dg_mapper_seen = mapper;
+#endif
     switch (mapper)
     {
     case 1:
@@ -670,11 +758,38 @@ U8 writeRAM(U16 address, U8 value)
       return 0;
       break;
     default:
+#ifdef NES_DIAG
+      nes_dg_mapdflt++;
+#endif
       break;
     }
+    return 0;
   }
 
   MMU.RAM[address] = value;
+#ifdef NES_DIAG
+  if (address < 0x800)
+  {
+    if (nes_dg_ram_written)
+      nes_dg_ram_written[address] = 1;
+    if (nes_dg_ram_mirror)
+      nes_dg_ram_mirror[address] = value;
+  }
+  else if (address >= 0x2000 && address <= 0x2007)
+  {
+    nes_dg_ppureg_mirror[address - 0x2000] = value;
+    if (nes_dg_pw_cnt < NES_PW_MAX)
+    {
+      nes_dg_pw_instr[nes_dg_pw_cnt] = nes_dg_cur_instr;
+      nes_dg_pw_pc[nes_dg_pw_cnt] = nes_dg_cur_pc;
+      nes_dg_pw_addr[nes_dg_pw_cnt] = nes_dg_raw;
+      nes_dg_pw_val[nes_dg_pw_cnt] = value;
+      nes_dg_pw_zp6[nes_dg_pw_cnt] = MMU.RAM[0x06];
+      nes_dg_pw_zp7[nes_dg_pw_cnt] = MMU.RAM[0x07];
+      nes_dg_pw_cnt++;
+    }
+  }
+#endif
   return 0;
 }
 
@@ -690,16 +805,25 @@ U8 readRAM(U16 address)
   }
 
   U8 retVal = MMU.RAM[address];
+#ifdef NES_DIAG
+  if (address < 0x800 && nes_dg_ram_written && !nes_dg_ram_written[address])
+  {
+    nes_dg_uninit_rd++;
+    if (nes_dg_uninit_addr < 0)
+      nes_dg_uninit_addr = address;
+  }
+#endif
 
   if (address == 0x2002)
   {
     MMU.w = 0;
     retVal = ((PPU_state.sprite_zero_hit << 6) | (PPU_state.nmi_occurred << 7));
     PPU_state.nmi_occurred = 0;
-    if (PPU_state.scanline == 241 && PPU_state.dot == 1)
-    {
-      retVal = (PPU_state.sprite_zero_hit << 6);
-    }
+#ifdef NES_DIAG
+    nes_dg_r2002++;
+    if (retVal & 0x80)
+      nes_dg_r2002_hit++;
+#endif
   }
 
   if (address == 0x2004)
@@ -734,6 +858,9 @@ U8 readRAM(U16 address)
   else if (address == 0x4016)
   {
     retVal = JoypadNextButton(&nes_joypad);
+#ifdef NES_DIAG
+    nes_dg_r4016++;
+#endif
   }
 
   if (address == 0x4015)

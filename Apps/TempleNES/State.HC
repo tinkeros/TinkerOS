@@ -1,4 +1,4 @@
-#define NES_STATE_VERSION	1
+#define NES_STATE_VERSION	2
 
 U8 nes_state_filename[STR_LEN];
 U8 nes_sram_filename[STR_LEN];

@@ -9,8 +9,15 @@
 
 #define NES_SND_LEAD    2048
 
+#define NES_SND_THROTTLE_MS 40
+
+#define NES_SND_GIVE_UP 8
+
+#define NES_SND_RETRY_FRAMES 600
+
 CFifoI64 *nes_snd_fifo=NULL;
-I64 nes_snd_mixer_idx=-1, nes_snd_last=0;
+I64 nes_snd_mixer_idx=-1, nes_snd_last=0, nes_snd_stall_cnt=0,
+    nes_snd_retry=0;
 F64 nes_snd_dc=0.0;
 
 I64 SQR_dutyLookup[32] =
@@ -177,9 +184,19 @@ PAPU2A03 PAPU;
 
 U0 PAPU_initBuffers()
 {
+#ifdef NES_DIAG
+  if (nes_snd_fifo)
+  {
+    nes_dg_flush_cnt++;
+    if (nes_dg_fifo_busy)
+      nes_dg_flush_overlap++;
+  }
+#endif
   if (nes_snd_fifo)
     FifoI64Flush(nes_snd_fifo);
   nes_snd_last = 0;
+  nes_snd_stall_cnt = 0;
+  nes_snd_retry = 0;
 }
 
 U0 PAPU_audioSample(I64 l, I64 r)
@@ -1449,11 +1466,46 @@ U0 initPAPU(PAPU2A03 *papu)
 
 U0 NESSndThrottle()
 {
-
-  I64 timeout = 200;
-  if (nes_snd_fifo && nes_snd_mixer_idx >= 0)
-    while (FifoI64Cnt(nes_snd_fifo) > NES_SND_LEAD && timeout-- > 0)
-      Sleep(1);
+  I64 timeout;
+  Bool drained;
+  if (!nes_snd_fifo || nes_snd_mixer_idx < 0)
+    return;
+  if (nes_snd_stall_cnt >= NES_SND_GIVE_UP)
+  {
+    nes_snd_retry--;
+    if (nes_snd_retry <= 0)
+    {
+#ifdef NES_DIAG
+      nes_dg_flush_cnt++;
+      if (nes_dg_fifo_busy)
+        nes_dg_flush_overlap++;
+#endif
+      FifoI64Flush(nes_snd_fifo);
+      nes_snd_stall_cnt = 0;
+      nes_snd_retry = NES_SND_RETRY_FRAMES;
+    }
+    return;
+  }
+  timeout = NES_SND_THROTTLE_MS;
+  drained = TRUE;
+  while (FifoI64Cnt(nes_snd_fifo) > NES_SND_LEAD)
+  {
+    if (timeout <= 0)
+    {
+      drained = FALSE;
+      break;
+    }
+    timeout--;
+    Sleep(1);
+  }
+  if (drained)
+    nes_snd_stall_cnt = 0;
+  else
+  {
+    nes_snd_stall_cnt++;
+    if (nes_snd_stall_cnt >= NES_SND_GIVE_UP)
+      nes_snd_retry = NES_SND_RETRY_FRAMES;
+  }
 }
 
 #ifdef MIXER_MAX_SRC
@@ -1463,6 +1515,11 @@ U0 NESSndFillBuf(SND_OUT_CONTAINER *buf, I64 buf_num)
 
   I64 j = 0, prev, samp;
   F64 v;
+#ifdef NES_DIAG
+  nes_dg_fill_cnt++;
+  nes_dg_fill_core = Gs->num;
+  nes_dg_fifo_busy = 1;
+#endif
   while (j < SND_BUF_LEN)
   {
     prev = nes_snd_last;
@@ -1480,6 +1537,9 @@ U0 NESSndFillBuf(SND_OUT_CONTAINER *buf, I64 buf_num)
     buf[j++] = samp;
     buf[j++] = samp;
   }
+#ifdef NES_DIAG
+  nes_dg_fifo_busy = 0;
+#endif
 }
 
 U0 NESSndInstall()

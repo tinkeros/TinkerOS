@@ -1,0 +1,39 @@
+$WW,1$$FG,14$$TX+CX,"TempleGen"$$FG$
+
+$TX+CX,"Sega Genesis / Megadrive Emulator for TinkerOS"$
+
+$FG,10$Controller$FG$
+  $FG,11$Arrow Keys$FG$ - D-Pad          $FG,11$Enter$FG$ - Start
+  $FG,11$Z / X / C$FG$  - A / B / C buttons
+
+$FG,10$Emulator Keys$FG$
+  $FG,11$P$FG$ - Pick ROM file         $FG,11$S$FG$ - Save state
+  $FG,11$R$FG$ - Reset the console     $FG,11$L$FG$ - Load state
+  $FG,11$Space$FG$ - Pause / resume
+  $FG,11$1 / 2$FG$ - Window scale: 1x is a bordered 320x240
+          window; 2x fills the screen (640x448, borderless,
+          TV overscan cropped).
+  $FG,11$ESC / Q$FG$ - Quit
+
+$FG,10$Saves$FG$
+  $FG,11$S$FG$ writes the machine state next to the ROM
+  ("Sonic.BIN" -> "Sonic.SAV.Z"); $FG,11$L$FG$ restores it.
+  Cartridge SRAM is not emulated -- use save states instead.
+
+$FG,10$Sound$FG$
+  Load /Demo/Snd/HDAudio.HC and /Demo/Snd/HDMixer.HC before
+  TempleGen; the YM2612+PSG appear as the "GEN" mixer
+  source.  The Z80 sound CPU is emulated, so both kinds of
+  Sega sound driver play: the ones the 68000 runs itself
+  (Sonic 1) and the ones uploaded to the Z80 (Sonic 2, 3
+  and most later games), sampled drums included.
+
+$FG,10$ROMs$FG$
+  ROMs are not included.  Put .BIN, .GEN or .MD files
+  (optionally .Z-compressed) in this app's "Roms"
+  subdirectory.  The picker lists them at startup and
+  $FG,11$P$FG$ reopens it any time: $FG,11$Arrows$FG$ move, $FG,11$Space$FG$/$FG,11$Enter$FG$ pick,
+  $FG,11$ESC$FG$ backs out.
+
+$CYAN$Special thanks to Alec for his original TempleOS Genesis emulator!$FG$
+

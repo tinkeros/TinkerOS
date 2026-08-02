@@ -3,6 +3,7 @@ class CNESJoypad
 {
   U8 pointer;
   U8 button_status[8];
+  U8 latched[8];
   U8 previous_write;
 };
 
@@ -18,7 +19,10 @@ U0 JoypadInit(CNESJoypad *joypad)
   I64 i;
   joypad->pointer=0;
   for (i=0; i<8; i++)
+  {
     joypad->button_status[i]=0;
+    joypad->latched[i]=0;
+  }
   joypad->previous_write=0;
 }
 
@@ -39,14 +43,20 @@ U0 JoypadScan(CNESJoypad *joypad)
 
 U0 JoypadWrite(CNESJoypad *joypad, U8 data)
 {
-  if (joypad->previous_write==1 && data==0)
+  I64 i;
+  data&=1;
+  if (joypad->previous_write && !data)
+  {
+    for (i=0; i<8; i++)
+      joypad->latched[i]=joypad->button_status[i];
     joypad->pointer=0;
+  }
   joypad->previous_write=data;
 }
 
 U8 JoypadNextButton(CNESJoypad *joypad)
 {
-  U8 retval=joypad->button_status[joypad->pointer++];
+  U8 retval=joypad->latched[joypad->pointer++];
   joypad->pointer=joypad->pointer%8;
   return retval;
 }

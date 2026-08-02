@@ -4,17 +4,6 @@
 #define OPL2EMU_CHANS	9
 #define OPL2EMU_OPS	18
 
-// Anti-click de-glitching.  A key-on that lands while the channel is still
-// sounding (SndM changing note/freq) slams the envelope back to zero, and a
-// key-off on an instrument with a fast release chops the waveform mid-cycle.
-// Both are steps in the output -- an audible click.  When opl2_fade_mS is
-// non-zero a brief linear gain ramp is run at every key transition: fade the
-// old note out, then retrigger, then fade the new note in.  Retriggers are
-// held off until the fade-out finishes, so the worst-case note latency is
-// one fade time.  A key-off is only ramped when the instrument's release is
-// at least as quick as the ramp, so slow release tails survive intact.
-// Set to 0.0 for the old instant on/off behavior.
-// OPL2.HC's OPL_CLICK_FADE define sets this at load time.
 #define OPL2_FADE_mS	4.0
 F64 opl2_fade_mS=OPL2_FADE_mS;
 
@@ -45,8 +34,6 @@ class COPL2Chan
   F64 freq;
   F64 fb_mem[2];
 
-  //Anti-click ramp.  fade_dir is +1 fading in, -1 fading out, 0 idle.
-  //key_pend is a key-on waiting for the fade-out to reach silence.
   F64 fade,fade_inc;
   I64 fade_dir;
   Bool key_pend;
@@ -226,9 +213,7 @@ U0 OPL2EmuKeyOnEvent(I64 c)
 }
 
 U0 OPL2EmuKeyOffEvent(I64 c)
-{//Key-off from a register write.  The ramp only runs when the instrument's
- //own release is at least as quick as the fade -- a slow release is already
- //a smooth fade and ramping over it would chop the note's tail off.
+{
   COPL2Chan *ch=&opl2_chans[c];
   COPL2Op *car=&opl2_ops[opl2_chan_op2[c]];
   ch->key_pend=FALSE;
@@ -363,8 +348,6 @@ F64 OPL2EmuRenderChan(I64 c,F64 lfo_am,F64 lfo_vib)
   COPL2Op *op1=&opl2_ops[opl2_chan_op1[c]],*op2=&opl2_ops[opl2_chan_op2[c]];
   F64 mod,car,out,pitch_mul,fb_phase;
 
-  //Advance the anti-click ramp first -- it has to keep running even when the
-  //channel has gone quiet, or a pending retrigger would never fire.
   if (ch->fade_dir>0) {
     ch->fade+=ch->fade_inc;
     if (ch->fade>=1.0) {
@@ -381,8 +364,6 @@ F64 OPL2EmuRenderChan(I64 c,F64 lfo_am,F64 lfo_vib)
 	OPL2EmuKeyOn(c);
 	OPL2EmuFadeStart(c,1);
       } else {
-	//Faded to silence.  Drop the operators so a leftover release tail
-	//doesn't keep the channel counted as active forever.
 	op1->env_stage=0;
 	op1->env=0.0;
 	op2->env_stage=0;

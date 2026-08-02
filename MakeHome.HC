@@ -47,6 +47,12 @@ U0 AutoSBC()
 // stays a top-level #include compiled before AudioInit's body.
 #include "/Demo/Snd/FM801"
 
+// Where HDCfgNew.HC's trailing HDCfgAuto call writes the generated codec
+// config. NULL means its default, "~/HDAudioCfg.HC.Z". AudioInit points it
+// at RAM drive B: when the home drive is read-only (ISO boot off T:).
+// HDCfgNew.HC #ifdef's on this name, so it still works standalone.
+U8 *hd_cfg_out_file=NULL;
+
 U0 AudioInit()
 {
   Bool hda_present,hda_cfg_ok;
@@ -82,16 +88,27 @@ U0 AudioInit()
     // First boot on this machine? Generate /Home/HDAudioCfg.HC.Z by
     // running HDCfg.HC, whose trailing HDCfgAuto call probes the codec,
     // auto-wires Speaker pins and saves the file -- queued after HDAudio
-    // above, so the codec is up when it runs. Adam runs its queue in
-    // order, so the file exists by the time the include below executes.
+    // above, so the codec is up when it runs. We are the Adam task here,
+    // so Adam() runs the queue synchronously and the generated file is on
+    // disk by the time AdamFile returns -- hence the IsFile checks below.
+    // On an ISO boot the home drive is read-only, so it goes to B: instead.
     hda_cfg_ok=IsFile("/Home/HDAudioCfg.HC.Z");
-    if (!hda_cfg_ok && DrvIsWritable && IsHypervisorPresent) {
-      // Run automatic HDA config if in VM
-      AdamFile("/Demo/Snd/HDCfgNew");
-      hda_cfg_ok=TRUE;
+    if (!hda_cfg_ok && IsHypervisorPresent) {
+      if (DrvIsWritable)
+	// Run automatic HDA config if in VM
+	AdamFile("/Demo/Snd/HDCfgNew");
+      else if (blkdev.boot_drv_let=='T' && DrvMounted('B') &&
+	    DrvIsWritable('B')) {
+	// Booted off the ISO, so T: is read-only. Point HDCfgNew's trailing
+	// HDCfgAuto at RAM drive B: so it has somewhere to save.
+	hd_cfg_out_file="B:/HDAudioCfg.HC.Z";
+	AdamFile("/Demo/Snd/HDCfgNew");
+      }
     }
-    if (hda_cfg_ok)
+    if (IsFile("/Home/HDAudioCfg.HC.Z"))
       AdamFile("/Home/HDAudioCfg.HC.Z");
+    else if (DrvMounted('B') && IsFile("B:/HDAudioCfg.HC.Z"))
+      AdamFile("B:/HDAudioCfg.HC.Z");
     AdamFile("/Demo/Snd/HDMixer");
     AdamFile("/Demo/Snd/TMS5220");
     AdamFile("/Demo/Snd/TTS");
@@ -104,7 +121,10 @@ U0 AudioInit()
 if (IsHypervisorPresent) {
   // Enable experimental QEMU/VBox/VMware mouse help
   if (VBoxPciPresent)
+  {
     SethFile("/Demo/VM/VBoxAdd",-2);
+    AdamFile("/Demo/VM/VBoxLog");
+  }
   else
     AdamFile("/Demo/VM/VMMouse");
   if (mp_cnt>1) AudioInit;
@@ -116,3 +136,4 @@ MapFileLoad("::/Compiler/Compiler");
 #include "~/HomeKeyPlugIns"
 #include "~/HomeSys"
 Cd("..");;
+

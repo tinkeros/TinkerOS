@@ -43,6 +43,10 @@
 ### Run TinkerOS (with Adlib sound) to install from CD to virtual hard disk
 	qemu-system-x86_64.exe -m 2g -accel whpx,kernel-irqchip=off -smp 4 -audiodev sdl,id=snd0 -machine pc -device adlib,audiodev=snd0 -display sdl -cdrom TinkerOS_5.14.ISO -hda tos.qcow2
 
+### For Intel HD Audio with TinkerOS use >=4 CPU cores and flags like this instead
+    -smp cores=4 -audiodev sdl,id=snd0,timer-period=2500 -device intel-hda -device hda-output,audiodev=snd0
+
+
 ### Notes
   - QEMU has a poorly emulated PC speaker sound might not be good with TempleOS
   - If you use TinkerOS instead you can use Adlib sound instead and as an added bonus you can [roll your own 64-bit randomly generated instrument with RandInst to go with your randomly generated GodSong or use PickInst to select from a list of available instruments](https://youtu.be/d0J1Jbhxsv0)!

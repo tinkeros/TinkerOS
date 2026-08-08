@@ -402,7 +402,7 @@ U0 fetchAttribute(PPU2C02state *state)
 
 I64 initPPU2C02(PPU2C02state *state)
 {
-  MemSet(state, 0, sizeof(PPU2C02state));
+  ZeroClass(state);
   state->scanline = 241;
 
   return 1;

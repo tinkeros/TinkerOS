@@ -60,7 +60,7 @@ class CTMS5220
       s_prev,s_cur;
   I64 up_phase;
 } tms;
-MemSet(&tms,0,sizeof(CTMS5220));
+ZeroClass(&tms);
 
 I64 tms5220_mixer_idx=-1;
 

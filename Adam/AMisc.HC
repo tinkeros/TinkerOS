@@ -187,11 +187,6 @@ Bool WinInside(I64 x,I64 y,CTask *task=NULL,I64 border=0)
 
 #help_index "Memory"
 
-U0 ZeroClass(U8 *ptr, I64 s_elem=firstsize)
-{// Set all data in a class to zero
-  MemSet(ptr, 0, s_elem);
-}
-
 U8 *MemMove(U8 *dst, U8 *src, I64 n) {
     I64 i;
     U8 *d = dst, *s = src;

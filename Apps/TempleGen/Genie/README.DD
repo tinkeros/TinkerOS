@@ -1,0 +1,58 @@
+$WW,1$$FG,14$$TX+CX,"TempleGen Game Genie Codes"$$FG$
+
+$TX+CX,"One file per game, named after the ROM"$
+
+TempleGen looks in this folder when a ROM loads.  Load
+"Roms/Sonic.BIN" (or "Sonic.BIN.Z") and it reads
+"Genie/Sonic.DD", or "Genie/Sonic.DD.Z" if that's what
+it finds.  Same name as the ROM, ".DD" instead of the
+".BIN", ".GEN" or ".MD".
+
+$FG,11$G$FG$ then pops up the list with a check box per line.
+$FG,11$Space$FG$ checks a line, $FG,11$ON$FG$ turns the checked ones on and
+everything else off, and $FG,11$OFF$FG$ turns the lot off without
+losing your check marks.  $FG,11$ON + RESET$FG$ also resets the
+console, which codes that patch the game's start up
+need before they do anything.
+
+$FG,10$Line Format$FG$
+
+  One cheat per line: the code, then $FG,11$two or more spaces$FG$
+  (or a tab), then the description.
+
+ABCD-EFGH        What the cheat does
+
+  Cheats that need several codes join them with " + ":
+
+ABCD-EFGH + JKLM-NPRS        What the cheat does
+
+  Only the description shows in the picker, so say what
+  the cheat does, not what the code is.  Keep it under
+  70 characters or it gets cut off.
+
+$FG,10$Rules$FG$
+
+  A Genesis code is eight characters from
+  A B C D E F G H J K L M N P R S T V W X Y Z 0-9
+  (no I, O, Q or U), normally written with a hyphen in
+  the middle.  The hyphen is optional here.
+
+  A line whose codes don't decode is skipped and counted
+  in the picker, so a typo shows up instead of silently
+  doing nothing.
+
+  Blank lines are fine.  Lines starting with "//" are
+  comments.  Anything else that isn't a code counts as
+  a bad line, so comment your notes.
+
+  Up to 64 lines per file, and up to 32 codes can run at
+  once (a two code cheat spends two of them).
+
+$FG,10$Example$FG$
+
+// Codes below are made up to show the shape of a file,
+// not real cheats.  Get real ones from a code list.
+ABCD-EFGH        Infinite lives
+JKLM-NPRS        Keep your rings when you get hit
+TVWX-YZ01 + 2345-6789        Start on stage 2
+

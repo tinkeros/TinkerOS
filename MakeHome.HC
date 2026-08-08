@@ -122,11 +122,13 @@ if (IsHypervisorPresent) {
   // Enable experimental QEMU/VBox/VMware mouse help
   if (VBoxPciPresent)
   {
-    SethFile("/Demo/VM/VBoxAdd",-2);
-    AdamFile("/Demo/VM/VBoxLog");
+    // This pulls in all other VB additions stuff too
+    AdamFile("/Demo/VM/VBoxShare");
+    Cd(__DIR__);;
+    // Init file sharing, share a folder name "tos_share" on the host
+    Adam("VBShareInit;\n");
   }
-  else
-    AdamFile("/Demo/VM/VMMouse");
+  else AdamFile("/Demo/VM/VMMouse");
   if (mp_cnt>1) AudioInit;
 }
 
@@ -136,4 +138,3 @@ MapFileLoad("::/Compiler/Compiler");
 #include "~/HomeKeyPlugIns"
 #include "~/HomeSys"
 Cd("..");;
-

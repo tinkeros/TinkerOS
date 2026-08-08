@@ -235,7 +235,7 @@ Bool NESPickRom(U8 *rom_name)
   I64 i,n=0,sel=0,top=0,rows,sc;
   U8 mask[256];
   Bool picked=FALSE,done=FALSE;
-  U0 (*old_draw_it)(CTask *task,CDC *dc);
+  U0(*old_draw_it)(CTask *task,CDC *dc);
   old_draw_it=Fs->draw_it;
 
   Fs->draw_it=NULL;
@@ -425,6 +425,8 @@ Bool NESLoadRom(U8 *rom_filename)
     if (numCHRROM)
       MemCpy(MMU.VRAM,cartridgebuffer+0x10+0x4000*numPRGROM,
           0x2000);
+    if (mapper==1)
+      MMC1_Init;
     break;
   case 4:
     MMC3_Init();
@@ -452,6 +454,9 @@ Bool NESLoadRom(U8 *rom_filename)
   StrCpy(nes_sram_filename,nes_state_filename);
   CatPrint(nes_state_filename,".BIN.Z");
   CatPrint(nes_sram_filename,".SRM");
+
+  //Codes are per game, so the last ROM's picks go with it.
+  NESGenieLoadList(rom_filename);
 
 #ifdef NES_DIAG
   AdamLog("NES load: %s\n"
@@ -483,6 +488,7 @@ Bool NESChangeRom()
   while (!NESLoadRom(new_rom))
     if (!NESPickRom(new_rom))
       return FALSE;
+
   NESReset;
   initPAPU(&PAPU);
   DCFill(gameCanvas,0);
@@ -678,6 +684,10 @@ U0 TempleNES(U8 *rom_filename=NULL)
   I64 arg1,arg2,wait;
   U8 rom_name[256],help_path[256];
 
+#ifdef MIXER_MAX_SRC
+  if (snd_dev==SD_HD_AUDIO)
+    NESSndInstall;
+#endif
   SettingsPush;
   Fs->text_attr=BLACK<<4+WHITE;
   MenuPush(
@@ -690,6 +700,7 @@ U0 TempleNES(U8 *rom_filename=NULL)
       "  Pause(,' ');"
       "  SaveState(,'S');"
       "  LoadState(,'L');"
+      "  GameGenie(,'g');"
       "}"
       "View {"
       "  Scale1x(,'1');"
@@ -797,7 +808,7 @@ U0 TempleNES(U8 *rom_filename=NULL)
   nes_emu_task=Spawn(&NESEmuTask,nes_emu_gen,"TempleNES Core",,Fs);
 #else
   if (mp_cnt>1)
-    nes_emu_task=Spawn(&NESEmuTask,nes_emu_gen,"TempleNES Core",1);
+    nes_emu_task=Spawn(&NESEmuTask,nes_emu_gen,"TempleNES Core",1,Fs);
   else
     nes_emu_task=Spawn(&NESEmuTask,nes_emu_gen,"TempleNES Core",,Fs);
 #endif
@@ -809,7 +820,7 @@ U0 TempleNES(U8 *rom_filename=NULL)
   }
   if (!nes_emu_beat)
   {
-		"TempleNES: emu task never ran on its core; "
+    "TempleNES: emu task never ran on its core; "
 		"falling back to this core.\n";
     nes_emu_gen++;
     Kill(nes_emu_task,FALSE);
@@ -856,6 +867,12 @@ U0 TempleNES(U8 *rom_filename=NULL)
         case 'L':
           NESPauseEmu;
           LoadState;
+          nes_paused=FALSE;
+          break;
+        case 'g':
+          NESPauseEmu;
+          if (NESGeniePick)
+            NESReset;
           nes_paused=FALSE;
           break;
         case '1':
@@ -1029,11 +1046,12 @@ U0 TempleNES(U8 *rom_filename=NULL)
 
   Fs->draw_it=NULL;
   SaveSRAM;
-  PAPU_initBuffers;
+  NESSndUninstall;
   GrPaletteSet(&nes_sys_palette);
   Free(cartridgebuffer);
   cartridgebuffer=NULL;
   MMUFree;
+  NESGenieClear;
   DCDel(gameCanvas);
   gameCanvas=NULL;
   DCDel(gameCanvas2x);

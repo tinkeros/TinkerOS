@@ -9,6 +9,7 @@ $FG,10$Controller$FG$
 $FG,10$Emulator Keys$FG$
   $FG,11$P$FG$ - Pick ROM file         $FG,11$S$FG$ - Save state
   $FG,11$R$FG$ - Reset the console     $FG,11$L$FG$ - Load state
+  $FG,11$G$FG$ - Game Genie codes
   $FG,11$Space$FG$ - Pause / resume
   $FG,11$1 / 2$FG$ - Window scale: 1x is a bordered 320x240
           window; 2x fills the screen (640x448, borderless,

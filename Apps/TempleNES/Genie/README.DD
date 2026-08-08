@@ -1,0 +1,53 @@
+$WW,1$$FG,14$$TX+CX,"TempleNES Game Genie Codes"$$FG$
+
+$TX+CX,"One file per game, named after the ROM"$
+
+TempleNES looks in this folder when a ROM loads.  Load
+"Roms/smb1.nes" (or "smb1.nes.Z") and it reads
+"Genie/smb1.DD", or "Genie/smb1.DD.Z" if that's what it
+finds.  Same name as the ROM, ".DD" instead of ".nes".
+
+$FG,11$G$FG$ then pops up the list with a check box per line.
+$FG,11$Space$FG$ checks a line, $FG,11$ON$FG$ turns the checked ones on and
+everything else off, and $FG,11$OFF$FG$ turns the lot off without
+losing your check marks.  $FG,11$ON + RESET$FG$ also resets the
+console, which codes that patch the game's start up
+need before they do anything.
+
+$FG,10$Line Format$FG$
+
+  One cheat per line: the code, then $FG,11$two or more spaces$FG$
+  (or a tab), then the description.
+
+SXIOPO        Infinite lives for both players
+
+  Cheats that need several codes join them with " + ":
+
+OZTLLX + AATLGZ + SZLIVO        Never shrink, once you've got a mushroom
+
+  Only the description shows in the picker, so say what
+  the cheat does, not what the code is.  Keep it under
+  70 characters or it gets cut off.
+
+$FG,10$Rules$FG$
+
+  Codes are the 6 or 8 letter kind, from the letters
+  A P Z L G I T Y E O X U K S V N.  A line whose codes
+  don't decode is skipped and counted in the picker, so
+  a typo shows up instead of silently doing nothing.
+
+  Blank lines are fine.  Lines starting with "//" are
+  comments.  Anything else that isn't a code counts as
+  a bad line, so comment your notes.
+
+  Up to 64 lines per file, and up to 32 codes can run at
+  once (a three code cheat spends three of them).
+
+$FG,10$Example$FG$
+
+// Super Mario Bros.
+AATOZA        Start players 1 & 2 with 1 life
+SXIOPO        Infinite lives for both players
+APZLGK        Super jump from a standing start only
+YSAOPE + YEAOZA + PEAPYA        Start on World 2
+

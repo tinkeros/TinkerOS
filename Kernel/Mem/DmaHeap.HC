@@ -4,15 +4,13 @@ static CBlkPool dma_blk_pool;
 
 static U0 DmaHeapUncacheRange(U8 *addr,I64 len)
 {
-  U8 *end=addr+len-1;
+  U8 *p=addr(I64)&~(mem_page_size-1),*end=addr+len-1;
 
-  *MemPageTable(addr)=*MemPageTable(addr)&~0x18 |0x11;
-  InvlPg(addr);
-
-  if (MemPageTable(end)!=MemPageTable(addr))
+  while (p<=end)
   {
-    *MemPageTable(end)=*MemPageTable(end)&~0x18 |0x11;
-    InvlPg(end);
+    *MemPageTable(p)=*MemPageTable(p)&~0x18 |0x11;
+    InvlPg(p);
+    p+=mem_page_size;
   }
 }
 

@@ -11,6 +11,8 @@ class CMixerSrc
   U8 name[MIXER_NAME_LEN];
   F64 vol;
   U0 (*fp_fill)(SND_OUT_CONTAINER *buf,I64 buf_num);
+  I64 in_fill;
+  CTask *owner;
 };
 CMixerSrc mixer_srcs[MIXER_MAX_SRC];
 MemSet(mixer_srcs,0,sizeof(CMixerSrc)*MIXER_MAX_SRC);
@@ -138,20 +140,37 @@ I64 MixerFindByName(U8 *name)
   return -1;
 }
 
+U0 MixerSlotClear(I64 i)
+{
+  while (LBts(&mixer_srcs[i].in_fill,0))
+    Yield;
+  mixer_srcs[i].fp_fill=NULL;
+  mixer_srcs[i].owner=NULL;
+  mixer_srcs[i].name[0]=0;
+  LBtr(&mixer_srcs[i].in_fill,0);
+}
+
 public I64 MixerRegister(U8 *name,
-	U0 (*fp_fill)(SND_OUT_CONTAINER *buf,I64 buf_num),F64 init_vol=1.0)
+	U0 (*fp_fill)(SND_OUT_CONTAINER *buf,I64 buf_num),F64 init_vol=1.0,
+	CTask *owner=NULL)
 {
   I64 i;
+  if (!owner)
+    owner=Fs;
+  if (owner==adam_task)
+    owner=NULL;
   if ((i=MixerFindByName(name))>=0) {
+    mixer_srcs[i].owner=owner;
     mixer_srcs[i].fp_fill=fp_fill;
     return i;
   }
   for (i=0;i<MIXER_MAX_SRC;i++)
     if (!mixer_srcs[i].active) {
-      mixer_srcs[i].active=TRUE;
       StrCpy(mixer_srcs[i].name,name);
       mixer_srcs[i].vol=init_vol;
+      mixer_srcs[i].owner=owner;
       mixer_srcs[i].fp_fill=fp_fill;
+      mixer_srcs[i].active=TRUE;
       return i;
     }
   "Mixer: no free source slots for \"%s\" (max %d) -- raise "
@@ -161,8 +180,10 @@ public I64 MixerRegister(U8 *name,
 
 public U0 MixerUnregister(I64 idx)
 {
-  if (0<=idx<MIXER_MAX_SRC)
+  if (0<=idx<MIXER_MAX_SRC) {
     mixer_srcs[idx].active=FALSE;
+    MixerSlotClear(idx);
+  }
 }
 
 public U0 MixerSetVol(I64 idx,F64 vol)
@@ -187,14 +208,24 @@ U0 MixerFillBuf(SND_OUT_CONTAINER *buf,I64 buf_num)
   if (!mixer_mix_buf)
     mixer_mix_buf=AMAlloc(SND_BUF_LEN*sizeof(F64));
   MemSet(mixer_mix_buf,0,SND_BUF_LEN*sizeof(F64));
-  for (i=0;i<MIXER_MAX_SRC;i++)
-    if (mixer_srcs[i].active && mixer_srcs[i].fp_fill) {
-      (*mixer_srcs[i].fp_fill)(mixer_src_buf,buf_num);
-      v=mixer_srcs[i].vol;
-      if (v>0.0)
-        for (j=0;j<SND_BUF_LEN;j++)
-          mixer_mix_buf[j]+=mixer_src_buf[j]*v;
+  for (i=0;i<MIXER_MAX_SRC;i++) {
+    if (mixer_srcs[i].active && mixer_srcs[i].owner &&
+	  !TaskValidate(mixer_srcs[i].owner)) {
+      mixer_srcs[i].active=FALSE;
+      MixerSlotClear(i);
     }
+    if (mixer_srcs[i].active && mixer_srcs[i].fp_fill &&
+	  !LBts(&mixer_srcs[i].in_fill,0)) {
+      if (mixer_srcs[i].active && mixer_srcs[i].fp_fill) {
+        (*mixer_srcs[i].fp_fill)(mixer_src_buf,buf_num);
+        v=mixer_srcs[i].vol;
+        if (v>0.0)
+          for (j=0;j<SND_BUF_LEN;j++)
+            mixer_mix_buf[j]+=mixer_src_buf[j]*v;
+      }
+      LBtr(&mixer_srcs[i].in_fill,0);
+    }
+  }
   if (!mixer_rev_ready)
     MixerRevAlloc;
   amt=Clamp(mixer_reverb,0.0,1.0);

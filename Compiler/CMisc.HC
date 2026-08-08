@@ -123,3 +123,8 @@ U8 *CmdLinePmt()
   Free(st);
   return res;
 }
+
+U0 ZeroClass(U8 *ptr, I64 s_elem=firstsize)
+{// Set all data in a class to zero
+  MemSet(ptr, 0, s_elem);
+}

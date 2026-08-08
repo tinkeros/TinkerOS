@@ -16,85 +16,57 @@ class CNESMMU
 
 CNESMMU MMU;
 
+U16 mirrorVRAMAddress(U16 address)
+{
+  if (address < 0x2000 || address >= 0x3F00)
+  {
+    return address;
+  }
+
+  if (address >= 0x3000)
+  {
+    address -= 0x1000;
+  }
+
+  switch (mirroringType)
+  {
+  case MIRR_HORZ:
+
+    if (address >= 0x2800)
+    {
+      address = 0x2400 | (address & 0x03FF);
+    }
+    else
+    {
+      address &= 0x23FF;
+    }
+    break;
+  case MIRR_VERT:
+
+    address = 0x2000 | (address & 0x07FF);
+    break;
+  case MIRR_SINGLE:
+    address &= 0x23FF;
+    break;
+  case MIRR_SINGLE_UPPER:
+    address = 0x2400 | (address & 0x03FF);
+    break;
+  case MIRR_FOUR:
+
+    break;
+  }
+  return address;
+}
+
 U8 readVRAM(U16 address)
 {
-
-  if (address >= 0x2000 && address < 0x3F00)
-  {
-    switch (mirroringType)
-    {
-    case MIRR_HORZ:
-      if (address >= 0x2400 && address < 0x2800)
-      {
-        address -= 0x0400;
-      }
-      else if (address >= 0x2C00 && address < 0x3000)
-      {
-        address -= 0x0400;
-      }
-      break;
-    case MIRR_VERT:
-      if (address >= 0x2800 && address < 0x2C00)
-      {
-        address -= 0x0800;
-      }
-      else if (address >= 0x2C00 && address < 0x3000)
-      {
-        address -= 0x0800;
-      }
-      break;
-    case MIRR_SINGLE:
-      address &= 0x23FF;
-      break;
-    case MIRR_SINGLE_UPPER:
-      address = 0x2400 | (address & 0x03FF);
-      break;
-    case MIRR_FOUR:
-
-      break;
-    }
-  }
+  address = mirrorVRAMAddress(address);
   return MMU.VRAM[address & 0x3FFF];
 }
 
 U0 writeVRAM(U16 address, U8 value)
 {
-
-  if (address >= 0x2000 && address < 0x3F00)
-  {
-    switch (mirroringType)
-    {
-    case MIRR_HORZ:
-      if (address >= 0x2400 && address < 0x2800)
-      {
-        address -= 0x0400;
-      }
-      else if (address >= 0x2C00 && address < 0x3000)
-      {
-        address -= 0x0400;
-      }
-      break;
-    case MIRR_VERT:
-      if (address >= 0x2800 && address < 0x2C00)
-      {
-        address -= 0x0800;
-      }
-      else if (address >= 0x2C00 && address < 0x3000)
-      {
-        address -= 0x0800;
-      }
-      break;
-    case MIRR_SINGLE:
-      address &= 0x23FF;
-      break;
-    case MIRR_SINGLE_UPPER:
-      address = 0x2400 | (address & 0x03FF);
-      break;
-    case MIRR_FOUR:
-
-      break;
-    }
-  }
+  address = mirrorVRAMAddress(address);
   if (numCHRROM && (address & 0x3FFF) < 0x2000)
     return;
   MMU.VRAM[address & 0x3FFF] = value;
@@ -183,34 +155,30 @@ U0 MMC1_setReg(I64 _reg, I64 value)
   case 0:
 
     tmp = value & 3;
-    if (tmp != MMC1_mirroring)
-    {
 
-      MMC1_mirroring = tmp;
-      if (MMC1_mirroring & 0x02)
+    MMC1_mirroring = tmp;
+    if (MMC1_mirroring & 0x02)
+    {
+      if (MMC1_mirroring & 0x01)
       {
-        if (MMC1_mirroring & 0x01)
-        {
-          mirroringType = MIRR_HORZ;
-        }
-        else
-        {
-          mirroringType = MIRR_VERT;
-        }
+        mirroringType = MIRR_HORZ;
       }
       else
       {
-
-        if (MMC1_mirroring & 0x01)
-        {
-          mirroringType = MIRR_SINGLE_UPPER;
-        }
-        else
-        {
-          mirroringType = MIRR_SINGLE;
-        }
+        mirroringType = MIRR_VERT;
       }
+    }
+    else
+    {
 
+      if (MMC1_mirroring & 0x01)
+      {
+        mirroringType = MIRR_SINGLE_UPPER;
+      }
+      else
+      {
+        mirroringType = MIRR_SINGLE;
+      }
     }
 
     MMC1_prgSwitchingArea = (value >> 2) & 1;
@@ -330,6 +298,26 @@ U0 MMC1_Write(U16 address, U8 value)
       MMC1_regBuffer = 0;
       MMC1_regBufferCounter = 0;
     }
+  }
+}
+
+U0 MMC1_Init()
+{
+  MMC1_regBuffer = 0;
+  MMC1_regBufferCounter = 0;
+  MMC1_prgSwitchingArea = 1;
+  MMC1_prgSwitchingSize = 1;
+  MMC1_vromSwitchingSize = 0;
+  MMC1_romSelectionReg0 = 0;
+  MMC1_romSelectionReg1 = 0;
+  MMC1_romBankSelect = 0;
+  if (mirroringType == MIRR_HORZ)
+  {
+    MMC1_mirroring = 3;
+  }
+  else
+  {
+    MMC1_mirroring = 2;
   }
 }
 
@@ -795,6 +783,9 @@ U8 writeRAM(U16 address, U8 value)
 
 U8 readRAM(U16 address)
 {
+
+  if (nes_genie_on && address >= 0x8000)
+    return NESGenieMap(address, MMU.RAM[address]);
   while (address >= 0x2008 && address < 0x4000)
   {
     address -= 8;

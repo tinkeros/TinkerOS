@@ -78,6 +78,9 @@ public extern I64 HashEntrySize(CHashSrcSym *tmph);
 public extern I64 HashEntrySize2(CHashSrcSym *tmph);
 public extern I64 HashTableSize2(CHashTable *table);
 
+#help_index "Memory"
+public extern U0 ZeroClass(U8 *ptr,I64 s_elem=firstsize);
+
 #help_index "QSort"
 public extern U0 QSort(U8 *base,I64 num, I64 width, I64 (*fp_compare)(U8 *e1,U8 *e2));
 

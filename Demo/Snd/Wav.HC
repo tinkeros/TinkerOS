@@ -27,7 +27,7 @@ class CWav
   F64 src_rate,step,pos,fade_frames;
   Bool playing;
 } wav;
-MemSet(&wav,0,sizeof(CWav));
+ZeroClass(&wav);
 
 I64 wav_mixer_idx=-1;
 
@@ -45,7 +45,7 @@ Bool WavParseHeader(U8 *buf,I64 size,CWavHdr *h)
 {
   I64 pos,cksize;
   U8 *id;
-  MemSet(h,0,sizeof(CWavHdr));
+  ZeroClass(h);
   h->pcm_off=-1;
   if (size<12 || MemCmp(buf,"RIFF",4) || MemCmp(buf+8,"WAVE",4)) {
     "Wav: not a RIFF/WAVE file.\n";

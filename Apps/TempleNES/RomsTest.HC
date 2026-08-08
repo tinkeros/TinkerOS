@@ -1,7 +1,7 @@
 //Automated soak test: runs every ROM in TempleNES for 5 seconds, presses
 //Start, runs 5 more seconds, then exits.  Shows progress bars like OSTestSuite.
 //
-//  #include "::/Apps/TempleNES/RomsTest"
+// #include "::/Apps/TempleNES/RomsTest"
 
 //Play time before and after Start, how long Start is held down, and how
 //long to wait for a clean exit.  All in mS.
@@ -19,7 +19,7 @@ U0 RTProgress(U8 *desc)
     st[PROGRESS_DESC_LEN-1]=0;
   progress3_max=1;
   StrPrint(progress3_desc,"%*hc%s",
-           (PROGRESS_DESC_LEN-StrLen(st))>>1,CH_SPACE,st);
+      (PROGRESS_DESC_LEN-StrLen(st))>>1,CH_SPACE,st);
   Free(st);
   progress4=rt_i++;
   progress4_max=rt_n;
@@ -63,7 +63,7 @@ Bool RTWaitPmt(CTask *task,I64 timeout_ms)
 
 CTask *RTStartEmu()
 {//Compile the emulator once, then back out of the ROM picker so that
- //TempleNES() can be called directly with each ROM path.
+//TempleNES() can be called directly with each ROM path.
   CTask *task=User;
   XTalkWait(task,"#include \"%s/TempleNES\";\n",__DIR__);
   PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SPACE,0);	//Dismiss help screen
@@ -78,9 +78,9 @@ U0 RTRunRom(CTask **_task,U8 *rom_full_name)
   XTalkWait(task,"TempleNES(\"%s\");\n",rom_full_name);
   PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SPACE,0);	//Dismiss help screen
   Sleep(RT_RUN_MS);
-  LBts(kbd.down_bitmap,SC_ENTER);		//Press Start.  The joypad
-  Sleep(RT_START_MS);				//reads the key bitmap
-  LBtr(kbd.down_bitmap,SC_ENTER);		//directly, not messages.
+  LBts(kbd.down_bitmap,SC_ENTER);	//Press Start.  The joypad
+  Sleep(RT_START_MS);	//reads the key bitmap
+  LBtr(kbd.down_bitmap,SC_ENTER);	//directly, not messages.
   Sleep(RT_RUN_MS);
   PostMsg(task,MSG_KEY_DOWN_UP,CH_ESC,0);	//Exit
   if (!RTWaitPmt(task,RT_EXIT_MS))

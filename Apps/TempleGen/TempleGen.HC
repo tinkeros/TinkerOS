@@ -1,6 +1,7 @@
 Cd(__DIR__);;
 
 #include "Gen.HH"
+#include "Genie"
 #include "M68K"
 #include "IO"
 #include "Z80"
@@ -12,3 +13,4 @@ Cd(__DIR__);;
 
 TempleGen;
 Exit;
+

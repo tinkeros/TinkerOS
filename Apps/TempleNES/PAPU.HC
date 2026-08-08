@@ -530,7 +530,7 @@ U0 Square_reset(ChannelSquare *sqr)
 
 U0 Square_init(ChannelSquare *sqr, I64 isSqr1=FALSE)
 {
-  MemSet(sqr, 0, sizeof(ChannelSquare));
+  ZeroClass(sqr);
   MemCpy(&sqr->dutyLookup, &SQR_dutyLookup, sizeof(I64)*32);
   MemCpy(&sqr->impLookup, &SQR_impLookup, sizeof(I64)*32);
   sqr->sqr1 = isSqr1;
@@ -681,7 +681,7 @@ U0 Triangle_reset(ChannelTriangle *tri)
 
 U0 Triangle_init(ChannelTriangle *tri)
 {
-  MemSet(tri, 0, sizeof(ChannelTriangle));
+  ZeroClass(tri);
   Triangle_reset(tri);
 }
 
@@ -821,7 +821,7 @@ U0 Noise_reset(ChannelNoise *noise)
 
 U0 Noise_init(ChannelNoise *noise)
 {
-  MemSet(noise, 0, sizeof(ChannelNoise));
+  ZeroClass(noise);
   noise->shiftReg = 1 << 14;
   Noise_reset(noise);
 }
@@ -1027,7 +1027,7 @@ U0 DMC_reset(ChannelDM *dm)
 
 U0 DMC_init(ChannelDM *dm)
 {
-  MemSet(dm, 0, sizeof(ChannelDM));
+  ZeroClass(dm);
   DMC_reset(dm);
 }
 
@@ -1432,7 +1432,7 @@ U0 initPAPU(PAPU2A03 *papu)
 {
   PAPU_initBuffers;
   I64 i;
-  MemSet(papu, 0, sizeof(PAPU2A03));
+  ZeroClass(papu);
   papu->frameIrqCounterMax = 4;
   papu->initCounter = 2048;
   papu->sampleRate = SAMPLE_RATE;
@@ -1515,6 +1515,11 @@ U0 NESSndFillBuf(SND_OUT_CONTAINER *buf, I64 buf_num)
 
   I64 j = 0, prev, samp;
   F64 v;
+  if (!nes_snd_fifo)
+  {
+    MemSet(buf, 0, SND_BUF_LEN * sizeof(SND_OUT_CONTAINER));
+    return;
+  }
 #ifdef NES_DIAG
   nes_dg_fill_cnt++;
   nes_dg_fill_core = Gs->num;
@@ -1548,6 +1553,22 @@ U0 NESSndInstall()
     nes_snd_fifo = FifoI64New(BUFFER_SIZE);
   nes_snd_mixer_idx = MixerRegister("NES", &NESSndFillBuf);
 }
+
+#endif
+
+U0 NESSndUninstall()
+{
+#ifdef MIXER_MAX_SRC
+  if (nes_snd_mixer_idx >= 0)
+  {
+    MixerUnregister(nes_snd_mixer_idx);
+    nes_snd_mixer_idx = -1;
+  }
+#endif
+  PAPU_initBuffers;
+}
+
+#ifdef MIXER_MAX_SRC
 
 if (snd_dev == SD_HD_AUDIO)
 {

@@ -331,7 +331,7 @@ class CHDAudioCtrl
   Bool out_fmt_chosen;
   Bool audio_task_started,in_running,out_running;
 } hda;
-MemSet(&hda,0,sizeof(CHDAudioCtrl));
+ZeroClass(&hda);
 
 U0 HDSyncCORB()
 {
@@ -1031,7 +1031,7 @@ public Bool HDAudioInit(I64 hd_bus,I64 hd_dev,I64 hd_fun)
     if (TaskValidate(hda.task))
       HDAudioEnd;
     else
-      MemSet(&hda,0,sizeof(CHDAudioCtrl));
+      ZeroClass(&hda);
   }
   vendor=PCIReadU16(hd_bus,hd_dev,hd_fun,0);
   bar_lo=PCIReadU32(hd_bus,hd_dev,hd_fun,0x10);

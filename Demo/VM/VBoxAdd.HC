@@ -14,60 +14,28 @@ Cd(__DIR__);;
 #define VBOX_REQUEST_HGCM_DISCONNECT 61
 #define VBOX_REQUEST_HGCM_CALL 62
 #define VBOX_REQUEST_HGCM_CANCEL2 65
-
 #define VBOX_REQUEST_GET_MOUSE 1
 #define VBOX_REQUEST_SET_MOUSE 2
-
-// HGCM calls are asynchronous.  The port write comes straight back with
-// VINF_HGCM_ASYNC_EXECUTE in hdr.rc; only later does the host write
-// VBOX_HGCM_REQ_DONE into hdr.flags (and the real status into hdr.result) by
-// poking the request buffer directly.  Reading a reply before DONE is set --
-// which is what a bare Sleep() amounts to -- gets you whatever was in the
-// buffer beforehand, and rebuilding the buffer while the call is still out
-// there gets you a reply landing on top of the next request.
 #define VINF_HGCM_ASYNC_EXECUTE 2
 #define VBOX_HGCM_REQ_DONE 1
-
-// Parameter types.  Every parameter here is 32bit or LinAddr; note that for a
-// 32bit parameter the host only writes back the low dword of value.
 #define VBOX_HGCM_PARM_32BIT 1
 #define VBOX_HGCM_PARM_LINADDR 4
-
 #define VBOX_SHARED_CLIPBOARD_FMT_UNICODETEXT 1
 #define VBOX_SHARED_CLIPBOARD_FMT_BITMAP 2
-
 #define VBOX_SHARED_CLIPBOARD_FN_GET_HOST_MSG 1
 #define VBOX_SHARED_CLIPBOARD_FN_FMTS 2
 #define VBOX_SHARED_CLIPBOARD_FN_READ_DATA 3
 #define VBOX_SHARED_CLIPBOARD_FN_WRITE_DATA 4
-
 #define VBOX_SHARED_CLIPBOARD_HOST_MSG_QUIT 1
 #define VBOX_SHARED_CLIPBOARD_HOST_MSG_READ_DATA 2
 #define VBOX_SHARED_CLIPBOARD_HOST_MSG_FMTS 3
-
-// Character counts, not byte counts.  Buffers are allocated one element
-// larger than this so the NUL terminator always has somewhere to go.
 #define HOST_CLIP_READ_MAX 32768
 #define HOST_CLIP_WRITE_MAX 32768
-
 #define MS_MSG_MS 12
-
-// Budgets for waiting on VBOX_HGCM_REQ_DONE.  An X11 host servicing a read
-// has to go negotiate a selection transfer with whichever app owns the
-// clipboard, which is routinely 50-200ms, so the old 10ms was hopeless.
 #define HGCM_CALL_MS 1000
 #define HGCM_HOST_MSG_MS 30000
 #define HGCM_CANCEL_MS 500
-
-// Anything we hand VirtualBox has to be addressable in 32 bits: the port is
-// written with OutU32, VBOX_REQUEST_HGCM_CALL is VMMDevReq_HGCMCall32 whose
-// parameter block only has room for a 32-bit linear address, and HGCMCancel2
-// takes a 32-bit physical address.  TinkerOS identity maps low memory so a
-// virtual address below this line doubles as its own physical address.
 #define VB_ADDR_LIMIT 0x100000000
-
-// DolDoc's command escape character.  Spelled numerically because .HC files
-// are themselves DolDoc, so writing it literally here would be an escape.
 #define VB_DOLDOC_ESC 0x24
 
 class VBGuestHdr
@@ -114,8 +82,6 @@ class VBoxHGCMHdr
   I32 result;
 };
 
-// VMMDevHGCMConnect: header, service location, client id.  Nothing else --
-// this used to carry two spare fields that inflated hdr.size.
 class VBoxClipConnect
 {
   VBoxHGCMHdr hdr;
@@ -124,17 +90,12 @@ class VBoxClipConnect
   U32 client_id;
 };
 
-// VMMDevHGCMDisconnect is the header followed immediately by the client id,
-// with no service-location block in between, so it cannot share a struct with
-// the connect request.
 class VBoxClipDisconnect
 {
   VBoxHGCMHdr hdr;
   U32 client_id;
 };
 
-// VMMDevHGCMCancel2 takes the plain 24-byte request header (not the HGCM one)
-// plus the physical address of the request being abandoned.
 class VBoxHGCMCancel2
 {
   VBGuestHdr hdr;
@@ -203,10 +164,15 @@ class VBoxCaps
 static I16 *utf16_host_write_clipboard=NULL;
 static I16 *utf16_host_read_clipboard=NULL;
 static U8 *utf8_host_read_clipboard=NULL;
-static U8 *guest_clip_utf8=NULL;  //staged by Ctrl-C, sent by the service task
-
+static U8 *guest_clip_utf8=NULL;
 static CTask *vb_ms_task=NULL;
 static CTask *vb_clip_task=NULL;
+
+I64 VBHelperCPU()
+{
+  if (mp_cnt<2) return -1;
+  return mp_cnt-1;
+}
 
 static VBoxClipConnect *vbox_clip=NULL;
 static VBoxClipDisconnect *vbox_clip_disc=NULL;
@@ -217,17 +183,9 @@ static VBoxClipFmts *vbox_clip_fmts=NULL;
 static VBoxClipWrite *vbox_clip_write=NULL;
 static VBGuest vb_guest;
 static VBGuestMsAbs *mouse=NULL;
-
-// vb_clip_op_lock serialises the request buffers owned by the Ctrl-C/Ctrl-V
-// paths; vb_clip_data_lock guards guest_clip_utf8, which the service task
-// reads.  There is deliberately no lock around the port itself: each request
-// type has its own buffer and VMMDev is happy with several outstanding calls,
-// so the old global lock only ever served to let the 12ms mouse poll starve
-// the clipboard.
 static I64 vb_clip_op_lock=0;
 static I64 vb_clip_data_lock=0;
 static I64 vb_clip_cancel_lock=0;
-
 static Bool vb_clip_run=FALSE;
 static Bool vb_clip_up=FALSE;
 static Bool vb_clip_broken=FALSE;
@@ -243,9 +201,6 @@ Bool VBAddrOk(U8 *p)
 
 I64 VBParm32(VBoxHGCParam *p)
 {//Read back a VMMDevHGCMParmType_32bit result.
-//The host only writes the low dword, so reading the full U64 picks up
-//whatever was in the high dword beforehand -- which is how a perfectly good
-//host message comes back looking like garbage.
   return p->value & 0xFFFFFFFF;
 }
 
@@ -282,17 +237,14 @@ I64 ToUTF8(U8 *dst, I16 *src, I64 size_bytes, I64 max_chars)
 }
 
 Bool VBSendReq(VBGuestHdr *hdr)
-{//Plain (non HGCM) VMMDev request.  These complete on the port write itself,
-//so there is nothing to wait for and no reason to hold a lock.
+{//Plain (non HGCM) VMMDev request.
   hdr->rc=0;
   OutU32(vb_guest.port, hdr);
   return hdr->rc >= 0;
 }
 
 U0 VBHGCMCancel(VBoxHGCMHdr *hdr)
-{//Tell the host to abandon a call we have given up on.  Skipping this leaves
-//the host holding a reference to the request buffer, and it will happily
-//complete into it later on top of whatever we rebuilt there.
+{//Tell the host to abandon a call we have given up on.
   I64 deadline;
 
   if (!vbox_clip_cancel)
@@ -301,7 +253,7 @@ U0 VBHGCMCancel(VBoxHGCMHdr *hdr)
   while (LBts(&vb_clip_cancel_lock,0))
     Yield;
 
-  MemSet(vbox_clip_cancel,0,sizeof(VBoxHGCMCancel2));
+  ZeroClass(vbox_clip_cancel);
   vbox_clip_cancel->hdr.size=sizeof(VBoxHGCMCancel2);
   vbox_clip_cancel->hdr.ver=VBOX_REQUEST_HEADER_VERSION;
   vbox_clip_cancel->hdr.req_type=VBOX_REQUEST_HGCM_CANCEL2;
@@ -310,8 +262,6 @@ U0 VBHGCMCancel(VBoxHGCMHdr *hdr)
 
   LBtr(&vb_clip_cancel_lock,0);
 
-  //A cancelled call still completes, with an error, so wait for DONE before
-  //letting anybody touch hdr again.
   deadline=cnts.jiffies+HGCM_CANCEL_MS*JIFFY_FREQ/1000;
   while (!(hdr->flags & VBOX_HGCM_REQ_DONE))
   {
@@ -333,11 +283,8 @@ Bool VBHGCMCall(VBoxHGCMHdr *hdr, I64 timeout_ms)
   hdr->rc=0;
   OutU32(vb_guest.port, hdr);
 
-  //Only two things here can be trusted.  A negative rc means VMMDev rejected
-  //the request on the spot.  The DONE flag means the call finished.  Do NOT
-  //gate on rc==VINF_HGCM_ASYNC_EXECUTE: the host does not reliably write the
-  //header back on the postponed path (rc stays whatever we put there), and a
-  //call it happens to service synchronously comes back as VINF_SUCCESS.
+  Sleep(1);
+
   if (hdr->rc < 0)
     return FALSE;
 
@@ -352,8 +299,6 @@ Bool VBHGCMCall(VBoxHGCMHdr *hdr, I64 timeout_ms)
       VBHGCMCancel(hdr);
       if (!(hdr->flags & VBOX_HGCM_REQ_DONE))
       {
-        //The host still owns this buffer.  Reusing it would corrupt whatever
-        //we build in it next, so stop rather than scribble.
         vb_clip_stuck=hdr;
         vb_clip_broken=TRUE;
         AdamLog("VirtualBox clipboard: HGCM request stuck, disabling.\n");
@@ -370,8 +315,6 @@ U0 VBGuestMsUpdate()
   I64 dx,dy,x,y,slop=1;
   U8 ms_buf[4];
 
-  //VMMDevReq_GetMouseStatus is synchronous: mouse->x/y are valid the instant
-  //OutU32 returns.
   VBSendReq(&mouse->hdr);
 
   x = GR_WIDTH * (mouse->x) / 0xFFFF;
@@ -435,9 +378,6 @@ U0 VBMsPollTask()
 
 U0 VBClipReqInit(U8 *req, I64 total_size)
 {//Zero the request body and refill the HGCM header.
-//Note the U8*: HolyC scales pointer arithmetic by the pointed-to type, so
-//"vbox_clip_msg + sizeof(VBoxHGCMHdr)" on a VBoxClipMsg* lands 32 whole
-//structs downrange and clears somebody else's memory instead of this one's.
   VBoxHGCMHdr *hdr=req;
 
   MemSet(req+sizeof(VBoxHGCMHdr),0,total_size-sizeof(VBoxHGCMHdr));
@@ -562,7 +502,7 @@ U0 VBClipSrvStart()
   if (vb_clip_task)
     return;
   vb_clip_run=TRUE;
-  vb_clip_task=Spawn(&VBClipSrvTask,,"VBClipTask",-1);
+  vb_clip_task=Spawn(&VBClipSrvTask,,"VBClipTask",VBHelperCPU());
 }
 
 U0 VBClipSrvStop()
@@ -617,25 +557,18 @@ Bool VBGuestInit()
   guest_info->ver = VBOX_VMMDEV_VERSION;
   guest_info->ostype=0x00100;
 
-  //There used to be a MemPageTable() poke here marking the page holding the
-  //lock variable uncached.  It was aimed at the wrong page (the request
-  //buffers live elsewhere), it skipped the &~0x18 mask and the InvlPg that
-  //Kernel/Mem/DmaHeap.HC does, and VMMDev traffic is plain coherent guest RAM
-  //anyway, so it is gone.
-
-  //The original code ignored the status here, so only warn -- refusing to
-  //come up at all over a grumpy guest-info report would be a worse trade.
   res=VBSendReq(&guest_info->hdr);
   if (!res)
     AdamLog("VirtualBox: guest info report returned %d, continuing.\n",
-            guest_info->hdr.rc);
+        guest_info->hdr.rc);
   Free(guest_info);
   return TRUE;
 }
 
 U0 VBMouseInit()
 {
-  mouse = CAllocAligned(sizeof(VBGuestMsAbs), 16, Fs->code_heap);
+  if (!mouse)
+    mouse = CAllocAligned(sizeof(VBGuestMsAbs), 16, adam_task->code_heap);
   if (!VBAddrOk(mouse))
   {
     AdamLog("VirtualBox mouse: buffer above 4Gb, giving up.\n");
@@ -652,25 +585,30 @@ U0 VBMouseInit()
   AdamLog("Enabling VirtualBox mouse integration!\n");
   ms_hard.scale.x=0.25;
   ms_hard.scale.y=0.25;
-  vb_ms_task=Spawn(&VBMsPollTask,,"VBMsTask",-1);
+  vb_ms_task=Spawn(&VBMsPollTask,,"VBMsTask",VBHelperCPU());
 }
 
 Bool VBClipInit()
 {
   Bool ok;
 
-  utf8_host_read_clipboard = CAlloc(HOST_CLIP_READ_MAX+1);
-  guest_clip_utf8 = CAlloc(HOST_CLIP_WRITE_MAX+1);
-  utf16_host_read_clipboard = CAllocAligned((HOST_CLIP_READ_MAX+1)*2, 16, Fs->code_heap);
-  utf16_host_write_clipboard = CAllocAligned((HOST_CLIP_WRITE_MAX+1)*2, 16, Fs->code_heap);
+  if (!vbox_clip)
+  {
+    utf8_host_read_clipboard = CAlloc(HOST_CLIP_READ_MAX+1, adam_task);
+    guest_clip_utf8 = CAlloc(HOST_CLIP_WRITE_MAX+1, adam_task);
+    utf16_host_read_clipboard = CAllocAligned((HOST_CLIP_READ_MAX+1)*2, 16,
+            adam_task->code_heap);
+    utf16_host_write_clipboard = CAllocAligned((HOST_CLIP_WRITE_MAX+1)*2, 16,
+            adam_task->code_heap);
 
-  vbox_clip = CAllocAligned(sizeof(VBoxClipConnect), 16, Fs->code_heap);
-  vbox_clip_disc = CAllocAligned(sizeof(VBoxClipDisconnect), 16, Fs->code_heap);
-  vbox_clip_cancel = CAllocAligned(sizeof(VBoxHGCMCancel2), 16, Fs->code_heap);
-  vbox_clip_msg = CAllocAligned(sizeof(VBoxClipMsg), 16, Fs->code_heap);
-  vbox_clip_read = CAllocAligned(sizeof(VBoxClipRead), 16, Fs->code_heap);
-  vbox_clip_fmts = CAllocAligned(sizeof(VBoxClipFmts), 16, Fs->code_heap);
-  vbox_clip_write = CAllocAligned(sizeof(VBoxClipWrite), 16, Fs->code_heap);
+    vbox_clip = CAllocAligned(sizeof(VBoxClipConnect), 16, adam_task->code_heap);
+    vbox_clip_disc = CAllocAligned(sizeof(VBoxClipDisconnect), 16, adam_task->code_heap);
+    vbox_clip_cancel = CAllocAligned(sizeof(VBoxHGCMCancel2), 16, adam_task->code_heap);
+    vbox_clip_msg = CAllocAligned(sizeof(VBoxClipMsg), 16, adam_task->code_heap);
+    vbox_clip_read = CAllocAligned(sizeof(VBoxClipRead), 16, adam_task->code_heap);
+    vbox_clip_fmts = CAllocAligned(sizeof(VBoxClipFmts), 16, adam_task->code_heap);
+    vbox_clip_write = CAllocAligned(sizeof(VBoxClipWrite), 16, adam_task->code_heap);
+  }
 
   //Bail loudly rather than silently truncate a pointer into a 32-bit field.
   if (!VBAddrOk(utf16_host_read_clipboard) ||
@@ -684,28 +622,27 @@ Bool VBClipInit()
     return FALSE;
   }
 
-  //Buffers are brand new here, so nothing a previous run left in flight can
-  //still be pointing at them.
+  if (vb_clip_stuck && !(vb_clip_stuck->flags & VBOX_HGCM_REQ_DONE))
+  {
+    AdamLog("VirtualBox clipboard: request still in flight, cannot re-init.\n");
+    return FALSE;
+  }
   vb_clip_broken=FALSE;
   vb_clip_stuck=NULL;
 
-  MemSet(vbox_clip,0,sizeof(VBoxClipConnect));
+  ZeroClass(vbox_clip);
   vbox_clip->hdr.size = sizeof(VBoxClipConnect);
   vbox_clip->hdr.ver = VBOX_REQUEST_HEADER_VERSION;
   vbox_clip->hdr.req_type = VBOX_REQUEST_HGCM_CONNECT;
   vbox_clip->loc_type = 2;
   StrPrint(&vbox_clip->loc, "VBoxSharedClipboard");
 
-  //HGCMConnect is async like every other HGCM request.  The old code slept
-  //20ms, read client_id out of a buffer the host might not have filled in
-  //yet, then decided the clipboard was off because a stale high dword made
-  //msg.value compare unequal to 3.
   ok=VBHGCMCall(&vbox_clip->hdr,HGCM_CALL_MS);
   if (!ok || !vbox_clip->client_id)
   {
     AdamLog("VirtualBox shared clipboard NOT enabled! (rc:%d result:%d flags:%X id:%d)\n",
-            vbox_clip->hdr.rc,vbox_clip->hdr.result,
-            vbox_clip->hdr.flags,vbox_clip->client_id);
+        vbox_clip->hdr.rc,vbox_clip->hdr.result,
+        vbox_clip->hdr.flags,vbox_clip->client_id);
     return FALSE;
   }
 
@@ -737,10 +674,7 @@ public U0 VBCBReset(Bool log=TRUE)
 
   if (vbox_clip->client_id)
   {
-    //VMMDevHGCMDisconnect is header plus client id and nothing else.  Reusing
-    //VBoxClipConnect here put loc_type where the host reads client_id, so it
-    //always asked to disconnect client 2 and the real one leaked.
-    MemSet(vbox_clip_disc,0,sizeof(VBoxClipDisconnect));
+    ZeroClass(vbox_clip_disc);
     vbox_clip_disc->hdr.size = sizeof(VBoxClipDisconnect);
     vbox_clip_disc->hdr.ver = VBOX_REQUEST_HEADER_VERSION;
     vbox_clip_disc->hdr.req_type = VBOX_REQUEST_HGCM_DISCONNECT;
@@ -748,7 +682,7 @@ public U0 VBCBReset(Bool log=TRUE)
     VBHGCMCall(&vbox_clip_disc->hdr,HGCM_CALL_MS);
   }
 
-  MemSet(vbox_clip,0,sizeof(VBoxClipConnect));
+  ZeroClass(vbox_clip);
   vbox_clip->hdr.size = sizeof(VBoxClipConnect);
   vbox_clip->hdr.ver = VBOX_REQUEST_HEADER_VERSION;
   vbox_clip->hdr.req_type = VBOX_REQUEST_HGCM_CONNECT;
@@ -808,7 +742,7 @@ U8 *GetTextFromHost()
     if (bytes)
     {
       n=ToUTF8(utf8_host_read_clipboard,utf16_host_read_clipboard,
-               bytes,HOST_CLIP_READ_MAX);
+              bytes,HOST_CLIP_READ_MAX);
       if (n)
         res=StrNew(utf8_host_read_clipboard);
     }

@@ -33,12 +33,23 @@
    - Click OK
 <img src="https://raw.githubusercontent.com/tinkeros/tinkeros.github.io/refs/heads/master/Images/VB5.jpg">
 
-8) Start the VM:
+8) Setup a shared folder to transfer files in and out of the VM easily (optional):
+   - Create a folder where ever you want on your system called tos_share
+   - In VirtualBox click Settings
+   - Select Shared Folders
+   - Click + to add a folder
+   - Make sure folder path and folder name end in tos_share
+   - Click OK
+<img src="https://raw.githubusercontent.com/tinkeros/tinkeros.github.io/refs/heads/master/Images/VB8.jpg">
+
+
+9) Start the VM:
    - Press 1 to boot drive C at boot menu
    - Once booted click inside the VM and press `CTRL-ALT-M` to bring up sound mixer
    - Test various options
    - Slide reverb to 30% and click Risen (because you have to at least once for Terry)
 <img src="https://raw.githubusercontent.com/tinkeros/tinkeros.github.io/refs/heads/master/Images/VB6.jpg">
+
 
 #### Sound trouble?
   - If you didn't pick the right VM OS type (or VirtualBox changes things), it might not have defaulted to Intel HD Audio

@@ -4,7 +4,7 @@
 1) Enable Virtualization in your BIOS (this step may not be necessary, skip if you don't know what you're doing)
 	- Steps vary by manufacturer, you want to make sure you don't see a green turtle in the lower right of your VM window.
 
-2) Download TinkerOS ISO >= 5.20-rc14
+2) Download TinkerOS ISO >= 5.20-rc15
     - TinkerOS: https://github.com/tinkeros/TinkerOS/releases
 
 3) Create a new VM with:

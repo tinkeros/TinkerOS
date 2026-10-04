@@ -65,8 +65,13 @@ U0 AudioInit()
 
   if (IsHypervisorPresent) {
     if (!hda_present) {
-      // AC97 sound support
-      AdamFile("/Demo/VM/AC97");
+      // AC97 sound support. On VirtualBox the controller is only there
+      // when the VM is configured for ICH AC97, so probe for it first
+      // rather than loading a driver with nothing to talk to. Other
+      // hypervisors are left alone -- AC97.HC bails out on its own if
+      // it does not find a codec.
+      if (!VBoxPciPresent || AC97Present)
+        AdamFile("/Demo/VM/AC97");
       // Try enabling ISA OPL sounds if VM detected
       AdamFile("/Demo/Snd/OPL2");
     }

@@ -1,0 +1,56 @@
+
+$WW,1$$FG,12$$TX+CX,"Birds N Boats"$$FG,0$
+
+$FG,0$Fly as a bird or drive a boat across an endless world of hills and lakes, and catch fish. Press $FG,1$B$FG,0$ at any time to teleport between a random bird or boat that you can control.  You can zoom out and look around for fun.
+
+$FG,13$Objective:$FG,0$
+
+  Catch 10 fish as a bird and 20 fish as a boat.  $FG,1$Fish Remaining$FG,0$ shows
+  the count for whichever you are right now.  The game is won when both
+  counts reach zero, and your fastest time is saved as $FG,1$Best$FG,0$.
+
+$FG,13$Bird Controls:$FG,0$
+
+  $FG,1$Up / Down$FG,0$       - Nose down (dive) / nose up (climb)
+  $FG,1$Left / Right$FG,0$    - Roll to turn
+  Swoop down to catch fish from the water.
+
+$FG,13$Boat Controls:$FG,0$
+
+  $FG,1$Up / Down$FG,0$       - Throttle up / down (down past zero reverses)
+  $FG,1$Left / Right$FG,0$    - Turn
+  $FG,1$Space$FG,0$           - Stop
+  Drive over fish to catch them (you just run them over, that's what you do!)
+
+$FG,13$Camera controls:$FG,0$
+
+  $FG,1$+ / -$FG,0$           - Zoom in / out  (1st vs 3rd person view)
+  $FG,1$[ / ]$FG,0$  ($FG,1$, / .$FG,0$)  - Rotate the camera left / right
+  $FG,1$; / '$FG,0$  ($FG,1$PgDn / PgUp$FG,0$) - Lower / raise the camera
+  $FG,1$R$FG,0$               - Reset camera zoom/angles to default
+  The keys work for the boat and for the bird when zoomed out.
+
+$FG,13$Other Keys:$FG,0$
+
+  $FG,1$B$FG,0$               - Switch between bird and boat
+  $FG,1$Enter$FG,0$           - New Map
+  $FG,1$ESC$FG,0$             - Quit
+  $FG,1$Shift-ESC$FG,0$       - Abort
+
+$FG,13$Tips:$FG,0$
+
+  - About to crash as a bird?  Press $FG,1$B$FG,0$ to become a boat before you crash!
+  - Catch fish in 1st person view (zoomed in), 3rd person is mainly for fun.
+
+$FG,13$Credits:$FG,0$
+
+  This is a clone of Terry's Talons game.  I tried to improve it by making
+  the land endless so you don't fly off the world and need to turn around,
+  reduce graphics glitches, and allow you to cheat to prevent "unfun" bird
+  crashes.  Also everytime I saw the boat I wanted to drive it, now you can!
+  I hope I did right by you Terry, still trying to be a "User Developer" in
+  this crazy always connected world!  God bless everyone, keep coding, but
+  have fun at it!
+                                                             - The Tinkerer
+
+

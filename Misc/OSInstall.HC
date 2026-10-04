@@ -17,24 +17,33 @@ class TempleOSCfg
       gr_height,
       fps,
       gfx_mode;
-  Bool add_patches,text_mode;
+  Bool add_patches,text_mode,ac97;
 };
 
-TempleOSCfg tos_orig= {640,480,30,0x12,FALSE,FALSE};
+TempleOSCfg tos_orig= {640,480,30,0x12,FALSE,FALSE,FALSE};
 TempleOSCfg tos_cfg[4]=
 {
-  {640,480,30,0x12,FALSE,FALSE},
-  {640,480,30,0x12,FALSE,FALSE},
-  {640,480,30,0x12,FALSE,FALSE},
-  {640,480,30,0x12,FALSE,FALSE}
+  {640,480,30,0x12,FALSE,FALSE,FALSE},
+  {640,480,30,0x12,FALSE,FALSE,FALSE},
+  {640,480,30,0x12,FALSE,FALSE,FALSE},
+  {640,480,30,0x12,FALSE,FALSE,FALSE}
 };
+
+TempleOSCfg *TOSCfgGet(I64 drv_let)
+{//Per-target-drive TempleOS settings.  C-F get their own slot, anything
+ //else shares slot 0 rather than indexing off the end of the array.
+  I64 i=drv_let-'C';
+  if (!(0<=i<4))
+    i=0;
+  return &tos_cfg[i];
+}
 
 U0 InstallDrv(U8 drv_let,Bool extras=FALSE,Bool templeos=FALSE)
 {
   Bool ready=FALSE,old_silent;
   U8 *st,*st2;
   I64 src_let,timeout=0;
-  TempleOSCfg *drv_tos_cfg=&tos_cfg['C'-drv_let];
+  TempleOSCfg *drv_tos_cfg=TOSCfgGet(drv_let);
   src_let=':';
   st=MStrPrint("%C:/Ready",drv_let);
   old_silent=Silent;
@@ -115,6 +124,19 @@ U0 InstallDrv(U8 drv_let,Bool extras=FALSE,Bool templeos=FALSE)
   {
     ExePrint("CopyTree(\"::/Misc/TempleOS/TextMode\",\"%C:/Kernel\");",drv_let);
   }
+  if (templeos && drv_tos_cfg->ac97)
+  {
+    ExePrint("Copy(\"::/Misc/TempleOS/AC97TempleOS.HC.Z\","
+        "\"%C:/Demo/Snd/AC97TempleOS.HC.Z\");",drv_let);
+    //MakeHome.HC.Z was copied from the TempleOS ISO above, so add the
+    //driver to it to have it loaded at every boot.  It goes in second to
+    //last so it lands ahead of the closing Cd("..") the file ends with.
+    st=MStrPrint("%C:/Home/MakeHome.HC.Z",drv_let);
+    "Patching file %s\n"
+    ,st;
+    DocAppendLine(st,"#include \"/Demo/Snd/AC97TempleOS\"\n",-1);
+    Free(st);
+  }
   if (templeos && drv_tos_cfg->fps!=tos_orig.fps)
   {
     st=MStrPrint("%C:/Kernel/KernelA.HH.Z",drv_let);
@@ -134,22 +156,7 @@ Bool VMPrtDsk(CTask *task,CATARep *ata_drv, I64 num)
 {
   if (ata_drv)
   {
-    if (num==1)
-    {
-      XTalkWait(task,"DskPrt(,1.0);\nC\np%d\nY",ata_drv->num);
-    }
-    else if (num==2)
-    {
-      XTalkWait(task,"DskPrt(,0.5,0.5);\nC\np%d\nY",ata_drv->num);
-    }
-    else if (num==3)
-    {
-      XTalkWait(task,"DskPrt(,0.32,0.32,0.32,-1.0);\nC\np%d\nY\n",ata_drv->num);
-    }
-    else if (num==4)
-    {
-      XTalkWait(task,"DskPrt(,0.25,0.25,0.25,0.25);\nC\np%d\nY",ata_drv->num);
-    }
+    XTalkWait(task,"AtaMkPrt(0,,%d,%d);Fs->user_data=1;\nC\np%d\nY",num,install_just_ide,ata_drv->num);
     return TRUE;
   }
   else
@@ -158,22 +165,7 @@ Bool VMPrtDsk(CTask *task,CATARep *ata_drv, I64 num)
 
 Bool VMPrtDskAHCI(CTask *task,I64 port, I64 num)
 {
-  if (num==1)
-  {
-    XTalkWait(task,"DskPrt(,1.0);\nC\n%d\nY",port);
-  }
-  else if (num==2)
-  {
-    XTalkWait(task,"DskPrt(,0.5,0.5);\nC\n%d\nY",port);
-  }
-  else if (num==3)
-  {
-    XTalkWait(task,"DskPrt(,0.32,0.32,0.32,-1.0);\nC\n%d\nY\n",port);
-  }
-  else if (num==4)
-  {
-    XTalkWait(task,"DskPrt(,0.25,0.25,0.25,0.25);\nC\n%d\nY",port);
-  }
+  XTalkWait(task,"AtaMkPrt(0,,%d,%d);Fs->user_data=1;\nC\n%d\nY",num,install_just_ide,port);
   return TRUE;
 }
 
@@ -258,7 +250,7 @@ U8* ResPrompt(U8 drive)
 {
   I64 res,width,height;
   U8 *cfg=NULL, *pmpt;
-  TempleOSCfg *drv_tos_cfg=&tos_cfg['C'-drive];
+  TempleOSCfg *drv_tos_cfg=TOSCfgGet(drive);
   pmpt=MStrPrint("Select graphics mode for drive %c: ",drive);
   if (AHCIMode)
     res=GetI64(pmpt,0,0,18);
@@ -271,6 +263,14 @@ U8* ResPrompt(U8 drive)
     drv_tos_cfg->fps=GetI64(pmpt,30,1,60);
     Free(pmpt);
     drv_tos_cfg->add_patches=TRUE;
+    if (VBoxPciPresent && AC97Present)
+    {
+      "\nVirtualBox AC97 audio hardware detected.\n"
+      "This adds sound support to TempleOS by\n"
+      "routing Snd() through the AC97 codec.\n\n"
+      "Install AC97 sound support ";
+      drv_tos_cfg->ac97=YorN('y');
+    }
   }
   if (res==21)
   {

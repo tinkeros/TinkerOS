@@ -1363,12 +1363,38 @@ Bool mp3_verbose=TRUE;
 I64 *mp3_abort_ptr=NULL;
 I64 mp3_abort_gen=0;
 
+#define MP3_FRAME_SAMPS		1152
+#define MP3_SEEK_PREROLL	8
+#define MP3_PUMP_FRAMES		32
+#define MP3_PRIME_FRAMES	48
+
+U8 *mp3_stream_raw=NULL,
+   *mp3_frame_ok=NULL;
+I64 *mp3_frame_ofs=NULL;
+I64 mp3_stream_size=0,
+    mp3_frames=0,
+    mp3_frame_next=0,
+    mp3_pump_lock=0;
+Bool mp3_streaming=FALSE,
+     mp3_pump_ext=FALSE;
+
+Bool Mp3SampReady(I64 idx)
+{
+  if (idx<0 || idx>=mp3_song_samps)
+    return FALSE;
+  if (!mp3_frame_ok)
+    return TRUE;
+  if (mp3_frame_ok[idx/MP3_FRAME_SAMPS])
+    return TRUE;
+  return FALSE;
+}
+
 U0 MP3FillBuf(SND_OUT_CONTAINER *buf,I64)
 {
   I64 j,l,c,idx,samp,t;
   F64 frac,s0,s1,s;
   MemSet(buf,0,SND_BUF_LEN*sizeof(SND_OUT_CONTAINER));
-  if (!mp3_playing)
+  if (!mp3_playing || !mp3_song)
     return;
   j=0;
   while (j<SND_BUF_LEN) {
@@ -1377,6 +1403,8 @@ U0 MP3FillBuf(SND_OUT_CONTAINER *buf,I64)
       mp3_playing=FALSE;
       break;
     }
+    if (mp3_streaming && (!Mp3SampReady(idx) || !Mp3SampReady(idx+1)))
+      break;
     frac=(mp3_play_pos&0xFFFFFFFF)/4294967296.0;
     for (l=0;l<SND_OCHANNELS;l++) {
       c=l;
@@ -1442,6 +1470,9 @@ Bool Mp3VisLoad()
     start=0;
   if (start>mp3_song_samps-MP3_FFT_N)
     start=mp3_song_samps-MP3_FFT_N;
+  if (mp3_streaming && (!Mp3SampReady(start) ||
+        !Mp3SampReady(start+MP3_FFT_N-1)))
+    return FALSE;
   for (i=0;i<MP3_FFT_N;i++) {
     idx=start+i;
     if (mp3_song_ch==2)
@@ -1575,9 +1606,26 @@ public I16 *MP3Decode(U8 *data,I64 size,I64 *_samps=NULL,I64 *_hz=NULL,
 public U0 MP3Stop()
 {
   mp3_playing=FALSE;
+  mp3_streaming=FALSE;
+  while (LBts(&mp3_pump_lock,0))
+    Yield;
   Sleep(3*SND_BUF_TIME_mS);
   Free(mp3_song);
+  Free(mp3_frame_ok);
+  Free(mp3_frame_ofs);
+  Free(mp3_stream_raw);
   mp3_song=NULL;
+  mp3_frame_ok=NULL;
+  mp3_frame_ofs=NULL;
+  mp3_stream_raw=NULL;
+  mp3_song_samps=0;
+  mp3_stream_size=0;
+  mp3_frames=0;
+  mp3_frame_next=0;
+  mp3_in=NULL;
+  mp3_in_size=0;
+  mp3_in_pos=0;
+  LBtr(&mp3_pump_lock,0);
 }
 
 public Bool MP3Busy()
@@ -1591,10 +1639,198 @@ public U0 MP3Wait()
     Sleep(20);
 }
 
+I64 Mp3ScanFrames(I64 *ofs,I64 max)
+{
+  I64 n=0,r,start,fsize;
+  Bool good;
+  while (TRUE) {
+    r=Mp3ReadHeader;
+    if (r==MP3_EOF)
+      break;
+    start=mp3_in_pos-4;
+    fsize=Mp3FrameSize;
+    if (start+fsize>mp3_in_size)
+      break;
+    good=TRUE;
+    if (start+fsize+1<mp3_in_size)
+      if ((mp3_in[start+fsize]!=0xFF) ||
+          ((mp3_in[start+fsize+1]&0xE0)!=0xE0))
+        good=FALSE;
+    if (good) {
+      if (ofs && n<max)
+        ofs[n]=start;
+      n++;
+      mp3_in_pos=start+fsize;
+    } else
+      mp3_in_pos=start+1;
+  }
+  return n;
+}
+
+U0 Mp3StreamSetCursor(I64 f)
+{
+  I64 i;
+  if (f<0)
+    f=0;
+  if (f>=mp3_frames)
+    f=mp3_frames-1;
+  mp3_frame_next=f;
+  mp3_in=mp3_stream_raw;
+  mp3_in_size=mp3_stream_size;
+  mp3_in_pos=mp3_frame_ofs[f];
+  mp3_main_top=0;
+  mp3_md_byte=0;
+  mp3_md_bit=0;
+  for (i=0;i<2304;i++)
+    mp3_is[i]=0.0;
+  for (i=0;i<1152;i++)
+    mp3_store[i]=0.0;
+  for (i=0;i<2048;i++)
+    mp3_v[i]=0.0;
+}
+
+I64 Mp3MissingFrame()
+{
+  I64 i;
+  for (i=0;i<mp3_frames;i++)
+    if (!mp3_frame_ok[i])
+      return i;
+  return -1;
+}
+
+public I64 MP3StreamPump(I64 max_frames)
+{
+  I64 i,f,n,idx,base,cnt,done=0;
+  while (LBts(&mp3_pump_lock,0))
+    Yield;
+  if (!mp3_streaming || !mp3_song || !mp3_frame_ofs || !mp3_frame_ok) {
+    LBtr(&mp3_pump_lock,0);
+    return 0;
+  }
+  idx=mp3_play_pos>>32;
+  f=-1;
+  if (0<=idx<mp3_song_samps) {
+    if (!Mp3SampReady(idx))
+      f=idx/MP3_FRAME_SAMPS;
+    else if (idx+1<mp3_song_samps && !Mp3SampReady(idx+1))
+      f=(idx+1)/MP3_FRAME_SAMPS;
+  }
+  if (f>=0)
+    if ((f<mp3_frame_next) || ((f-mp3_frame_next)>MP3_SEEK_PREROLL))
+      Mp3StreamSetCursor(f-MP3_SEEK_PREROLL);
+  cnt=MP3_FRAME_SAMPS*mp3_song_ch;
+  while (done<max_frames) {
+    if (mp3_frame_next>=mp3_frames) {
+      f=Mp3MissingFrame;
+      if (f<0) {
+        mp3_streaming=FALSE;
+        Free(mp3_stream_raw);
+        Free(mp3_frame_ofs);
+        mp3_stream_raw=NULL;
+        mp3_frame_ofs=NULL;
+        mp3_stream_size=0;
+        mp3_in=NULL;
+        mp3_in_size=0;
+        mp3_in_pos=0;
+        break;
+      }
+      Mp3StreamSetCursor(f-MP3_SEEK_PREROLL);
+    }
+    f=mp3_frame_next;
+    mp3_in=mp3_stream_raw;
+    mp3_in_size=mp3_stream_size;
+    mp3_in_pos=mp3_frame_ofs[f];
+    n=Mp3NextFrame;
+    if ((n>0) && (mp3_nch==mp3_song_ch) && !mp3_frame_ok[f]) {
+      base=f*cnt;
+      for (i=0;i<cnt;i++)
+        mp3_song[base+i]=mp3_pcm[i];
+    }
+    mp3_frame_ok[f]=1;
+    mp3_frame_next=f+1;
+    done++;
+  }
+  LBtr(&mp3_pump_lock,0);
+  return done;
+}
+
+public Bool MP3StreamOpen(U8 *raw,I64 size,I64 *_samps=NULL,I64 *_hz=NULL,
+	I64 *_nch=NULL)
+{
+  I64 n,r,hz,nch,samps;
+  I64 *ofs;
+  U8 *ok;
+  I16 *pcm;
+  if (!raw || size<4) {
+    Free(raw);
+    return FALSE;
+  }
+  Mp3Reset(raw,size);
+  n=Mp3ScanFrames(NULL,0);
+  if (n<1) {
+    Free(raw);
+    return FALSE;
+  }
+  ofs=AMAlloc(n*sizeof(I64));
+  Mp3Reset(raw,size);
+  n=Mp3ScanFrames(ofs,n);
+  mp3_in_pos=ofs[0];
+  r=Mp3ReadHeader;
+  if (r!=MP3_OK) {
+    Free(ofs);
+    Free(raw);
+    return FALSE;
+  }
+  hz=mp3_srate_tbl[mp3_h_sr_idx];
+  nch=mp3_nch;
+  samps=n*MP3_FRAME_SAMPS;
+  pcm=ACAlloc(samps*nch*sizeof(I16));
+  ok=ACAlloc(n);
+  if (!pcm || !ok) {
+    Free(pcm);
+    Free(ok);
+    Free(ofs);
+    Free(raw);
+    return FALSE;
+  }
+  MP3Stop;
+  mp3_stream_raw=raw;
+  mp3_stream_size=size;
+  mp3_frame_ofs=ofs;
+  mp3_frame_ok=ok;
+  mp3_frames=n;
+  mp3_song=pcm;
+  mp3_song_samps=samps;
+  mp3_song_ch=nch;
+  mp3_song_hz=hz;
+  mp3_play_pos=0;
+  mp3_play_step=(hz<<32)/SND_SAMPLE_RATE;
+  mp3_streaming=TRUE;
+  Mp3StreamSetCursor(0);
+  MP3StreamPump(MP3_PRIME_FRAMES);
+  if (_samps)
+    *_samps=samps;
+  if (_hz)
+    *_hz=hz;
+  if (_nch)
+    *_nch=nch;
+  return TRUE;
+}
+
+U0 Mp3PumpTask(I64)
+{
+  while (TRUE) {
+    if (mp3_streaming && !mp3_pump_ext) {
+      MP3StreamPump(MP3_PUMP_FRAMES);
+      Yield;
+    } else
+      Sleep(20);
+  }
+}
+
 public Bool MP3Play(U8 *filename,Bool bkg=TRUE,Bool verbose=TRUE)
 {
   U8 *raw;
-  I16 *pcm;
   I64 size,samps,hz,nch;
   if (mp3_mixer_idx<0) {
     if (verbose)
@@ -1607,26 +1843,14 @@ public Bool MP3Play(U8 *filename,Bool bkg=TRUE,Bool verbose=TRUE)
       "MP3: can't read %s\n",filename;
     return FALSE;
   }
-  mp3_verbose=verbose;
-  if (verbose)
-    "MP3: decoding %s ",filename;
-  pcm=MP3Decode(raw,size,&samps,&hz,&nch);
-  Free(raw);
-  mp3_verbose=TRUE;
-  if (!pcm) {
+  if (!MP3StreamOpen(raw,size,&samps,&hz,&nch)) {
     if (verbose)
-      " no MPEG-1 Layer III frames found.\n";
+      "MP3: no MPEG-1 Layer III frames in %s\n",filename;
     return FALSE;
   }
   if (verbose)
-    " %d.%03d sec @ %dHz %dch\n",samps/hz,(samps%hz)*1000/hz,hz,nch;
-  MP3Stop;
-  mp3_song_samps=samps;
-  mp3_song_ch=nch;
-  mp3_song_hz=hz;
-  mp3_play_pos=0;
-  mp3_play_step=(hz<<32)/SND_SAMPLE_RATE;
-  mp3_song=pcm;
+    "MP3: %s -- %d.%03d sec @ %dHz %dch\n",filename,
+          samps/hz,(samps%hz)*1000/hz,hz,nch;
   mp3_playing=TRUE;
   if (!bkg)
     MP3Wait;
@@ -1637,6 +1861,7 @@ U0 MP3Install()
 {
   Mp3InitTables;
   mp3_mixer_idx=MixerRegister("MP3",&MP3FillBuf);
+  Spawn(&Mp3PumpTask,,"MP3 Pump");
 }
 
 if (snd_dev==SD_HD_AUDIO) {

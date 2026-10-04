@@ -20,7 +20,12 @@ BitFieldSet(&my_bitfield, 59, 4, 15);
 
 "The four high bits as a 4-bit bitfield = %d\n",BitFieldGet(&my_bitfield, 59, 4);
 
-// TinkerOS also supports parsing bitfield info from classes:
+// TinkerOS also supports real, C-like bitfield members on classes.
+// Annotate a member with ":width" inside a union and the compiler tracks
+// its bit offset and width -- plain "." and "->" access on that member
+// then automatically reads/writes just those bits, read-modify-write,
+// exactly like C bitfields (including silent truncation if you write a
+// value wider than the field).
 
 class BFtest {
 // bitfield variables should be a union!
@@ -33,61 +38,73 @@ union {
     U8 bit_5 : 1;
     U8 bit_6 : 1;
     U8 bit_7 : 1;
+    U8 whole_byte;
 }
 union {
     U16 nibble_0 : 4;
     U16 nibble_1 : 4;
     U16 nibble_2 : 4;
     U16 nibble_3 : 4;
+    U16 whole_word;
 }
 };
 
-BFtest bftest;
+BFtest bftest,*pbftest=&bftest;
 
-// Normal HolyC behaves just like default, has no awareness of bitfields
-bftest.bit_0=0x55;  // sets full U8 union to 0x55 
-bftest.nibble_0=0xf0f0; // sets full U16 union to 0xff00
+bftest.whole_byte=0x55;   // 01010101
+bftest.whole_word=0xff00; // 11111111000000
 
-"The normal value of bftest.bit_0 is %02x\n",bftest.bit_0;
-"The normal value of bftest.nibble_0 is %04x\n",bftest.nibble_0;
 
-"ClassRep shows bitfield info:\n";
+
+"\n=== ClassRep shows each member's bit offset/width ===\n\n";
 ClassRep(&bftest);
 
-// TinkerOS extension to read/write bitfield values via CBFG/CBFS
-// Crashes QEMU on some machines, might be a bug, don't use yet
-/*
-"The bitfield value of bit_0 is %d\n",CBFG("bftest.bit_0");
-"The bitfield value of bit_1 is %d\n",CBFG("bftest.bit_1");
-"The bitfield value of bit_2 is %d\n",CBFG("bftest.bit_2");
-"The bitfield value of bit_3 is %d\n",CBFG("bftest.bit_3");
-"The bitfield value of bit_4 is %d\n",CBFG("bftest.bit_4");
-"The bitfield value of bit_5 is %d\n",CBFG("bftest.bit_5");
-"The bitfield value of bit_6 is %d\n",CBFG("bftest.bit_6");
-"The bitfield value of bit_7 is %d\n",CBFG("bftest.bit_7");
-"\n";
-"The bitfield value of nibble_0 is %01X\n",CBFG("bftest.nibble_0");
-"The bitfield value of nibble_1 is %01X\n",CBFG("bftest.nibble_1");
-"The bitfield value of nibble_2 is %01X\n",CBFG("bftest.nibble_2");
-"The bitfield value of nibble_3 is %01X\n",CBFG("bftest.nibble_3");
-"\n";
-"Setting bit 1 to 1\n";
-CBFS("bftest.bit_1",1);
-"Setting nibbles to their index with CBFS\n";
-CBFS("bftest.nibble_0",0);
-CBFS("bftest.nibble_1",1);
-CBFS("bftest.nibble_2",2);
-CBFS("bftest.nibble_3",3);
-"Now the bitfield value of nibble_0 is %01X\n",CBFG("bftest.nibble_0");
-"Now the bitfield value of nibble_1 is %01X\n",CBFG("bftest.nibble_1");
-"Now the bitfield value of nibble_2 is %01X\n",CBFG("bftest.nibble_2");
-"Now the bitfield value of nibble_3 is %01X\n",CBFG("bftest.nibble_3");
-"\n";
+"\n=== Testing each bit field via bftest.bit_N ===\n\n";
+"bftest.bit_0=%b\n",bftest.bit_0;
+"bftest.bit_1=%b\n",bftest.bit_1;
+"bftest.bit_2=%b\n",bftest.bit_2;
+"bftest.bit_3=%b\n",bftest.bit_3;
+"bftest.bit_4=%b\n",bftest.bit_4;
+"bftest.bit_5=%b\n",bftest.bit_5;
+"bftest.bit_6=%b\n",bftest.bit_6;
+"bftest.bit_7=%b\n",bftest.bit_7;
 
-// Accessing with normal HolyC
-// shows full changed value of
-// all nibbles of the full U16
-"The normal value of bftest.bit_0 is now %02x\n",bftest.bit_0;
-"The normal value of bftest.nibble_0 is now %04x\n",bftest.nibble_0;
-*/
+"\n=== Testing each nibble field via bftest.nibble_N ===\n\n";
+"bftest.nibble_0=%b\n",bftest.nibble_0;
+"bftest.nibble_1=%b\n",bftest.nibble_1;
+"bftest.nibble_2=%b\n",bftest.nibble_2;
+"bftest.nibble_3=%b\n",bftest.nibble_3;
+
+"\n=== Change one bit and show the new whole_byte (bftest) ===\n\n";
+bftest.bit_3=1;
+"After bftest.bit_3=1, bftest.whole_byte=%b\n\n",bftest.whole_byte;
+
+"\n=== Change one nibble and show the new whole_word (bftest) ===\n\n";
+bftest.nibble_1=0xA;
+"After bftest.nibble_1=0xA, bftest.whole_word=%b\n\n",bftest.whole_word;
+
+"\n=== Testing each bit field via pbftest->bit_N ===\n\n";
+"pbftest->bit_0=%b\n",pbftest->bit_0;
+"pbftest->bit_1=%b\n",pbftest->bit_1;
+"pbftest->bit_2=%b\n",pbftest->bit_2;
+"pbftest->bit_3=%b\n",pbftest->bit_3;
+"pbftest->bit_4=%b\n",pbftest->bit_4;
+"pbftest->bit_5=%b\n",pbftest->bit_5;
+"pbftest->bit_6=%b\n",pbftest->bit_6;
+"pbftest->bit_7=%b\n",pbftest->bit_7;
+
+"\n=== Testing each nibble field via pbftest->nibble_N ===\n\n";
+"pbftest->nibble_0=%b\n",pbftest->nibble_0;
+"pbftest->nibble_1=%b\n",pbftest->nibble_1;
+"pbftest->nibble_2=%b\n",pbftest->nibble_2;
+"pbftest->nibble_3=%b\n",pbftest->nibble_3;
+
+"\n=== Change one bit and show the new whole_byte (pbftest) ===\n\n";
+pbftest->bit_5=1;
+"After pbftest->bit_5=1, pbftest->whole_byte=%b\n\n",pbftest->whole_byte;
+
+"\n=== Change one nibble and show the new whole_word (pbftest) ===\n\n";
+pbftest->nibble_3=0x3;
+"After pbftest->nibble_3=0x3, pbftest->whole_word=%b\n\n",pbftest->whole_word;
+
 

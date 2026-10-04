@@ -17,8 +17,8 @@
 #define SNAIL_FRAME_SIZE  112
 
 // starting at 6 since SnailLib uses < 6
-#define CMD_FILE_RECV     6
-#define CMD_FILE_SEND     7
+#define CMD_RECV_FILE     6
+#define CMD_SEND_FILE     7
 #define CMD_ID 8
 #define CMD_URL_GET_RAW 9
 #define CMD_HDIR 10
@@ -28,6 +28,7 @@
 #define CMD_SET_CB_TEXT 14
 #define CMD_HOST_EXEC 15
 #define CMD_URL_GET_TEXT 16
+#define CMD_GET_OS 17
 
 #define ACK_WAIT_DELAY_MS 1
 
@@ -320,11 +321,7 @@ Bool ProbeComm()
   I64 i,j;
   U8 tmp_buf[17], tmp_byte;
 
-  if (!comm_ports[1].base)
-  {
-     "You must first call CommInit to initialized COM ports!\n";
-     return FALSE;
-  }
+  if (!comm_ports[1].base) Adam("CommInit;\n");
 
   MemSet(tmp_buf,0,17);
   for (i=1; i<=MAX_COMM_NUM; i++)
@@ -405,7 +402,7 @@ public I64 Fget(U8 *filename, U8 *local_name=NULL)
 
   if (!TOSServerCheck) return -1;
 
-  ClientPutCmdAndStr(CMD_FILE_SEND, filename);
+  ClientPutCmdAndStr(CMD_SEND_FILE, filename);
   if (!ReadRemoteLen(&len))
   {
     "Failed to read file %s (or file size is zero)!\n",filename;
@@ -431,7 +428,7 @@ public I64 Fget(U8 *filename, U8 *local_name=NULL)
     else
     {
       basename = FileBaseName(filename);
-      zfile=MStrPrint("%s.Z",local_name);
+      zfile=MStrPrint("%s.Z",basename);
       if (IsFile(zfile))
       {
         FileWrite(zfile,data,len);
@@ -475,7 +472,7 @@ public I64 Fput(U8 *filename, U8* remote_name=NULL)
     return 0;
   }
   len_str = MStrPrint("%d",len);
-  ClientPutChar(CMD_FILE_RECV);
+  ClientPutChar(CMD_RECV_FILE);
   res=ClientPutLenStrAndFree(len_str);
   if (remote_name)
   {
@@ -492,6 +489,7 @@ public I64 Fput(U8 *filename, U8* remote_name=NULL)
   if (res = ReadI8)
   {
     "File %s was transferred!\n",filename;
+    Free(data);
     return len;
   }
   else
@@ -548,7 +546,7 @@ I64 FCmpHash(U8 *filename, U8* remote_name=NULL, Bool silent=TRUE)
 I64 Dput2(CDirEntry *tmpde,I64 src_dir_len,I64 dst_dir_len,U8 *dst_dir, Bool sync=FALSE, Bool bin_files=TRUE)
 {//Used by Dput not for user use.
   U8 *st;
-  I64 res=1;
+  I64 res=0;
 
   if (!TOSServerCheck) return -1;
 
@@ -867,13 +865,13 @@ public U8 *ClipGetStr()
   if (!TOSServerCheck) return 0;
 
   ClientPutChar(CMD_GET_CB_TEXT);
-  
-  if (!ReadRemoteLen(&len))
+
+  if (!ReadRemoteLen(&len, 2500))
   {
     "Failed to get clipboard text (or size is zero)!\n";
     return 0;
   }
-  if (data = MReadBlock(len))
+  if (data = MReadBlock(len, 2500))
   {
     return data;
   }
@@ -903,6 +901,39 @@ public U0 ClipPutStr(U8 *send_text)
   }
 }
 
+public U8 *HGetOSStr()
+{// Get host OS name from remote as string (e.g. "Linux")
+  U8 *data;
+  I64 len;
+
+  if (!TOSServerCheck) return 0;
+
+  ClientPutChar(CMD_GET_OS);
+
+  if (!ReadRemoteLen(&len, 2500))
+  {
+    "Failed to get host OS (or size is zero)!\n";
+    return 0;
+  }
+  if (data = MReadBlock(len, 2500))
+  {
+    return data;
+  }
+  return 0;
+}
+
+public U0 HGetOS()
+{// Get host OS name from remote and print
+  if (!TOSServerCheck) return;
+
+  U8 *os=HGetOSStr;
+  if (os)
+  {
+    "%s\n",os;
+    Free(os);
+  }
+}
+
 public U8 *HExecToStr(U8 *cmd)
 {// Send NON-INTERACTIVE cmd to another PC over serial, execute, return string output
   U8 *data;
@@ -913,12 +944,12 @@ public U8 *HExecToStr(U8 *cmd)
   if (len)
   {
     ClientPutCmdWithPayload(CMD_HOST_EXEC, cmd);
-    if (!ReadRemoteLen(&len))
+    if (!ReadRemoteLen(&len, 30000))
     {
       "Failed to get result string (or got 0 bytes)!\n";
       return 0;
     }
-    if (data = MReadBlock(len))
+    if (data = MReadBlock(len, 30000))
     {
       return data;
     }

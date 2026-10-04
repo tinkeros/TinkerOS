@@ -12,6 +12,23 @@
 #define PE_POP_ALL1		11
 #define PE_POP_ALL2		12
 
+// Native bitfield member read support (x.a / y->a where 'a' has a ':' width).
+// Stashed by PrsUnaryModifier right after it resolves a "." / "->" member
+// that turns out to be a bitfield, consumed immediately afterward by
+// PE_DEREFERENCE once the normal (unmodified) load of the full underlying
+// storage unit has been emitted -- we then shift+mask that loaded value
+// down to just the field's bits. Left at 0 (no-op) the rest of the time.
+// NOT used for assignment targets -- see PrsUnaryModifier's bf_size check,
+// which only sets this when the member is NOT immediately followed by '='.
+I64 g_pending_bf_offset=0,g_pending_bf_size=0;
+
+CIntermediateCode *ICClone(CCmpCtrl *cc,CIntermediateCode *src)
+{//Re-emits an equivalent of an already-emitted node, as if the same
+ //sub-expression had been parsed a second time.
+  return ICAdd(cc,src->ic_code+src->ic_precedence<<16,src->ic_data,
+      src->ic_class,src->ic_flags);
+}
+
 CIntermediateCode *PrsAddOp(CCmpCtrl *cc,I64 stk_op,CHashClass *tmpc)
 {
   CIntermediateCode *tmpi=cc->coc.coc_head.last;
@@ -131,6 +148,15 @@ pe_unary_term1:
       {
         tmpc=OptClassFwd(tmpi->ic_class-1);
         ICAdd(cc,i,0,tmpc);
+        if (g_pending_bf_size)
+        {
+          ICAdd(cc,IC_IMM_I64,g_pending_bf_offset,cmp.internal_types[RT_I64]);
+          ICAdd(cc,IC_SHR,0,tmpc);
+          ICAdd(cc,IC_IMM_I64,1<<g_pending_bf_size-1,cmp.internal_types[RT_I64]);
+          ICAdd(cc,IC_AND,0,tmpc);
+          g_pending_bf_offset=0;
+          g_pending_bf_size=0;
+        }
       }
     case PE_CHECK_BINARY_OPS1:
 pe_check_binary_ops1:
@@ -1126,11 +1152,11 @@ I64 PrsUnaryModifier(CCmpCtrl *cc,CPrsStk *ps,CMemberLst **_local_var,
   CHashClass *tmpc,*tmpc1;
   CHashFun *fun_ptr;
   CMemberLst *tmpm=*_local_var;
-  CIntermediateCode *tmpi,*tmpi1;
+  CIntermediateCode *tmpi,*tmpi1,*tmpi_base;
   CArrayDim *tmpad1,tmpad2;
   CCodeMisc *cm;
-  I64 mode,old_flags;
-  Bool was_paren=Btr(&cc->flags,CCf_PAREN);
+  I64 mode,old_flags,bf_mask;
+  Bool was_paren=Btr(&cc->flags,CCf_PAREN),bf_base_is_ptr=FALSE;
   *_local_var=NULL;
   switch (cc->token)
   {
@@ -1140,11 +1166,19 @@ I64 PrsUnaryModifier(CCmpCtrl *cc,CPrsStk *ps,CMemberLst **_local_var,
     goto um_join;
   case TK_DEREFERENCE:
     tmpi=cc->coc.coc_head.last;
-    if (!(cc->flags & (CCF_RAX | CCF_ARRAY)))
+    tmpi_base=tmpi; //the pointer VALUE, before *this* deref -- re-cloning
+                     //just the deref below (without this) would dereference
+                     //whatever happens to be on top at clone time, not pbf's
+                     //value again. Only valid when the CCF_RAX branch below
+                     //is NOT taken; see the bitfield-write check below.
+    bf_base_is_ptr=!(cc->flags & (CCF_RAX | CCF_ARRAY));
+    if (bf_base_is_ptr)
       ICAdd(cc,IC_DEREF+PREC_UNARY_PRE<<16,0,tmpi->ic_class-1);
     else
       tmpi->ic_class--;
 um_join:
+    if (cc->token=='.')
+      tmpi_base=cc->coc.coc_head.last;
     if (!*unary_post_prec)
       *unary_post_prec=PREC_TERM;
     tmpc=cc->coc.coc_head.last->ic_class;
@@ -1175,6 +1209,45 @@ um_join:
       cc->flags|=CCF_FUN_EXP;
     }
     ICAdd(cc,IC_ADD,0,tmpc1);
+    if (tmpm->bf_size && cc->token=='=')
+    {
+      Lex(cc); //consume '='
+      tmpc=OptClassFwd(tmpc1-1);
+      bf_mask=1<<tmpm->bf_size-1;
+      //Mirror what the generic '=' dispatch does to its lvalue (PrsExp.HC,
+      //the "intermediate_code_table[cur_op.u16[0]].type==IST_ASSIGN" block):
+      //wrap address#1 in a DEREF, then immediately convert that DEREF to
+      //IC_NOP1. Downstream passes apparently key off this exact DEREF->NOP1
+      //shape for anything feeding an IC_ASSIGN -- skipping it is what made
+      //the earlier attempt crash.
+      ICAdd(cc,IC_DEREF+PREC_UNARY_PRE<<16,0,tmpc);
+      tmpi=cc->coc.coc_head.last;
+      tmpi->ic_code=IC_NOP1;
+      ICClone(cc,tmpi_base); //2nd copy of: local/global var's address (".")
+                              //or pointer's value ("->", pre-deref)
+      if (bf_base_is_ptr)
+        ICAdd(cc,IC_DEREF+PREC_UNARY_PRE<<16,0,tmpi_base->ic_class-1);
+      ICAdd(cc,IC_IMM_I64,tmpm->offset,tmpc1);
+      ICAdd(cc,IC_ADD,0,tmpc1);
+      ICAdd(cc,IC_DEREF+PREC_UNARY_PRE<<16,0,tmpc);
+      ICAdd(cc,IC_IMM_I64,~(bf_mask<<tmpm->bf_offset),cmp.internal_types[RT_I64]);
+      ICAdd(cc,IC_AND,0,tmpc);
+      if (!PrsExpression(cc,NULL,FALSE))
+        throw('Compiler');
+      ICAdd(cc,IC_IMM_I64,bf_mask,cmp.internal_types[RT_I64]);
+      ICAdd(cc,IC_AND,0,tmpc);
+      ICAdd(cc,IC_IMM_I64,tmpm->bf_offset,cmp.internal_types[RT_I64]);
+      ICAdd(cc,IC_SHL,0,tmpc);
+      ICAdd(cc,IC_OR,0,tmpc);
+      ICAdd(cc,IC_ASSIGN,0,tmpc);
+      cc->flags|=CCF_RAX;
+    }
+    else if (tmpm->bf_size)
+    {//Native bitfield read (not an assignment target): PE_DEREFERENCE will
+     //shift+mask the value right after loading it. See g_pending_bf_size.
+      g_pending_bf_offset=tmpm->bf_offset;
+      g_pending_bf_size=tmpm->bf_size;
+    }
     return PE_UNARY_MODIFIERS;
   case '(':
     if (cc->flags & CCF_FUN_EXP)

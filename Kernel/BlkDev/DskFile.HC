@@ -107,8 +107,9 @@ U0 FileWriteCB(U8 *filename)
   no_warn filename;
 }
 
-I64 FileWrite(U8 *filename,U8 *fbuf,I64 size,CDate cdt=0,I64 attr=0)
-{//Write whole file to disk.
+I64 FileWriteAt(U8 *filename,U8 *fbuf,I64 size,CDate cdt=0,I64 attr=0,I64 at_clus=0)
+{//Write whole file to disk.  at_clus>0 forces an exact FAT32 clus
+ //placement instead of letting the allocator search for space.
   I64 c=0;
   CHashGeneric *tmph;
   CDirContext *dirc;
@@ -128,10 +129,11 @@ I64 FileWrite(U8 *filename,U8 *fbuf,I64 size,CDate cdt=0,I64 attr=0)
     switch (dirc->dv->fs_type)
     {
     case FSt_REDSEA:
+      if (at_clus) throw('Drv');
       c=RedSeaFileWrite(dirc->dv,Fs->cur_dir,dirc->mask,fbuf,size,cdt,attr);
       break;
     case FSt_FAT32:
-      c=FAT32FileWrite(dirc->dv,Fs->cur_dir,dirc->mask,fbuf,size,cdt,attr);
+      c=FAT32FileWrite(dirc->dv,Fs->cur_dir,dirc->mask,fbuf,size,cdt,attr,at_clus);
       break;
     case FSt_ISO9660:
       PrintErr("Not Writable\n");
@@ -157,5 +159,25 @@ I64 FileWrite(U8 *filename,U8 *fbuf,I64 size,CDate cdt=0,I64 attr=0)
   }
   Free(absname);
   FileWriteCB(filename);
+  return c;
+}
+
+I64 FileWrite(U8 *filename,U8 *fbuf,I64 size,CDate cdt=0,I64 attr=0)
+{//Write whole file to disk.
+  return FileWriteAt(filename,fbuf,size,cdt,attr,0);
+}
+
+I64 DirMoveAt(U8 *dirname,I64 at_clus)
+{//Moves an existing directory to an exact FAT32 clus run.
+  I64 c=0;
+  CDirContext *dirc;
+  if (dirc=DirContextNew(dirname,FALSE,FALSE))
+  {
+    if (dirc->dv->fs_type==FSt_FAT32)
+      c=FAT32DirMove(dirc->dv,Fs->cur_dir,dirc->mask,at_clus);
+    else
+      PrintErr("Not FAT32 Drv\n");
+    DirContextDel(dirc);
+  }
   return c;
 }

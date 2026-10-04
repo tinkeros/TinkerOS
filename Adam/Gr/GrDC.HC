@@ -435,15 +435,8 @@ public CDC *DCScrnCapture(Bool include_zoom=TRUE,CTask *task=NULL)
 {//Capture scrn to a device context.
   no_warn include_zoom;
   CDC *dc;
-  U8 *dst;
   Refresh(0,FALSE);
-  dc=DCCopy(gr.scrn_image,task);
+  dc=DCCopy(gr.dc2,task);
   dc->flags&=~DCF_SCRN_BITMAP;
-  dst=MAlloc(dc->width_internal*dc->height,task);
-  //Pick background color that never occurs. COLOR_INVALID
-  GrBitMap4ToBitMap8(dst,dc->body,
-      (dc->width_internal*dc->height)>>1,COLOR_INVALID);
-  Free(dc->body);
-  dc->body=dst;
   return dc;
 }

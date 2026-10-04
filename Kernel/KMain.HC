@@ -157,7 +157,7 @@ U0 KMain()
   sys_os_version,sys_compile_time,sys_compile_time;
   TimersInit;
   if (BIOSTotalMem<ToI64(0.95*MEM_MIN_MEG*0x100000))
-    RawPrint(4000,"!!! Requires 2GB of RAM !!!");
+    RawPrint(0,"!!! Warning: Less than 2GB of RAM !!!\n");
   IntsInit;
   "Enable IRQ's\n";
   IntInit2;

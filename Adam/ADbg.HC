@@ -36,7 +36,24 @@ Bool ClassRep2(CDoc *doc,U8 *_d,U8 *class_name=lastclass,
     {
       DocPrint(doc,"$$GREEN$$%-20ts:$$FG$$",ml->str);
       if (ml->bf_size>0) DocPrint(doc, " BF %d:%d ",ml->bf_offset, ml->bf_size);
-      if (stars==1 && (tmpc2->raw_type==RT_I8 || tmpc2->raw_type==RT_U8))
+      if (ml->bf_size>0)
+      {//Native bitfield -- extract just this field's bits out of the
+       //shared backing storage instead of dumping the whole storage unit.
+        switch (tmpc2->raw_type)
+        {
+        case RT_I8:  i=*ptr(I8  *); break;
+        case RT_U8:  i=*ptr(U8  *); break;
+        case RT_I16: i=*ptr(I16 *); break;
+        case RT_U16: i=*ptr(U16 *); break;
+        case RT_I32: i=*ptr(I32 *); break;
+        case RT_U32: i=*ptr(U32 *); break;
+        case RT_U64: i=*ptr(U64 *); break;
+        default:     i=*ptr(I64 *); break;
+        }
+        i=i>>ml->bf_offset&1<<ml->bf_size-1;
+        DocPrint(doc,"%X",i);
+      }
+      else if (stars==1 && (tmpc2->raw_type==RT_I8 || tmpc2->raw_type==RT_U8))
       {
         ptr=*ptr;
         if (ChkPtr(ptr))

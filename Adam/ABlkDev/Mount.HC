@@ -1,8 +1,12 @@
 #help_index "Install;File/Cmd Line (Typically);Cmd Line (Typically);"
 U8 Mount2(U8 boot_drv_let,CDoc *_doc,Bool _caller_is_prtdsk, Bool just_ide=FALSE,
-    I64 *cur_drv_hint=NULL)
+    I64 *cur_drv_hint=NULL,Bool skip_fmt=FALSE)
 {//If _doc, called by $LK,"::/Kernel/KCfg.HC"$ else called by $LK,"Mount",A="MN:Mount"$().
+ //skip_fmt allows skipping zeroing the entire whole drive on install.
+ //MountWholeDrvNoFmt() skips formatting the placeholder partition for the whole drive
+ //since AtaMkPrt will repartition/format the drive itself anyway.
   I64 cnt,total=0,num_hints,drv_let,type,unit,prt_num,port;
+  F64 percent;
   U8 blks_buf[STR_LEN],addr_buf[STR_LEN],base0_buf[STR_LEN],base1_buf[STR_LEN],
   *filename=NULL,*filename2=NULL,res=0,port_str[STR_LEN];
   CATARep *head=NULL,*tmpha;
@@ -204,7 +208,8 @@ U8 Mount2(U8 boot_drv_let,CDoc *_doc,Bool _caller_is_prtdsk, Bool just_ide=FALSE
           if (_caller_is_prtdsk)
           {
             res=drv_let;
-            DskPrt(drv_let,1.0); //First mount whole drive.
+            percent=1.0;
+            DskPrtExt(drv_let,0,1,&percent,skip_fmt); //First mount whole drive.
           }
           else
             DskPrt(drv_let);
@@ -224,5 +229,11 @@ U8 Mount2(U8 boot_drv_let,CDoc *_doc,Bool _caller_is_prtdsk, Bool just_ide=FALSE
 public U8 Mount(Bool caller_is_prtdsk=FALSE,Bool just_ide=FALSE)
 {//Mount drives. Called from $LK,"DskPrt(Mount)",A="FF:::/Adam/ABlkDev/DskPrt.HC,Mount("$.
   return Mount2(0,NULL,caller_is_prtdsk, just_ide=FALSE);
+}
+
+public U8 MountWholeDrvNoFmt(Bool just_ide=FALSE)
+{//For $LK,"AtaMkPrt",A="MN:AtaMkPrt"$ only.  Same as Mount(TRUE,just_ide),
+ //but skips formatting the placeholder whole-drive partition.
+  return Mount2(0,NULL,TRUE,just_ide,,TRUE);
 }
 

@@ -292,6 +292,89 @@ public Bool GrTextDiamond3(CDC *dc=gr.dc,
   return ToBool(res);
 }
 
+#define GRFANCY_DEFAULT_SCALE 1.0
+
+U0 GrFancyPutSBitwise(CDC *dc,I64 x,I64 y,U8 *s,I64 color,I64 cell)
+{//Draw str using the raw 8x8 $LK,"text.font",A="MN:CTextSettings"$ bits,
+//blown up so each font pixel is a cell x cell block.
+  I64 ch,row,col,cx=x,cy=y;
+  U64 bits;
+  dc->color=color;
+  while (ch=*s++)
+  {
+    if (ch=='\n')
+    {
+      cx=x;
+      cy+=FONT_HEIGHT*cell;
+      goto next_ch;
+    }
+    bits=text.font[ch];
+    for (row=0;row<FONT_HEIGHT;row++)
+      for (col=0;col<FONT_WIDTH;col++)
+        if (Bt(&bits,row*FONT_WIDTH+col))
+          GrRect(dc,cx+col*cell,cy+row*cell,cell,cell);
+    cx+=FONT_WIDTH*cell;
+next_ch:
+  }
+}
+
+public U0 GrFancyPutS(CDC *dc=gr.dc,I64 x,I64 y,U8 *s,
+                    I64 fg=YELLOW,I64 inner_border=DKGRAY,I64 outer_border=BLACK,
+                    F64 scale=GRFANCY_DEFAULT_SCALE)
+{//Draw str with the standard font, bordered to look pseudo-3D.
+//At scale==1, this just offset-stamps the real $LK,"GrPrint",A="MN:GrPrint"$
+//font like the original routine did.  Otherwise, the 8x8 font is drawn
+//bitwise, blown up so each font pixel is a (2*scale)x(2*scale) block, with
+//a border thickness that scales along with it (but never below 1px).
+  I64 dx,dy,cell,outer_r,inner_r;
+  F64 ratio;
+  if (scale==1)
+  {
+    for (dy=-2;dy<=2;dy++)
+      for (dx=-2;dx<=2;dx++)
+        if (dx==-2 || dx==2 || dy==-2 || dy==2)
+        {
+          dc->color=outer_border;
+          GrPrint(dc,x+dx,y+dy,"%s",s);
+        }
+    for (dy=-1;dy<=1;dy++)
+      for (dx=-1;dx<=1;dx++)
+        if (dx || dy)
+        {
+          dc->color=inner_border;
+          GrPrint(dc,x+dx,y+dy,"%s",s);
+        }
+    dc->color=fg;
+    GrPrint(dc,x,y,"%s",s);
+    return;
+  }
+  cell=Max(1,ToI64(2*scale+0.5));
+  ratio=scale/GRFANCY_DEFAULT_SCALE;
+  outer_r=Max(1,ToI64(2*ratio+0.5));
+  inner_r=Max(1,ToI64(1*ratio+0.5));
+  for (dy=-outer_r;dy<=outer_r;dy++)
+    for (dx=-outer_r;dx<=outer_r;dx++)
+      if (Max(Abs(dx),Abs(dy))==outer_r)
+        GrFancyPutSBitwise(dc,x+dx,y+dy,s,outer_border,cell);
+  for (dy=-inner_r;dy<=inner_r;dy++)
+    for (dx=-inner_r;dx<=inner_r;dx++)
+      if (dx || dy)
+        GrFancyPutSBitwise(dc,x+dx,y+dy,s,inner_border,cell);
+  GrFancyPutSBitwise(dc,x,y,s,fg,cell);
+}
+
+public U0 GrFancyPrint(CDC *dc=gr.dc,I64 x,I64 y,
+                     I64 fg=YELLOW,I64 inner_border=DKGRAY,I64 outer_border=BLACK,
+                     U8 *fmt,...)
+{//Formatted version of $LK,"GrFancyPutS",A="MN:GrFancyPutS"$().
+//fmt must stay last (it leads the "...", so there's no room here for a
+//scale arg) -- call $LK,"GrFancyPutS",A="MN:GrFancyPutS"$() directly for a
+//non-default scale.
+  U8 *buf=StrPrintJoin(NULL,fmt,argc,argv);
+  GrFancyPutS(dc,x,y,buf,fg,inner_border,outer_border);
+  Free(buf);
+}
+
 #help_index "Graphics/Mesh"
 public I64 Gr3Mesh(CDC *dc=gr.dc,I64 vertex_cnt,CD3I32 *p,
                    I64 tri_cnt,CMeshTri *tri)

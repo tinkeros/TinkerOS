@@ -125,6 +125,10 @@ public U64 BitFieldGet(U8 *bit_field, U8 offset, U8 size)
 #define VBOX_PCI_VMMDEV_ID	0xCAFE
 #define VBOX_PCI_GFX_ID		0xBEEF
 
+//Intel ICH AC97 audio, what VirtualBox emulates for its AC97 setting.
+#define AC97_PCI_VENDOR_ID	0x8086
+#define AC97_PCI_DEVICE_ID	0x2415
+
 static I64 vbox_pci_present=-1;	//-1 until probed
 
 public Bool VBoxPciPresent()
@@ -146,6 +150,20 @@ public Bool VBoxPciPresent()
           return TRUE;
         }
       }
+  return FALSE;
+}
+
+public Bool AC97Present()
+{//Is the ICH AC97 audio controller on bus 0?  VirtualBox only emulates
+ //it when the VM is set to AC97, so pair this with VBoxPciPresent to
+ //tell an AC97 guest from an HD Audio or SB16 one.  Same direct bus 0
+ //scan as above, and for the same sys_pci_busses reason.
+  I64 d,f;
+  for (d=0; d<32; d++)
+    for (f=0; f<8; f++)
+      if (PCIReadU16(0,d,f,PCIR_VENDOR_ID)==AC97_PCI_VENDOR_ID &&
+          PCIReadU16(0,d,f,PCIR_DEVICE_ID)==AC97_PCI_DEVICE_ID)
+        return TRUE;
   return FALSE;
 }
 

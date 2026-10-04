@@ -28,7 +28,7 @@ U0 TS(U8 *desc)
            (PROGRESS_DESC_LEN-StrLen(st))>>1,CH_SPACE,st);
   Free(st);
   progress4=ts_i++;
-  progress4_max=198;
+  progress4_max=202;
   progress4_t0=ts_t0;
   *progress4_desc=0;
   RegExe("TempleOS/OSTestSuite");
@@ -1709,6 +1709,23 @@ U0 DoTalons()
   DeathWait(&task,TRUE);
 }
 
+U0 DoBirdsNBoats()
+{
+  CTask *task=User;
+  XTalkWait(task,"#include \"::/Apps/BirdsNBoats/Run\";\n");
+  Sleep(3000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,'-',0);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,'-',0);
+  Sleep(3000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,'b',0);
+  Sleep(3000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,'-',0);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,'-',0);
+  Sleep(3000);
+  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SHIFT_ESC,0);
+  DeathWait(&task,TRUE);
+}
+
 U0 DoPhoneNumWords()
 {
   CTask *task=User;
@@ -2013,6 +2030,8 @@ U0 OSTestSuite()
   DoBlackDiamond;
   TS("Talons");
   DoTalons;
+  TS("BirdsNBoats");
+  DoBirdsNBoats;
   TS("FlatTops");
   DoFlatTops;
   TS("DunGen");
@@ -2096,6 +2115,8 @@ U0 OSTestSuite()
   TSFileChar("::/Demo/Graphics/Elephant",,CH_SHIFT_ESC);
   TS("SpritePlot3D");
   TSFileChar("::/Demo/Graphics/SpritePlot3D");
+  TS("FancyText");
+  TSFileChar("::/Demo/FancyText",2500);
   TS("SpritePut");
   TSFile("::/Demo/Graphics/SpritePut");
   TS("SpritePutExt");
@@ -2112,6 +2133,8 @@ U0 OSTestSuite()
   TSFile("::/Demo/Carry");
   TS("Directives");
   TSFile("::/Demo/Directives");
+  TS("Bitfield",1500);
+  TSFile("::/Demo/Bitfield");
   TS("RandDemo");
   DoRandDemo;
   TS("Extents");
@@ -2392,6 +2415,8 @@ U0 OSTestSuite()
   DoPI100;
   TS("Test compiler bugfix");
   DoCompilerFixCheck;
+  TS("RmParTest",1500);
+  TSFile("::/Demo/Compiler/RmParTest");
   ProgressBarsRst("TinkerOS/OSTestSuite");
   "Elapsed Time:%5.3f\n"
   ,tS-ts_t0;

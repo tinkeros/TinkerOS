@@ -65,3 +65,57 @@ public U8 *Dump(U8 *filename,Bool write=FALSE)
   return buf;
 }
 
+public Bool AtaMkPrt(U8 drv_let=0,I64 size_mb=0,I64 num_prts=1,Bool just_ide=FALSE)
+{//Write a fresh DOS(MBR) partition table w/ up to 4 FAT32 partitions to a plain ATA/SATA hard drive.
+  CBlkDev *bd;
+  CMasterBoot *mbr;
+  I64 i,start_sect=2048,size_sects,avail_sects; //1MiB-aligned start
+  Bool res;
+  if (drv_let && !Let2BlkDev(drv_let,FALSE))
+    drv_let=0;
+  if (!drv_let && !(drv_let=MountWholeDrvNoFmt(just_ide)) ||
+      !(bd=Let2BlkDev(drv_let,FALSE)))
+  {
+    "AtaMkPrt: Failed to mount an ATA/SATA hard drive!\n";
+    return FALSE;
+  }
+  if (bd->type!=BDT_ATA && bd->type!=BDT_AHCI_SATA)
+  {
+    "AtaMkPrt: Drive %C is not a plain ATA/SATA hard drive!\n",drv_let;
+    return FALSE;
+  }
+  if (num_prts<1) num_prts=1;
+  if (num_prts>4) num_prts=4;
+  avail_sects=bd->max_blk+1-start_sect;
+  if (size_mb<=0)
+    size_mb=MinI64(2048,(avail_sects/num_prts)>>(20-BLK_SIZE_BITS));
+  else if (size_mb<256)
+    size_mb=256;
+  size_sects=size_mb<<(20-BLK_SIZE_BITS);
+  if (size_mb<=0 || start_sect+num_prts*size_sects>bd->max_blk+1)
+  {
+    "AtaMkPrt: Drive %C too small for %d x %dMB partition(s)!\n",drv_let,num_prts,size_mb;
+    return FALSE;
+  }
+  mbr=CAlloc(BLK_SIZE);
+  mbr->signature=0xAA55;
+  for (i=0;i<num_prts;i++)
+  {
+    if (!i) mbr->p[i].active=0x80; //only the 1st partition is marked bootable
+    mbr->p[i].type      =MBR_PT_FAT32a;
+    mbr->p[i].start_head=0;
+    mbr->p[i].start_cyl =0x101;
+    mbr->p[i].end_head  =0xFE;
+    mbr->p[i].end_cyl   =0xFFFF;
+    mbr->p[i].offset    =start_sect+i*size_sects;
+    mbr->p[i].size      =size_sects;
+  }
+  ATAWriteBlks(bd,mbr,0,1);
+  bd->flags&=~(BDF_INITIALIZED | BDF_INIT_IN_PROGRESS);
+  BlkDevAdd(bd,,FALSE,TRUE);
+  for (i=bd->first_drv_let;i<bd->first_drv_let+num_prts;i++)
+    Fmt(i,,FALSE);
+  res=TRUE;
+  Free(mbr);
+  return res;
+}

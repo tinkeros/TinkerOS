@@ -12,7 +12,7 @@ class CPlannedDrv
   Bool pri;
 };
 
-public I64 DskPrtExt(U8 drv_let=0,I64 max_blks=0,I64 argc,I64 *argv)
+public I64 DskPrtExt(U8 drv_let=0,I64 max_blks=0,I64 argc,I64 *argv,Bool skip_fmt=FALSE)
 {//Partition disk
   /*Partition the disk containing partition drv_let.
 
@@ -196,8 +196,9 @@ public I64 DskPrtExt(U8 drv_let=0,I64 max_blks=0,I64 argc,I64 *argv)
   }
   bd->flags&=~(BDF_INITIALIZED | BDF_INIT_IN_PROGRESS);
   BlkDevAdd(bd,,FALSE,TRUE);
-  for (i=bd->first_drv_let; i<drv_let2; i++)
-    Fmt(i,,FALSE);
+  if (!skip_fmt)
+    for (i=bd->first_drv_let; i<drv_let2; i++)
+      Fmt(i,,FALSE);
 pd_done:
   while (head.next!=&head)
   {

@@ -1,5 +1,52 @@
+$WW,1$$FG,5$$TX+CX,"TOSClient"$$FG$
 
-$WW,1$There is a python server for TinkerOS tos_server.py which runs on Linux machines (in either server or client mode) which can connect to TinkerOS over real or virtual serial ports to exchange files, clipboard contents, fetch URLs or execute commands on the remote server.
+There is a python server for TinkerOS $LK,"tos_server.py",A="FI:::/Python/tos_server.py"$ which runs on Linux machines (in either server or client mode) which can connect to TinkerOS over real or virtual serial ports to exchange files, clipboard contents, fetch URLs or execute commands on the remote server.
 
-If properly setup, the following functions may be available to you:
-$WW,0$
+See $LK,"::/Python/README.md"$ for how to set up and run $FG,2$tos_server.py$FG$.  Once it is running and reachable over a COM port, the following functions may be available to you:
+
+$FG,5$Connecting$FG$
+$LK,"InitTOSClient",A="MN:InitTOSClient"$()	Probes the COM ports for a running $FG,2$tos_server.py$FG$ and remembers which port it's on.  You normally don't need to call this yourself -- every function below calls it for you (via $LK,"TOSServerCheck",A="MN:TOSServerCheck"$()) the first time it's needed.
+
+$FG,5$Files$FG$
+$LK,"Fget",A="MN:Fget"$(filename, local_name=NULL)	Downloads $FG,2$filename$FG$ from the host's transfer directory to $FG,2$local_name$FG$ (or the file's base name if omitted).  Returns the number of bytes transferred, or 0 on failure.
+
+$LK,"Fput",A="MN:Fput"$(filename, remote_name=NULL)	Uploads $FG,2$filename$FG$ to the host's transfer directory as $FG,2$remote_name$FG$ (or the same name if omitted).  Returns the number of bytes transferred, or 0 on failure.
+
+$LK,"Dput",A="MN:Dput"$(src_files_find_mask, remote_dir=NULL, no_mask=TRUE, sync=FALSE, bin_files=TRUE)	Uploads a whole directory tree matching $FG,2$src_files_find_mask$FG$ to $FG,2$remote_dir$FG$ on the host.  Returns the count of files copied.
+
+$LK,"Dsync",A="MN:Dsync"$(src_files_find_mask, remote_dir=NULL, no_mask=TRUE, bin_files=FALSE)	Like $LK,"Dput",A="MN:Dput"$() but skips files whose remote MD5 hash already matches (via $LK,"FCmpHash",A="MN:FCmpHash"$()), so only changed files are actually transferred.  Skips binary/data files by default.
+
+$LK,"Dget",A="MN:Dget"$(dir=".", strip=0)	Downloads every file under $FG,2$dir$FG$ on the host into the current directory, recreating subdirectories as needed and skipping files whose local copy already matches by hash.
+
+$LK,"Hdir",A="MN:Hdir"$(dir=".")	Prints a listing of $FG,2$dir$FG$ (relative to the host's transfer directory), non-recursive.
+
+$FG,5$Clipboard$FG$
+$LK,"ClipGetStr",A="MN:ClipGetStr"$()	Returns the host clipboard text as a string, or NULL on failure.
+
+$LK,"ClipGet",A="MN:ClipGet"$()	Prints the host clipboard text.
+
+$LK,"ClipPutStr",A="MN:ClipPutStr"$(send_text)	Sets the host clipboard to $FG,2$send_text$FG$.
+
+$LK,"ClipPut",A="MN:ClipPut"$()	Copies the current TinkerOS clipboard to the host clipboard.
+
+$LK,"ClientClipHijack",A="MN:ClientClipHijack"$()	Hijacks the cut/copy/paste key handlers so TinkerOS's clipboard is automatically mirrored to/from the host clipboard, as long as a server is found.
+
+$FG,5$URLs$FG$
+$LK,"URLGet",A="MN:URLGet"$(url, filename)	Has the host fetch $FG,2$url$FG$ (unmodified/raw bytes) and saves the result to $FG,2$filename$FG$.
+
+$LK,"URLGetTextStr",A="MN:URLGetTextStr"$(url)	Has the host fetch $FG,2$url$FG$ and HTML-strip it, returning the extracted text as a string.
+
+$LK,"URLGetText",A="MN:URLGetText"$(url)	Like $LK,"URLGetTextStr",A="MN:URLGetTextStr"$() but prints the result instead of returning it.
+
+$FG,5$Host Info$FG$
+$LK,"HGetOSStr",A="MN:HGetOSStr"$()	Returns the host OS name (e.g. $FG,2$"Linux"$FG$) as a string, or NULL on failure.
+
+$LK,"HGetOS",A="MN:HGetOS"$()	Like $LK,"HGetOSStr",A="MN:HGetOSStr"$() but prints the result instead of returning it.
+
+$FG,5$Remote Execution$FG$
+$LK,"HExecToStr",A="MN:HExecToStr"$(cmd)	Runs $FG,2$cmd$FG$ as a non-interactive shell command on the host and returns its output as a string.
+
+$LK,"HExec",A="MN:HExec"$(cmd)	Like $LK,"HExecToStr",A="MN:HExecToStr"$() but prints the output instead of returning it.
+
+$FG,5$Misc$FG$
+$LK,"DirMks",A="MN:DirMks"$(dirs)	Local helper: creates an entire local directory tree (like $FG,2$mkdir -p$FG$), used internally by $LK,"Dget",A="MN:Dget"$() when recreating remote directory structure.

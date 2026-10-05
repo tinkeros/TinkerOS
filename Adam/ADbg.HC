@@ -50,7 +50,7 @@ Bool ClassRep2(CDoc *doc,U8 *_d,U8 *class_name=lastclass,
         case RT_U64: i=*ptr(U64 *); break;
         default:     i=*ptr(I64 *); break;
         }
-        i=i>>ml->bf_offset&1<<ml->bf_size-1;
+        i=i>>ml->bf_offset&(1<<ml->bf_size-1);
         DocPrint(doc,"%X",i);
       }
       else if (stars==1 && (tmpc2->raw_type==RT_I8 || tmpc2->raw_type==RT_U8))

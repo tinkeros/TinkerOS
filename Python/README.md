@@ -38,9 +38,11 @@ python tos_server.py --mode {client,server} [--type {tcp,serial}] [--port PORT] 
 - `--dir` — directory used for file transfers and directory listings
   (default: `tos_xfr`), created automatically if missing.
 
-### Example: QEMU with `qemu_srv.sh`
+### Example: QEMU as the TCP server, `tos_server.py` as the client (`qemu_srv.sh`)
 
-Add `-serial mon:stdio -serial tcp::7777,server,nowait` to you QEMU command line and boot TinkerOS.
+Add `-serial mon:stdio -serial tcp::7777,server,nowait` to your QEMU command
+line and boot TinkerOS. This makes QEMU listen on host port 7777 and wait
+for a connection, so `tos_server.py` connects out to it as the client.
 
 `qemu_srv.sh` - activates the venv and runs the server in client mode
 against a QEMU guest that has forwarded its TinkerOS TCP port to host
@@ -56,4 +58,37 @@ Run it from this directory with the venv already created as above:
 
 ```sh
 ./qemu_srv.sh
+```
+
+### Example: QEMU as the TCP client, `tos_server.py` as the server
+
+The opposite arrangement: `tos_server.py` listens, and QEMU connects out to
+it. Add `-serial mon:stdio -serial tcp:127.0.0.1:7777,connect` to your QEMU
+command line and boot TinkerOS — QEMU connects to host port 7777 on
+startup, so `tos_server.py` needs to already be listening there:
+
+```sh
+#! /bin/bash
+. venv/bin/activate
+python tos_server.py --mode server --type tcp --port 7777 --dir tos_xfr
+```
+
+Start `tos_server.py` first, then boot the QEMU guest so it has something
+to connect to.
+
+### Example: real hardware with `serial_srv.sh`
+
+`serial_srv.sh` - activates the venv and runs the server in server mode
+over a USB-serial device (TinkerOS connects to it as the client):
+
+```sh
+#! /bin/bash
+. venv/bin/activate
+python tos_server.py --mode server --type serial --port /dev/ttyUSB0 --dir tos_xfr
+```
+
+Run it from this directory with the venv already created as above:
+
+```sh
+./serial_srv.sh
 ```

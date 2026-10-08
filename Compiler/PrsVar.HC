@@ -457,13 +457,14 @@ U0 PrsDotDotDot(CCmpCtrl *cc,CHashFun *tmpf,I64 _reg)
 
 U0 PrsVarLst(CCmpCtrl *cc,CHashClass *tmpc,I64 mode,I64 union_base=0)
 {
-  I64 i,k,old_flags=cc->flags,old_flags2,type,_reg,bf_offset=0;
+  I64 i,k,old_flags=cc->flags,old_flags2,type,_reg,
+        bf_offset=0,bf_unit_off=0,bf_unit_size=0;
   CHashClass *tmpc1,*tmpc2;
   CHash *tmph;
   CMemberLst *tmpm;
   CMemberLstMeta *tmp_meta;
   U8 *machine_code;
-  Bool undef_array_size,first;
+  Bool undef_array_size,first,bf_open=FALSE,bf_keep=FALSE;
   cc->flags|=CCF_DONT_MAKE_RES;
   if (mode.u8[1]==PRS1B_CLASS)
     cc->flags|=CCF_CLASS_DOL_OFFSET;
@@ -787,6 +788,7 @@ pvl_restart3:
       switch (cc->token)
       {
       case ',':
+        bf_open=FALSE;
         if (mode.u8[1]==PRS1B_FUN_ARG && !(mode&PRSF_UNION))
           Lex(cc);
         else
@@ -802,9 +804,31 @@ pvl_restart3:
       case ':':
         Lex(cc);
         tmpm->bf_size=LexExpressionI64(cc);
+//Outside a union, pack same-type bitfields into one storage unit.
+        if (mode&PRSF_UNION)
+          ;
+        else if (bf_open && !tmpm->dim.next &&
+              tmpm->size==bf_unit_size &&
+              tmpm->offset+tmpm->size==tmpc->size &&
+              bf_offset+tmpm->bf_size<=bf_unit_size*8)
+        {
+          tmpc->size-=tmpm->size;
+          tmpm->offset=bf_unit_off;
+          if (mode.u8[1]==PRS1B_CLASS)
+            cc->class_dol_offset=tmpc->size;
+        }
+        else
+        {
+          bf_unit_off=tmpm->offset;
+          bf_unit_size=tmpm->size;
+          bf_offset=0;
+        }
         tmpm->bf_offset=bf_offset;
         bf_offset+=tmpm->bf_size;
+        bf_keep=TRUE;
       case ';':
+        bf_open=bf_keep;
+        bf_keep=FALSE;
         cc->flags=cc->flags&~CCF_DONT_MAKE_RES|
             old_flags&CCF_DONT_MAKE_RES;
         Lex(cc);

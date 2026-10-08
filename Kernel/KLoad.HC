@@ -1,3 +1,31 @@
+U0 UnresolvedImport()
+{//CALLs to imports not loaded yet land here instead of running on.
+  U8 **rbp=GetRBP,*site=rbp[1]-4,*src,*st_ptr,*name="?";
+  I64 i,off;
+  Bool first;
+  CHashTable *tbl=adam_task->hash_table;
+  CHashImport *tmpiss;
+  for (i=0; i<=tbl->mask; i++)
+    for (tmpiss=tbl->body[i]; tmpiss; tmpiss=tmpiss->next)
+      if (tmpiss->type & HTT_IMPORT_SYS_SYM)
+      {
+        src=tmpiss->module_header_entry;
+        first=TRUE;
+        while (*src++)
+        {
+          off=*src(U32 *)++;
+          st_ptr=src;
+          src+=StrLen(st_ptr)+1;
+          if (*st_ptr && !first) break;
+          first=FALSE;
+          if (tmpiss->module_base+off==site)
+            name=tmpiss->str;
+        }
+      }
+  "Unresolved import %s called from %P\n",name,site;
+  throw('UnresImp');
+}
+
 U0 LoadOneImport(U8 **_src,U8 *module_base,I64 ld_flags)
 {
   U8 *src=*_src,*ptr2,*st_ptr;
@@ -71,6 +99,8 @@ U0 LoadOneImport(U8 **_src,U8 *module_base,I64 ld_flags)
         break;
       }
     }
+    else if (etype==IET_REL_I32 && module_base[i-1]==0xE8) //CALL rel32
+      *(module_base+i)(U32 *)=&UnresolvedImport-(module_base+i)-4;
   }
   *_src=src-1;
 }

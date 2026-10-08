@@ -15,7 +15,8 @@ public Bool MakeCmp()
 }
 
 public U0 MakeAll()
-{//Recompile compiler and kernel manually
+{//Recompile compiler and kernel manually.
+ //Shared by BootDVDIns.HC as well as this file.
   if (MakeCmp)
     throw;
   if (Cmp("/Kernel/Kernel","Kernel",,':'))

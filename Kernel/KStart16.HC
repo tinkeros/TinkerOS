@@ -245,11 +245,11 @@ GET_IP:
   INC	CX
   MOV	U16 [SYS_PCI_BUSES],CX
 
+@@40:
   MOV AX, 0XEC00
   MOV BL, 2
   INT 0x15
 
-@@40:
   CLI
 //Enable A20
   IN	AL,0x92

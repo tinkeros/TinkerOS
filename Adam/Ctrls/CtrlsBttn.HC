@@ -63,7 +63,7 @@ public CCtrl *CtrlBttnNew(I64 x,I64 y,I64 width=-1,I64 height=-1,
   if (_s)
   {
     s=_s;
-    MemSet(s,0,sizeof(CCtrlBttnState));
+    ZeroClass(s);
   }
   else
   {

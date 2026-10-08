@@ -622,7 +622,7 @@ I64 FAT32AllocClusAt(CDrv *dv,I64 start,I64 cnt)
 {//Alloc the EXACT run the caller chose -- never searches elsewhere, and
  //fails outright (0x0FFFFFFF) if any cluster in the run isn't free.
   I64 i;
-  Bool unlock,unlock_break;
+  Bool unlock=FALSE,unlock_break=FALSE;
   if (cnt<=0) return 0x0FFFFFFF;
   if (start<1) return 0x0FFFFFFF;
   try
@@ -661,11 +661,9 @@ I64 FAT32AllocClusAt(CDrv *dv,I64 start,I64 cnt)
   }
   catch
   {
+    // reports failure as 0x0FFFFFFF
+    Fs->catch_except=TRUE;
     start=0x0FFFFFFF;
-    if (unlock)
-      DrvUnlock(dv);
-    if (unlock_break)
-      BreakUnlock;
   }
   if (unlock)
     DrvUnlock(dv);
@@ -965,21 +963,29 @@ I64 FAT32FileWrite(CDrv *dv,U8 *cur_dir,U8 *name,U8 *buf,I64 size,
     PrintErr("Invalid FileName: \"%s\".\n",name);
   else
   {
-    FAT32FilesDel(dv,cur_dir,de.name,0,FALSE,FALSE);
     if (attr & RS_ATTR_CONTIGUOUS)
       contiguous=TRUE;
     else
       contiguous=FALSE;
     de.size=size;
-    if (blk_cnt=(size+BLK_SIZE-1)>>BLK_SIZE_BITS)
+    blk_cnt=(size+BLK_SIZE-1)>>BLK_SIZE_BITS;
+    if (blk_cnt && at_clus)
     {
-      if (at_clus)
-        c=FAT32AllocClusAt(dv,at_clus,(blk_cnt+dv->spc-1)/dv->spc);
-      else
-        c=ClusAlloc(dv,0,(blk_cnt+dv->spc-1)/dv->spc,contiguous);
+      c=FAT32AllocClusAt(dv,at_clus,(blk_cnt+dv->spc-1)/dv->spc);
+      if (c==0x0FFFFFFF)
+        return c;
+      FAT32FilesDel(dv,cur_dir,de.name,0,FALSE,FALSE);
     }
     else
-      c=0x0FFFFFFF;
+    {
+      FAT32FilesDel(dv,cur_dir,de.name,0,FALSE,FALSE);
+      if (blk_cnt)
+        c=ClusAlloc(dv,0,(blk_cnt+dv->spc-1)/dv->spc,contiguous);
+      else
+        c=0x0FFFFFFF;
+    }
+    if (blk_cnt && !(0<c<0x0FFFFFF8))
+      throw('Drv');
     de.clus=c;
     de.attr=attr;
     de.datetime=cdt;
@@ -1237,7 +1243,7 @@ I64 FAT32DirMove(CDrv *dv,U8 *cur_dir,U8 *name,I64 at_clus)
   I64 cur_dir_clus=Name2DirClus(dv,cur_dir),old_clus=0,cnt,
       target=0x0FFFFFFF,entries_per_clus=dv->spc<<FAT32_ENTRIES_BITS,
       i,total_entries,child_clus,attr;
-  Bool unlock,unlock_break;
+  Bool unlock=FALSE,unlock_break=FALSE;
   if (FAT32FileFind(dv,cur_dir_clus,name,&de,FUF_JUST_DIRS) &&
       StrCmp(de.name,".") && StrCmp(de.name,".."))
     old_clus=de.clus;
@@ -1283,6 +1289,7 @@ I64 FAT32DirMove(CDrv *dv,U8 *cur_dir,U8 *name,I64 at_clus)
     }
     catch
     {
+      Fs->catch_except=TRUE;
       target=0x0FFFFFFF;
       if (unlock)
         DrvUnlock(dv);

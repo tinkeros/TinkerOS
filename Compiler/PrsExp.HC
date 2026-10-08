@@ -29,6 +29,70 @@ CIntermediateCode *ICClone(CCmpCtrl *cc,CIntermediateCode *src)
       src->ic_class,src->ic_flags);
 }
 
+CIntermediateCode *ICTreeStart(CIntermediateCode *last,Bool *_side_fx)
+{//First node of the sub-expression ending at last, NULL if unknown shape.
+ //A call (CALL_START..CALL_END) is one operand. Sets *_side_fx for calls,
+ //assignments and ++/--, which must not be evaluated twice.
+  CIntermediateCode *tmpi=last;
+  I64 need=1,depth,code;
+  while (TRUE)
+  {
+    need--;
+    code=tmpi->ic_code;
+    if (code==IC_CALL_END)
+    {
+      *_side_fx=TRUE;
+      depth=1;
+      while (depth)
+      {
+        tmpi=tmpi->last;
+        if (tmpi->ic_code==IC_CALL_END)
+          depth++;
+        else if (tmpi->ic_code==IC_CALL_START)
+          depth--;
+      }
+    }
+    else
+    {
+      if (intermediate_code_table[code].type==IST_ASSIGN ||
+          IC_DEREF_PP<=code<=IC_MM_)
+        *_side_fx=TRUE;
+      switch (intermediate_code_table[code].arg_cnt)
+      {
+      case IS_2_ARG:
+        need+=2;
+        break;
+      case IS_1_ARG:
+        need++;
+        break;
+      case IS_V_ARG:
+        return NULL;
+      }
+    }
+    if (!need)
+      return tmpi;
+    tmpi=tmpi->last;
+  }
+}
+
+U0 ICCloneTree(CCmpCtrl *cc,CIntermediateCode *first,CIntermediateCode *last)
+{//Re-emits the nodes first..last, a sub-expression without side effects.
+  while (TRUE)
+  {
+    ICClone(cc,first);
+    if (first==last)
+      break;
+    first=first->next;
+  }
+}
+
+U0 ICAddBfTmp(CCmpCtrl *cc,I64 offset,CHashClass *tmpc)
+{//Address of the hidden stack slot holding a bitfield write's address.
+  ICAdd(cc,IC_RBP,0,tmpc+1);
+  ICAdd(cc,IC_IMM_I64,offset,tmpc+1);
+  ICAdd(cc,IC_ADD,0,tmpc+1);
+}
+
 CIntermediateCode *PrsAddOp(CCmpCtrl *cc,I64 stk_op,CHashClass *tmpc)
 {
   CIntermediateCode *tmpi=cc->coc.coc_head.last;
@@ -1152,11 +1216,11 @@ I64 PrsUnaryModifier(CCmpCtrl *cc,CPrsStk *ps,CMemberLst **_local_var,
   CHashClass *tmpc,*tmpc1;
   CHashFun *fun_ptr;
   CMemberLst *tmpm=*_local_var;
-  CIntermediateCode *tmpi,*tmpi1,*tmpi_base;
+  CIntermediateCode *tmpi,*tmpi1,*tmpi_base,*bf_n[4];
   CArrayDim *tmpad1,tmpad2;
   CCodeMisc *cm;
-  I64 mode,old_flags,bf_mask;
-  Bool was_paren=Btr(&cc->flags,CCf_PAREN),bf_base_is_ptr=FALSE;
+  I64 mode,old_flags,bf_mask,bf_tmp,i;
+  Bool was_paren=Btr(&cc->flags,CCf_PAREN),bf_base_is_ptr=FALSE,bf_fx=FALSE;
   *_local_var=NULL;
   switch (cc->token)
   {
@@ -1220,15 +1284,45 @@ um_join:
       //IC_NOP1. Downstream passes apparently key off this exact DEREF->NOP1
       //shape for anything feeding an IC_ASSIGN -- skipping it is what made
       //the earlier attempt crash.
-      ICAdd(cc,IC_DEREF+PREC_UNARY_PRE<<16,0,tmpc);
-      tmpi=cc->coc.coc_head.last;
-      tmpi->ic_code=IC_NOP1;
-      ICClone(cc,tmpi_base); //2nd copy of: local/global var's address (".")
-                              //or pointer's value ("->", pre-deref)
-      if (bf_base_is_ptr)
-        ICAdd(cc,IC_DEREF+PREC_UNARY_PRE<<16,0,tmpi_base->ic_class-1);
-      ICAdd(cc,IC_IMM_I64,tmpm->offset,tmpc1);
-      ICAdd(cc,IC_ADD,0,tmpc1);
+      if (!(tmpi1=ICTreeStart(tmpi_base,&bf_fx)))
+        LexExcept(cc,"Bitfield write base too complex at ");
+      if (bf_fx)
+      {//Base has side effects (ex: a call): evaluate it once. Store the
+       //field's address in a hidden stack slot, tmp=&base.field: &tmp goes
+       //in front of the base, the ASSIGN's value is the store address and
+       //reading tmp back gives the load address.
+        if (!cc->htc.fun)
+          LexExcept(cc,"Bitfield write base with side effects outside a function at ");
+        cc->htc.fun->size=(cc->htc.fun->size-8)&~7;
+        bf_tmp=cc->htc.fun->size;
+        ICAddBfTmp(cc,bf_tmp,tmpc1);
+        ICAdd(cc,IC_DEREF+PREC_UNARY_PRE<<16,0,tmpc1);
+        cc->coc.coc_head.last->ic_code=IC_NOP1;
+        for (i=3; i>=0; i--)
+        {
+          bf_n[i]=cc->coc.coc_head.last;
+          QueRem(bf_n[i]);
+        }
+        tmpi=tmpi1->last;
+        for (i=3; i>=0; i--)
+          QueIns(bf_n[i],tmpi);
+        ICAdd(cc,IC_ASSIGN,0,tmpc1);
+        ICAdd(cc,IC_DEREF+PREC_UNARY_PRE<<16,0,tmpc);
+        cc->coc.coc_head.last->ic_code=IC_NOP1;
+        ICAddBfTmp(cc,bf_tmp,tmpc1);
+        ICAdd(cc,IC_DEREF+PREC_UNARY_PRE<<16,0,tmpc1);
+      }
+      else
+      {
+        ICAdd(cc,IC_DEREF+PREC_UNARY_PRE<<16,0,tmpc);
+        tmpi=cc->coc.coc_head.last;
+        tmpi->ic_code=IC_NOP1;
+        ICCloneTree(cc,tmpi1,tmpi_base); //2nd copy of the base address/pointer
+        if (bf_base_is_ptr)
+          ICAdd(cc,IC_DEREF+PREC_UNARY_PRE<<16,0,tmpi_base->ic_class-1);
+        ICAdd(cc,IC_IMM_I64,tmpm->offset,tmpc1);
+        ICAdd(cc,IC_ADD,0,tmpc1);
+      }
       ICAdd(cc,IC_DEREF+PREC_UNARY_PRE<<16,0,tmpc);
       ICAdd(cc,IC_IMM_I64,~(bf_mask<<tmpm->bf_offset),cmp.internal_types[RT_I64]);
       ICAdd(cc,IC_AND,0,tmpc);

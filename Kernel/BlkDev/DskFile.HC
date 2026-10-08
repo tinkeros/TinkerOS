@@ -113,50 +113,54 @@ I64 FileWriteAt(U8 *filename,U8 *fbuf,I64 size,CDate cdt=0,I64 attr=0,I64 at_clu
   I64 c=0;
   CHashGeneric *tmph;
   CDirContext *dirc;
-  U8 *fbuf2,*absname=FileNameAbs(filename);
+  U8 *fbuf2=NULL,*absname=FileNameAbs(filename);
   if (dirc=DirContextNew(filename,FALSE,TRUE))
-  {
-    attr=FileAttr(dirc->mask,attr);
-    if (attr&RS_ATTR_COMPRESSED)
+    try
     {
-      fbuf=CompressBuf(fbuf,size);
-      size=fbuf(CArcCompress *)->compressed_size;
-      fbuf2=fbuf;
-    }
-    else
-      fbuf2=NULL;
-    if (!cdt) cdt=Now;
-    switch (dirc->dv->fs_type)
-    {
-    case FSt_REDSEA:
-      if (at_clus) throw('Drv');
-      c=RedSeaFileWrite(dirc->dv,Fs->cur_dir,dirc->mask,fbuf,size,cdt,attr);
-      break;
-    case FSt_FAT32:
-      c=FAT32FileWrite(dirc->dv,Fs->cur_dir,dirc->mask,fbuf,size,cdt,attr,at_clus);
-      break;
-    case FSt_ISO9660:
-      PrintErr("Not Writable\n");
-      break;
-    default:
-      PrintErr("File System Not Supported\n");
-    }
-    if (tmph=HashFind(absname,adam_task->hash_table,HTT_FILE))
-    {
-      if (attr & RS_ATTR_RESIDENT)
+      attr=FileAttr(dirc->mask,attr);
+      if (attr&RS_ATTR_COMPRESSED)
       {
-        Free(tmph->user_data0);
-        tmph->user_data0=AMAllocIdent(fbuf);
-        tmph->user_data1=size;
+        fbuf=CompressBuf(fbuf,size);
+        size=fbuf(CArcCompress *)->compressed_size;
+        fbuf2=fbuf;
       }
-      else
-        HashRemDel(tmph,adam_task->hash_table);
+      if (!cdt) cdt=Now;
+      switch (dirc->dv->fs_type)
+      {
+      case FSt_REDSEA:
+        if (at_clus) throw('Drv');
+        c=RedSeaFileWrite(dirc->dv,Fs->cur_dir,dirc->mask,fbuf,size,cdt,attr);
+        break;
+      case FSt_FAT32:
+        c=FAT32FileWrite(dirc->dv,Fs->cur_dir,dirc->mask,fbuf,size,cdt,attr,at_clus);
+        break;
+      case FSt_ISO9660:
+        PrintErr("Not Writable\n");
+        break;
+      default:
+        PrintErr("File System Not Supported\n");
+      }
+      if (tmph=HashFind(absname,adam_task->hash_table,HTT_FILE))
+      {
+        if (attr & RS_ATTR_RESIDENT)
+        {
+          Free(tmph->user_data0);
+          tmph->user_data0=AMAllocIdent(fbuf);
+          tmph->user_data1=size;
+        }
+        else
+          HashRemDel(tmph,adam_task->hash_table);
+      }
+      else if (attr & RS_ATTR_RESIDENT)
+        HashGenericAdd(absname,HTT_FILE,AMAllocIdent(fbuf),size,0,adam_task);
+      Free(fbuf2);
+      DirContextDel(dirc);
     }
-    else if (attr & RS_ATTR_RESIDENT)
-      HashGenericAdd(absname,HTT_FILE,AMAllocIdent(fbuf),size,0,adam_task);
-    Free(fbuf2);
-    DirContextDel(dirc);
-  }
+    catch
+    {
+      Free(fbuf2);
+      DirContextDel(dirc);
+    }
   Free(absname);
   FileWriteCB(filename);
   return c;
@@ -172,12 +176,15 @@ I64 DirMoveAt(U8 *dirname,I64 at_clus)
   I64 c=0;
   CDirContext *dirc;
   if (dirc=DirContextNew(dirname,FALSE,FALSE))
-  {
-    if (dirc->dv->fs_type==FSt_FAT32)
-      c=FAT32DirMove(dirc->dv,Fs->cur_dir,dirc->mask,at_clus);
-    else
-      PrintErr("Not FAT32 Drv\n");
-    DirContextDel(dirc);
-  }
+    try
+    {
+      if (dirc->dv->fs_type==FSt_FAT32)
+        c=FAT32DirMove(dirc->dv,Fs->cur_dir,dirc->mask,at_clus);
+      else
+        PrintErr("Not FAT32 Drv\n");
+      DirContextDel(dirc);
+    }
+    catch
+      DirContextDel(dirc);
   return c;
 }

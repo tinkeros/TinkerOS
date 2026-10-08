@@ -302,6 +302,7 @@ I64 WinMgrSleep(Bool flush_msgs=FALSE)
   U8 *st;
   CDC *diff;
   CDate cdt;
+  CTask *task;
   TimeCal;
   if ((t_delta=(t=tS)-winmgr.last_refresh_tS)>0.001)
   {
@@ -344,8 +345,14 @@ I64 WinMgrSleep(Bool flush_msgs=FALSE)
     if (!TaskValidate(sys_focus_task))
       FifoI64Flush(kbd.scan_code_fifo);
   }
-  if (sys_focus_task)
-    LBtr(&sys_focus_task->task_flags,TASKf_HAS_SONG);
+  task=sys_focus_task;
+  if (task && !TaskValidate(task))
+  {//Never write into a freed CTask.
+    SetSysFocusTask(NULL);
+    task=NULL;
+  }
+  if (task)
+    LBtr(&task->task_flags,TASKf_HAS_SONG);
   WinMsUpdate;
   if (!LBtr(&sys_semas[SEMA_JUST_PUMP_MSGS],0))
   {
@@ -385,7 +392,7 @@ I64 WinMgrSleep(Bool flush_msgs=FALSE)
       DCDel(scrncast.dc); //TODO: $LK,"MemRep",A="MN:MemRep"$ can crash.
       scrncast.dc=NULL;
     }
-    if (sys_focus_task && !Bt(&sys_focus_task->task_flags,TASKf_HAS_SONG))
+    if (task && !Bt(&task->task_flags,TASKf_HAS_SONG))
     {
       Free(music.cur_song);
       music.cur_song=NULL;

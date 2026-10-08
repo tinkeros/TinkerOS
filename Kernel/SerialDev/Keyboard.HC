@@ -21,12 +21,20 @@ asm {
   DU8	0,0,0,0,0,0,0,0,0,0,'-',0,0,0,'+',0;
 }
 
+U8 KbdStatus()
+{//i8042 status. No controller reads 0xFF (floating bus): report no data.
+  I64 s=InU8(KBD_CTRL);
+  if (s==0xFF)
+    return 0;
+  return s;
+}
+
 public U0 KbdCmdSend(I64 port, U8 val)
 {
   F64 timeout=tS+0.125;
   while (tS<timeout)
   {
-    if (!(InU8(KBD_CTRL)&2))
+    if (!(KbdStatus&2))
     {
       OutU8(port,val);
       return;
@@ -39,7 +47,7 @@ public I64 KbdCmdRead()
 {
   F64 timeout=tS+0.125;
   while (tS<timeout)
-    if (InU8(KBD_CTRL)&1)
+    if (KbdStatus&1)
       return InU8(KBD_PORT);
   // Don't spam early kernel output on this error
   throw(0,!Bt(&sys_run_level,RLf_COMPILER));

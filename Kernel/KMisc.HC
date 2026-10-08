@@ -112,6 +112,16 @@ F64 tS()
   return SysTimerRead/ToF64(SYS_TIMER_FREQ);
 }
 
+U0 ZeroClass(U8 *ptr,I64 s_elem=firstsize)
+{//Set all data in a class to zero.
+  MemSet(ptr,0,s_elem);
+}
+
+U0 ArrayZero(U8 *ptr,I64 n_elem,I64 s_elem=firstsize)
+{//Zero n_elem elements of class ptr, fixed or heap array alike.
+  MemSet(ptr,0,n_elem*s_elem);
+}
+
 U0 Busy(I64 uS)
 {//Loosely timed.
   I64 i;
@@ -346,7 +356,7 @@ public U0 SetAltScrn(CDC *scrn=NULL)
   POPFD
 }
 
-CTask *SetSysFocusTask(CTask *task=Fs,Bool check_raw=TRUE)
+CTask *SetSysFocusTask(CTask *task,Bool check_raw=TRUE)
 {
   PUSHFD
   CLI

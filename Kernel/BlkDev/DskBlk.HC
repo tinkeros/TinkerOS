@@ -59,9 +59,8 @@ Bool BlkRead(CDrv *dv,U8 *buf, I64 blk, I64 cnt)
       case BDT_SERIAL:
       case BDT_SDHCI:
       case BDT_VIRTUAL:
-        if (bd->read_func)
-          (*bd->read_func)(buf, blk, cnt);
-        else res=FALSE;
+        if (!bd->read_func || !(*bd->read_func)(buf, blk, cnt))
+          res=FALSE;
         break;
       case BDT_ISO_FILE_READ:
         if (bd->RAM_dsk)
@@ -122,9 +121,8 @@ Bool BlkWrite(CDrv *dv,U8 *buf, I64 blk, I64 cnt)
       case BDT_SERIAL:
       case BDT_SDHCI:
       case BDT_VIRTUAL:
-        if (bd->write_func)
-          (*bd->write_func)(buf, blk, cnt);
-        else res=FALSE;
+        if (!bd->write_func || !(*bd->write_func)(buf, blk, cnt))
+          res=FALSE;
         break;
       case BDT_ISO_FILE_READ:
         if (bd->RAM_dsk)

@@ -6,18 +6,36 @@
 #define DEFRAG_CLUS_FRAG	3
 #define DEFRAG_CLUS_PROTECTED	4
 #define DEFRAG_RESERVE_BYTES	(16*1024*1024)
+#define DEFRAG_PLACE_TRIES	8
 
 CDrv *dfg_dv;
 U8 *dfg_clus_status=NULL;
 I64 dfg_total_clus=0;
-I64 dfg_files_moved=0,dfg_files_skipped=0;
-U8 *dfg_status_line="";
+I64 dfg_files_moved=0,dfg_files_skipped=0,dfg_files_failed=0;
+I64 dfg_last_err=0;
+U8 dfg_status_line[512];
 I64 dfg_active_start=-1,dfg_active_cnt=0;
 I64 dfg_grid_top=2,dfg_grid_cols=1,dfg_grid_rows=1,dfg_grid_cells=1;
 I64 dfg_pack_start=0;
 CDirEntry **dfg_collect_arr=NULL;
 I64 dfg_collect_cnt=0;
 I64 dfg_progress_total=0,dfg_progress_done=0;
+
+U0 DfgFlushKeys()
+{//Toss whatever is queued so a left-over keystroke can't look like an abort.
+  I64 ch=1;
+  while (ch)
+    ch=ScanChar;
+}
+
+Bool DfgAbort()
+{//TRUE only for ESC.  Any other key is discarded instead of killing the run.
+  I64 ch;
+  while (ch=ScanChar)
+    if (ch==CH_ESC || ch==CH_SHIFT_ESC)
+      return TRUE;
+  return FALSE;
+}
 
 Bool DfgIsBootFile(U8 *name)
 {
@@ -31,6 +49,19 @@ I64 DfgClusCnt(I64 size)
   if (dfg_dv->fs_type==FSt_FAT32)
     return (size+dfg_dv->spc*BLK_SIZE-1)/(dfg_dv->spc*BLK_SIZE);
   return (size+BLK_SIZE-1)/BLK_SIZE;
+}
+
+I64 DfgChainCnt(I64 c)
+{//Real FAT chain length, which can run past what the size implies.
+  I64 cnt=0,guard=dfg_total_clus+16;
+  if (dfg_dv->fs_type!=FSt_FAT32)
+    return 0;
+  while (0<c<0x0FFFFFF8 && guard-->0)
+  {
+    cnt++;
+    c=ClusNumNext(dfg_dv,c,1);
+  }
+  return cnt;
 }
 
 U0 DfgMark(I64 c,I64 status)
@@ -64,6 +95,18 @@ Bool DfgFileIsFrag(I64 start_clus,I64 size)
   return FALSE;
 }
 
+Bool DfgInKernelRegion(I64 start_clus,I64 cnt)
+{//Does any clus of the chain sit inside the reserved first-16MB region?
+  I64 c=start_clus,i;
+  if (dfg_pack_start<=0 || cnt<=0 || start_clus<=0) return FALSE;
+  for (i=0; i<cnt; i++)
+  {
+    if (0<c<dfg_pack_start) return TRUE;
+    if (i+1<cnt) c=ClusNumNext(dfg_dv,c,1);
+  }
+  return FALSE;
+}
+
 U0 DfgMarkFile(I64 start_clus,I64 size,Bool is_protected)
 {
   I64 cnt=DfgClusCnt(size),c=start_clus,i;
@@ -85,9 +128,12 @@ U0 DfgMarkFile(I64 start_clus,I64 size,Bool is_protected)
   }
 }
 
-I64 DfgFindFreeRun(I64 need)
-{//First free run of clusters, never inside the reserved kernel region.
-  I64 i,run=0,run_start=0,start=MaxI64(1,dfg_pack_start);
+I64 DfgFindFreeRun(I64 need,I64 from=0)
+{//First free run of clusters at or after "from", never inside the reserved
+ //kernel region, and never clus 0/1 which FAT32 keeps for itself.
+  I64 i,run=0,run_start=0,start=MaxI64(2,dfg_pack_start);
+  if (from>start)
+    start=from;
   for (i=start; i<dfg_total_clus; i++)
   {
     if (dfg_clus_status[i]==DEFRAG_CLUS_FREE)
@@ -101,65 +147,115 @@ I64 DfgFindFreeRun(I64 need)
   return 0;
 }
 
+U0 DfgRetireRun(I64 start,I64 cnt)
+{//A run the FAT says is busy even though our map called it free.  Take it
+ //out of circulation, or every later file picks the same doomed target.
+  I64 i;
+  for (i=0; i<cnt; i++)
+    DfgMark(start+i,DEFRAG_CLUS_USED);
+}
+
 Bool DfgRelFile(CDirEntry *de)
-{//Reads the file, then writes it back at an explicitly chosen cluster
-  I64 cnt,i,c,new_start,size,attr,target,*old_clus;
-  U8 *data;
+{//Reads the file, then writes it back at an explicitly chosen cluster run.
+  I64 cnt,chain,i,c,new_start=0,size,attr,target,from=0,tries,*old_clus;
+  U8 *data=NULL;
+  Bool threw=FALSE;
   cnt=DfgClusCnt(de->size);
-  if (cnt<=0) return FALSE;
-  target=DfgFindFreeRun(cnt);
-  if (!target)
+  if (cnt<=0 || de->clus<=0) return FALSE;
+  if (!DfgFindFreeRun(cnt))
   {
     dfg_files_skipped++;
     return FALSE;
   }
-  old_clus=MAlloc(cnt*sizeof(I64));
+  chain=DfgChainCnt(de->clus);
+  if (chain<cnt) chain=cnt;
+  old_clus=MAlloc(chain*sizeof(I64));
   c=de->clus;
-  for (i=0; i<cnt; i++)
+  for (i=0; i<chain; i++)
   {
     old_clus[i]=c;
-    if (i+1<cnt) c=ClusNumNext(dfg_dv,c,1);
+    if (i+1<chain) c=ClusNumNext(dfg_dv,c,1);
   }
-  dfg_status_line=MStrPrint("Relocating file %d/%d: %s",
+  dfg_progress_done++;
+  StrPrint(dfg_status_line,"Relocating file %d/%d: %s",
       dfg_progress_done,dfg_progress_total,de->full_name);
   dfg_active_start=de->clus;
   dfg_active_cnt=cnt;
   Refresh;
-  new_start=0;
   try
-  {
-    if (data=FileRead(de->full_name,&size,&attr))
-    {
-      new_start=FileWriteAt(de->full_name,data,size,,attr|RS_ATTR_CONTIGUOUS,target);
-      Free(data);
-    }
-  }
+    data=FileRead(de->full_name,&size,&attr);
   catch
   {
+    dfg_last_err=Fs->except_ch;
     Fs->catch_except=TRUE;
+    data=NULL;
+  }
+  if (!data)
+  {
+    dfg_files_failed++;
+    Free(old_clus);
+    dfg_active_cnt=0;
+    return FALSE;
+  }
+  attr|=RS_ATTR_CONTIGUOUS;
+  for (tries=0; tries<DEFRAG_PLACE_TRIES; tries++)
+  {
+    if (!(target=DfgFindFreeRun(cnt,from)))
+      break;
+    new_start=0;
+    threw=FALSE;
+    try
+      new_start=FileWriteAt(de->full_name,data,size,,attr,target);
+    catch
+    {
+      dfg_last_err=Fs->except_ch;
+      Fs->catch_except=TRUE;
+      new_start=0;
+      threw=TRUE;
+    }
+    if (new_start==target)
+      break;
+    DfgRetireRun(target,cnt);
+    from=target+cnt;
     new_start=0;
   }
-  if (new_start==target)
+  if (new_start==target && new_start)
   {
-    for (i=0; i<cnt; i++)
+    for (i=0; i<chain; i++)
       DfgMark(old_clus[i],DEFRAG_CLUS_FREE);
     for (i=0; i<cnt; i++)
       DfgMark(new_start+i,DEFRAG_CLUS_USED);
     dfg_files_moved++;
   }
   else
-    dfg_files_skipped++;
+  {
+    dfg_files_failed++;
+    if (threw)
+    {
+      try
+        new_start=FileWriteAt(de->full_name,data,size,,attr&~RS_ATTR_CONTIGUOUS);
+      catch
+      {
+        dfg_last_err=Fs->except_ch;
+        Fs->catch_except=TRUE;
+      }
+      for (i=0; i<chain; i++)
+        DfgMark(old_clus[i],DEFRAG_CLUS_FREE);
+      DfgMarkChainOpen(new_start,DEFRAG_CLUS_USED);
+    }
+  }
+  Free(data);
   Free(old_clus);
   dfg_active_cnt=0;
   return TRUE;
 }
 
 Bool DfgRelDir(CDirEntry *de)
-{
-  I64 cnt=DfgClusCnt(de->size),i,c,new_start,target, *old_clus;
+{//DirMoveAt() allocates before it frees, so a failed try is harmless
+  I64 cnt,i,c,new_start=0,target,from=0,tries,*old_clus;
+  cnt=DfgChainCnt(de->clus);
   if (cnt<=0 || de->clus<=0) return FALSE;
-  target=DfgFindFreeRun(cnt);
-  if (!target)
+  if (!DfgFindFreeRun(cnt))
   {
     dfg_files_skipped++;
     return FALSE;
@@ -171,20 +267,32 @@ Bool DfgRelDir(CDirEntry *de)
     old_clus[i]=c;
     if (i+1<cnt) c=ClusNumNext(dfg_dv,c,1);
   }
-  dfg_status_line=MStrPrint("Relocating dir %d/%d: %s... %c",
+  dfg_progress_done++;
+  StrPrint(dfg_status_line,"Relocating dir %d/%d: %s",
       dfg_progress_done,dfg_progress_total,de->full_name);
   dfg_active_start=de->clus;
   dfg_active_cnt=cnt;
   Refresh;
-  new_start=0;
-  try
-    new_start=DirMoveAt(de->full_name,target);
-  catch
+  for (tries=0; tries<DEFRAG_PLACE_TRIES; tries++)
   {
-    Fs->catch_except=TRUE;
+    if (!(target=DfgFindFreeRun(cnt,from)))
+      break;
+    new_start=0;
+    try
+      new_start=DirMoveAt(de->full_name,target);
+    catch
+    {
+      dfg_last_err=Fs->except_ch;
+      Fs->catch_except=TRUE;
+      new_start=0;
+    }
+    if (new_start==target)
+      break;
+    DfgRetireRun(target,cnt);
+    from=target+cnt;
     new_start=0;
   }
-  if (new_start==target)
+  if (new_start==target && new_start)
   {
     for (i=0; i<cnt; i++)
       DfgMark(old_clus[i],DEFRAG_CLUS_FREE);
@@ -193,7 +301,7 @@ Bool DfgRelDir(CDirEntry *de)
     dfg_files_moved++;
   }
   else
-    dfg_files_skipped++;
+    dfg_files_failed++;
   Free(old_clus);
   dfg_active_cnt=0;
   return TRUE;
@@ -247,8 +355,8 @@ U0 DfgLegItm(CTask *task,I64 *x,I64 y,I64 attr,U8 ch,U8 *label)
 
 U0 DfgDrawIt(CTask *task,CDC *dc)
 {
-  I64 x,y,i,cell,start,end,status,d;
-  U8 ch,*zone_suffix;
+  I64 ch,x,y,i,cell,c_start,c_end,status,d;
+  U8 *zone_suffix;
   TextRect(0,TEXT_COLS-1,0,TEXT_ROWS-1,' '+(DfgColor(BLACK,LTGRAY)<<8));
   TextPrint(task,MaxI64(0,(TEXT_COLS-22)/2),0,DfgColor(BLUE,WHITE),
       "TinkerOS Defragmenter");
@@ -262,14 +370,14 @@ U0 DfgDrawIt(CTask *task,CDC *dc)
     for (x=0; x<dfg_grid_cols; x++)
     {
       cell=y*dfg_grid_cols+x;
-      start=cell*dfg_total_clus/dfg_grid_cells;
-      end=(cell+1)*dfg_total_clus/dfg_grid_cells;
-      if (end<=start)
+      c_start=cell*dfg_total_clus/dfg_grid_cells;
+      c_end=(cell+1)*dfg_total_clus/dfg_grid_cells;
+      if (c_end<=c_start)
         TextChar(task,,x,dfg_grid_top+y,' '+(DfgColor(BLACK,BLACK)<<8));
       else
       {
         status=DEFRAG_CLUS_FREE;
-        for (i=start; i<end; i++)
+        for (i=c_start; i<c_end; i++)
           if (dfg_clus_status[i]>status)
             status=dfg_clus_status[i];
         switch (status)
@@ -287,7 +395,7 @@ U0 DfgDrawIt(CTask *task,CDC *dc)
           ch=' '; d=DfgColor(CYAN,CYAN);
           break;
         default:
-          if (dfg_pack_start>0 && start<dfg_pack_start)
+          if (dfg_pack_start>0 && c_start<dfg_pack_start)
           {
             ch=':'; d=DfgColor(BLACK,BLUE);
           }
@@ -298,8 +406,8 @@ U0 DfgDrawIt(CTask *task,CDC *dc)
           break;
         }
         d=ch+(d<<8);
-        if (dfg_active_cnt>0 && start<dfg_active_start+dfg_active_cnt &&
-            dfg_active_start<end)
+        if (dfg_active_cnt>0 && c_start<dfg_active_start+dfg_active_cnt &&
+            dfg_active_start<c_end)
           d=' '+(DfgColor(WHITE,WHITE)<<8)+ATTRF_BLINK;
         TextChar(task,,x,dfg_grid_top+y,d);
       }
@@ -316,6 +424,19 @@ U0 DfgDrawIt(CTask *task,CDC *dc)
     DfgLegItm(task,&x,TEXT_ROWS-3,DfgColor(BLACK,BLUE),':',
         "Reserved for kernel builds");
   TextPrint(task,2,TEXT_ROWS-2,DfgColor(BLACK,LTGRAY),"%s",dfg_status_line);
+}
+
+Bool DfgNeedsMove(CDirEntry *de)
+{//Only touch what is actually in the way, or fragmented.
+  I64 cnt;
+  if (de->clus<=0) return FALSE;
+  if (de->attr & RS_ATTR_DIR)
+    cnt=DfgChainCnt(de->clus);
+  else
+    cnt=DfgClusCnt(de->size);
+  if (cnt<=0) return FALSE;
+  if (DfgInKernelRegion(de->clus,cnt)) return TRUE;
+  return DfgFileIsFrag(de->clus,de->size);
 }
 
 U0 DfgCntFrag(CDirEntry *de)
@@ -335,7 +456,7 @@ U0 DfgOptimize(CDirEntry *de)
 {
   while (de)
   {
-    if (ScanChar)
+    if (DfgAbort)
       throw('Esc');
     if (de->attr & RS_ATTR_DIR)
       DfgOptimize(de->sub);
@@ -401,27 +522,36 @@ U0 DfgClearKernelRegion(U8 drv_let,CDirEntry *tree)
     dfg_collect_cnt=0;
     DfgFillEntries(tree);
     QSortI64(dfg_collect_arr(I64*),n,&DfgCmpClus);
-    dfg_progress_total=n;
+    dfg_progress_total=0;
+    for (i=0; i<n; i++)
+      if (DfgNeedsMove(dfg_collect_arr[i]))
+        dfg_progress_total++;
     dfg_progress_done=0;
-    dfg_status_line="Clearing kernel region...";
+    StrPrint(dfg_status_line,"Clearing kernel region: %d item(s) to move...",
+        dfg_progress_total);
     Refresh;
     try
     {
       for (i=0; i<n; i++)
       {
-        if (ScanChar)
+        if (DfgAbort)
           throw('Esc');
         de=dfg_collect_arr[i];
-        if (de->attr & RS_ATTR_DIR)
+        if (DfgNeedsMove(de))
         {
+          if (de->attr & RS_ATTR_DIR)
             DfgRelDir(de);
+          else
+            DfgRelFile(de);
         }
-        else
-          DfgRelFile(de);
       }
     }
     catch
+    {
+      if (Fs->except_ch!='Esc')
+        dfg_last_err=Fs->except_ch;
       Fs->catch_except=TRUE;
+    }
     Free(dfg_collect_arr);
     dfg_collect_arr=NULL;
   }
@@ -451,10 +581,10 @@ public U0 Defrag(U8 drv_let=0,Bool clear_kernel_region=TRUE)
 
   dfg_dv=dv;
   if (dv->fs_type==FSt_FAT32)
-    dfg_total_clus=(dv->size+dv->drv_offset-dv->data_area)/dv->spc+2;
+    dfg_total_clus=(dv->size+dv->drv_offset-dv->data_area)/dv->spc;
   else
     dfg_total_clus=dv->size+2;
-  if (dfg_total_clus<=0)
+  if (dfg_total_clus<=2)
   {
     "Drive %C: has no usable cluster space!\n",drv_let;
     return;
@@ -462,9 +592,12 @@ public U0 Defrag(U8 drv_let=0,Bool clear_kernel_region=TRUE)
   dfg_clus_status=CAlloc(dfg_total_clus);
   dfg_files_moved=0;
   dfg_files_skipped=0;
+  dfg_files_failed=0;
+  dfg_last_err=0;
   dfg_active_start=-1;
   dfg_active_cnt=0;
   dfg_pack_start=0;
+  *dfg_status_line=0;
   if (clear_kernel_region)
   {
     reserve_clus=(DEFRAG_RESERVE_BYTES+dv->spc*BLK_SIZE-1)/(dv->spc*BLK_SIZE);
@@ -489,52 +622,62 @@ public U0 Defrag(U8 drv_let=0,Bool clear_kernel_region=TRUE)
       DfgMarkChainOpen(dv->root_clus,DEFRAG_CLUS_DIR);
     else
       DfgMark(dv->root_clus,DEFRAG_CLUS_DIR);
-    dfg_status_line="Reading directory tree...";
+    StrCpy(dfg_status_line,"Reading directory tree...");
     Refresh;
     mask=MStrPrint("%C:/*",drv_let);
     tree=FilesFind(mask,FUF_RECURSE);
     Free(mask);
     DfgScanTree(tree);
-    dfg_status_line="Scan complete.  Press a key to optimize, ESC to just view the map.";
+    StrCpy(dfg_status_line,
+        "Scan complete.  Press a key to optimize, ESC to just view the map.");
     Refresh;
-    ch=GetChar;
+    ch=GetChar(,FALSE);
+    DfgFlushKeys;
     if (ch!=CH_ESC && ch!=CH_SHIFT_ESC)
     {
       dfg_progress_done=0;
       dfg_progress_total=0;
       if (clear_kernel_region)
-      {
-        dfg_status_line="Clearing kernel region...";
-        Refresh;
         DfgClearKernelRegion(drv_let,tree);
-      }
       else
       {
-        dfg_collect_cnt=0;
         DfgCntFrag(tree);
-        dfg_progress_total=dfg_collect_cnt;
-        dfg_status_line="Optimizing...";
+        StrCpy(dfg_status_line,"Optimizing...");
         Refresh;
         try
           DfgOptimize(tree);
         catch
+        {
+          if (Fs->except_ch!='Esc')
+            dfg_last_err=Fs->except_ch;
           Fs->catch_except=TRUE;
+        }
       }
     }
     DirTreeDel(tree);
-    dfg_status_line=MStrPrint(
-        "Done.  %d optimized, %d skipped.  Press a key to exit.",
-        dfg_files_moved,dfg_files_skipped);
+    if (dfg_last_err)
+      StrPrint(dfg_status_line,
+          "Done.  %d optimized, %d skipped, %d failed (last error %c).  "
+          "Press a key to exit.",
+          dfg_files_moved,dfg_files_skipped,dfg_files_failed,dfg_last_err);
+    else
+      StrPrint(dfg_status_line,
+          "Done.  %d optimized, %d skipped, %d failed.  Press a key to exit.",
+          dfg_files_moved,dfg_files_skipped,dfg_files_failed);
     Refresh;
-    GetChar;
+    DfgFlushKeys;
+    GetChar(,FALSE);
   }
   catch
   {
+    dfg_last_err=Fs->except_ch;
     Fs->catch_except=TRUE;
   }
   SettingsPop;
-  "\n%d item(s) optimized, %d skipped (not enough free space)\n",
-      dfg_files_moved,dfg_files_skipped;
+  "\n%d item(s) optimized, %d skipped (not enough free space), %d failed\n",
+      dfg_files_moved,dfg_files_skipped,dfg_files_failed;
+  if (dfg_last_err)
+    "Last error: %c\n",dfg_last_err;
   Free(dfg_clus_status);
   dfg_clus_status=NULL;
 }

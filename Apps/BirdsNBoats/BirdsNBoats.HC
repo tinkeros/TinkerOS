@@ -22,6 +22,15 @@ RegExe("TempleOS/BirdsNBoats");
 #define ROCK_ELEVATION		45
 #define SNOW_ELEVATION		55
 
+#ifdef TINKEROS
+//Extended palette gives the mountains a smooth range of shades
+//instead of just dithering a couple of fixed colors.
+#define GRASS_COLOR_BASE	230
+#define GRASS_SHADE_CNT		16
+#define ROCK_COLOR_BASE		(GRASS_COLOR_BASE+GRASS_SHADE_CNT)
+#define ROCK_SHADE_CNT		9
+#endif
+
 #define CAM_BACK		800
 #define CAM_UP			750
 #define CAM_ZOOM_STEP		1.15
@@ -446,6 +455,9 @@ U0 MPDoPanels(CTask *task)
   Panel *tmpp,*start_ptr=NULL,*end_ptr=NULL;
   CD3I32 *poly;
   Obj *tmpo;
+#ifdef TINKEROS
+  F64 t;
+#endif
   lo=Gs->num*MAP_HEIGHT/mp_cnt;
   hi=(Gs->num+1)*MAP_HEIGHT/mp_cnt;
   for (threshold=8;threshold>=1;threshold--)
@@ -492,10 +504,18 @@ U0 MPDoPanels(CTask *task)
 	      }
 	    } else {
 	      if (l<ROCK_ELEVATION*MAP_SCALE) {
+#ifdef TINKEROS
+		t=ToF64(l-WATER_ELEVATION*MAP_SCALE)/
+		      ((ROCK_ELEVATION-WATER_ELEVATION)*MAP_SCALE);
+		tmpp->color=GRASS_COLOR_BASE+
+		      ClampI64(ToI64(t*(GRASS_SHADE_CNT-1)+Rand-0.5),
+			    0,GRASS_SHADE_CNT-1);
+#else
 		if (RandI16&1)
 		  tmpp->color=LTGREEN;
 		else
 		  tmpp->color=GREEN+LTGREEN<<16+ROPF_DITHER;
+#endif
 		if (Rand<0.03) {
 		  tmpo=MAlloc(sizeof(Obj),task);
 		  tmpo->p.x=(i+w/2)*MAP_SCALE;
@@ -506,6 +526,13 @@ U0 MPDoPanels(CTask *task)
 		  QueIns(tmpo,tmpp->last_obj);
 		}
 	      } else if (l<SNOW_ELEVATION*MAP_SCALE) {
+#ifdef TINKEROS
+		t=ToF64(l-ROCK_ELEVATION*MAP_SCALE)/
+		      ((SNOW_ELEVATION-ROCK_ELEVATION)*MAP_SCALE);
+		tmpp->color=ROCK_COLOR_BASE+
+		      ClampI64(ToI64(t*(ROCK_SHADE_CNT-1)+Rand-0.5),
+			    0,ROCK_SHADE_CNT-1);
+#else
 		if (!(RandU16&3)) {
 		  if (RandI16&1)
 		    tmpp->color=LTGRAY;
@@ -517,6 +544,7 @@ U0 MPDoPanels(CTask *task)
 		  else
 		    tmpp->color=GREEN+LTGREEN<<16+ROPF_DITHER;
 		}
+#endif
 	      } else {
 		if (!(RandU16&3)) {
 		  if (RandI16&1)
@@ -2240,9 +2268,34 @@ U0 SongTask(I64)
   }
 }
 
+#ifdef TINKEROS
+U0 InitTerrainPalette()
+{
+  I64 i;
+  F64 t;
+  for (i=0;i<GRASS_SHADE_CNT;i++) {
+    t=ToF64(i)/(GRASS_SHADE_CNT-1);
+    GrSetRGB(GRASS_COLOR_BASE+i,
+	  ClampI64(ToI64(5+t*55),0,255),
+	  ClampI64(ToI64(15+t*215),0,255),
+	  ClampI64(ToI64(5+t*55),0,255));
+  }
+  for (i=0;i<ROCK_SHADE_CNT;i++) {
+    t=ToF64(i)/(ROCK_SHADE_CNT-1);
+    GrSetRGB(ROCK_COLOR_BASE+i,
+	  ClampI64(ToI64(60+t*165),0,255),
+	  ClampI64(ToI64(60+t*165),0,255),
+	  ClampI64(ToI64(65+t*165),0,255));
+  }
+}
+#endif
+
 U0 PreInit()
 {
   I64 i,*r=Mat4x4IdentNew,min_x,max_x,min_y,max_y;
+#ifdef TINKEROS
+  InitTerrainPalette;
+#endif
   Mat4x4Scale(r,10.0);
   for (i=0;i<LS_TYPES;i++)
     landscape_large_imgs[i]=SpriteTransform(landscape_small_imgs[i],r);

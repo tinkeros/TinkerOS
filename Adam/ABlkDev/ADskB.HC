@@ -183,6 +183,29 @@ public I64 Zip(U8 *files_find_mask="*",U8 *fu_flags=NULL)
   return res;
 }
 
+public I64 ZipOS()
+{//Zip every .HC and .DD source file Misc/OSInstall.HC would install.
+ //Masked by extension only, so .BIN.C and any other *.C file are never
+ //touched -- those are boot-critical and must stay uncompressed.  Keep
+ //this dir list in sync with the CopyTree() calls in InstallDrv().
+  static U8 *dirs[9]={"0000Boot","Adam","Apps","Compiler","Demo",
+      "Doc","Downloads","Kernel","Misc"};
+  I64 i,res=0;
+  U8 *mask;
+  res+=Zip("::/*.HC","-r");
+  res+=Zip("::/*.DD","-r");
+  for (i=0;i<9;i++)
+  {
+    mask=MStrPrint("::/%s/*.HC",dirs[i]);
+    res+=Zip(mask);
+    Free(mask);
+    mask=MStrPrint("::/%s/*.DD",dirs[i]);
+    res+=Zip(mask);
+    Free(mask);
+  }
+  return res;
+}
+
 public I64 Unzip(U8 *files_find_mask="*.Z",U8 *fu_flags=NULL)
 {//Uncompress files by moving to not .Z filename.
 //You don't have to do this for normal operation.
@@ -205,6 +228,27 @@ public I64 Unzip(U8 *files_find_mask="*.Z",U8 *fu_flags=NULL)
     tmpde=tmpde->next;
   }
   DirTreeDel(tmpde1);
+  return res;
+}
+
+public I64 UnzipOS()
+{//Uncompress every .HC.Z and .DD.Z source file ZipOS() would have zipped.
+ //Mask-for-mask mirror of ZipOS() -- keep the dir list in sync with it.
+  static U8 *dirs[9]={"0000Boot","Adam","Apps","Compiler","Demo",
+      "Doc","Downloads","Kernel","Misc"};
+  I64 i,res=0;
+  U8 *mask;
+  res+=Unzip("::/*.HC.Z","-r");
+  res+=Unzip("::/*.DD.Z","-r");
+  for (i=0;i<9;i++)
+  {
+    mask=MStrPrint("::/%s/*.HC.Z",dirs[i]);
+    res+=Unzip(mask);
+    Free(mask);
+    mask=MStrPrint("::/%s/*.DD.Z",dirs[i]);
+    res+=Unzip(mask);
+    Free(mask);
+  }
   return res;
 }
 

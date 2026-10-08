@@ -68,7 +68,7 @@ public U8 *GodSongStr()
   CMakeSongSettings mss;
   U8 *buf;
   I64 i,j=0,k,n,k2,duration,last_duration=-1,len;
-  MemSet(&mss,0,sizeof(mss));
+  ZeroClass(&mss);
   mss.complexity=1;
   mss.rests=FALSE;
   mss.octave=music.octave;

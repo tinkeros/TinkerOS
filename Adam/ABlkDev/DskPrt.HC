@@ -121,7 +121,7 @@ public I64 DskPrtExt(U8 drv_let=0,I64 max_blks=0,I64 argc,I64 *argv,Bool skip_fm
     goto pd_done;
   remaining=FloorU64(bd->max_blk+1,ROUND_DRV_TO)-ROUND_DRV_TO;
   tmppp=head.next;
-  MemSet(&mbr,0,BLK_SIZE);
+  ZeroClass(&mbr);
   mbr.signature=0xAA55;
   offset=0;
   for (i=0; i<pri_cnt; i++)
@@ -162,7 +162,7 @@ public I64 DskPrtExt(U8 drv_let=0,I64 max_blks=0,I64 argc,I64 *argv,Bool skip_fm
   while (tmppp!=&head)
   {
     start_offset=offset;
-    MemSet(&mbr,0,BLK_SIZE);
+    ZeroClass(&mbr);
     mbr.signature=0xAA55;
     mbr.p[0].active=0x80;
     mbr.p[0].start_head=1;

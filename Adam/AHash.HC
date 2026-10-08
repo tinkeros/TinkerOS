@@ -357,7 +357,7 @@ public I64 HashDepthRep(CHashTable *table=NULL)
   I64 i,j,longest=0,cnt=0,a[HDR_NUM];
   CHash *tmph;
   if (!table) table=Fs->hash_table;
-  MemSet(a,0,sizeof(a));
+  ArrayZero(a,HDR_NUM);
   for (i=0; i<=table->mask; i++)
   {
     tmph=table->body[i];

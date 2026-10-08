@@ -13,14 +13,6 @@
 #define BOOT_DIR	"/0000Boot"
 #define BOOT_DIR_KERNEL_BIN_C	BOOT_DIR "/0000" KERNEL_BIN_C
 
-U0 MakeAll()
-{
-  if (Cmp("/Compiler/Compiler","Compiler",,':'))
-    throw;
-  if (Cmp("/Kernel/Kernel","Kernel",,':'))
-    throw;
-}
-
 public U0 BootDVDIns(U8 drv_let=0)
 {//Helper function for DoDistro
   //See $LK,"::/Misc/DoDistro.HC"$.
@@ -38,3 +30,4 @@ public U0 BootDVDIns(U8 drv_let=0)
   }
 }
 
+

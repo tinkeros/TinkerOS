@@ -29,7 +29,7 @@ public class CDolDocGlbls
         clean_scan_codes	[4];
   I32	dft_type_flags		[DOCT_TYPES_NUM];
 } doldoc;
-MemSet(&doldoc,0,sizeof(CDolDocGlbls));
+ZeroClass(&doldoc);
 
 #help_index "God"
 #define BIBLE_FILENAME	"::/Misc/Bible.TXT.Z"

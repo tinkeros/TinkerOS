@@ -144,7 +144,7 @@ public U0 LptPrint(I64 port,U8 *fmt,...)
 public U0 LptInit()
 {// LPT port base
   I64 i,next_port=4;
-  MemSet(&lpt_ports,0,sizeof(lpt_ports));
+  ArrayZero(lpt_ports,MAX_LPT_NUM+1);
   lpt_ports[1].base=0x3BC;
   lpt_ports[2].base=0x378;
   lpt_ports[3].base=0x278;

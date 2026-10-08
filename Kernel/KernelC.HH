@@ -307,8 +307,6 @@ public extern CDirEntry *DirTreeUnserialize(U8 *src);
 public extern I64 Size(U8 *files_find_mask="/*",U8 *fu_flags=NULL,I64 round_to=0);
 public extern I64 FileCnt(CDirEntry *tmpde);
 public extern I64 FF(U8 *files_find_mask,U8 *fu_flags=NULL);
-public extern I64 Zip(U8 *files_find_mask="*",U8 *fu_flags=NULL);
-public extern I64 Unzip(U8 *files_find_mask="*.Z",U8 *fu_flags=NULL);
 public extern U0 Unmount(U8 drv_let=0);
 public extern U8 MountFile(U8 *filename);
 public extern U8 MountFileB(U8 *buffer, I64 size);
@@ -623,6 +621,8 @@ public extern U8 *MAllocIdent(U8 *src,CTask *mem_task=NULL);
 public _extern _MHEAP_CTRL CHeapCtrl *MHeapCtrl(U8 *src);
 public _extern _MSIZE I64 MSize(U8 *src);   //size of heap object
 public _extern _MSIZE2 I64 MSize2(U8 *src); //Internal size
+public extern U0 ZeroClass(U8 *ptr,I64 s_elem=firstsize);
+public extern U0 ArrayZero(U8 *ptr,I64 n_elem,I64 s_elem=firstsize);
 
 #help_index "Memory/HeapCtrl"
 public extern U0 HeapCtrlDel(CHeapCtrl *hc);
@@ -789,7 +789,7 @@ public extern CTask *LastTask();
 public extern I64 sys_num_spawned_tasks;
 extern CTask *sys_winmgr_task,*sys_task_being_scrn_updated;
 public extern CWinMgrGlbls winmgr;
-public extern CTask *SetSysFocusTask(CTask *task=Fs, Bool check_raw=TRUE);
+public extern CTask *SetSysFocusTask(CTask *task, Bool check_raw=TRUE);
 
 #help_index "Task/Delay;Time/CPU Cycles"
 public extern U0 Busy(I64 ÊS); //Loosely timed

@@ -369,7 +369,7 @@ U0 EnablePCIComms()
 }
 
 
-MemSet(&comm_ports,0,sizeof(comm_ports));
+ArrayZero(comm_ports,MAX_COMM_NUM+1);
 
 public U0 CommInit()
 {// Com port base/IRQ init function

@@ -610,7 +610,9 @@ U0 Dbg2()
   U8 buf[200];
   if (dbg.panic)
   {
-    if (IsRaw)
+    if (!Bt(&sys_run_level,RLf_COMPILER)) //No disassembler yet.
+      "%P\n",Fs->rip;
+    else if (IsRaw)
     {
       i=Fs->rip;
       Ui(buf,&i);

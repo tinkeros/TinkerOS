@@ -15,7 +15,7 @@ public class CGodGlbls
   CFifoU8 *doodle_fifo;
   Bool	doodle_done;
 } god;
-MemSet(&god,0,sizeof(CGodGlbls));
+ZeroClass(&god);
 god.doodle_fifo	=FifoU8New(2048*8);
 god.fifo	=FifoU8New(2048*8);
 

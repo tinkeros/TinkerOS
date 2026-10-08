@@ -58,6 +58,7 @@ extern CBGR48 GrPaletteColorGet(I64 color_num);
 extern U0 GrSetExtPalette();
 extern I64 ISO9660ISO(U8 *_filename=NULL,U8 *src_files_find_mask,
     U8 *fu_flags=NULL,U8 *_stage2_filename=NULL);
+extern U0 MakeAll();
 extern CMenuEntry *MenuEntryFind(CMenu *haystack_menu,U8 *needle_full_name);
 extern CMenu *MenuFilePush(U8 *filename);
 extern U0 MenuPop();

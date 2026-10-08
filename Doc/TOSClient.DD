@@ -1,8 +1,8 @@
 $WW,1$$FG,5$$TX+CX,"TOSClient"$$FG$
 
-There is a python server for TinkerOS $LK,"tos_server.py",A="FI:::/Python/tos_server.py"$ which runs on Linux machines (in either server or client mode) which can connect to TinkerOS over real or virtual serial ports to exchange files, clipboard contents, fetch URLs or execute commands on the remote server.
+There is a python server for TinkerOS $TX,"tos_server.py",HTML="https://github.com/tinkeros/TinkerOS/tree/main/Python"$$FG$ which runs on Linux machines (in either server or client mode) which can connect to TinkerOS over real or virtual serial ports to exchange files, clipboard contents, fetch URLs or execute commands on the remote server.
 
-See $LK,"::/Python/README.md"$ for how to set up and run $FG,2$tos_server.py$FG$.  Once it is running and reachable over a COM port, the following functions may be available to you:
+See $TX,"Python/README.md",HTML="https://github.com/tinkeros/TinkerOS/blob/main/Python/README.md"$$FG$ for how to set up and run $FG,2$tos_server.py$FG$.  Once it is running and reachable over a COM port, the following functions may be available to you:
 
 $FG,5$Connecting$FG$
 $LK,"InitTOSClient",A="MN:InitTOSClient"$()	Probes the COM ports for a running $FG,2$tos_server.py$FG$ and remembers which port it's on.  You normally don't need to call this yourself -- every function below calls it for you (via $LK,"TOSServerCheck",A="MN:TOSServerCheck"$()) the first time it's needed.

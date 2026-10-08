@@ -1,6 +1,7 @@
 #define SAMPLE_RATE       22050
 #define BUF_SIZE          8192
 #define BDL_CNT           4
+#define BDL_ENTS          32 //The DMA engine always walks 32 entries.
 #define MAX_AMP           32000.0
 #define BYTES_PER_SAMPLE  4
 #define PCM_OUTPUT_REG    0x10
@@ -13,6 +14,8 @@
 #define MASTER_VOL        0x02
 #define PCM_VOL           0x18
 #define FRONT_SAMPLE_RATE 0x2C
+#define CR_RPBM           0x01
+#define CR_RR             0x02
 
 class AC97BDLEntry
 {
@@ -21,9 +24,9 @@ class AC97BDLEntry
   U16 flags;
 };
 
-static U8 *sine_buf;
+static U8 *sine_buf, *audio_buf;
 static U32 AC97Nam, AC97Nabm;
-static AC97BDLEntry *bdl, *bdl2, *cur_bdl, *next_bdl;
+static AC97BDLEntry *bdl;
 static I64 playing = 0;
 
 U0 AC97AudioTask(U8 *data)
@@ -33,8 +36,8 @@ U0 AC97AudioTask(U8 *data)
   while (1)
   {
     if (Bt(&playing,0)) {
-      cur = InU8(AC97Nabm + PCM_OUTPUT_REG + CUR_ENTRY) % BDL_CNT;
-      OutU8(AC97Nabm + PCM_OUTPUT_REG + LAST_VALID, (cur + BDL_CNT - 1) % BDL_CNT);
+      cur = InU8(AC97Nabm + PCM_OUTPUT_REG + CUR_ENTRY) % BDL_ENTS;
+      OutU8(AC97Nabm + PCM_OUTPUT_REG + LAST_VALID, (cur + BDL_ENTS - 1) % BDL_ENTS);
 
       status = InU16(AC97Nabm + PCM_OUTPUT_REG + XFR_STS);
       if (status & 0x1C)
@@ -44,43 +47,24 @@ U0 AC97AudioTask(U8 *data)
   }
 }
 
-U0 AC97SwapBDL()
-{
-  next_bdl = cur_bdl;
-  if (bdl == cur_bdl)
-    cur_bdl = bdl2;
-  else
-    cur_bdl = bdl;
-
-  OutU32(AC97Nabm + PCM_OUTPUT_REG + 0x00, cur_bdl);
-}
-
 U0 AC97Init()
-{
-  U8 *audio_buf, *audio_buf2;
+{//All 32 BDL entries cycle over BDL_CNT buffers, so the engine never walks
+//past the list. BDBAR is only written while the engine is halted.
   I64 i;
-
   audio_buf = CAllocAligned(BDL_CNT * BUF_SIZE, 4096, Fs->code_heap);
-  audio_buf2 = CAllocAligned(BDL_CNT * BUF_SIZE, 4096, Fs->code_heap);
-
-  cur_bdl = bdl = CAllocAligned(BDL_CNT * sizeof(AC97BDLEntry), 4096, Fs->code_heap);
-  next_bdl = bdl2 = CAllocAligned(BDL_CNT * sizeof(AC97BDLEntry), 4096, Fs->code_heap);
-
+  bdl = CAllocAligned(BDL_ENTS * sizeof(AC97BDLEntry), 4096, Fs->code_heap);
   sine_buf = CAllocAligned(BUF_SIZE, 4096, Fs->code_heap);
-
-  OutU32(AC97Nabm + PCM_OUTPUT_REG + 0x00, cur_bdl);
-
-  for (i = 0; i < BDL_CNT; i++)
+  OutU8(AC97Nabm + PCM_OUTPUT_REG + XFR_CTL, CR_RR);
+  for (i = 0; i < 100 && InU8(AC97Nabm + PCM_OUTPUT_REG + XFR_CTL) & CR_RR; i++)
+    Sleep(1);
+  for (i = 0; i < BDL_ENTS; i++)
   {
-    bdl[i].addr = audio_buf + (i * BUF_SIZE);
-    bdl2[i].addr = audio_buf2 + (i * BUF_SIZE);
-    bdl[i].len = bdl2[i].len = BUF_SIZE/4;
+    bdl[i].addr = audio_buf + i % BDL_CNT * BUF_SIZE;
+    bdl[i].len = BUF_SIZE / 2; //In 16-bit samples
   }
-
-  OutU8(AC97Nabm + PCM_OUTPUT_REG + LAST_VALID, BDL_CNT-1);
-  OutU8(AC97Nabm + PCM_OUTPUT_REG + XFR_CTL, 0x00);
-  OutU8(AC97Nabm + PCM_OUTPUT_REG + XFR_CTL, 0x01);
-
+  OutU32(AC97Nabm + PCM_OUTPUT_REG + 0x00, bdl);
+  OutU8(AC97Nabm + PCM_OUTPUT_REG + LAST_VALID, BDL_ENTS - 1);
+  OutU8(AC97Nabm + PCM_OUTPUT_REG + XFR_CTL, CR_RPBM);
   Spawn(&AC97AudioTask,,"AC97 Audio",1);
 }
 
@@ -93,12 +77,9 @@ U0 AC97SetFreq(F64 freq)
 
   if (freq <= 30.0)
   {
-    for (i = 0; i < BDL_CNT; i++)
-    {
-      MemSet(next_bdl[i].addr, 0, BUF_SIZE);
-      next_bdl[i].len = BUF_SIZE/4;
-    }
-    AC97SwapBDL;
+    MemSet(audio_buf, 0, BDL_CNT * BUF_SIZE);
+    for (i = 0; i < BDL_ENTS; i++)
+      bdl[i].len = BUF_SIZE / 2;
     LBtr(&playing,0);
     return;
   }
@@ -119,13 +100,10 @@ U0 AC97SetFreq(F64 freq)
   }
 
   for (i = 0; i < BDL_CNT; i++)
-  {
     for (j = 0; j < periods_per_buffer; j++)
-      MemCpy(next_bdl[i].addr + (j * period_bytes), sine_buf, period_bytes);
-    next_bdl[i].len = period_samples * periods_per_buffer * 2;
-  }
-
-  AC97SwapBDL;
+      MemCpy(audio_buf + i * BUF_SIZE + j * period_bytes, sine_buf, period_bytes);
+  for (i = 0; i < BDL_ENTS; i++)
+    bdl[i].len = period_samples * periods_per_buffer * 2;
   LBts(&playing,0);
 }
 

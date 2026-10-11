@@ -23,10 +23,17 @@ doc_ed_warn_already_open=TRUE;
 // Try to auto mount drive C.
 U0 AutoHome()
 {
+#ifdef UEFI_BOOT
+  SwitchToAHCI;
+  MountAuto(0,1);
+  Cdd("C:/Home");
+#else
   MountAuto(1);
   Cdd("C:/Home");
+#endif
 }
 
+#ifndef UEFI_BOOT
 // Try to auto mount drive C and do a soft-reboot into it.
 U0 AutoSBC()
 {
@@ -37,6 +44,7 @@ U0 AutoSBC()
       BootRAM("C:/Kernel.BIN.C");
   "Failed to mount C or find bootable kernel!\n";
 }
+#endif
 
 // Experimental FM 801 sound card OPL support. Kept as a plain #include
 // outside AudioInit: FM801.HC defines public FM801SetVol/FM801GetVol
@@ -59,19 +67,12 @@ U0 AudioInit()
 
   // Intel HD Audio (PCI class 04, subclass 03 -- same 0x040300 probe
   // HDAudio.HC itself uses). When a controller is present the HDA stack
-  // below takes precedence: AC97 and the standalone Demo/Snd/OPL2 are
-  // skipped (OPL2EmuHDA pulls in OPL2.HC itself, routed through HDA).
+  // below takes precedence: the standalone Demo/Snd/OPL2 is skipped
+  // (OPL2EmuHDA pulls in OPL2.HC itself, routed through HDA).
   hda_present=PCIClassFind(0x040300,0)>=0;
 
   if (IsHypervisorPresent) {
     if (!hda_present) {
-      // AC97 sound support. On VirtualBox the controller is only there
-      // when the VM is configured for ICH AC97, so probe for it first
-      // rather than loading a driver with nothing to talk to. Other
-      // hypervisors are left alone -- AC97.HC bails out on its own if
-      // it does not find a codec.
-      if (!VBoxPciPresent || AC97Present)
-        AdamFile("/Demo/VM/AC97");
       // Try enabling ISA OPL sounds if VM detected
       AdamFile("/Demo/Snd/OPL2");
     }

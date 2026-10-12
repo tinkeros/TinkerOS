@@ -2,6 +2,6 @@ $WW,1$$FG,5$$TX+CX,"Welcome to TinkerOS"$$FG$
 
 TinkerOS is a x86_64, multi-cored, non-preemptive multi-tasking, ring-0-only, single-address mapped (identity-mapped), operating system for recreational programming.  It is a fork of TempleOS which attempts to maintain backwards compatibility with TempleOS.
 
-* See also the $FG,4$$TX,"TempleOS Welcome",HTML="https://tinkeros.github.io/WbTempleOS/Doc/Welcome.html"$$FG$
+* See also the $FG,4$$LK,"TempleOS Welcome",A="FI:::/Doc/TempleOS/Welcome.DD"$$FG$
 
 $FG,8$

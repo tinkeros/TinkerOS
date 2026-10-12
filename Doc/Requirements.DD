@@ -34,7 +34,7 @@ $FG,5$Unsupported Hardware$FG$
 
 * UEFI / Secure Boot
 
-* USB (you can boot TOS from a ramdisk loaded into memory via USB, but once booted there is no USB support for USB devices)
+* USB (you can boot TOS from a ramdisk loaded into memory via USB, but once booted there is currently no USB support for USB devices however future USB support is planned soon)
 
 * No graphics acceleration.
 
@@ -42,4 +42,4 @@ $FG,5$Unsupported Hardware$FG$
 
 * Pretty much everything, like TempleOS, TinkerOS has no drivers for the vast majority of hardware devices.
 
-TinkerOS can run on systems $FG,4$$TX,"TempleOS",HTML="https://tinkeros.github.io/WbTempleOS/Doc/Requirements.html"$$FG$ supports.
+TinkerOS can run on systems $FG,4$$LK,"TempleOS",A="FI:::/Doc/TempleOS/Requirements.DD"$$FG$ supports.

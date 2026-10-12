@@ -58,7 +58,7 @@ $FG$$ID,-2$
 
 * There is no $FG,2$main()$FG$ function.  Any code outside of functions gets executed upon start-up, in order.
 
-* There are no bit fields, but there are $LK,"bit access",A="HI:Bit"$ routines and you can access bytes or words within any int.  See $LK,"I64 declaration",A="MN:I64"$.  A class can be accessed as a whole are subints, if you put a type in front of the $FG,2$class$FG$ declaration.
+* An $FG,2$I64$FG$ can be treated as a manual 64-bit bitfield via the $LK,"bit access",A="HI:Bit"$ routines ($FG,2$BitFieldSet$FG$()/$FG,2$BitFieldGet$FG$()), and you can access bytes or words within any int.  TinkerOS also supports real, C-like bitfield class members -- annotate a member with "$FG,2$:width$FG$" inside a $FG,2$union$FG$ and plain "$FG,2$.$FG$"/"$FG,2$->$FG$" access then reads/writes just those bits, read-modify-write, exactly like C (including silent truncation when a write is too wide).  See $LK,"::/Demo/Bitfield.HC"$.  See $LK,"I64 declaration",A="MN:I64"$.  A class can be accessed as a whole are subints, if you put a type in front of the $FG,2$class$FG$ declaration.
 $ID,2$
 $FG,2$public I64i union I64		//"I64i" is intrinsic.  We are defining "I64".
 {
@@ -225,7 +225,7 @@ $FG$$ID,-2$
 
 * $FG,2$class$FG$ member vars can have meta data. $FG,2$format$FG$ and $FG,2$data$FG$ are two meta data types now used.  All compiler structures are saved and you can access the compiler's info about classes and vars.  See $LK,"::/Demo/ClassMeta.HC"$ and  $LK,"DocForm",A="MN:DocForm"$().
 
-* There is a keyword $FG,2$lastclass$FG$ you use as a dft arg.  It is set to the class name of the prev arg.  See $LK,"::/Demo/LastClass.HC"$, $LK,"ClassRep",A="MN:ClassRep"$(), $LK,"DocForm",A="MN:DocForm"$()  and $LK,"::/Demo/Dsk/BlkDevRep.HC"$.
+* There is a keyword $FG,2$lastclass$FG$ you use as a dft arg.  It is set to the class name of the prev arg.  See $LK,"::/Demo/LastClass.HC"$, $LK,"ClassRep",A="MN:ClassRep"$(), $LK,"DocForm",A="MN:DocForm"$()  and $LK,"::/Demo/Dsk/BlkDevRep.HC"$.  There is a similar keyword $FG,2$firstsize$FG$ you use as a dft arg.  It is set to the $FG,2$sizeof$FG$ the prev arg's pointed-to class, letting a function zero or size a class without the caller specifying it explicitly, as used by $LK,"ZeroClass",A="MN:ZeroClass"$() and $LK,"ArrayZero",A="MN:ArrayZero"$().  See $LK,"::/Demo/FirstSize.HC"$.
 
 * See $LK,"::/Demo/Exceptions.HC"$.  $FG,2$try{} catch{}$FG$ and $FG,2$throw$FG$ are different from C++. $FG,2$throw$FG$ is a function with an 8-byte or less char arg.  The char string passed in $FG,2$throw()$FG$ can be accessed from within a $FG,2$catch{}$FG$ using the $FG,2$Fs->except_ch$FG$.  Within a $FG,2$catch {}$FG$ blk, set the var $FG,2$Fs->catch_except$FG$ to $FG,2$TRUE$FG$ if you want to terminate the search for a hndlr.  Use $LK,"PutExcept",A="MN:PutExcept"$() as a hndlr, if you like.
 

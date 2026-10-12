@@ -12,5 +12,5 @@ TinkerOS is a motorcycle -- if you lean-over too far, a motorcycle will crash.  
 
 * Least (greatest) common denominator hardware support.  Mostly, one driver for each device class.  I can't be in the business of different drivers.  Compatibility is the greatest challenge for PC operating systems.  Disk code does not use interrupts, avoiding compatibility risks.  $FG,2$PS/2$FG$ keyboard/mouse is used instead of $FG,2$USB$FG$, also more compatible.
 
-* See also $FG,4$$TX,"TempleOS Strategy",HTML="https://tinkeros.github.io/WbTempleOS/Doc/Strategy.html"$$FG$
+* See also $FG,4$$LK,"TempleOS Strategy",A="FI:::/Doc/TempleOS/Strategy.DD"$$FG$
 

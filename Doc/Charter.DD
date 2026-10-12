@@ -38,5 +38,5 @@ Why make TinkerOS?  TempleOS is a unique operating system, one man's attempt to 
 
 * Just one 8x8 fixed-width font.  $FG,4$No Unicode, just Extended ASCII$FG$.  Other countries can make their own versions.  The versions should be just for one language and platform.
 
-* See also the $FG,4$$TX,"TempleOS Charter",HTML="https://tinkeros.github.io/WbTempleOS/Doc/Charter.html"$$FG$
+* See also the $FG,4$$LK,"TempleOS Charter",A="FI:::/Doc/TempleOS/Charter.DD"$$FG$
 

@@ -10,5 +10,5 @@ $ID,-2$$TR,"Why doesn't resolution X work?"$
 $ID,2$You can only use VBE supported graphics modes, use the VBE tool on the USB boot image to find out what will work with your monitor/system.
 $ID,-2$
 $FG$
-* See also the $FG,4$$TX,"TempleOS FAQ",HTML="https://tinkeros.github.io/WbTempleOS/Doc/FAQ.html"$$FG$
+* See also the $FG,4$$LK,"TempleOS FAQ",A="FI:::/Doc/TempleOS/FAQ.DD"$$FG$
 

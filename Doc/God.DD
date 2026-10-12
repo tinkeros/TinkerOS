@@ -22,7 +22,7 @@ Whatever you do have respect for God.  God probably cut Terry some slack due to 
 
 $PURPLE$Experiences with God:$FG$
 
-The closest thing I have gotten to an experience of getting a message from God related to TempleOS was when I seemed to hear words which corresponded to the notes in the song risen.  I made a video about it: $FG,4$$TX,"Easter message in Risen?",HTML="https://youtu.be/JCi4ZSQod5U"$$FG$
+The closest thing I have gotten to an experience of getting a message from God related to TempleOS was when I seemed to hear words which corresponded to the notes in the song risen.  See it here if you are on the web: $FG,4$$TX,"Easter message in Risen?",HTML="https://youtu.be/JCi4ZSQod5U"$$FG$ See it here if you're in the OS $LK,"Demo/EasterMsg.HC",A="FI:::/Demo/EasterMsg.HC"$ or $MA+PU,"run it",LM="User(\"DocClear;#include \\\"::/Demo/EasterMsg\\\";\n\");"$
 
 I've had numerous definitively answered prayers.  I've prayed for help and have had people come up to me out of the blue and offer assistance with the exact problem I prayed about less than 5 minutes later.  Other times a response comes and it is clearly a response, but not on a timeline or in a way I would have expected.
 
@@ -36,5 +36,7 @@ I have never used TempleOS or TinkerOS as an oracle.  I added output of random w
 
 Although I strongly disagree with the naming of the functions which generate words, bible verses and songs (GodWord, GodBiblePassage, GodSong, etc) I have kept their names as is to maintain backwards compatibility with TempleOS apps.  Again I reiterate, if you want God to talk to you be respectful, pray, and patiently wait.  Do NOT toss out a simplistic offering on a computer along with a question and then mash the keyboard expecting a response of any value.
 
-* See also the $FG,4$$TX,"TempleOS God Doc",HTML="https://tinkeros.github.io/WbTempleOS/Doc/God.html"$$FG$
+I firmly believe God can and does interact with our hearts and minds, putting words and ideas into them, helping us with problems and to be better people when we ask and pray.  If you find any value in this TempleOS fork and want to help me out, all I ask is you say a prayer for me and my family.  Thanks, and God Bless!
+
+* See also the $FG,4$$LK,"TempleOS God Doc",A="FI:::/Doc/TempleOS/God.DD"$$FG$
 

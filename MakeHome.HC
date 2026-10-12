@@ -23,17 +23,10 @@ doc_ed_warn_already_open=TRUE;
 // Try to auto mount drive C.
 U0 AutoHome()
 {
-#ifdef UEFI_BOOT
-  SwitchToAHCI;
-  MountAuto(0,1);
-  Cdd("C:/Home");
-#else
   MountAuto(1);
   Cdd("C:/Home");
-#endif
 }
 
-#ifndef UEFI_BOOT
 // Try to auto mount drive C and do a soft-reboot into it.
 U0 AutoSBC()
 {
@@ -44,7 +37,6 @@ U0 AutoSBC()
       BootRAM("C:/Kernel.BIN.C");
   "Failed to mount C or find bootable kernel!\n";
 }
-#endif
 
 // Experimental FM 801 sound card OPL support. Kept as a plain #include
 // outside AudioInit: FM801.HC defines public FM801SetVol/FM801GetVol

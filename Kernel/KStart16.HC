@@ -85,6 +85,14 @@ GET_IP:
 #exe {
   if (kernel_cfg->opts[CFG_TEXT_MODE])
     StreamPrint("JMP @@08");
+  else
+    StreamPrint("
+      MOV  DX, 0x3D4
+      MOV  AL, 0x0A
+      OUT  DX, AL
+      INC  DX
+      MOV  AL, 0x20
+      OUT  DX, AL");
 };
   MOV	AX, 0x4F00
   MOV	DI, VBE_INFO

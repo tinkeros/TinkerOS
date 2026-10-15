@@ -82,17 +82,16 @@ GET_IP:
   PUSH	ES
   PUSH	DS
   POP 	ES
-#exe {
-  if (kernel_cfg->opts[CFG_TEXT_MODE])
-    StreamPrint("JMP @@08");
-};
   MOV	AX, 0x4F00
   MOV	DI, VBE_INFO
   MOV	CVBEInfo.signature[DI], 'VBE2'
   INT	0x10
   POP	ES
   CMP	AX, 0x004F
-  JE	@@05
+#exe {
+  if (!kernel_cfg->opts[CFG_TEXT_MODE])
+    StreamPrint("JE @@05");
+};
   JMP	@@08
 @@05:
   MOV	AX, VBE_INFO
@@ -160,7 +159,15 @@ GET_IP:
   MOV 	AX, CVBEMode.pitch[DI]
   MOV U16 [SYS_VBE_MODE_PITCH], AX
   BTS 	U32 [SYS_RUN_LEVEL], RLf_VGA
+  JMP	@@11
 @@10:
+  MOV	DX, 0x3D4
+  MOV	AX, 0x0A
+  OUT	DX, AL
+  INC	DX
+  MOV	AL, 0x20
+  OUT	DX, AL
+@@11:
   XOR	CX, CX
   XOR	DX, DX
   MOV	AX, 0xE801

@@ -501,7 +501,7 @@ I64 Lex(CCmpCtrl *cc)
 {//Fetch next token.
   I64 i,j,k,l,ch;
   CHash *tmph;
-  Bool str_done,in_str,neg_e;
+  Bool str_done,in_str,neg_e,optional;
   U8 *fbuf,*buf2,*buf3,buf[STR_LEN];
   cc->last_line_num=cc->lex_include_stk->line_num;
   while (TRUE)
@@ -821,15 +821,34 @@ lex_float_start:
       switch (i=tmph(CHashGeneric *)->user_data0)
       {
       case KW_INCLUDE:
-        if (Lex(cc)!=TK_STR)
+        optional=FALSE;
+        if (Lex(cc)==',')
+        {
+          if (Lex(cc)!=TK_IDENT || StrCmp(cc->cur_str,"opt"))
+            goto lex_end;
+          optional=TRUE;
+          if (Lex(cc)!=TK_STR)
+            goto lex_end;
+        }
+        else if (cc->token!=TK_STR)
           goto lex_end;
         fbuf=ExtDft(cc->cur_str,"HC.Z");
         buf2=FileNameAbs(fbuf);
         Free(fbuf);
         if (Bt(&sys_run_level,RLf_DOC))
-          LexAttachDoc(cc,,,buf2);
+          if (IsFileZorNotZ(buf2)||!optional)
+            LexAttachDoc(cc,,,buf2);
+          else
+          {
+            Lex(cc);
+            goto lex_end;
+          }
         else
-          LexIncludeStr(cc,buf2,FileRead(buf2),TRUE);
+        {
+          buf3=FileRead(buf2,,,optional);
+          if (buf3 || !optional)
+            LexIncludeStr(cc,buf2,buf3,TRUE);
+        }
         Free(buf2);
         break;
       case KW_DEFINE:

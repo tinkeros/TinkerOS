@@ -57,7 +57,7 @@ extern CFile *FOpen(U8 *filename,U8 *flags,I64 cnt=0);
 extern U8 *FileExtRem(U8 *src,U8 *dst=NULL);
 extern Bool FileFind(U8 *filename,CDirEntry *_de=NULL,I64 fuf_flags=0);
 extern U8 *FileNameAbs(U8 *_filename,I64 fuf_flags=0);
-extern U8 *FileRead(U8 *filename,I64 *_size=NULL,I64 *_attr=NULL);
+extern U8 *FileRead(U8 *filename,I64 *_size=NULL,I64 *_attr=NULL,Bool quiet=FALSE);
 extern I64 FileWrite(U8 *filename,U8 *fbuf,I64 size,CDate cdt=0,I64 attr=0);
 extern I64 FlushMsgs(CTask *task=NULL);
 extern U0 Free(U8 *addr);

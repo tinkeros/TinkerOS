@@ -6,7 +6,7 @@ static I64 last_mounted_hd='C';
 
 class InstallOptions
 {
-  Bool extras;
+  Bool extras,tinkersup;
   U8 *res[4];
   I64 num;
 };
@@ -38,11 +38,25 @@ TempleOSCfg *TOSCfgGet(I64 drv_let)
   return &tos_cfg[i];
 }
 
-U0 InstallDrv(U8 drv_let,Bool extras=FALSE,Bool templeos=FALSE)
+U0 PromptSupplementalFiles(Bool *extras,Bool *tinkersup)
+{//Ask about the optional supplemental file sets, shared by all install paths.
+  // TODO deprecate this and installing TempleOS
+  "\nWould you like to install supplemental extras ";
+  if (YorN('n'))
+  {
+    "\nWould you like to install TinkerOS Supplemental files also ";
+    *tinkersup=YorN('n');
+    "\nWould you like to copy TempleOS supplemental ISO files in /Extras ";
+    *extras=YorN('n');
+  }
+}
+
+U0 InstallDrv(U8 drv_let,Bool extras=FALSE,Bool templeos=FALSE,
+    Bool tinkersup=FALSE)
 {
   Bool ready=FALSE,old_silent;
   U8 *st,*st2;
-  I64 src_let,timeout=0;
+  I64 src_let,sup_let,timeout=0;
   TempleOSCfg *drv_tos_cfg=TOSCfgGet(drv_let);
   src_let=':';
   st=MStrPrint("%C:/Ready",drv_let);
@@ -95,6 +109,18 @@ U0 InstallDrv(U8 drv_let,Bool extras=FALSE,Bool templeos=FALSE)
   if (extras)
   {
     ExePrint("CopyTree(\"::/Extras\",\"%C:/Extras\");",drv_let);
+  }
+  if (tinkersup && !templeos)
+  {
+    "\nInstalling TinkerOS Supplemental files...\n";
+    sup_let=MountFile("::/Extras/TinkerSup1.ISO.C");
+    if (sup_let)
+    {
+      ExePrint("CopyTree(\"%C:/\",\"%C:/\");",sup_let,drv_let);
+      Unmount(sup_let);
+    }
+    else
+      "Could not mount ::/Extras/TinkerSup1.ISO.C\n";
   }
   ExePrint("DirMk(\"%C:/Tmp\");",drv_let);
   ExePrint("DirMk(\"%C:/Tmp/ScrnShots\");",drv_let);
@@ -170,12 +196,13 @@ Bool VMPrtDskAHCI(CTask *task,I64 port, I64 num)
 }
 
 U0 VMInstallDrv(CTask *task,U8 drv_let,
-    CATARep *ata_drv,CATARep *atapi_drv,U8 *res, Bool extras=FALSE)
+    CATARep *ata_drv,CATARep *atapi_drv,U8 *res, Bool extras=FALSE,
+    Bool tinkersup=FALSE)
 {
   Bool templeos=FALSE;
   if (StrLen(res)<3)
     templeos=TRUE;
-  InstallDrv(drv_let, extras, templeos);
+  InstallDrv(drv_let, extras, templeos, tinkersup);
   if (AHCIMode)
   {
     XTalkWait(task,"BootHDIns('%C');\n\nB\n0x20000\n",drv_let);
@@ -389,8 +416,7 @@ U0 VMInstallSetup(InstallOptions *cfg)
     DispResOptions;
     cfg->res[i]=ResPrompt('C'+i);
   }
-  "\nWould you like to also install extra supplemental ISO files in /Extras ";
-  cfg->extras=YorN('n');
+  PromptSupplementalFiles(&cfg->extras,&cfg->tinkersup);
 }
 
 U0 VMInstall(Bool just_std_ide=TRUE, InstallOptions *cfg)
@@ -460,7 +486,8 @@ U0 VMInstall(Bool just_std_ide=TRUE, InstallOptions *cfg)
     }
     for (i=0; i<cfg->num; i++)
     {
-      VMInstallDrv(task,'C'+i,ata_drv,atapi_drv,cfg->res[i],cfg->extras);
+      VMInstallDrv(task,'C'+i,ata_drv,atapi_drv,cfg->res[i],cfg->extras,
+          cfg->tinkersup);
       Free(cfg->res[i]);
     }
     BootMHDIns('C');
@@ -482,7 +509,7 @@ U0 RegularInstallWiz()
   I64 ch,num_hints=0;
   CTask *task;
   CBlkDev *tmpbd;
-  Bool probe, just_ide, extras=FALSE, templeos=FALSE;
+  Bool probe, just_ide, extras=FALSE, templeos=FALSE, tinkersup=FALSE;
   task=User;
   TaskWait(task);
   task->border_src=BDS_CONST;
@@ -610,13 +637,12 @@ U0 RegularInstallWiz()
     else
       Fmt(drv_let,,FALSE,FSt_REDSEA);
   }
-  "\nWould you like to also install extra supplemental ISO files in /Extras ";
-  extras=YorN('n');
+  PromptSupplementalFiles(&extras,&tinkersup);
   DispResOptions;
   res=ResPrompt(drv_let);
   if (StrLen(res)<3)
     templeos=TRUE;
-  InstallDrv(drv_let,extras,templeos);
+  InstallDrv(drv_let,extras,templeos,tinkersup);
   if (!base0)
   {
     tmpbd=Let2BlkDev('C');
@@ -638,7 +664,7 @@ U0 RegularInstallWizAHCI()
   I64 drv_let;
   U8	*st, *port_st, *res, *tmpstr;
   I64 i, ch, default_port=0, selected_port;
-  Bool extras=FALSE;
+  Bool extras=FALSE, tinkersup=FALSE;
   CTask	*task;
   task = User;
   TaskWait(task);
@@ -711,9 +737,8 @@ U0 RegularInstallWizAHCI()
     else
       Fmt(drv_let,, FALSE, FSt_REDSEA);
   }
-  "\nWould you like to also install extra supplemental ISO files in /Extras ";
-  extras=YorN('n');
-  InstallDrv(drv_let,extras);
+  PromptSupplementalFiles(&extras,&tinkersup);
+  InstallDrv(drv_let,extras,FALSE,tinkersup);
   DispResOptions;
   res=ResPrompt(drv_let);
   XTalkWait(task,"BootHDIns('%C');\n\nB\n0x20000\n"

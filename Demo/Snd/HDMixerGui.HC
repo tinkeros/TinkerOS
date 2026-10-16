@@ -159,6 +159,10 @@ CCtrl *MixerHSliderNew(I64 x,I64 y,F64 *val,F64 vmin,F64 vmax,U8 *name)
 #define MIXER_GUI_CMD_RISEN	7
 #define MIXER_GUI_CMD_RESET	8
 
+#define MIXER_GUI_LRTEST_FILE   "/Demo/Snd/LRTest.wav"
+#define MIXER_GUI_MISSION_FILE  "/Demo/Snd/Mission.mp3"
+#define MIXER_GUI_WORK4GOD_FILE "/Demo/Snd/Work4God.mp3"
+
 class CMixerLinkState
 {
   I64 cmd;
@@ -293,7 +297,7 @@ U0 MixerGuiFitWin(I64 need_w,I64 need_h)
 
 U0 MixerGuiBuildSliders()
 {
-  I64 i,x=MIXSLD_GAP,pick_y,need_w,need_h=0;
+  I64 i,x=MIXSLD_GAP,pick_y,link_y,need_w,need_h=0;
   Bool opl2_on=MixerFindByName("OPL2")>=0;
   pick_y=MIXER_GUI_ROW_Y+MIXSLD_TOP+MIXSLD_TRAVEL+FONT_HEIGHT+8+3;
   mixer_gui_inst_x=-1;
@@ -340,17 +344,23 @@ U0 MixerGuiBuildSliders()
 	mixer_gui_links[mixer_gui_link_cnt++]=MixerLinkNew(
 	      x+(MIXSLD_WIDTH-5*FONT_WIDTH)/2,pick_y,
 	      "Hello",MIXER_GUI_CMD_HELLO);
-      if (!StrCmp(mixer_srcs[i].name,"Wav"))
+      if (!StrCmp(mixer_srcs[i].name,"Wav") &&
+	    IsFileZorNotZ(MIXER_GUI_LRTEST_FILE))
 	mixer_gui_links[mixer_gui_link_cnt++]=MixerLinkNew(
 	      x+(MIXSLD_WIDTH-6*FONT_WIDTH)/2,pick_y,
 	      "LRTest",MIXER_GUI_CMD_LRTEST);
       if (!StrCmp(mixer_srcs[i].name,"MP3")) {
-	mixer_gui_links[mixer_gui_link_cnt++]=MixerLinkNew(
-	      x+(MIXSLD_WIDTH-7*FONT_WIDTH)/2,pick_y,
-	      "Mission",MIXER_GUI_CMD_MISSION);
-	mixer_gui_links[mixer_gui_link_cnt++]=MixerLinkNew(
-	      x+(MIXSLD_WIDTH-8*FONT_WIDTH)/2,pick_y+MIXLINK_HEIGHT+2,
-	      "Work4God",MIXER_GUI_CMD_WORK4GOD);
+	link_y=pick_y;
+	if (IsFileZorNotZ(MIXER_GUI_MISSION_FILE)) {
+	  mixer_gui_links[mixer_gui_link_cnt++]=MixerLinkNew(
+		x+(MIXSLD_WIDTH-7*FONT_WIDTH)/2,link_y,
+		"Mission",MIXER_GUI_CMD_MISSION);
+	  link_y+=MIXLINK_HEIGHT+2;
+	}
+	if (IsFileZorNotZ(MIXER_GUI_WORK4GOD_FILE))
+	  mixer_gui_links[mixer_gui_link_cnt++]=MixerLinkNew(
+		x+(MIXSLD_WIDTH-8*FONT_WIDTH)/2,link_y,
+		"Work4God",MIXER_GUI_CMD_WORK4GOD);
       }
       x+=MIXSLD_WIDTH+MIXSLD_GAP;
     }
@@ -438,14 +448,17 @@ public U0 MixerGui()
 	  else if (arg1==MIXER_GUI_CMD_HELLO &&
 		MixerFindByName("TMS5220")>=0)
 	    ExePrint("Speak(\"Hello from Tinker O ESS\");");
-	  else if (arg1==MIXER_GUI_CMD_LRTEST && MixerFindByName("Wav")>=0)
-	    ExePrint("WavPlay(\"/Demo/Snd/LRTest.wav\");");
+	  else if (arg1==MIXER_GUI_CMD_LRTEST && MixerFindByName("Wav")>=0 &&
+		IsFileZorNotZ(MIXER_GUI_LRTEST_FILE))
+	    ExePrint("WavPlay(\"" MIXER_GUI_LRTEST_FILE "\");");
 	  else if (arg1==MIXER_GUI_CMD_MISSION &&
-		MixerFindByName("MP3")>=0)
-	    ExePrint("MP3Play(\"/Demo/Snd/Mission.mp3\",TRUE,FALSE);");
+		MixerFindByName("MP3")>=0 &&
+		IsFileZorNotZ(MIXER_GUI_MISSION_FILE))
+	    ExePrint("MP3Play(\"" MIXER_GUI_MISSION_FILE "\",TRUE,FALSE);");
 	  else if (arg1==MIXER_GUI_CMD_WORK4GOD &&
-		MixerFindByName("MP3")>=0)
-	    ExePrint("MP3Play(\"/Demo/Snd/Work4God.mp3\",TRUE,FALSE);");
+		MixerFindByName("MP3")>=0 &&
+		IsFileZorNotZ(MIXER_GUI_WORK4GOD_FILE))
+	    ExePrint("MP3Play(\"" MIXER_GUI_WORK4GOD_FILE "\",TRUE,FALSE);");
 	  else if (arg1==MIXER_GUI_CMD_RESET)
 	    MusicSettingsRst;
 	  else if (arg1==MIXER_GUI_CMD_RISEN)

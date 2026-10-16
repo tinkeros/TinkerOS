@@ -300,6 +300,7 @@ public extern I64 CopyTree(U8 *src_files_find_mask,
                            U8 *dst_files_find_mask,Bool no_mask=TRUE);
 public extern I64 DelTree(U8 *files_find_mask,U8 *fu_flags=NULL);
 public extern Bool IsFile(U8 *filename);
+public extern Bool IsFileZorNotZ(U8 *filename);
 public extern U0 Touch(U8 *files_find_mask="*",U8 *attr="+?",
                        U8 *fu_flags=NULL,CDate cdt=I64_MIN);
 public extern U8 *DirTreeSerialize(CDirEntry *tmpde,I64 *_size=NULL);
@@ -394,7 +395,7 @@ public extern U0 DirEntryDel2(CDirEntry *tmpde);
 public extern U0 DirTreeDel(CDirEntry *tmpde);
 public extern U0 DirTreeDel2(CDirEntry *tmpde);
 public extern Bool FileFind(U8 *filename,CDirEntry *_de=NULL,I64 fuf_flags=0);
-public extern U8 *FileRead(U8 *filename,I64 *_size=NULL,I64 *_attr=NULL);
+public extern U8 *FileRead(U8 *filename,I64 *_size=NULL,I64 *_attr=NULL,Bool quiet=FALSE);
 public extern I64 FileWrite(U8 *filename,
 	U8 *fbuf,I64 size,CDate cdt=0,I64 attr=0);
 public extern I64 FileWriteAt(U8 *filename,

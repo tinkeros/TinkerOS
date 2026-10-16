@@ -91,9 +91,8 @@ U0 AudioInit()
     // disk by the time AdamFile returns -- hence the IsFile checks below.
     // On an ISO boot the home drive is read-only, so it goes to B: instead.
     hda_cfg_ok=IsFile("/Home/HDAudioCfg.HC.Z");
-    if (!hda_cfg_ok && IsHypervisorPresent) {
+    if (!hda_cfg_ok) {
       if (DrvIsWritable)
-	// Run automatic HDA config if in VM
 	AdamFile("/Demo/Snd/HDCfgNew");
       else if (blkdev.boot_drv_let=='T' && DrvMounted('B') &&
 	    DrvIsWritable('B')) {
@@ -127,8 +126,9 @@ if (IsHypervisorPresent) {
     Adam("VBShareInit;\n");
   }
   else AdamFile("/Demo/VM/VMMouse");
-  if (mp_cnt>1) AudioInit;
 }
+
+AudioInit;
 
 #include "~/HomeWrappers"
 MapFileLoad("::/Kernel/Kernel");

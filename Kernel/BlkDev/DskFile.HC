@@ -4,7 +4,7 @@ U0 FileReadCB(U8 *filename)
   no_warn filename;
 }
 
-U8 *FileRead(U8 *filename,I64 *_size=NULL,I64 *_attr=NULL)
+U8 *FileRead(U8 *filename,I64 *_size=NULL,I64 *_attr=NULL,Bool quiet=FALSE)
 {//Read whole file from disk.
   CHashGeneric *tmph;
   U8 *absname,*altname,*curname,*res=NULL;
@@ -82,7 +82,7 @@ U8 *FileRead(U8 *filename,I64 *_size=NULL,I64 *_attr=NULL)
         DirContextDel(dirc);
       }
     }
-    if (!res)
+    if (!res && !quiet)
       PrintErr("File not found: \"%s\".\n",filename);
     if (res && attr & RS_ATTR_RESIDENT)
       HashGenericAdd(curname,HTT_FILE,AMAllocIdent(res),size,0,adam_task);

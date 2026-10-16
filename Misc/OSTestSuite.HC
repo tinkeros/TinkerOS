@@ -28,7 +28,7 @@ U0 TS(U8 *desc)
            (PROGRESS_DESC_LEN-StrLen(st))>>1,CH_SPACE,st);
   Free(st);
   progress4=ts_i++;
-  progress4_max=202;
+  progress4_max=203;
   progress4_t0=ts_t0;
   *progress4_desc=0;
   RegExe("TempleOS/OSTestSuite");
@@ -159,11 +159,15 @@ U0 DoRandSquares()
 
 U0 DoGPSPAL()
 {
-  CTask *task=User;
-  XTalkWait(task,"#include \"::/Demo/Graphics/TinkerOS/GPSPAL\";\n");
-  Sleep(3000);
-  PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SHIFT_ESC,0);
-  DeathWait(&task,TRUE);
+  CTask *task;
+  if (IsFileZorNotZ("::/Demo/Graphics/TinkerOS/GPSPAL.HC"))
+  {
+    task=User;
+    XTalkWait(task,"#include \"::/Demo/Graphics/TinkerOS/GPSPAL\";\n");
+    Sleep(3000);
+    PostMsgWait(task,MSG_KEY_DOWN_UP,CH_SHIFT_ESC,0);
+    DeathWait(&task,TRUE);
+  }
 }
 
 U0 DoSlider()
@@ -355,7 +359,6 @@ U0 DoToastScreenSaver()
   Kill(task);
 }
 
-$PL,1000$$PL,1000$
 U0 DoNGScreenSaver()
 {
   CTask *task=User;
@@ -369,7 +372,25 @@ U0 DoNGScreenSaver()
   Sleep(1);
   Kill(task);
 }
-$PL,1000$
+
+U0 DoTDScreenSaver()
+{
+  CTask *task;
+  if (IsFileZorNotZ("/Demo/ScreenSavers/TDance.HC.Z"))
+  {
+    task=User;
+    AdamFile("/Demo/ScreenSavers/TDance.HC.Z");
+    SetScreenSaverTimeout(1);
+    Sleep(10000);
+    AdamFile("/Demo/ScreenSavers/Default.HC.Z");
+    PostMsgWait(task,MSG_KEY_DOWN_UP,CH_ESC,0);
+    SetScreenSaverTimeout(0);
+    ms_hard.timestamp = GetTSC;
+    Sleep(1);
+    Kill(task);
+  }
+}
+
 U0 DoRandDemo()
 {
   CTask *task=User;
@@ -2018,6 +2039,8 @@ U0 OSTestSuite()
   DoLSScreenSaver;
   TS("NewGlassScreenSaver");
   DoNGScreenSaver;
+  TS("TerryDanceScreenSaver");
+  DoTDScreenSaver;
   TS("ToastScreenSaver");
   DoToastScreenSaver;
   TS("Cube");

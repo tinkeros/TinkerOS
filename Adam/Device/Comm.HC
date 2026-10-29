@@ -6,6 +6,12 @@
 #define MAX_COMM_NUM 12
 #define COMM_RX_FIFO_SIZE 2048
 
+#define COMT_NONE 0
+#define COMT_UART 1
+#define COMT_USB  2
+#define COMT_TCP  3
+#define COMT_NUM  4
+
 #define UART_THR		0
 #define UART_RDR		0
 #define UART_BRDL		0
@@ -33,11 +39,38 @@ class CComm
         flags,
         poll,
         type,
-        mmio;
+        mmio,
+        usb_k,
+        usb_gen;
   CFifoU8 *RX_fifo;
+  U8   *link,
+       *name;
+  Bool  probe_skip;
 };
 
 public CComm comm_ports[MAX_COMM_NUM+1];
+
+class CCommOps
+{//What the public Comm API needs from a port type. tx_flush/lines are optional.
+  U0   (*init)(CComm *c, I64 baud, I64 lcr);
+  Bool (*put)(CComm *c, U8 *buf, I64 cnt, I64 timeout_ms);
+  U0   (*rx_poll)(CComm *c);
+  U0   (*tx_flush)(CComm *c);
+  U0   (*lines)(CComm *c, I64 dtr, I64 rts);
+};
+CCommOps comm_ops[COMT_NUM];
+
+Bool CommAttached(CComm *c)
+{//USB and TCP slots are owned by whatever attached them, not by CommInit.
+  return c->type==COMT_USB || c->type==COMT_TCP;
+}
+
+I64 CommEffType(CComm *c)
+{//A COMT_NONE port with a hand-set base behaves as UART, same as always.
+  if (c->type==COMT_NONE && c->base)
+    return COMT_UART;
+  return c->type;
+}
 
 public U0 CommHndlr(I64 port)
 {// Com port IRQ handler
@@ -66,12 +99,10 @@ public U0 CommHndlr(I64 port)
   }
 }
 
-public U0 PollCommHndlr(I64 port)
-{// Com port IRQ handler
-  CComm *c;
+U0 UartRxPoll(CComm *c)
+{//Move bytes already in the 16550 FIFO into c->RX_fifo (poll-mode LSR check).
   CFifoU8 *f;
   I64 stat, free_size=COMM_RX_FIFO_SIZE;
-  c=&comm_ports[port];
   if (Bt(&c->flags,COMf_ENABLED))
   {
     f=c->RX_fifo;
@@ -93,6 +124,11 @@ public U0 PollCommHndlr(I64 port)
   }
 }
 
+public U0 PollCommHndlr(I64 port)
+{// Com port IRQ handler
+  UartRxPoll(&comm_ports[port]);
+}
+
 interrupt U0 IRQComm3()
 {// Com 2/4 IRQ handler
   CommHndlr(2);
@@ -109,12 +145,10 @@ interrupt U0 IRQComm4()
 
 interrupt U0 IRQCommPCI()
 {// Com 5+ IRQ handler
-  I64 port=5;
-  while (port<=MAX_COMM_NUM)
-  {
+  I64 port;
+  for (port=5; port<=MAX_COMM_NUM; port++)
     if (Bt(&comm_ports[port].flags,COMf_ENABLED) && comm_ports[port].base>0)
-      CommHndlr(port++);
-  }
+      CommHndlr(port);
   *(dev.uncached_alias + LAPIC_EOI)(U32*)=0;
 }
 
@@ -137,7 +171,12 @@ I64 AddPCIComms(I64 next_port)
             ioport = PCIReadU32(bdf.u8[2], bdf.u8[1], bdf.u8[0], bar);
             if (ioport&1)
             {
+              while (cur_port<=MAX_COMM_NUM && CommAttached(&comm_ports[cur_port]))
+                cur_port++;
+              if (cur_port>MAX_COMM_NUM)
+                return cur_port;
               comm_ports[cur_port].base=ioport&0xfffffffc;
+              comm_ports[cur_port].type=COMT_UART;
               cur_port++;
               if (cur_port>MAX_COMM_NUM)
               {
@@ -151,9 +190,8 @@ I64 AddPCIComms(I64 next_port)
   return cur_port;
 }
 
-public CComm *CommInit7n1(I64 port,I64 baud)
-{// Com port init function
-  CComm *c=&comm_ports[port];
+U0 UartInit(CComm *c, I64 baud, I64 lcr)
+{
   PUSHFD
   CLI
   if (!c->RX_fifo)
@@ -163,36 +201,7 @@ public CComm *CommInit7n1(I64 port,I64 baud)
   MixedOutU8(c->mmio,c->base+UART_LCR,0x80);	//Enable baud rate control
   MixedOutU8(c->mmio,c->base+UART_BRDL,0x180/(baud/300) & 0xFF);	//LSB
   MixedOutU8(c->mmio,c->base+UART_BRDH,0x180/(baud/300) / 256);	//MSB
-  MixedOutU8(c->mmio,c->base+UART_LCR,2);	//7-none-1
-  MixedInU8(c->mmio,c->base+UART_RDR);	//read garbage
-  MixedInU8(c->mmio,c->base+UART_LSR);
-  MixedOutU8(c->mmio,c->base+UART_MCR,4);
-  MixedOutU8(c->mmio,c->base+UART_IER,0);	//Disable all IRQ
-  MixedOutU8(c->mmio,c->base+UART_MCR,0xA);	//out2 and rts
-  if (!c->poll) {
-    OutU8(0x21,InU8(0x21) & (0xFF-0x18));	//Enable 8259 IRQ 3 & 4
-    MixedOutU8(c->mmio,c->base+UART_IER,1);	//RX but no THR empty
-  }
-  else 
-    MixedOutU8(c->mmio,c->base+UART_IIR,0xC7);
-  LBts(&c->flags,COMf_ENABLED);
-  POPFD
-  return c;
-}
-
-public CComm *CommInit8n1(I64 port,I64 baud)
-{// Com port init function
-  CComm *c=&comm_ports[port];
-  PUSHFD
-  CLI
-  if (!c->RX_fifo)
-    c->RX_fifo=FifoU8New(COMM_RX_FIFO_SIZE);
-  MixedOutU8(c->mmio,c->base+UART_LCR,0);	//Set for IER
-  MixedOutU8(c->mmio,c->base+UART_IER,0);	//Disable all IRQ
-  MixedOutU8(c->mmio,c->base+UART_LCR,0x80);	//Enable baud rate control
-  MixedOutU8(c->mmio,c->base+UART_BRDL,0x180/(baud/300) & 0xFF);	//LSB
-  MixedOutU8(c->mmio,c->base+UART_BRDH,0x180/(baud/300) / 256);	//MSB
-  MixedOutU8(c->mmio,c->base+UART_LCR,3);	//8-none-1
+  MixedOutU8(c->mmio,c->base+UART_LCR,lcr);
   MixedInU8(c->mmio,c->base+UART_RDR);	//read garbage
   MixedInU8(c->mmio,c->base+UART_LSR);
   MixedOutU8(c->mmio,c->base+UART_MCR,4);
@@ -206,6 +215,45 @@ public CComm *CommInit8n1(I64 port,I64 baud)
     MixedOutU8(c->mmio,c->base+UART_IIR,0xC7);
   LBts(&c->flags,COMf_ENABLED);
   POPFD
+}
+
+Bool UartPut(CComm *c, U8 *buf, I64 cnt, I64 timeout_ms)
+{//Loops over THR as CommPutChar always did, one byte's timeout per byte.
+  I64 i;
+  F64 timeout_time;
+  for (i=0; i<cnt; i++)
+  {
+    timeout_time=tS+ToF64(timeout_ms)/1000.0;
+    while (!(MixedInU8(c->mmio,c->base+UART_LSR) & 0x20))
+    {
+      if (tS>timeout_time) return FALSE;
+      Yield;
+    }
+    MixedOutU8(c->mmio,c->base+UART_THR,buf[i]);
+    if (!(i&63)) Yield;
+  }
+  timeout_time=tS+ToF64(timeout_ms)/1000.0;
+  while (!(MixedInU8(c->mmio,c->base+UART_LSR) & 0x20))
+  {
+    if (tS>timeout_time) return FALSE;
+    Yield;
+  }
+  if (Bt(&c->flags,COMf_ENABLED) && c->poll)
+    UartRxPoll(c);
+  return TRUE;
+}
+
+public CComm *CommInit7n1(I64 port,I64 baud)
+{// Com port init function
+  CComm *c=&comm_ports[port];
+  (*comm_ops[CommEffType(c)].init)(c,baud,2);
+  return c;
+}
+
+public CComm *CommInit8n1(I64 port,I64 baud)
+{// Com port init function
+  CComm *c=&comm_ports[port];
+  (*comm_ops[CommEffType(c)].init)(c,baud,3);
   return c;
 }
 
@@ -220,42 +268,30 @@ public U0 PollComm(U8 *data)
 public U0 CommPutChar(I64 port,U8 b, I64 timeout_ms=500)
 {// Write 1 byte to com port
   CComm *c=&comm_ports[port];
-  F64 timeout_time=tS+ToF64(timeout_ms)/1000.0;
-  while (!(MixedInU8(c->mmio,c->base+UART_LSR) & 0x20))
-  {
-    if (tS>timeout_time) throw('ComErr');
-    Yield;
-  }
-  MixedOutU8(c->mmio,c->base+UART_THR,b);
-  while (!(MixedInU8(c->mmio,c->base+UART_LSR) & 0x20))
-  {
-    if (tS>timeout_time) throw('ComErr');
-    Yield;
-  }
-  if (Bt(&comm_ports[port].flags,COMf_ENABLED) && comm_ports[port].poll)
-  {
-    Spawn(&PollComm, port);
-    if (tS>timeout_time) throw('ComErr');
-    Yield;
-  }
+  if (!(*comm_ops[CommEffType(c)].put)(c,&b,1,timeout_ms))
+    throw('ComErr');
 }
 
 public U8 CommGetChar(I64 port, I64 timeout_ms=500)
 {// Get 1 byte from com port
+  CComm *c=&comm_ports[port];
+  I64 ty=CommEffType(c);
   U8 chr;
   F64 timeout_time=tS+ToF64(timeout_ms)/1000.0;
-  if (Bt(&comm_ports[port].flags,COMf_ENABLED) && comm_ports[port].poll)
+  if (comm_ops[ty].tx_flush)
+    (*comm_ops[ty].tx_flush)(c);
+  if (Bt(&c->flags,COMf_ENABLED) && c->poll)
   {
-    PollCommHndlr(port);
+    (*comm_ops[ty].rx_poll)(c);
   }
   while (1)
   {
-    if (FifoU8Rem(comm_ports[port].RX_fifo, &chr))
+    if (FifoU8Rem(c->RX_fifo, &chr))
       return chr;
     else {
-      if (Bt(&comm_ports[port].flags,COMf_ENABLED) && comm_ports[port].poll)
+      if (Bt(&c->flags,COMf_ENABLED) && c->poll)
       {
-        PollCommHndlr(port);
+        (*comm_ops[ty].rx_poll)(c);
         Yield;
       }
       else
@@ -267,14 +303,18 @@ public U8 CommGetChar(I64 port, I64 timeout_ms=500)
 
 public Bool CommGetCharNoWait(I64 port, U8 *byte_out)
 {// Try to get 1 byte from com port
-  if (FifoU8Rem(comm_ports[port].RX_fifo, byte_out))
+  CComm *c=&comm_ports[port];
+  I64 ty=CommEffType(c);
+  if (comm_ops[ty].tx_flush)
+    (*comm_ops[ty].tx_flush)(c);
+  if (FifoU8Rem(c->RX_fifo, byte_out))
   {
     return TRUE;
   }
-  if (Bt(&comm_ports[port].flags,COMf_ENABLED) && comm_ports[port].poll)
+  if (Bt(&c->flags,COMf_ENABLED) && c->poll)
   {
-    PollCommHndlr(port);
-    if (FifoU8Rem(comm_ports[port].RX_fifo, byte_out))
+    (*comm_ops[ty].rx_poll)(c);
+    if (FifoU8Rem(c->RX_fifo, byte_out))
     {
       return TRUE;
     }
@@ -283,26 +323,28 @@ public Bool CommGetCharNoWait(I64 port, U8 *byte_out)
 }
 
 public U0 CommFlush(I64 port)
-{// Flush com port fifos
-  if (Bt(&comm_ports[port].flags,COMf_ENABLED) && comm_ports[port].poll)
-      PollCommHndlr(port);
-  FifoU8Flush(comm_ports[port].RX_fifo);
+{// Flush com port fifos (and any buffered TX)
+  CComm *c=&comm_ports[port];
+  I64 ty=CommEffType(c);
+  if (comm_ops[ty].tx_flush)
+    (*comm_ops[ty].tx_flush)(c);
+  if (Bt(&c->flags,COMf_ENABLED) && c->poll)
+      (*comm_ops[ty].rx_poll)(c);
+  FifoU8Flush(c->RX_fifo);
 }
 
 public U0 CommPutS(I64 port,U8 *st)
 {// Writes string to com port
-  I64 b;
-  while (b=*st++)
-    CommPutChar(port,b);
+  CComm *c=&comm_ports[port];
+  if (!(*comm_ops[CommEffType(c)].put)(c,st,StrLen(st),500))
+    throw('ComErr');
 }
 
 public U0 CommPutBlk(I64 port,U8 *buf,I64 cnt)
 {// Writes a block to com port
-  while (cnt--)
-  {
-    if (!(cnt%64)) Yield;
-    CommPutChar(port,*buf++);
-  }
+  CComm *c=&comm_ports[port];
+  if (!(*comm_ops[CommEffType(c)].put)(c,buf,cnt,500))
+    throw('ComErr');
 }
 
 public U0 CommPrint(I64 port,U8 *fmt,...)
@@ -369,25 +411,53 @@ U0 EnablePCIComms()
 }
 
 
+U0 CommNoneInit(CComm *c, I64 baud, I64 lcr)
+{
+  no_warn c,baud,lcr;
+}
+
+Bool CommNonePut(CComm *c, U8 *buf, I64 cnt, I64 timeout_ms)
+{//CommPutChar/CommPutS/CommPutBlk turn this into throw('ComErr').
+  no_warn c,buf,cnt,timeout_ms;
+  return FALSE;
+}
+
+U0 CommNoneRxPoll(CComm *c)
+{
+  no_warn c;
+}
+
 ArrayZero(comm_ports,MAX_COMM_NUM+1);
+ArrayZero(comm_ops,COMT_NUM);
+comm_ops[COMT_NONE].init=&CommNoneInit;
+comm_ops[COMT_NONE].put=&CommNonePut;
+comm_ops[COMT_NONE].rx_poll=&CommNoneRxPoll;
+comm_ops[COMT_UART].init=&UartInit;
+comm_ops[COMT_UART].put=&UartPut;
+comm_ops[COMT_UART].rx_poll=&UartRxPoll;
 
 public U0 CommInit()
-{// Com port base/IRQ init function
+{//Com port base/IRQ init. Safe to recall; leaves USB/TCP slots alone.
   I64 i,next_port=5;
-  comm_ports[1].base=0x3F8;
-  comm_ports[2].base=0x2F8;
-  comm_ports[3].base=0x3E8;
-  comm_ports[4].base=0x2E8;
+  comm_ports[1].base=0x3F8; comm_ports[1].type=COMT_UART;
+  comm_ports[2].base=0x2F8; comm_ports[2].type=COMT_UART;
+  comm_ports[3].base=0x3E8; comm_ports[3].type=COMT_UART;
+  comm_ports[4].base=0x2E8; comm_ports[4].type=COMT_UART;
   next_port=AddPCIComms(next_port);
 
-  for (i=0; i<MAX_COMM_NUM; i++)
-  {
-    comm_ports[i].flags=0;
-    comm_ports[i].RX_fifo=NULL;
-  }
+  for (i=1; i<=MAX_COMM_NUM; i++)
+    if (!CommAttached(&comm_ports[i]))
+    {
+      if (comm_ports[i].RX_fifo)
+      {
+        FifoU8Del(comm_ports[i].RX_fifo);
+        comm_ports[i].RX_fifo=NULL;
+      }
+      comm_ports[i].flags=0;
+    }
   IntEntrySet(0x23,&IRQComm3);
   IntEntrySet(0x24,&IRQComm4);
-  for (i=0; i<4; i++)
+  for (i=1; i<=4; i++)
   {
     comm_ports[i].poll=0;
   }
@@ -404,15 +474,25 @@ public U0 CommInit()
 // Disabling speeds boot on some systems.
 //CommInit;
 
+public Bool CommExists(I64 port)
+{//TRUE if port is a real/attached COM port (UART with a base, or USB serial).
+  if (port<1 || port>MAX_COMM_NUM) return FALSE;
+  return CommEffType(&comm_ports[port])!=COMT_NONE;
+}
+
 U0 CommRep()
 {
   I64 i;
   "COMM 1-4 are standard IO ports, the actual ports themselves may or may not exist.\n";
   for (i=1; i<=MAX_COMM_NUM; i++)
   {
-    if (comm_ports[i].base)
+    if (CommExists(i))
     {
-      if (comm_ports[i].poll)
+      if (comm_ports[i].type==COMT_USB)
+        "COM %d - USB #%d\n",i,comm_ports[i].usb_k;
+      else if (comm_ports[i].type==COMT_TCP)
+        "COM %d - TCP %s\n",i,comm_ports[i].name;
+      else if (comm_ports[i].poll)
         "COM %d - base 0x%08x (polled)\n",i,comm_ports[i].base;
       else
         "COM %d - base 0x%08x\n",i,comm_ports[i].base;

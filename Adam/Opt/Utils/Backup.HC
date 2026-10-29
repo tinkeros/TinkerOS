@@ -1,6 +1,6 @@
 Bool ConnectSerial()
 {
-  if (!comm_ports[1].base) CommInit;
+  if (!CommExists(1)) CommInit;
   if (SNAIL_COM<0) ProbeComm;
   if (SNAIL_COM<0)
   {

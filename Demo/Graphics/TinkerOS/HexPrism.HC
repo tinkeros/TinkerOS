@@ -64,10 +64,10 @@ U0 HexPrism()
     for(i=0; i<NUM_SIDES; i++) {
       next = (i + 1) % NUM_SIDES;
 
-      MemCpy(&side_face[i][0],&bottom_poly[i],sizeof(CD3I32));
-      MemCpy(&side_face[i][1],&bottom_poly[next],sizeof(CD3I32));
-      MemCpy(&side_face[i][2],&top_poly[next],sizeof(CD3I32));
-      MemCpy(&side_face[i][3],&top_poly[i],sizeof(CD3I32));
+      ClassCpy(&side_face[i][0],&bottom_poly[i]);
+      ClassCpy(&side_face[i][1],&bottom_poly[next]);
+      ClassCpy(&side_face[i][2],&top_poly[next]);
+      ClassCpy(&side_face[i][3],&top_poly[i]);
 
       dc->color=ROPF_PROBABILITY_DITHER+(BLUE+8+i)<<16+(BLUE+i);
 

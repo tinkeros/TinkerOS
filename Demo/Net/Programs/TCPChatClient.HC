@@ -1,6 +1,6 @@
 CTask       *chat_display_task  = NULL;
 CTask       *chat_message_task  = NULL;
-CTCPSocket  *tcp = TCPSocket(AF_INET);
+CTCPSock  *tcp = TCPSock(AF_INET);
 
 U0 ChatDisplayTask(I64)
 {// display received messages.
@@ -23,7 +23,7 @@ U0 ChatMsgTask(I64)
     DocBottom(chat_display_task->put_doc);
     DocPrint(chat_display_task->put_doc,
              "$$BG,BLUE$$$$BLACK$$<local>$$FG$$$$BG$$ %s\n", message);
-    TCPSocketSendString(tcp, message);
+    TCPSockSendStr(tcp, message);
     DocClear;
     DocPrint(, "$$WW,1$$");
   }
@@ -51,29 +51,29 @@ U0 ChatInit()
 
 U0 Chat()
 {
-  CSocketAddressIPV4     socket_addr;
-  CIPV4Address       ip_addr;
-  U8                    *ip_string   = GetStr("Server IPV4: ");
-  U8                    *port_string = GetStr("Server Port: ");
-  I64                    port        = Str2I64(port_string);
-  U8                    *buffer[ETHERNET_FRAME_SIZE];
-  I64                    receive_val;
-  while (PresentationToNetwork(AF_INET, ip_string, &ip_addr) == -1)
+  CSockAddrIPV4     sock_addr;
+  CIPV4Addr       ip_addr;
+  U8                    *ip_str   = GetStr("Server IPV4: ");
+  U8                    *port_str = GetStr("Server Port: ");
+  I64                    port        = Str2I64(port_str);
+  U8                    *buf[ETH_FRAME_SIZE];
+  I64                    rx_val;
+  while (PresToNet(AF_INET, ip_str, &ip_addr) == -1)
   {
     "\nERROR: Bad IP entered. Retry.\n";
-    ip_string = GetStr("Server IPV4: ");
+    ip_str = GetStr("Server IPV4: ");
   }
-  Free(ip_string);
-  Free(port_string);
-  socket_addr.port          = EndianU16(port);
-  socket_addr.family            = AF_INET;
-  socket_addr.address.address   = ip_addr.address;
-  tcp->timeout = TCP_TIMEOUT; // use normal timeout for connect()
+  Free(ip_str);
+  Free(port_str);
+  sock_addr.port          = EndianU16(port);
+  sock_addr.family            = AF_INET;
+  sock_addr.addr.addr   = ip_addr.addr;
+  tcp->timeout = TCP_TIMEOUT;
   "\nConnecting to server...\n";
-  if (TCPSocketConnect(tcp, &socket_addr) != 0)
+  if (TCPSockConnect(tcp, &sock_addr) != 0)
   {
     "\nFailed to connect to server.\n";
-    TCPSocketClose(tcp);
+    TCPSockClose(tcp);
     return;
   }
   else
@@ -82,30 +82,30 @@ U0 Chat()
   tcp->timeout = 0;
   while (TaskValidate(chat_message_task))
   {
-    if ((receive_val = TCPSocketReceive(tcp, buffer, ETHERNET_FRAME_SIZE)) != -1)
+    if ((rx_val = TCPSockRx(tcp, buf, ETH_FRAME_SIZE)) != -1)
     {
-      if (receive_val == 0)
+      if (rx_val == 0)
       {
         "\nServer closed the connection.\n";
         Kill(chat_message_task);
         break;
       }
-      else if (receive_val > 0)
+      else if (rx_val > 0)
       {
         DocBottom(chat_display_task->put_doc);
         DocPrint(chat_display_task->put_doc,
-                 "%s\n", buffer);
-        MemSet(buffer, 0, ETHERNET_FRAME_SIZE);
+                 "%s\n", buf);
+        MemSet(buf, 0, ETH_FRAME_SIZE);
       }
     }
     Refresh;
   }
   tcp->timeout = TCP_TIMEOUT;
   "\nClosing connected socket...\n";
-  if (TCPSocketClose(tcp) == 0)
-    "\nSocket closed.\n";
+  if (TCPSockClose(tcp) == 0)
+    "\nSock closed.\n";
   else
-    "\nSocket failed to close.\n";
+    "\nSock failed to close.\n";
 }
 
 Chat;

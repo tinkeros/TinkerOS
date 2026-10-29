@@ -1573,7 +1573,7 @@ public I16 *MP3Decode(U8 *data,I64 size,I64 *_samps=NULL,I64 *_hz=NULL,
       if ((total+n)*mp3_nch>cap) {
 	cap*=2;
 	out2=AMAlloc(cap*sizeof(I16));
-	MemCpy(out2,out,total*mp3_nch*sizeof(I16));
+	ClassCpy(out2,out,total*mp3_nch);
 	Free(out);
 	out=out2;
       }

@@ -7,10 +7,10 @@
     Each Ethernet Frame will be represented
     as an entry in a CQue. */
 
-class CNetQueEntry:CQue
+class CNetQueEnt:CQue
 {
-  I64 packet_length;
-  U8    frame[ETHERNET_FRAME_SIZE];
+  I64 pkt_len;
+  U8    frame[ETH_FRAME_SIZE];
 };
 
 
@@ -20,53 +20,73 @@ class CNetQueEntry:CQue
     Upon QueInit, ->next and ->last are set to
     itself, the Head. */
 
-CQue *net_queue; // no QueRem the Head! only Entries!
+CQue *net_queue;
+
+#define NET_QUEUE_MAX 64
+I64 net_queue_depth = 0, net_queue_drops = 0, net_queue_lock = 0;
 
 U0 NetQueInit()
 {
   net_queue = CAlloc(sizeof(CQue));
   QueInit(net_queue);
+  net_queue_depth = 0;
+  net_queue_drops = 0;
+  net_queue_lock = 0;
 }
 
-CNetQueEntry *NetQuePull()
+CNetQueEnt *NetQuePull()
 {
-  /*    Returns a pointer to a CNetQueEntry,
+  /*    Returns a pointer to a CNetQueEnt,
   or NULL pointer if Net Que is empty. */
-  CNetQueEntry *entry;
+  CNetQueEnt *ent;
+  PUSHFD
+  CLI
+  while (LBts(&net_queue_lock, 0))
+    PAUSE
   if (net_queue->next != net_queue)
   {
-    entry = net_queue->next;
-    NetLog("NETQUEUE PULL: Removing entry from queue.");
-    QueRem(entry);
-  }
-  else // Que is empty if head->next is head itself.
-  {
-    entry = NULL;
-  }
-  return entry;
-}
-
-U0 NetQuePush(U8 *data, I64 length)
-{
-  /*    Pushes a copy of the packet data and length
-  into the Net Que. The NetQueEntry is inserted
-  after the last entry of net_queue to keep new
-  items in the back of the Que, old in front. */
-  CNetQueEntry *entry = CAlloc(sizeof(CNetQueEntry));
-  entry->packet_length = length;
-  MemCpy(entry->frame, data, length);
-  QueIns(entry, net_queue->last);
-  // Wake Net Handler
-  if (netfifo_handler_task)
-  {
-    NetLog("NETQUEUE PUSH COPY: Waking NetHandler.");
-    LBtr(&netfifo_handler_task->task_flags, TASKf_IDLE);
-    Yield;
+    ent = net_queue->next;
+    QueRem(ent);
+    if (net_queue_depth > 0)
+      net_queue_depth--;
   }
   else
   {
-    NetLog("NETQUEUE PUSH COPY: Error, no NetHandler task!");
+    ent = NULL;
   }
+  LBtr(&net_queue_lock, 0);
+  POPFD
+  return ent;
+}
+
+U0 NetQuePush(U8 *data, I64 len)
+{
+  CNetQueEnt *ent;
+  if (len < 1 || len > ETH_FRAME_SIZE)
+    return;
+  ent = CAlloc(sizeof(CNetQueEnt), adam_task);
+  if (!ent)
+    return;
+  ent->pkt_len = len;
+  MemCpy(ent->frame, data, len);
+  PUSHFD
+  CLI
+  while (LBts(&net_queue_lock, 0))
+    PAUSE
+  if (net_queue_depth >= NET_QUEUE_MAX)
+  {
+    net_queue_drops++;
+    LBtr(&net_queue_lock, 0);
+    POPFD
+    Free(ent);
+    return;
+  }
+  QueIns(ent, net_queue->last);
+  net_queue_depth++;
+  LBtr(&net_queue_lock, 0);
+  POPFD
+  if (netfifo_handler_task)
+    LBtr(&netfifo_handler_task->task_flags, TASKf_IDLE);
 }
 
 

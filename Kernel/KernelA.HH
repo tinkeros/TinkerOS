@@ -668,6 +668,7 @@ class CKernel
 #define IA32_EFER        0xC0000080
 #define IA32_FS_BASE     0xC0000100
 #define IA32_GS_BASE     0xC0000101
+#define IA32_PAT         0x277
 
 class CAP16BitInit
 {//AP Multicore
@@ -3055,7 +3056,26 @@ class CAtapiModeWriteList
 #define BDT_SERIAL		10
 #define BDT_VIRTUAL		11
 #define BDT_SDHCI		12
-#define BDT_TYPES_NUM 		13
+#define BDT_USB		13
+#define BDT_TYPES_NUM 		14
+
+//U-Z are USB, see $LK,"Let2BlkDevType",A="MN:Let2BlkDevType"$().
+#define USB_FIRST_DRV_LET	'U'
+#define USB_LAST_DRV_LET	'Z'
+
+#define USB_KIND_NONE	0
+#define USB_KIND_KBD	1
+#define USB_KIND_MOUSE	2
+#define USB_KIND_MSD	3
+#define USB_KIND_HUB	4
+#define USB_KIND_TABLET	5
+#define USB_KIND_CDC	6
+#define USB_KIND_ECM	7
+#define USB_KIND_MIDI	8
+#define USB_KIND_LPT	9
+#define USB_KIND_VENDOR	10
+#define USB_KIND_VIDEO	11
+#define USB_KIND_AUDIO	12
 
 #define BDF_REMOVABLE		0x001
 #define BDF_INITIALIZED		0x002

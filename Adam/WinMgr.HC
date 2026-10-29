@@ -615,7 +615,7 @@ wmt_start:
       {
         if (WinKeyNavMenu)
           goto wmt_start;
-        if (task==Fs && 0<=ms.pos.y<FONT_HEIGHT && ms_hard.installed)
+        if (task==Fs && 0<=ms.pos.y<FONT_HEIGHT && (ms_hard.installed || ms_inject))
         {
           winmgr.show_menu=TRUE;
           if (ms.lb && !old_ms.lb)

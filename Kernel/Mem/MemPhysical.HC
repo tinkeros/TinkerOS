@@ -57,6 +57,36 @@ U0 UncachedAliasAlloc() //Make uncached alias for 4 lowest Gig.
   WBINVD
 }
 
+#define MEM_PAT 0x0007040600070106
+
+U0 MemPatInit()
+{
+  CRAXRBXRCXRDX ee;
+  CPUId(1,&ee);
+  if (Bt(&ee.rdx,16))
+    SetMSR(IA32_PAT,MEM_PAT);
+}
+
+public Bool MemWriteCombine(U8 *base,I64 size)
+{
+  U8 *a,*end;
+  I64 *pte;
+  if (size<=0 || Bt(&mem_page_size,30))
+    return FALSE;
+  if (base(I64)<0 || base+size>dev.uncached_alias)
+    return FALSE;
+  a=base(I64)&~(mem_page_size-1);
+  end=(base(I64)+size+mem_page_size-1)&~(mem_page_size-1);
+  while (a<end)
+  {
+    pte=MemPageTable(a);
+    *pte=*pte&~0x18|0x08;
+    InvlPg(a);
+    a+=mem_page_size;
+  }
+  return TRUE;
+}
+
 public I64 BIOSTotalMem()
 {
   I64 r01,r20;

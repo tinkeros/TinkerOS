@@ -7,8 +7,8 @@ U0 HostTest()
 {
   if (dns_globals.addr_family == AF_UNSPEC)
   {
-    ARPCachePut(dns_ip, dns_mac);   // Force entry into ARP Cache so IPV4 can match it with IPV4AddressMACGet
-    DNSResolverIPV4Set(dns_ip);     // Forcing so DNSQuestionSend succeeds
+    ARPCachePut(dns_ip, dns_mac);
+    DNSResolverIPV4Set(dns_ip);
   }
   Host("zenithos.org");
 }

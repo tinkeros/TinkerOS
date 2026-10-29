@@ -32,6 +32,7 @@ if (!ins_reg.registered)
   InsUnreg;
 
 WallPaperInit;
+fp_usb_plug=&UsbPlugDft;
 
 if (DrvIsWritable)
   DirMk("/Tmp"); //Good to have a Tmp

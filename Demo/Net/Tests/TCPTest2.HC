@@ -1,28 +1,28 @@
-CTCPSocket *tcp = TCPSocket(AF_INET);
+CTCPSock *tcp = TCPSock(AF_INET);
 tcp->timeout = TCP_TIMEOUT;
 
 ClassRep(tcp);
 
-CSocketAddressIPV4 *socket_addr = CAlloc(sizeof(CSocketAddressIPV4));
+CSockAddrIPV4 *sock_addr = CAlloc(sizeof(CSockAddrIPV4));
 
-CIPV4Address addr;
-PresentationToNetwork(AF_INET, "10.0.2.7", &addr);
+CIPV4Addr addr;
+PresToNet(AF_INET, "10.0.2.7", &addr);
 
-socket_addr->port = EndianU16(0xBEEF);
-socket_addr->family = AF_INET;
-socket_addr->address.address = addr.address;
+sock_addr->port = EndianU16(0xBEEF);
+sock_addr->family = AF_INET;
+sock_addr->addr.addr = addr.addr;
 
 "\nTrying to connect the socket\n";
-if (TCPSocketConnect(tcp, socket_addr) == 0)
-  "\nSocket connected.\n";
+if (TCPSockConnect(tcp, sock_addr) == 0)
+  "\nSock connected.\n";
 
 
-ClassRep(tcp_globals.bound_socket_tree);
+ClassRep(tcp_globals.bound_sock_tree);
 
 Sleep(5000);
 
 "\nTrying to close the socket\n";
-TCPSocketClose(tcp);
+TCPSockClose(tcp);
 
 Sleep(500);
 

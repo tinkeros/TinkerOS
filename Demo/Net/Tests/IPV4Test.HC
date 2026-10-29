@@ -5,15 +5,15 @@ U32 dst_ip = 0x01020304;
 
 U0 IPV4Test()
 {
-  U8 *ipv4_packet_buffer;
+  U8 *ipv4_pkt_buf;
   I64 de_index;
   ARPCachePut(dst_ip,
-      dst_mac); // Force entry into ARP Cache so IPV4 can match it with IPV4AddressMACGet
+      dst_mac);
   while (TRUE)
   {
-    de_index = IPV4PacketAllocate(&ipv4_packet_buffer, 0xFF, src_ip, dst_ip, 8);
-    *(ipv4_packet_buffer(U64 *)) = EndianU64(0xBEEFDEADFADEC0DE);
-    IPV4PacketFinish(de_index);
+    de_index = IPV4PktAlloc(&ipv4_pkt_buf, 0xFF, src_ip, dst_ip, 8);
+    *(ipv4_pkt_buf(U64 *)) = EndianU64(0xBEEFDEADFADEC0DE);
+    IPV4PktFinish(de_index);
     Sleep(300);
   }
 }

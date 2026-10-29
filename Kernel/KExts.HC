@@ -77,6 +77,9 @@ extern U0 JobQueDel(CJob *head);
 extern I64 JobsHndlr(I64 run_flags,CTask *task=NULL);
 extern CBlkDev *Let2BlkDev(U8 drv_let=0,Bool except=TRUE);
 extern I64 Let2BlkDevType(U8 drv_let);
+extern U8 DrvNextFreeLetChk(U8 first_drv_let='C');
+extern U8 DrvNextFreeLetType(U8 first_drv_let='C');
+extern I64 DrvVolSerial(U8 drv_let=0);
 extern CDrv *Let2Drv(U8 drv_let=0,Bool except=TRUE);
 extern U8 Let2Let(U8 drv_let=0);
 extern U0 MPInt(U8 num,I64 cpu_num=1);
@@ -112,6 +115,8 @@ extern CJob *TaskMsg(CTask *_srv,CTask *master,
 extern U0 TaskRstAwaitingMsg(CTask *task=NULL);
 extern Bool TaskValidate(CTask *task);
 extern U0 TaskWait(CTask *task=NULL,Bool cmd_line_pmt=FALSE);
+extern U8 UsbMountAt(I64 k=-1,U8 drv_let=0);
+extern U8 UsbMountVol(I64 ser,U8 first_drv_let=0,I64 timeout_ms=6000);
 extern CTask *User(U8 *fmt=NULL,...);
 extern U0 UserTaskCont();
 extern U0 XTalk(CTask *task,U8 *fmt,...);

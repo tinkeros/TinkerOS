@@ -106,7 +106,7 @@ public U0 ProbeComm()
   MemSet(tmp_buf,0,17);
   for (i=1; i<=MAX_COMM_NUM; i++)
   {
-    if (comm_ports[i].base)
+    if (CommExists(i))
     {
       "Checking COMM %d - ",i;
       CommInit8n1(i, 115200);

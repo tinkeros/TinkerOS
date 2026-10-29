@@ -53,23 +53,50 @@ CDrv *DrvMakeFreeSlot(U8 drv_let)
   return res;
 }
 
-U8 DrvNextFreeLet(U8 first_drv_let='C')
-{//Locate free slot for new drv, like during $LK,"Mount",A="MN:Mount"$().
+U8 DrvNextFreeLetChk(U8 first_drv_let='C')
+{//Like $LK,"DrvNextFreeLet",A="MN:DrvNextFreeLet"$() but 0 where that throws, so an auto-mount probe
+//can skip a drive instead of panicking the boot.
 //!!! first_drv_let is not a $LK,"remapped",A="MN:DrvMap"$ drv.
   I64 i=Let2Let(first_drv_let)-'A',type=Let2BlkDevType(first_drv_let);
   if (!(0<=i<DRVS_NUM))
-    throw('Drv');
+    return 0;
   do
     if (blkdev.drvs[i].dv_signature!=DRV_SIGNATURE_VAL)
     {
       if (Let2BlkDevType(i+'A')!=type)
-        throw('Drv');
+        return 0;
       else
         return i+'A';
     }
   while (++i<DRVS_NUM);
-  throw('Drv');
-  return 0; //Never gets here.
+  return 0;
+}
+
+U8 DrvNextFreeLetType(U8 first_drv_let='C')
+{//Free letter of first_drv_let's type: at or after it, else anywhere in the
+//type's range. 0 if full. The wrap matters because $LK,"MountIDEAuto",A="MN:MountIDEAuto"$() starts CD/DVD
+//at 'T' (a booted ISO is T: by convention) while ATAPI owns Q-T.
+//!!! first_drv_let is not a $LK,"remapped",A="MN:DrvMap"$ drv.
+  I64 i,res,type=Let2BlkDevType(first_drv_let);
+  res=DrvNextFreeLetChk(first_drv_let);
+  if (res)
+    return res;
+  if (type==BDT_NULL)
+    return 0;
+  for (i=0; i<DRVS_NUM; i++)
+    if (Let2BlkDevType(i+'A')==type &&
+        blkdev.drvs[i].dv_signature!=DRV_SIGNATURE_VAL)
+      return i+'A';
+  return 0;
+}
+
+U8 DrvNextFreeLet(U8 first_drv_let='C')
+{//Locate free slot for new drv, like during $LK,"Mount",A="MN:Mount"$().
+//!!! first_drv_let is not a $LK,"remapped",A="MN:DrvMap"$ drv.
+  I64 res=DrvNextFreeLetType(first_drv_let);
+  if (!res)
+    throw('Drv');
+  return res;
 }
 
 U0 DrvDel(CDrv *dv)
@@ -78,6 +105,7 @@ U0 DrvDel(CDrv *dv)
     RedSeaFreeFreeLst(dv);
   Free(dv->cur_fat_blk);
   Free(dv->fis);
+  DskCacheInvalidate2(dv);
   MemSet(dv,0,sizeof(CDrv));
 }
 
@@ -204,14 +232,14 @@ I64 Let2BlkDevType(U8 drv_let)
     return BDT_RAM;
   if ('C'<=drv_let<='L')
     return BDT_ATA;
-  if ('M'<=drv_let<='P')
+  if ('M'<=drv_let<='N')
     return BDT_ISO_FILE_READ;
-  if ('Q'<=drv_let<='S')
+  if ('O'<=drv_let<='P')
     return BDT_ISO_FILE_WRITE;
-  if ('T'<=drv_let<='W')
+  if ('Q'<=drv_let<='T')
     return BDT_ATAPI;
-  if ('X'<=drv_let<='Z')
-    return BDT_VIRTUAL;
+  if (USB_FIRST_DRV_LET<=drv_let<=USB_LAST_DRV_LET)
+    return BDT_USB;
   return BDT_NULL;
 }
 
@@ -335,7 +363,7 @@ Bool Drv(U8 drv_let)
 }
 
 U8 blkdev_text_attr[BDT_TYPES_NUM]={BLACK,LTCYAN,WHITE,LTGREEN,LTRED,
-  LTBLUE,WHITE,WHITE,LTBLUE,LTPURPLE,LTPURPLE,LTPURPLE,LTPURPLE};
+  LTBLUE,WHITE,WHITE,LTBLUE,LTPURPLE,LTPURPLE,LTPURPLE,LTPURPLE,LTGREEN};
 
 U8 drv_text_attr[3]={BLACK,BLUE,RED};
 
@@ -397,6 +425,8 @@ U0 DrvRep()
         "Serial block device %04X\n",bd->base0;
       else if (bd->type==BDT_VIRTUAL)
         "Virtual block device\n";
+      else if (bd->type==BDT_USB)
+        "USB block device, vol serial 0x%016X\n",DrvVolSerial(drv_let);
       else if (bd->type==BDT_ISO_FILE_READ || bd->type==BDT_ISO_FILE_WRITE)
         "File=\"%s\"\n",bd->file_dsk_name;
       "%016X-%016X\n$$FG$$$$BG$$"

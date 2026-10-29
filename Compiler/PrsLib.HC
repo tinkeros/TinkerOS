@@ -112,14 +112,14 @@ U0 COCInit(CCmpCtrl *cc)
 U0 COCPush(CCmpCtrl *cc)
 {
   CCodeCtrl *tmpcbh=MAlloc(sizeof(CCodeCtrl));
-  MemCpy(tmpcbh,&cc->coc,sizeof(CCodeCtrl));
+  ClassCpy(tmpcbh,&cc->coc);
   cc->coc.coc_next=tmpcbh;
 }
 
 CCmpCtrl *COCPopNoFree(CCmpCtrl *cc)
 {
   CCodeCtrl *tmpcbh=cc->coc.coc_next;
-  MemCpy(&cc->coc,tmpcbh,sizeof(CCodeCtrl));
+  ClassCpy(&cc->coc,tmpcbh);
   return tmpcbh;
 }
 

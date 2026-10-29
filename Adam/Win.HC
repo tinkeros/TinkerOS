@@ -210,7 +210,7 @@ U0 DrawMs(CDC *dc)
   x=ms.pos.x;
   y=ms.pos.y;
   POPFD
-  if (ms.show && ms_hard.installed)
+  if (ms.show && (ms_hard.installed || ms_inject))
   {
     if (!Bt(&sys_run_level,RLf_VGA)) //if text mode
       gr.text_base[ms.pos_text.x+ms.pos_text.y*TEXT_COLS]^=0x7F00;
@@ -271,9 +271,9 @@ U0 WinMsUpdate()
 {
   I64 dd;
   Bool set=FALSE;
-  if (ms_hard.installed)
+  if (ms_hard.installed || ms_inject)
   {
-    ms.has_wheel=ms_hard.has_wheel;
+    ms.has_wheel=ms_hard.has_wheel || ms_inject;
     if (ms_hard.evt)
     {
       MsUpdate(ms_hard.pos.x,ms_hard.pos.y,ms_hard.pos.z,
@@ -284,7 +284,7 @@ U0 WinMsUpdate()
   }
   if (set)
   {
-    if (ms_hard.installed)
+    if (ms_hard.installed || ms_inject)
     {
       ms.speed=ms_hard.speed;
       ms.timestamp=ms_hard.timestamp;

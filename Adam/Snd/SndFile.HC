@@ -121,7 +121,7 @@ public I64 SndFileCreate(U8 *base_filename,F64 normalized_vol=1.0,
     if (i>SND_FILE_DATA_MAX)
       i=SND_FILE_DATA_MAX;
     s->data_size=EndianU32(i*sizeof(I16));
-    MemCpy(s->body,&s->body[file_num*SND_FILE_DATA_MAX],i*sizeof(I16));
+    ClassCpy(s->body,&s->body[file_num*SND_FILE_DATA_MAX],i);
     StrPrint(name2,"%s%03d.SND",name,file_num++);
     FileWrite(name2,s,offset(CFileSND.body)+i*sizeof(I16));
     cnt2-=i;

@@ -1,27 +1,27 @@
 #define ICMP_TYPE_ECHO_REPLY    0
-#define ICMP_TYPE_ECHO_REQUEST  8
-#define ICMP_CODE_ECHO          0 // RFC 792: "Echo or Echo Reply Msg". 0 is the only code explicitly defined for Echo.
+#define ICMP_TYPE_ECHO_REQ  8
+#define ICMP_CODE_ECHO          0
 
-class CICMPHeader
+class CICMPHdr
 {
   U8    type;
   U8    code;
   U16 checksum;
 
-  U16 identifier;
-  U16 sequence_number;
+  U16 id;
+  U16 seq_num;
 };
 
 
 /*  global variable containing last reply ICMP header received,
     Ping() checks this to make ping report.
 */
-CICMPHeader icmp_reply;
+CICMPHdr icmp_reply;
 
 
 U0 ICMPInit()
 {
-  MemSet(&icmp_reply, 0, sizeof(CICMPHeader));
+  ZeroClass(&icmp_reply);
 }
 
 U16 ICMPChecksum(U8 *buf, I64 size)
@@ -40,93 +40,91 @@ U16 ICMPChecksum(U8 *buf, I64 size)
 }
 
 
-U0 ICMPReplySend(U32 destination_ip_address,
-                 U16 identifier,
-                 U16 sequence_number,
-                 U16 request_checksum,
+U0 ICMPReplySend(U32 dst_ip_addr,
+                 U16 id,
+                 U16 seq_num,
+                 U16 req_checksum,
                  U8 *payload,
-                 I64 length)
+                 I64 len)
 {
   U8            *icmp_frame;
   I64            de_index;
-  CICMPHeader   *header;
-  de_index = IPV4PacketAllocate(&icmp_frame,
+  CICMPHdr   *hdr;
+  de_index = IPV4PktAlloc(&icmp_frame,
                                 IP_PROTOCOL_ICMP,
-                                IPV4AddressGet,
-                                destination_ip_address,
-                                sizeof(CICMPHeader) + length);
+                                IPV4AddrGet,
+                                dst_ip_addr,
+                                sizeof(CICMPHdr) + len);
   if (de_index < 0)
   {
     NetErr("ICMP SEND REPLY: Failed to allocate IPV4 packet.");
     return;
   }
-  header = icmp_frame;
-  header->type              = ICMP_TYPE_ECHO_REPLY;
-  header->code              = 0;    // why is 0 okay?
-  header->checksum          = EndianU16(EndianU16(request_checksum) + 0x0800);
-  header->identifier            = identifier;
-  header->sequence_number       = sequence_number;
-  // TODO: header checksum is awful. Shrine says hack alert.
-  MemCpy(icmp_frame + sizeof(CICMPHeader), payload, length);
-  IPV4PacketFinish(de_index);
+  hdr = icmp_frame;
+  hdr->type              = ICMP_TYPE_ECHO_REPLY;
+  hdr->code              = 0;
+  hdr->checksum          = EndianU16(EndianU16(req_checksum) + 0x0800);
+  hdr->id            = id;
+  hdr->seq_num       = seq_num;
+  MemCpy(icmp_frame + sizeof(CICMPHdr), payload, len);
+  IPV4PktFinish(de_index);
 }
 
-U0 ICMPRequestSend(U32 destination_ip_address,
-                   U16 identifier,
-                   U16 sequence_number,
+U0 ICMPReqSend(U32 dst_ip_addr,
+                   U16 id,
+                   U16 seq_num,
                    U8 *payload,
-                   I64 length)
+                   I64 len)
 {
   U8            *icmp_frame;
   I64            de_index;
-  CICMPHeader   *header;
-  de_index = IPV4PacketAllocate(&icmp_frame,
+  CICMPHdr   *hdr;
+  de_index = IPV4PktAlloc(&icmp_frame,
                                 IP_PROTOCOL_ICMP,
-                                IPV4AddressGet,
-                                destination_ip_address,
-                                sizeof(CICMPHeader) + length);
+                                IPV4AddrGet,
+                                dst_ip_addr,
+                                sizeof(CICMPHdr) + len);
   if (de_index < 0)
   {
     NetErr("ICMP SEND REQUEST: Failed to allocate IPV4 packet.");
     return;
   }
-  header = icmp_frame;
-  header->type              = ICMP_TYPE_ECHO_REQUEST;
-  header->code              = 0;    // why is 0 okay?
-  header->checksum          = 0;
-  header->identifier            = identifier;
-  header->sequence_number       = sequence_number;
-  MemCpy(icmp_frame + sizeof(CICMPHeader), payload, length);
-  header->checksum = ICMPChecksum(header, sizeof(CICMPHeader) + length);
-  IPV4PacketFinish(de_index);
+  hdr = icmp_frame;
+  hdr->type              = ICMP_TYPE_ECHO_REQ;
+  hdr->code              = 0;
+  hdr->checksum          = 0;
+  hdr->id            = id;
+  hdr->seq_num       = seq_num;
+  MemCpy(icmp_frame + sizeof(CICMPHdr), payload, len);
+  hdr->checksum = ICMPChecksum(hdr, sizeof(CICMPHdr) + len);
+  IPV4PktFinish(de_index);
 }
 
-I64 ICMPHandler(CIPV4Packet *packet)
+I64 ICMPHandler(CIPV4Pkt *pkt)
 {
-  CICMPHeader *header;
-  if (packet->length < sizeof(CICMPHeader))
+  CICMPHdr *hdr;
+  if (pkt->len < sizeof(CICMPHdr))
   {
     NetErr("ICMP HANDLER: Caught wrong IPV4 length.");
     return -1;
   }
-  header = packet->data;
-  if (header->type == ICMP_TYPE_ECHO_REQUEST && header->code == ICMP_CODE_ECHO)
+  hdr = pkt->data;
+  if (hdr->type == ICMP_TYPE_ECHO_REQ && hdr->code == ICMP_CODE_ECHO)
   {
-    ARPCachePut(packet->source_ip_address, packet->ethernet_frame->source_address);
-    ICMPReplySend(packet->source_ip_address,
-                  header->identifier,
-                  header->sequence_number,
-                  header->checksum,
-                  packet->data   + sizeof(CICMPHeader), // Data payload at IPV4Packet data location after the ICMP header
-                  packet->length - sizeof(CICMPHeader));// Payload length is size of packet after dropping header.
+    ARPCachePut(pkt->src_ip_addr, pkt->eth_frame->src_addr);
+    ICMPReplySend(pkt->src_ip_addr,
+                  hdr->id,
+                  hdr->seq_num,
+                  hdr->checksum,
+                  pkt->data   + sizeof(CICMPHdr),
+                  pkt->len - sizeof(CICMPHdr));
   }
-  else if (header->type == ICMP_TYPE_ECHO_REPLY && header->code == ICMP_CODE_ECHO)
+  else if (hdr->type == ICMP_TYPE_ECHO_REPLY && hdr->code == ICMP_CODE_ECHO)
   {
-    // save the reply to the global ICMP reply header
-    MemCpy(&icmp_reply, header, sizeof(CICMPHeader));
+    ClassCpy(&icmp_reply, hdr);
   }
   else
-    NetWarn("ICMP HANDLER: Unhandled ICMP packet. type, code: 0x%X, 0x%X", header->type, header->code);
+    NetWarn("ICMP HANDLER: Unhandled ICMP packet. type, code: 0x%X, 0x%X", hdr->type, hdr->code);
   NetLog("ICMP HANDLER: Exiting.");
   return 0;
 }

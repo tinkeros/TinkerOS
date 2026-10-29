@@ -178,7 +178,7 @@ static I64 SdPIO(sdhci_regs *regs,I32 cmd,U32 *param)
   }
 
   MOutU16D(&regs->irq_status, 1);
-  MemCpy(param,regs->response,sizeof(U32)*4);
+  ClassCpy(param,regs->response,4);
 
   return 0;
 }

@@ -6,11 +6,11 @@
 
 */
 
-U8              *dest_ip_string     = GetStr("Destination IPV4: "),
-                 *port_string        = GetStr("RX & TX UDP Port: ");
-CIPV4Address    *dest_address       = CAlloc(sizeof(CIPV4Address));
+U8              *dst_ip_str     = GetStr("Destination IPV4: "),
+                 *port_str        = GetStr("RX & TX UDP Port: ");
+CIPV4Addr    *dst_addr       = CAlloc(sizeof(CIPV4Addr));
 
-I64              port               = Str2I64(port_string);
+I64              port               = Str2I64(port_str);
 CTask           *chat_display_task  = NULL;
 CTask           *chat_message_task  = NULL;
 
@@ -36,9 +36,9 @@ U0 ChatMsgTask(I64)
   {
     DocBottom(chat_display_task->put_doc);
     DocPrint(chat_display_task->put_doc, "$$BG,BLUE$$$$BLACK$$<local>$$FG$$$$BG$$ %s\n", message);
-    de_index = UDPPacketAllocate(&payload, ipv4_globals.local_ip, port, dest_address->address, port, StrLen(message));
+    de_index = UDPPktAlloc(&payload, ipv4_globals.local_ip, port, dst_addr->addr, port, StrLen(message));
     MemCpy(payload, message, StrLen(message));
-    UDPPacketFinish(de_index);
+    UDPPktFinish(de_index);
     DocClear;
     DocPrint(, "$$WW,1$$");
   }
@@ -66,36 +66,35 @@ U0 ChatInit()
 
 U0 Chat()
 {
-  CUDPSocket            *udp_socket = UDPSocket(AF_INET);
-  CSocketAddressIPV4    *sock_addr = CAlloc(sizeof(CSocketAddressIPV4));
-  U8                    *buffer[ETHERNET_FRAME_SIZE];
-//  MemSet(buffer, 0, ETHERNET_FRAME_SIZE);
+  CUDPSock            *udp_sock = UDPSock(AF_INET);
+  CSockAddrIPV4    *sock_addr = CAlloc(sizeof(CSockAddrIPV4));
+  U8                    *buf[ETH_FRAME_SIZE];
   "\nIP entered: %s\n"
-  , dest_ip_string;
-  while (PresentationToNetwork(AF_INET, dest_ip_string, dest_address) == -1)
+  , dst_ip_str;
+  while (PresToNet(AF_INET, dst_ip_str, dst_addr) == -1)
   {
     "ERROR: Bad IP entered. Retry.\n";
-    dest_ip_string = GetStr("Destination IPV4: ");
+    dst_ip_str = GetStr("Destination IPV4: ");
   }
   ChatInit;
   sock_addr->port               = EndianU16(port);
   sock_addr->family         = AF_INET;
-  sock_addr->address.address    = dest_address->address;
-  UDPSocketBind(udp_socket, sock_addr);
+  sock_addr->addr.addr    = dst_addr->addr;
+  UDPSockBind(udp_sock, sock_addr);
   "\nIP entered: %s\n"
-  , dest_ip_string;
+  , dst_ip_str;
   while (TaskValidate(chat_message_task))
   {
-    if (UDPSocketReceiveFrom(udp_socket, buffer, ETHERNET_FRAME_SIZE, NULL) != -1)
+    if (UDPSockRxFrom(udp_sock, buf, ETH_FRAME_SIZE, NULL) != -1)
     {
       DocBottom(chat_display_task->put_doc);
-      DocPrint(chat_display_task->put_doc, "$$BG,PURPLE$$$$BLACK$$<%s>$$FG$$$$BG$$  %s\n", dest_ip_string, buffer);//NetworkToPresentation(AF_INET, dest_address));
-      MemSet(buffer, 0, ETHERNET_FRAME_SIZE);
+      DocPrint(chat_display_task->put_doc, "$$BG,PURPLE$$$$BLACK$$<%s>$$FG$$$$BG$$  %s\n", dst_ip_str, buf);
+      MemSet(buf, 0, ETH_FRAME_SIZE);
     }
     Refresh;
   }
   Free(sock_addr);
-  UDPSocketClose(udp_socket);
+  UDPSockClose(udp_sock);
 }
 
 Chat;

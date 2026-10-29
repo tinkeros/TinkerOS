@@ -148,4 +148,3 @@ U0 WinDerivedValsUpdate(CTask *task)
   POPFD
 }
 
-

@@ -9,12 +9,12 @@ DefineLstLoad("ST_RAINBOW_10",
 
 public U0 GrPaletteGet32(CBGR24 *bgr24)
 {//16 colors
-  MemCpy(bgr24, &gr_palette, sizeof(CBGR24) * 16);
+  ClassCpy(bgr24, &gr_palette, 16);
 }
 
 public U0 GrPaletteSet32(CBGR24 *bgr24)
 {//16 colors
-  MemCpy(&gr_palette, bgr24, sizeof(CBGR24) * 16);
+  ClassCpy(&gr_palette, bgr24, 16);
 }
 
 public CBGR24 gr32_palette_std[COLORS_NUM]=

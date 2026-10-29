@@ -71,6 +71,7 @@ I64 BlkDevAdd(CBlkDev *bd,I64 prt_num=I64_MIN,
   case BDT_SERIAL:
   case BDT_SDHCI:
   case BDT_VIRTUAL:
+  case BDT_USB:
   case BDT_ATA:
   case BDT_AHCI_SATA:
     dv->dv_signature=DRV_SIGNATURE_VAL; //Temporarily validate
@@ -90,8 +91,8 @@ I64 BlkDevAdd(CBlkDev *bd,I64 prt_num=I64_MIN,
         //if it hangs, the drive is not supported.
         if (bd->type < BDT_OTHER)
           ATAReadBlks(bd,&mbr,0,1);
-        else if (bd->read_func)
-          (*bd->read_func)(&mbr,0,1);
+        else
+          BlkDevFnRw(bd,&mbr,0,1,FALSE);
         break;
       }
       offset=0;
@@ -100,8 +101,8 @@ I64 BlkDevAdd(CBlkDev *bd,I64 prt_num=I64_MIN,
       {
         if (bd->type < BDT_OTHER)
           ATAReadBlks(bd,&mbr,offset,1);
-        else if (bd->read_func)
-          (*bd->read_func)(&mbr,offset,1);
+        else
+          BlkDevFnRw(bd,&mbr,offset,1,FALSE);
         if (mbr.signature!=0xAA55)
           break;
         j=-1;
@@ -138,8 +139,8 @@ I64 BlkDevAdd(CBlkDev *bd,I64 prt_num=I64_MIN,
             case MBR_PT_FAT32f:
               if (bd->type < BDT_OTHER)
                 ATAReadBlks(bd,&br,dv->drv_offset,1);
-              else if (bd->read_func)
-                (*bd->read_func)(&br,dv->drv_offset,1);
+              else
+                BlkDevFnRw(bd,&br,dv->drv_offset,1,FALSE);
               dv->dv_signature=DRV_SIGNATURE_VAL;
               dv->prt_num=num;
               res++;

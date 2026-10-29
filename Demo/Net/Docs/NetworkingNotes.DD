@@ -19,7 +19,7 @@ Departures from Shrine:
 Stack progress: (# done, ~ WIP, . N/A)
 
 	# PCNet-II Driver
-	. Other Network Card Drivers? See $LK,"Roadmap",A="FF:C:/Home/Roadmap.DD,most common ethernet cards"$.
+	. Other Network Card Drivers? See $LK,"Drivers",A="FF:::/Demo/Net/Drivers/Run.HC,PCIV_PCNET"$.
 
 	# NetQueue
 
@@ -43,7 +43,7 @@ Stack progress: (# done, ~ WIP, . N/A)
 		- double check, some TODOs.
 
 	~ ICMP (Internet Control Message Protocol)
-		- needs ICMPSendRequest implemented.
+		- needs ICMPSendReq implemented.
 
 	~ TCP (Transmission Control Protocol)
 		- needs much testing, still many bugs/oddities.

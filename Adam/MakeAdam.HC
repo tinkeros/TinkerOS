@@ -33,6 +33,7 @@ LBts(&sys_run_level,RLf_DOC);
 #include "TaskSettings"
 #include "ADefine"
 #include "WallPaper"
+#include "ABlkDev/UsbPlug"
 #include "AMouse"
 #include "Host"
 Cd("..");;

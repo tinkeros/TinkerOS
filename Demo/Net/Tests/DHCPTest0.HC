@@ -5,7 +5,7 @@ U0 DHCPTest()
   {
     DHCPDiscoverSend(0xDEADBEEF);
     Sleep(300);
-    DHCPRequestSend(0xDEADBEEF, 0xC0DEFADE, 0xFEEDFACE);
+    DHCPReqSend(0xDEADBEEF, 0xC0DEFADE, 0xFEEDFACE);
     Sleep(300);
   }
 }

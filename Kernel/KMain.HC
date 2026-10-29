@@ -148,6 +148,8 @@ U0 KMain()
   TaskDerivedValsUpdate;
   SysDefinesLoad;
   Core0Init;
+  if (Bt(&sys_run_level,RLf_VGA))
+    MemWriteCombine(text.fb_alias,FB_HEIGHT*sys_vbe_mode_pitch);
   IntInit1;
   //Before this point use $LK,"Snd",A="MN:Snd"$() and $LK,"Busy",A="MN:Busy"$()
   //to debug.After this point, use $LK,"RawPrint",A="MN:RawPrint"$()
@@ -196,6 +198,9 @@ U0 KMain()
     Silent(OFF);
   }
 
+  UsbBootMark;
+  if (!Let2Drv(':',FALSE))
+    UsbBootInit;
   "DskChg(':');\n";
   DskChg(':');
 #exe {
@@ -242,6 +247,7 @@ DbgMode(OFF);
 cnts.time_stamp_freq_initial=TimeCal;
 Cd("/");
 
+UsbTaskStart;
 try ExeFile("StartOS"); //Continues $LK,"/StartOS.HC",A="FL:/StartOS.HC,1"$
 catch
 {

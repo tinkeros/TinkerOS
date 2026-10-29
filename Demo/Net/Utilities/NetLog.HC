@@ -28,7 +28,6 @@ U0 NetLogInit()
   WinVert(1, TEXT_ROWS - 2, net_log_task);
   WinFocus(net_log_task);
   DocPrint(net_log_task->put_doc, "$$WW+H,1$$");
-  //Bts(&net_log_task->win_inhibit, WIf_SELF_FOCUS);
   LBts(sys_ctrl_alt_flags,CTRL_ALT_TAB);
 }
 

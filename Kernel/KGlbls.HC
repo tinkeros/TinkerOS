@@ -22,7 +22,7 @@ U8 *rev_bits_table, //Table with U8 bits revd
 *set_bits_table; //Table with count of set bits in a U8
 CDate local_time_offset;
 F64	*pow10_I64,
-    sys_os_version=5.230;
+    sys_os_version=5.240;
 
 CBlkDevGlbls	blkdev;
 CCntsGlbls	cnts= {1,0,2676302000,2676302,2676302000,FALSE};
@@ -38,6 +38,15 @@ CSndGlbls   snd;
 CTextGlbls	text;
 
 ms_hard.installed=FALSE;
+
+//Output: a non-PS/2 pointer device is feeding ms_hard. Set by MsPktInject()
+//and by the USB absolute-pointer path; nothing clears it. ms_hard.installed
+//covers only the PS/2 device, so the window manager must check both.
+public Bool ms_inject=FALSE;
+
+//Private: a Ctrl-Alt callback is running for an injected key, so there is no
+//interrupted context and keydev.ctrl_alt_ret_addr does not apply.
+Bool kbd_ctrl_alt_inject=FALSE;
 
 U8  *(*fp_getstr2)(I64 flags=0);
 U0 (*fp_update_ctrls)(CTask *task);
@@ -69,6 +78,12 @@ Bool (*fp_virtual_blkdev_deinit)()=NULL;
 Bool (*fp_virtual_blkdev_read)(U8* buf, I64 blk, I64 cnt)=NULL;
 Bool (*fp_virtual_blkdev_write)(U8* buf, I64 blk, I64 cnt)=NULL;
 I64 (*fp_virtual_blkdev_get_max)()=NULL;
+Bool (*fp_usb_blkdev_init)()=NULL;
+Bool (*fp_usb_blkdev_deinit)()=NULL;
+Bool (*fp_usb_blkdev_read)(U8* buf, I64 blk, I64 cnt)=NULL;
+Bool (*fp_usb_blkdev_write)(U8* buf, I64 blk, I64 cnt)=NULL;
+I64 (*fp_usb_blkdev_get_max)()=NULL;
+Bool (*fp_usb_blk_rw)(CBlkDev *bd,U8 *buf,I64 blk,I64 cnt,Bool wr)=NULL;
 
 CDC *gr_alt_scrn=NULL;
 CBlkDev *initramfs=NULL;

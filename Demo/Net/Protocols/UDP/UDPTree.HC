@@ -4,10 +4,12 @@ UDP Bound Socket Tree Functions
 
 ***************************************************/
 
+I64 udp_bound_tree_lock = 0;
+
 CUDPTreeNode *UDPTreeNodeInit()
 {// init new empty tree/node. Init socket queue head links.
-  CUDPTreeNode *tree_node = CAlloc(sizeof(CUDPTreeNode));
-  tree_node->queue = CAlloc(sizeof(CUDPTreeQue)); // CQue vs CUDPTreeQue ?...
+  CUDPTreeNode *tree_node = CAlloc(sizeof(CUDPTreeNode), adam_task);
+  tree_node->queue = CAlloc(sizeof(CUDPTreeQue), adam_task);
   QueInit(tree_node->queue);
   return tree_node;
 }
@@ -48,81 +50,74 @@ CUDPTreeNode *UDPTreeNodeSinglePop(I64 port, CUDPTreeNode *tree)
   return BSTSinglePop(port, tree);
 }
 
-U0 UDPTreeNodeQueAdd(CUDPSocket *socket, CUDPTreeNode *node)
+U0 UDPTreeNodeQueAdd(CUDPSock *sock, CUDPTreeNode *node)
 {
-  CUDPTreeQue *new_entry = CAlloc(sizeof(CUDPTreeQue));
-  new_entry->socket = socket;
-  QueIns(new_entry, node->queue->last);
+  CUDPTreeQue *new_ent = CAlloc(sizeof(CUDPTreeQue), adam_task);
+  new_ent->sock = sock;
+  QueIns(new_ent, node->queue->last);
 }
 
-CUDPTreeQue *UDPTreeNodeQueSocketFind(CUDPSocket *socket, CUDPTreeNode *node)
+CUDPTreeQue *UDPTreeQueEntInit(CUDPSock *sock)
+{//Built before taking udp_bound_tree_lock, so the guarded section only links.
+  CUDPTreeQue *ent = CAlloc(sizeof(CUDPTreeQue), adam_task);
+  ent->sock = sock;
+  return ent;
+}
+
+CUDPTreeQue *UDPTreeNodeQueSockFind(CUDPSock *sock, CUDPTreeNode *node)
 {
   CUDPTreeQue *temp_queue;
   temp_queue = node->queue->next;
   while (temp_queue != node->queue)
   {
-    if (temp_queue->socket == socket)
+    if (temp_queue->sock == sock)
       return temp_queue;
     temp_queue = temp_queue->next;
   }
   return NULL;
 }
 
-CUDPTreeQue *UDPTreeNodeQueSocketSinglePop(CUDPSocket *socket, CUDPTreeNode *node)
+CUDPTreeQue *UDPTreeNodeQueSockSinglePop(CUDPSock *sock, CUDPTreeNode *node)
 {// search by socket, pop a single UDPTreeQue off the node, return popped queue.
-  CUDPTreeQue *temp_queue = UDPTreeNodeQueSocketFind(socket, node);
+  CUDPTreeQue *temp_queue = UDPTreeNodeQueSockFind(sock, node);
   if (temp_queue)
   {
     QueRem(temp_queue);
   }
-  return temp_queue; // if not found, NULL.
+  return temp_queue;
 }
 
-CUDPTreeQue *UDPTreeNodeQueIPV4Find(U32 address, CUDPTreeNode *node, Bool specific=FALSE)
-{// address should be pulled from an instance of CIPV4Address (TODO... double check what bit order we're in ?)
+CUDPTreeQue *UDPTreeNodeQueIPV4Find(U32 addr, CUDPTreeNode *node, Bool specific=FALSE)
+{//No logging: callers hold the bound-tree spinlock with interrupts off.
+// address should be pulled from an instance of CIPV4Address (TODO... double check what bit order we're in ?)
   // use TRUE or FALSE in specific arg to dictate how to handle INADDR_ANY.
   CUDPTreeQue       *temp_queue = node->queue->next;
-  CSocketAddressIPV4    *temp_ip;
+  CSockAddrIPV4    *temp_ip;
   while (temp_queue != node->queue)
   {
-    if (temp_queue->socket->receive_address.family == AF_INET)
+    if (temp_queue->sock->rx_addr.family == AF_INET)
     {
-      temp_ip = &temp_queue->socket->receive_address;
-      NetLog("UDPTreeNodeQueIPV4Find: Cmparing:     addr, nodequeue addr: %08X, %08X",
-             address, temp_ip->address.address);
-      if (temp_ip->address.address == address)
+      temp_ip = &temp_queue->sock->rx_addr;
+      if (temp_ip->addr.addr == addr)
       {
-        NetLog("UDPTreeNodeQueIPV4Find: Address match: addr, nodequeue addr: %08X, %08X ",
-               address, temp_ip->address.address);
         return temp_queue;
       }
     }
-    else
-      NetErr("UDPTreeNodeQueIPV4Find: Skipped iteration of a non AF_INET family: %0X",
-             temp_queue->socket->receive_address.family);
     temp_queue = temp_queue->next;
   }
   if (!specific)
   {
     temp_queue = node->queue->next;
-    NetDbg("UDPTreeNodeQueIPV4Find: Exact match not found, looking for an INADDR_ANY address.");
     while (temp_queue != node->queue)
     {
-      if (temp_queue->socket->receive_address.family == AF_INET)
+      if (temp_queue->sock->rx_addr.family == AF_INET)
       {
-        temp_ip = &temp_queue->socket->receive_address;
-        NetLog("UDPTreeNodeQueIPV4Find: Cmparing:     addr, nodequeue addr: %08X, %08X",
-               address, temp_ip->address.address);
-        if (temp_ip->address.address == INADDR_ANY)
+        temp_ip = &temp_queue->sock->rx_addr;
+        if (temp_ip->addr.addr == INADDR_ANY)
         {
-          NetLog("UDPTreeNodeQueIPV4Find: Address match: addr, nodequeue addr: %08X, %08X ",
-                 address, temp_ip->address.address);
           return temp_queue;
         }
       }
-      else
-        NetErr("UDPTreeNodeQueIPV4Find: Skipped iteration of a non AF_INET family: %0X",
-               temp_queue->socket->receive_address.family);
       temp_queue = temp_queue->next;
     }
   }

@@ -720,10 +720,24 @@ I64 KbdMsgsQue()
 
 I64 KbdMsEvtTime()
 {//Timestamp of last key or mouse event.
-  if (ms_hard.timestamp>kbd.timestamp)
+  if (ms_hard.timestamp>kbd.new_key_timestamp)
     return ms_hard.timestamp;
   else
     return kbd.new_key_timestamp;
+}
+
+U0 KbdInjectIrqPass(U8 *pkt)
+{//The in-IRQ KbdBuildSC pass that KbdPktRead does for a PS/2 byte. Without it
+//an injected key reaches only the Ctrl-Alt callbacks registered with in_irq
+//clear (F, M, T), and never C, D, N, V or X. Keeps its own shift/ctrl/alt
+//state, the way KbdPktRead's statics are separate from KbdHndlr's.
+  static U8 last_raw_byte=0;
+  static I64 last_sc=0;
+  kbd_ctrl_alt_inject=TRUE;
+  KbdBuildSC(pkt[0],TRUE,&last_raw_byte,&last_sc);
+  if (pkt[0]==0xE0)
+    KbdBuildSC(pkt[1],TRUE,&last_raw_byte,&last_sc);
+  kbd_ctrl_alt_inject=FALSE;
 }
 
 public U0 KbdPktInject(U8 *pkt)
@@ -731,6 +745,7 @@ public U0 KbdPktInject(U8 *pkt)
     PUSHFD
     CLI
     kbd.timestamp=GetTSC;
+    KbdInjectIrqPass(pkt);
     KbdHndlr(pkt);
     POPFD
 }

@@ -1,46 +1,48 @@
 PCNet
-	PCNetPCIDevFind
 	PCNetIOBaseGet
-	PCNetReset
+	PCNetRst
 	PCNet32BitModeEnable
 	PCNetRAPWrite
+	PCNetBCRWrite
+	PCNetBCRRead
 	PCNetCSRWrite
 	PCNetCSRRead
 	PCNetSWStyleSet
 	PCNetMACGet
-	PCNetDescriptorEntryInit
-	PCNetBuffersAllocate
+	PCNetDescEntInit
+	PCNetBufsAlloc
 	$FG,7$PCNetDirectInit$FG$
 	PCNetInitBlockSetup
 	PCNetInterruptCSRSet
 	PCNetTXAutoPadEnable
-	PCNetConfigModeExit
+	PCNetCfgModeExit
+	PCNetUploadCfg
 	PCNetDriverOwns
-	PCNetTransmitPacketAllocate
-	PCNetTransmitPacketFinish
-	PCNetPacketReceive
-	PCNetReceivePacketRelease
+	PCNetTxPktAlloc
+	PCNetTxPktFinish
+	PCNetPktRx
+	PCNetRxPktRelease
 	PCNetIRQ
 	PCNetInterruptsSetup
 	PCNetInit
 
 	PCIInterruptsReroute
 
-	EthernetFrameFinish (driver alias of PCNetTransmitPacketFinish)
-	EthernetFrameAllocate
-	EthernetMACGet
+	EthFrameFinish (driver alias of PCNetTxPktFinish)
+	EthFrameAlloc
+	EthMACGet
 
 	NetStop
 	NetStart
 
 NetQueue
-	NetQueueInit
-	NetQueuePull
-	NetQueuePush
+	NetQueInit
+	NetQuePull
+	NetQuePush
 
 Ethernet
-	EthernetGlobalsInit
-	EthernetFrameParse
+	EthGlblsInit
+	EthFramePrs
 
 ARP
 	ARPCacheInit
@@ -48,76 +50,87 @@ ARP
 	ARPCachePut
 
 	ARPSend
-	ARPHandler
 	ARPLocalIPV4Set
 	ARPHandler
 
 	ARPRep
 
 Sockets (just finite state modifiers)
-	AddressInfoCopy
-	AddressInfoFree
-	IPV4AddressParse
-	PresentationToNetwork
-	NetworkToPresentation
+	AddrInfoCpy
+	AddrInfoFree
+	IPV4AddrPrs
+	PresToNet
+	NetToPres
 
-	SocketStateErr
-	Socket
-	SocketAccept
-	SocketClose
-	SocketBind
-	SocketConnect
-	SocketListen
-	SocketReceive
-	SocketReceiveFrom
-	SocketSend
-	SocketSendTo
+	SockStateErr
+	Sock
+	SockAccept
+	SockClose
+	SockBind
+	SockConnect
+	SockLsten
+	SockRx
+	SockRxFrom
+	SockSend
+	SockSendTo
 
 IPV4
-	IPV4GlobalsInit
+	IPV4GlblsInit
 	IPV4Checksum
-	IPV4AddressMACGet
+	IPV4AddrMACGet
 
-	IPV4PacketAllocate
-	IPV4PacketFinish (alias for EthernetFrameFinish)
+	IPV4PktAlloc
+	IPV4PktFinish (alias for EthFrameFinish)
 
-	IPV4AddressGet
-	IPV4AddressSet
+	IPV4AddrGet
+	IPV4AddrSet
 
 	IPV4SubnetSet
-	IPV4PacketParse
+	IPV4PktPrs
+
+	IPV4Rep
 
 ICMP
+	ICMPInit
+	ICMPChecksum
 	ICMPReplySend
+	ICMPReqSend
 	ICMPHandler
 
 TCP
 	IsTCPStateSync
-	TCPGlobalsInit
+	TCPGlblsInit
+	TCPRxWindow
 	TCPChecksumPartial
 	TCPChecksumFinal
-	TCPPacketAllocate
-	TCPPacketFinish
+	TCPPktAlloc
+	TCPPktFinish
 	TCPSend
 	TCPSendFlags
 	TCPSendData
-	TCPPacketParse
-	TCPAcknowledgePacket
-	TCPCheckACKQueue
-	TCPSocket
-	TCPSocketBind
-	TCPSocketClose
-	TCPSocketConnect
-	TCPSocketListen
-	TCPSocketAccept
-	TCPSocketReceive
-	TCPSocketSend
+	TCPPktPrs
+	TCPAcknowledgePkt
+	TCPCheckACKQue
+	TCPSock
+	TCPSockTreeLink
+	TCPSockBind
+	TCPSockRelease
+	TCPSockClose
+	TCPSockConnect
+	TCPSockLsten
+	TCPSockAccept
+	TCPSockRx
+	TCPSockRxLine
+	TCPSockSend
+	TCPSockSendAll
+	TCPSockSendStr
+	TCPConnectionCreate
 
 	TCPHandler
 	TCPHandleRefuse
-	TCPHandleSocket
-	TCPHandleSocketListen
-	TCPHandleReset
+	TCPHandleSock
+	TCPHandleSockLsten
+	TCPHandleRst
 	TCPHandleACK
 	TCPHandleValidSEQ
 
@@ -129,10 +142,14 @@ TCP
 	TCPTreeNodePop
 	TCPTreeNodeSinglePop
 
-	TCPTreeNodeQueueAdd
-	TCPTreeNodeQueueSocketFind
-	TCPTreeNodeQueueIPV4Find
-	TCPTreeNodeQueueSocketSinglePop
+	TCPTreeNodeQueAdd
+	TCPTreeQueEntInit
+	TCPTreeNodeQueSockFind
+	TCPTreeNodeQueIPV4Find
+	TCPTreeNodeQueSockSinglePop
+
+	TCPTreeNodeRep
+	TCPRep
 
 UDP
 	UDPTreeNodeInit
@@ -143,26 +160,32 @@ UDP
 	UDPTreeNodePop
 	UDPTreeNodeSinglePop
 
-	UDPTreeNodeQueueAdd
-	UDPTreeNodeQueueSocketFind
-	UDPTreeNodeQueueIPV4Find
-	UDPTreeNodeQueueSocketSinglePop
+	UDPTreeNodeQueAdd
+	UDPTreeQueEntInit
+	UDPTreeNodeQueSockFind
+	UDPTreeNodeQueIPV4Find
+	UDPTreeNodeQueSockSinglePop
 
-	UDPGlobalsInit
+	UDPGlblsInit
 
-	UDPPacketAllocate
-	UDPPacketFinish (alias for IPV4PacketFinish)
-	UDPPacketParse
+	UDPPktAlloc
+	UDPPktFinish (alias for IPV4PktFinish)
+	UDPPktPrs
 
-	UDPSocket
-	UDPSocketBind
-	UDPSocketClose
-	UDPSocketReceiveFrom
-	UDPSocketSendTo
+	UDPSock
+	UDPSockBind
+	UDPSockClose
+	UDPSockRxFrom
+	UDPSockSendTo
 
 	UDPHandler
 
+	UDPTreeNodeRep
+	UDPRep
+
 DNS
+	DNSCacheLock
+	DNSCacheUnlock
 	DNSCacheInit
 	DNSCacheFind
 	DNSCachePut
@@ -170,21 +193,22 @@ DNS
 	DNSQuestionSizeCalculate
 	DNSQuestionSerialize
 	DNSQuestionSend
-	DNSQuestionParse
+	DNSQuestionPrs
 	DNSQuestionBuild
 	DNSQuestionFree
 	DNSQuestionChainFree
 
-	DNSDomainNameParse
+	DNSDomainNamePrs
 
-	DNSRRParse
+	DNSRRPrs
 	DNSRRFree
 	DNSRRChainFree
 
-	DNSResponseParse
+	DNSResponsePrs
 
 	DNSQueryRun
-	DNSAddressInfoGet
+	DNSPrsDottedQuad
+	DNSAddrInfoGet
 	DNSResolverIPV4Set
 	Host
 
@@ -193,21 +217,22 @@ DNS
 DHCP
 	DHCPTransactionBegin
 	DHCPDiscoverSend
-	DHCPRequestSend
+	DHCPReqSend
 
-	DHCPBeginParse
-	DHCPOptionParse
-	DHCPOfferParse
-	DHCPAckParse
+	DHCPBeginPrs
+	DHCPOptionPrs
+	DHCPOfferPrs
+	DHCPAckPrs
 
-	DHCPInnerConfigure
-	DHCPConfigure
+	DHCPInnerCfg
+	DHCPCfg
 
-	NetConfigure
+	NetCfg
+	NetRep
 
 NetHandler
 	IPV4Handler
-	NetQueueEntryHandle
+	NetQueEntHandle
 	NetHandler
 
 	NetHandlerInit

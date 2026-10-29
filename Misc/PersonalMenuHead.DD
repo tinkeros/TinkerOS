@@ -1,0 +1,27 @@
+$WW,1$Copy this file to your $FG,2$/Home$FG$ directory and modify it.  This version is the default. 
+
+$MA,LM="Cd;Dir;\n"$
+$MA,LM="Cd(\"::/Demo\");Dir;\n"$
+$MA,LM="Cd(\"::/Demo/Graphics\");Dir;\n"$
+$MA,LM="Cd(\"::/Demo/Snd\");Dir;\n"$
+$MA,LM="Cd(\"::/Demo/DolDoc\");Dir;\n"$
+$MA,LM="Cd(\"::/Demo/Games\");Dir;\n"$
+$MA,LM="Cd(\"::/Demo/MultiCore\");Dir;\n"$
+$MA,LM="Cd(\"::/Demo/Asm\");Dir;\n"$
+$MA,LM="Cd(\"::/Doc\");Dir;\n"$
+$MA,LM="Cd(\"::/Demo/Lectures\");Dir;\n"$
+$MA,LM="Cd(\"::/Apps\");Dir;\n"$
+
+Run $LK,"TOSStdIns",A="MN:TOSStdIns"$() if you wish to
+use the official staff $FG,2$/Home$FG$ files.
+$MA,LM="Cd(\"::/Demo/AcctExample\");Dir;\n"$
+
+Make all with $LK,"BootHDIns",A="MN:BootHDIns"$().
+$MA,LM="Cd(\"::/Kernel\");Dir;\n"$
+$MA,LM="Cd(\"::/Compiler\");Dir;\n"$
+
+The $LK,"::/StartOS.HC"$ file is compiled every time you boot.
+$MA,LM="Cd(\"::/Adam\");Dir;\n"$    
+$FG$
+$LK,"Welcome",A="FI:::/Doc/Welcome.DD"$   $LK,"Help & Index",A="FI:::/Doc/HelpIndex.DD"$	$LK,"Demo Index",A="FI:::/Doc/DemoIndex.DD"$
+$MA+PU,"FastReboot",LM="BootRAM;"$ $MA,"Take Tour",LM="Cd(\"::/Misc/Tour\");;InFile(\"Tour\");\n"$	$MA-X+PU,"Key Map",LM="KeyMap;View;\n"$

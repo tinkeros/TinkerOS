@@ -22,7 +22,7 @@ public Bool InsReg(U8 drv_let=0,I64 action=RR_REGISTER)
   }
   else if (action==RR_REREGISTER || !ins_reg.registered)
   {
-    MemCpy(&r,&ins_reg,sizeof(CInsReg));
+    ClassCpy(&r,&ins_reg);
     r.registered=TRUE;
     if (PopUpForm(&r))
       res=TRUE;

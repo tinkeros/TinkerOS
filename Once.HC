@@ -31,9 +31,8 @@ U0 Tmp()
     break;
   case BOOT_SRC_DVD:
     "\nIf you answer 'No' you can play with\n"
-    "the live CD without installing.\n\n"
-    "Install onto hard drive "
-    ;
+    "the live version without installing.\n\n"
+    "Install TinkerOS ";
     if (YorN)
     {
       DocBottom;
@@ -91,7 +90,6 @@ U0 Tmp()
   }
 }
 
-//#exe { if (SNAILNET_NATIVE_DRIVER != NULL) StreamPrint("Netcfg;\n"); }
 Tmp;
 EnableHistory;
 

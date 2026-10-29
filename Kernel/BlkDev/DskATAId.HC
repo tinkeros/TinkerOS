@@ -410,7 +410,7 @@ CBlkDev *ATAMount(U8 first_drv_let,I64 type,I64 base0,I64 base1,I64 unit)
 {
   CBlkDev *res;
   if (0<=first_drv_let-'A'<DRVS_NUM && (type==BDT_ATA || type==BDT_ATAPI) &&
-      0<=unit<=1)
+      0<=unit<=1 && DrvNextFreeLetType(first_drv_let))
   {
     res=BlkDevNextFreeSlot(first_drv_let,type);
     res->unit=unit;
@@ -426,7 +426,8 @@ CBlkDev *AHCIMount(U8 first_drv_let, I64 type, I64 port_num)
 {
   CBlkDev *res;
   if (0 <= first_drv_let - 'A' < DRVS_NUM && (type == BDT_AHCI_SATA
-          || type == BDT_AHCI_SATAPI) && 0 <= port_num <= AHCI_MAX_PORTS)
+          || type == BDT_AHCI_SATAPI) && 0 <= port_num <= AHCI_MAX_PORTS
+          && DrvNextFreeLetType(first_drv_let))
   {
     res = BlkDevNextFreeSlot(first_drv_let, type);
     res->port_num = port_num;

@@ -2,6 +2,8 @@ $WW,1$$FG,5$$TX+CX,"TOSClient"$$FG$
 
 There is a python server for TinkerOS $TX,"tos_server.py",HTML="https://github.com/tinkeros/TinkerOS/tree/main/Python"$$FG$ which runs on Linux machines (in either server or client mode) which can connect to TinkerOS over real or virtual serial ports to exchange files, clipboard contents, fetch URLs or execute commands on the remote server.
 
+Another TinkerOS machine can be the server too, over serial or TCP: see $LK,"TOSServer",A="FI:::/Doc/TOSServer.DD"$.
+
 See $TX,"Python/README.md",HTML="https://github.com/tinkeros/TinkerOS/blob/main/Python/README.md"$$FG$ for how to set up and run $FG,2$tos_server.py$FG$.  Once it is running and reachable over a COM port, the following functions may be available to you:
 
 $FG,5$Connecting$FG$

@@ -118,6 +118,13 @@ Bool BlkDevInit(CBlkDev *bd)
         "Init function fp_virtual_blkdev_init NULL?\n";
       }
       break;
+    case BDT_USB:
+      bd->max_reads=128;
+      bd->max_writes=1;
+      dv->size=bd->max_blk+1;
+      dv->fs_type=FSt_FAT32;
+      res=TRUE;
+      break;
     case BDT_RAM:
       if (!bd->RAM_dsk)
       {
@@ -283,7 +290,7 @@ CBlkDev *BlkDevNextFreeSlot(U8 first_drv_let,I64 type)
 
 U0 BlkDevDel(CBlkDev *bd)
 {//Delete BlkDev
-  if ( (bd->type == BDT_OTHER) || (bd->type == BDT_SERIAL) || (bd->type == BDT_SDHCI) || (bd->type == BDT_VIRTUAL))
+  if ( (bd->type == BDT_OTHER) || (bd->type == BDT_SERIAL) || (bd->type == BDT_SDHCI) || (bd->type == BDT_VIRTUAL) || (bd->type == BDT_USB))
     if (bd->deinit_func)
       (*bd->deinit_func)();
   DrvBlkDevDel(bd);

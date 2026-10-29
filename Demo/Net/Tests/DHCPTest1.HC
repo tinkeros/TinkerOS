@@ -6,14 +6,14 @@ U0 DHCPTest()
 {// DHCPCfg (if not already configured), then send UDP test data.
   U8 *udp_payload;
   I64 de_index;
-  ARPCachePut(dst_ip, dst_mac); // Force entry into ARP Cache so IPV4 can match it with IPV4AddressMACGet
+  ARPCachePut(dst_ip, dst_mac);
   if (ipv4_globals.local_ip == 0)
     DHCPCfg;
   while (TRUE)
   {
-    de_index = UDPPacketAllocate(&udp_payload, ipv4_globals.local_ip, 0xDEAD, dst_ip, 0xBEEF, 8);
+    de_index = UDPPktAlloc(&udp_payload, ipv4_globals.local_ip, 0xDEAD, dst_ip, 0xBEEF, 8);
     *(udp_payload(U64 *)) = EndianU64(0xDEADBEEFC0DEFADE);
-    UDPPacketFinish(de_index);
+    UDPPktFinish(de_index);
     Sleep(300);
   }
 }

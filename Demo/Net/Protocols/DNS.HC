@@ -3,8 +3,8 @@
 
 // DNS Cache is a HashTable, similar to ARP Cache
 
-#define DNS_HASHTABLE_SIZE  2048    // 1024 might be fine, test it
-#define HTT_DNS             0x00100 // identical to HTT_DICT_WORD
+#define DNS_HASHTABLE_SIZE  2048
+#define HTT_DNS             0x00100
 
 #define DNS_FLAG_RD     0x0100
 
@@ -20,10 +20,7 @@
 
 class CDNSHash:CHash
 {// store U8 *hostname as CHash->str U8 *
-  CAddressInfo info;
-  // Shrine has 'TODO: honor TTL' ...
-  // Duke: 'TTL: the number of seconds the results can be cached'
-  // perhaps have a separate task for removing cached results ?
+  CAddrInfo info;
 };
 
 class CDNSDomainName
@@ -40,70 +37,90 @@ class CDNSQuestion
   U16                q_class;
 };
 
-class CDNSHeader
+class CDNSHdr
 {
   U16 id;
   U16 flags;
-  U16 q_cnt;    // number of entries in question section
-  U16 a_cnt;    // number of resource records in answer section
-  U16 ns_cnt;   // number of name server resource records in authority records section
-  U16 ar_cnt;   // number of resource records in additional records section
+  U16 q_cnt;
+  U16 a_cnt;
+  U16 ns_cnt;
+  U16 ar_cnt;
 };
 
 class CDNSRR
 {// RR: Resource Record
   CDNSRR            *next;
-  CDNSDomainName     name;      // name of the node this record is for
-  U16                type;      // RR type, e.g. 44=SSHFP, 15=MX, 49=DHCID ...
-  U16                rr_class;  // class code
-  U32                ttl;       // cnt in seconds that RR stays valid (max = 2^31 - 1)
-  U16                rd_length; // length of r_data member
-  U8                *r_data;    // additional RR-specific data
+  CDNSDomainName     name;
+  U16                type;
+  U16                rr_class;
+  U32                ttl;
+  U16                rd_len;
+  U8                *r_data;
 };
 
 class CDNSGlbls
 {
   U16                   addr_family;
-  CIPAddressStorage dns_ip;
+  CIPAddrStorage dns_ip;
 
 } dns_globals;
 
 CHashTable *dns_cache = NULL;
 
+I64 dns_cache_lock = 0;
+
+U0 DNSCacheLock()
+{
+  while (LBts(&dns_cache_lock, 0))
+    Yield;
+}
+
+U0 DNSCacheUnlock()
+{
+  LBtr(&dns_cache_lock, 0);
+}
+
 U0 DNSCacheInit()
 {
   dns_cache = HashTableNew(DNS_HASHTABLE_SIZE);
-  MemSet(&dns_globals.dns_ip, 0, sizeof(CIPAddressStorage));
+  dns_cache_lock = 0;
+  ZeroClass(&dns_globals.dns_ip);
   dns_globals.addr_family = 0;
 }
 
 CDNSHash *DNSCacheFind(U8 *hostname)
-{
-  CDNSHash *entry = HashFind(hostname, dns_cache, HTT_DNS);
-  if (entry == NULL)
+{//Caller must not hold dns_cache_lock: it is not re-entrant.
+  CDNSHash *ent;
+  DNSCacheLock;
+  ent = HashFind(hostname, dns_cache, HTT_DNS);
+  DNSCacheUnlock;
+  if (ent == NULL)
     NetWarn("DNS CACHE FIND: Could not find a hostname in the DNS Cache.");
-  return entry;
+  return ent;
 }
 
-CDNSHash *DNSCachePut(U8 *hostname, CAddressInfo *info)
+CDNSHash *DNSCachePut(U8 *hostname, CAddrInfo *info)
 {
+  CDNSHash *ent;
   NetLog("DNS CACHE PUT: Attempting Find DNS Entry in Cache: hostname: %s", hostname);
-  CDNSHash *entry = DNSCacheFind(hostname);
-  if (!entry)
+  DNSCacheLock;
+  ent = HashFind(hostname, dns_cache, HTT_DNS);
+  if (!ent)
   {
-    entry = CAlloc(sizeof(CDNSHash));
-    entry->str  = StrNew(hostname);
-    entry->type = HTT_DNS;
-    AddressInfoCpy(&entry->info, info);
-    HashAdd(entry, dns_cache);
+    ent = CAlloc(sizeof(CDNSHash), adam_task);
+    ent->str  = StrNew(hostname, adam_task);
+    ent->type = HTT_DNS;
+    AddrInfoCpy(&ent->info, info, adam_task);
+    HashAdd(ent, dns_cache);
   }
   else
   {
-    NetWarn("DNS CACHE PUT: Entry was already found in Cache. Overwriting.");
-    Free(entry->info.address);
-    AddressInfoCpy(&entry->info, info);
+    Free(ent->info.addr);
+    Free(ent->info.canonical_name);
+    AddrInfoCpy(&ent->info, info, adam_task);
   }
-  return entry;
+  DNSCacheUnlock;
+  return ent;
 }
 
 I64 DNSQuestionSizeCalculate(CDNSQuestion *q)
@@ -116,34 +133,34 @@ I64 DNSQuestionSizeCalculate(CDNSQuestion *q)
   return size + 1 + 4;
 }
 
-U0 DNSQuestionSerialize(U8 *buffer, CDNSQuestion *q)
+U0 DNSQuestionSerialize(U8 *buf, CDNSQuestion *q)
 {// ??
   I64 i;
   U8 *label;
   for (i = 0; i < q->q_name.num_labels; i++)
   {
     label = q->q_name.labels[i];
-    *buffer++ = StrLen(label);
+    *buf++ = StrLen(label);
     while (*label)
-      *buffer++ = *label++;
+      *buf++ = *label++;
   }
-  *buffer++ = 0;
-  *buffer++ = q->q_type >> 8;
-  *buffer++ = q->q_type & 0xFF;
-  *buffer++ = q->q_class >> 8;
-  *buffer++ = q->q_class & 0xFF;
+  *buf++ = 0;
+  *buf++ = q->q_type >> 8;
+  *buf++ = q->q_type & 0xFF;
+  *buf++ = q->q_class >> 8;
+  *buf++ = q->q_class & 0xFF;
 }
 
 I64 DNSQuestionSend(U16 id, U16 local_port, CDNSQuestion *q)
 {
-  CIPV4Address *ipv4_addr;
+  CIPV4Addr *ipv4_addr;
   U8             *dns_frame;
   U16             flags;
-  CDNSHeader     *header;
+  CDNSHdr     *hdr;
   I64             de_index;
   switch (dns_globals.addr_family)
   {
-  case AF_UNSPEC: // 0, global dns ip not set
+  case AF_UNSPEC:
     NetErr("DNS SEND QUESTION: Failed, global dns addr family was AF_UNSPEC.");
     return -1;
   case AF_INET6:
@@ -157,69 +174,68 @@ I64 DNSQuestionSend(U16 id, U16 local_port, CDNSQuestion *q)
       return -1;
     }
   }
-  // UDPPacketAllocate currently only accepts IPV4 ...
-  de_index = UDPPacketAllocate(&dns_frame, IPV4AddressGet, local_port, *ipv4_addr,53,sizeof(CDNSHeader) + DNSQuestionSizeCalculate(q));
+  de_index = UDPPktAlloc(&dns_frame, IPV4AddrGet, local_port, *ipv4_addr,53,sizeof(CDNSHdr) + DNSQuestionSizeCalculate(q));
   if (de_index < 0)
   {
     NetErr("DNS SEND QUESTION: Failed, UDPPacketAllocate returned error.");
     return de_index;
   }
   flags = DNS_OP_QUERY << 11 | DNS_FLAG_RD;
-  header = dns_frame;
-  header->id            = EndianU16(id);
-  header->flags     = EndianU16(flags);
-  header->q_cnt     = EndianU16(1);
-  header->a_cnt     = 0;
-  header->ns_cnt    = 0;
-  header->ar_cnt    = 0;
-  DNSQuestionSerialize(dns_frame + sizeof(CDNSHeader), q);
-  UDPPacketFinish(de_index);
+  hdr = dns_frame;
+  hdr->id            = EndianU16(id);
+  hdr->flags     = EndianU16(flags);
+  hdr->q_cnt     = EndianU16(1);
+  hdr->a_cnt     = 0;
+  hdr->ns_cnt    = 0;
+  hdr->ar_cnt    = 0;
+  DNSQuestionSerialize(dns_frame + sizeof(CDNSHdr), q);
+  UDPPktFinish(de_index);
   return 0;
 }
 
 
-I64 DNSDomainNamePrs(U8 *packet_data, I64 packet_length, U8 **data_inout, I64 *length_inout, CDNSDomainName *name_out)
+I64 DNSDomainNamePrs(U8 *pkt_data, I64 pkt_len, U8 **data_inout, I64 *len_inout, CDNSDomainName *name_out)
 {// these methods look not-so-good, ngl.
   U8  *data = *data_inout;
   U8  *name_buf;
-  I64  length = *length_inout;
+  I64  len = *len_inout;
   I64  label_len;
   Bool jump_taken = FALSE;
-  if (length < 1)
+  if (len < 1)
   {
     NetErr("DNS PARSE DOMAIN NAME: Length less than one.");
     return -1;
   }
   name_out->labels      = CAlloc(16 * sizeof(U8 *));
   name_out->num_labels  = 0;
-  name_buf = CAlloc(256); // ?..
+  name_buf = CAlloc(256);
   name_out->labels[0] = name_buf;
-  while (length)
+  while (len)
   {
     label_len = *data++;
-    length--;
+    len--;
     if (label_len == 0)
       break;
     else if (label_len >= 192)
     {
-      label_len &= 0x3F; // ...
+      label_len &= 0x3F;
       if (!jump_taken)
       {
         *data_inout     = data   + 1;
-        *length_inout   = length - 1;
+        *len_inout   = len - 1;
         jump_taken      = TRUE;
         NetLog("DNS PARSE DOMAIN NAME: Jump taken");
       }
-      data  = packet_data + (label_len << 8 | *data);
-      length    = packet_data + packet_length - data;
+      data  = pkt_data + (label_len << 8 | *data);
+      len    = pkt_data + pkt_len - data;
     }
     else
     {
-      if (length < label_len)
-        return -1; // ?
+      if (len < label_len)
+        return -1;
       MemCpy(name_buf, data, label_len);
       data  += label_len;
-      length    -= label_len;
+      len    -= label_len;
       name_buf[label_len] = 0;
       name_out->labels[name_out->num_labels++] = name_buf;
       name_buf += label_len + 1;
@@ -228,91 +244,91 @@ I64 DNSDomainNamePrs(U8 *packet_data, I64 packet_length, U8 **data_inout, I64 *l
   if (!jump_taken)
   {
     *data_inout     = data;
-    *length_inout   = length;
+    *len_inout   = len;
   }
   return 0;
 }
 
 
-I64 DNSQuestionPrs(U8 *packet_data, I64 packet_length, U8 **data_inout, I64 *length_inout, CDNSQuestion *q_out)
+I64 DNSQuestionPrs(U8 *pkt_data, I64 pkt_len, U8 **data_inout, I64 *len_inout, CDNSQuestion *q_out)
 {
   U8 *data;
-  I64 length;
-  I64 error = DNSDomainNamePrs(packet_data, packet_length, data_inout, length_inout, &q_out->q_name);
+  I64 len;
+  I64 error = DNSDomainNamePrs(pkt_data, pkt_len, data_inout, len_inout, &q_out->q_name);
   if (error < 0)
     return error;
   data  = *data_inout;
-  length    = *length_inout;
-  if (length < 4)
+  len    = *len_inout;
+  if (len < 4)
     return -1;
   q_out->next       = NULL;
   q_out->q_type = data[1] << 8 | data[0];
   q_out->q_class    = data[3] << 8 | data[2];
   *data_inout       = data   + 4;
-  *length_inout = length - 4;
+  *len_inout = len - 4;
   return 0;
 }
 
-I64 DNSRRPrs(U8 *packet_data, I64 packet_length, U8 **data_inout, I64 *length_inout, CDNSRR *rr_out)
+I64 DNSRRPrs(U8 *pkt_data, I64 pkt_len, U8 **data_inout, I64 *len_inout, CDNSRR *rr_out)
 {
   U8 *data;
-  I64 length;
-  I64 record_length;
-  I64 error = DNSDomainNamePrs(packet_data, packet_length, data_inout, length_inout, &rr_out->name);
+  I64 len;
+  I64 record_len;
+  I64 error = DNSDomainNamePrs(pkt_data, pkt_len, data_inout, len_inout, &rr_out->name);
   if (error < 0)
     return error;
   data  = *data_inout;
-  length    = *length_inout;
-  if (length < 10)
+  len    = *len_inout;
+  if (len < 10)
     return -1;
   rr_out->next = NULL;
-  MemCpy(&rr_out->type, data, 10); // ???
-  record_length = 10 + EndianU16(rr_out->rd_length);
-  if (length < record_length)
+  MemCpy(&rr_out->type, data, 10);
+  record_len = 10 + EndianU16(rr_out->rd_len);
+  if (len < record_len)
     return -1;
-  rr_out->r_data = data + 10; // ??
-  *data_inout       = data   + record_length;
-  *length_inout = length - record_length;
+  rr_out->r_data = data + 10;
+  *data_inout       = data   + record_len;
+  *len_inout = len - record_len;
   return 0;
 }
 
-I64 DNSResponsePrs(U16 id, U8 *data, I64 length, CDNSHeader **header_out, CDNSQuestion **questions_out, CDNSRR **answers_out)
+I64 DNSResponsePrs(U16 id, U8 *data, I64 len, CDNSHdr **hdr_out, CDNSQuestion **questions_out, CDNSRR **answers_out)
 {
-  CDNSHeader        *header;
+  CDNSHdr        *hdr;
   CDNSQuestion  *question;
   CDNSRR            *answer;
   I64                i;
-  U8                *packet_data    = data;
-  I64                packet_length  = length;
-  if (length < sizeof(CDNSHeader))
+  U8                *pkt_data    = data;
+  I64                pkt_len  = len;
+  if (len < sizeof(CDNSHdr))
   {
     NetErr("DNS PARSE RESPONSE: Length too short.");
     return -1;
   }
-  header = data;
-  data += sizeof(CDNSHeader);
-  if (id != 0 && EndianU16(header->id) != id)
+  hdr = data;
+  data += sizeof(CDNSHdr);
+  if (id != 0 && EndianU16(hdr->id) != id)
   {
     NetErr("DNS PARSE RESPONSE: Header ID mismatch.");
     return -1;
   }
-  for (i = 0; i < EndianU16(header->q_cnt); i++)
+  for (i = 0; i < EndianU16(hdr->q_cnt); i++)
   {
     question = CAlloc(sizeof(CDNSQuestion));
-    if (DNSQuestionPrs(packet_data, packet_length, &data, &length, question) < 0)
+    if (DNSQuestionPrs(pkt_data, pkt_len, &data, &len, question) < 0)
       return -1;
     question->next = *questions_out;
     *questions_out = question;
   }
-  for (i = 0; i < EndianU16(header->a_cnt); i++)
+  for (i = 0; i < EndianU16(hdr->a_cnt); i++)
   {
     answer = CAlloc(sizeof(CDNSRR));
-    if (DNSRRPrs(packet_data, packet_length, &data, &length, answer) < 0)
+    if (DNSRRPrs(pkt_data, pkt_len, &data, &len, answer) < 0)
       return -1;
     answer->next = *answers_out;
     *answers_out = answer;
   }
-  *header_out = header;
+  *hdr_out = hdr;
   return 0;
 }
 
@@ -376,39 +392,37 @@ U0 DNSRRChainFree(CDNSRR *rrs)
 }
 
 
-I64 DNSQueryRun(CUDPSocket *udp_socket, U8 *name, U16 port, CAddressInfo **result_out)
+I64 DNSQueryRun(CUDPSock *udp_sock, U8 *name, U16 port, CAddrInfo **result_out)
 {// IPV4-UDP-based, TODO: take good look at this method to ensure no floating pointers after.
   // note: UDP Socket created in this method is not closed in this method, gets closed e.g. in DNSAddressInfoGet
   I64  retries  = 0;
   I64    timeout    = DNS_TIMEOUT;
-  U16    local_port = MaxI64(1024, RandU16); // Pick a random port above 1023. (within standard application port range)
+  U16    local_port = MaxI64(1024, RandU16);
   U16  id           = RandU16;
   I64  error        = 0;
-  U8   buffer[2048];
+  U8   buf[2048];
   I64  cnt;
-  Bool have;    // ??
+  Bool have;
   CDNSQuestion   q;
-  CDNSHeader        *header;
+  CDNSHdr        *hdr;
   CDNSQuestion  *questions;
   CDNSRR            *answers;
   CDNSRR            *a;
-  CSocketAddressIPV4     ipv4_addr;
-  CSocketAddressIPV4     ipv4_addr_in; // ?
-  CSocketAddressIPV4    *ipv4_addr_temp;
-  CAddressInfo      *res;
-  //setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO_MS, &timeout, sizeof(timeout))
-  udp_socket->receive_timeout_ms = timeout;
+  CSockAddrIPV4     ipv4_addr;
+  CSockAddrIPV4     ipv4_addr_in;
+  CSockAddrIPV4    *ipv4_addr_temp;
+  CAddrInfo      *res;
+  udp_sock->rx_timeout_ms = timeout;
   ipv4_addr.family          = AF_INET;
   ipv4_addr.port                = EndianU16(local_port);
-  ipv4_addr.address.address = INADDR_ANY;
-  // UDPSocketBind will be attempted on the udp_socket param, method expects a UDPSocket() result to be made already
-  if (UDPSocketBind(udp_socket, &ipv4_addr)) // expected return value is 0
+  ipv4_addr.addr.addr = INADDR_ANY;
+  if (UDPSockBind(udp_sock, &ipv4_addr))
   {
     NetErr("DNS RUN QUERY: Failed to bind UDP socket.");
     return -1;
   }
   DNSQuestionBuild(&q, name);
-  while (TRUE) // Shrine uses while (1) infinite loop, need to be careful not to lock
+  while (TRUE)
   {
     error = DNSQuestionSend(id, local_port, &q);
     if (error < 0)
@@ -416,39 +430,37 @@ I64 DNSQueryRun(CUDPSocket *udp_socket, U8 *name, U16 port, CAddressInfo **resul
       NetErr("DNS RUN QUERY: Failed to Send Question.");
       return -1;
     }
-    cnt = UDPSocketReceiveFrom(udp_socket, buffer, sizeof(buffer), &ipv4_addr_in);
+    cnt = UDPSockRxFrom(udp_sock, buf, sizeof(buf), &ipv4_addr_in);
     if (cnt > 0)
     {
       NetLog("DNS RUN QUERY: Trying Prs Response.");
-      header        = NULL;
+      hdr        = NULL;
       questions = NULL;
       answers       = NULL;
-      error = DNSResponsePrs(id, buffer, cnt, &header, &questions, &answers);
-      if (error == 0) // Shrine has (error >= 0), but DNSResponsePrs can only return 0 or 1 ..
+      error = DNSResponsePrs(id, buf, cnt, &hdr, &questions, &answers);
+      if (error == 0)
       {
         have = FALSE;
         a = answers;
         while (a)
         {
-          // Shrine has TODO: if multiple acceptable answers, pick one at random, not just first one.
-          // perhaps we could use r_cnt in header for that ?
           if (EndianU16(a->type)        == DNS_TYPE_A   &&
               EndianU16(a->rr_class)    == DNS_CLASS_IN &&
-              EndianU16(a->rd_length)   == 4)
+              EndianU16(a->rd_len)   == 4)
           {
-            res = CAlloc(sizeof(CAddressInfo));
+            res = CAlloc(sizeof(CAddrInfo));
             res->flags          = 0;
             res->family         = AF_INET;
-            res->socket_type    = 0;    // ??
-            res->protocol       = 0;    // ??
-            res->address_length = sizeof(CSocketAddressIPV4);
-            res->address        = CAlloc(sizeof(CSocketAddressIPV4));
+            res->sock_type    = 0;
+            res->protocol       = 0;
+            res->addr_len = sizeof(CSockAddrIPV4);
+            res->addr        = CAlloc(sizeof(CSockAddrIPV4));
             res->canonical_name = 0;
             res->next           = NULL;
-            ipv4_addr_temp = res->address;
+            ipv4_addr_temp = res->addr;
             ipv4_addr_temp->family  = AF_INET;
             ipv4_addr_temp->port    = port;
-            MemCpy(&ipv4_addr_temp->address.address, answers->r_data, 4);
+            MemCpy(&ipv4_addr_temp->addr.addr, a->r_data, 4);
             DNSCachePut(name, res);
             *result_out = res;
             have = TRUE;
@@ -460,8 +472,6 @@ I64 DNSQueryRun(CUDPSocket *udp_socket, U8 *name, U16 port, CAddressInfo **resul
         DNSRRChainFree(answers);
         if (have)
           break;
-        // Shrine comment: 'at this point, we could try iterative resolution,
-        // but all end-user DNS servers would have tried that already'
         NetErr("DNS RUN QUERY: Failed to find suitable answer in reply.");
         error = -1;
       }
@@ -483,24 +493,62 @@ I64 DNSQueryRun(CUDPSocket *udp_socket, U8 *name, U16 port, CAddressInfo **resul
 
 // Shrine has port arg as U8 *service with a no_warn and says it should be parsed as port, allowing that here
 // Also has CAddressInfo *hints with a no_warn, omitting that for now
-I64 DNSAddressInfoGet(U8 *node_name, U16 port, CAddressInfo **result)
+Bool DNSPrsDottedQuad(U8 *s, U8 *out4)
+{//"a.b.c.d" to 4 bytes in network order. FALSE unless purely numeric.
+  I64 i, v, digits;
+  for (i = 0; i < 4; i++)
+  {
+    v = 0;
+    digits = 0;
+    while ('0' <= *s <= '9')
+    {
+      v = v * 10 + *s++ - '0';
+      digits++;
+    }
+    if (!digits || v > 255)
+      return FALSE;
+    out4[i] = v;
+    if (i < 3 && *s++ != '.')
+      return FALSE;
+  }
+  return !*s;
+}
+
+I64 DNSAddrInfoGet(U8 *node_name, U16 port, CAddrInfo **result)
 {
   I64            error;
-  CUDPSocket    *udp_socket;
-  CDNSHash  *cached_entry = DNSCacheFind(node_name);
-  if (cached_entry)
+  CUDPSock    *udp_sock;
+  CDNSHash  *cached_ent;
+  CAddrInfo *res;
+  CSockAddrIPV4 *addr;
+  U8 quad[4];
+  if (DNSPrsDottedQuad(node_name, quad))
   {
-    *result = CAlloc(sizeof(CAddressInfo));
-    AddressInfoCpy(*result, &cached_entry->info);
-    //(*res)->flags |= AI_CACHED; // TODO: add AI_CACHED define (maybe a better name?) not used anywhere i don't think..
+    res = CAlloc(sizeof(CAddrInfo));
+    res->family = AF_INET;
+    res->addr_len = sizeof(CSockAddrIPV4);
+    res->addr = addr = CAlloc(sizeof(CSockAddrIPV4));
+    addr->family = AF_INET;
+    addr->port = port;
+    MemCpy(&addr->addr.addr, quad, 4);
+    *result = res;
     return 0;
   }
-  udp_socket = UDPSocket(AF_INET);
-  error = 0;
-  if (udp_socket)
+  DNSCacheLock;
+  if (cached_ent = HashFind(node_name, dns_cache, HTT_DNS))
   {
-    error = DNSQueryRun(udp_socket, node_name, port, result);
-    UDPSocketClose(udp_socket);
+    *result = CAlloc(sizeof(CAddrInfo));
+    AddrInfoCpy(*result, &cached_ent->info);
+  }
+  DNSCacheUnlock;
+  if (cached_ent)
+    return 0;
+  udp_sock = UDPSock(AF_INET);
+  error = 0;
+  if (udp_sock)
+  {
+    error = DNSQueryRun(udp_sock, node_name, port, result);
+    UDPSockClose(udp_sock);
   }
   else
   {
@@ -512,18 +560,18 @@ I64 DNSAddressInfoGet(U8 *node_name, U16 port, CAddressInfo **result)
 
 U0 DNSResolverIPV4Set(U32 ip)
 {
-  CIPV4Address *address = &dns_globals.dns_ip;
+  CIPV4Addr *addr = &dns_globals.dns_ip;
   dns_globals.addr_family   = AF_INET;
-  address->address      = ip;
+  addr->addr      = ip;
 }
 
 U0 Host(U8 *hostname)
 {// getaddrinfo() for whole adam in Shrine ends up as pointer to DNSAddressInfoGet.. should we do something similar?
-  CAddressInfo      *current;
-  CAddressInfo      *result = NULL;
-  I64                    error  = DNSAddressInfoGet(hostname, NULL, &result);
+  CAddrInfo      *current;
+  CAddrInfo      *result = NULL;
+  I64                    error  = DNSAddrInfoGet(hostname, NULL, &result);
   I64                    i = 0;
-  CSocketAddressIPV4    *ipv4_address;
+  CSockAddrIPV4    *ipv4_addr;
   if (error < 0)
   {
     NetErr("HOST(): Failed at DNS Get Address Info.");
@@ -540,20 +588,20 @@ U0 Host(U8 *hostname)
       " family:         $FG,6$%d$FG$    \n"
       , current->family;
       " socket type:    $FG,6$%d$FG$    \n"
-      , current->socket_type;
+      , current->sock_type;
       " protocol:       $FG,6$%d$FG$    \n"
       , current->protocol;
       " address length: $FG,6$%d$FG$    \n"
-      , current->address_length;
+      , current->addr_len;
       switch (current->family)
       {
       case AF_INET:
-        ipv4_address = current->address;
+        ipv4_addr = current->addr;
         "   address:        $FG,6$%s$FG$    \n"
-        , NetworkToPresentation(AF_INET, &ipv4_address->address);
+        , NetToPres(AF_INET, &ipv4_addr->addr);
         break;
       case AF_INET6:
-        "   address:        $FG,6$IPV6$FG$    \n"; // FIXME
+        "   address:        $FG,6$IPV6$FG$    \n";
         break;
       case AF_UNSPEC:
         "   address:        $FG,6$AF_UNSPEC$FG$    \n"
@@ -568,14 +616,14 @@ U0 Host(U8 *hostname)
     }
     "\n";
   }
-  AddressInfoFree(result);
+  AddrInfoFree(result);
 }
 
 U0 DNSRep()
 {
   I64                    i;
   CDNSHash          *temp_hash;
-  CSocketAddressIPV4    *ipv4_address;
+  CSockAddrIPV4    *ipv4_addr;
   "$$LTBLUE$$DNS Report:$$FG$$\n\n";
   for (i = 0; i <= dns_cache->mask; i++)
   {
@@ -588,14 +636,14 @@ U0 DNSRep()
       switch (temp_hash->info.family)
       {
       case AF_INET:
-        ipv4_address = temp_hash->info.address;
+        ipv4_addr = temp_hash->info.addr;
         "   IP Address:     $FG,6$%s$FG$\n"
         ,
-        NetworkToPresentation(temp_hash->info.family,
-                              &ipv4_address->address);
+        NetToPres(temp_hash->info.family,
+                              &ipv4_addr->addr);
         break;
       case AF_INET6:
-        "   IP Address:     $FG,6$IPV6$FG$\n"; // FIXME
+        "   IP Address:     $FG,6$IPV6$FG$\n";
         break;
       case AF_UNSPEC:
         "   IP Address:     $FG,6$AF_UNSPEC$FG$"

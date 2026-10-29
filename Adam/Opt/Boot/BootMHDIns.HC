@@ -16,6 +16,34 @@
 #define BOOT_DIR_OTHERMBR_BIN_C	BOOT_DIR "/OtherMBR.BIN.C"
 #define BOOT_DIR_RESCUEMBR_BIN_C	BOOT_DIR "/RescueMBR.BIN.C"
 
+U0 BootMBRRw(CBlkDev *bd,CMasterBoot *mbr,Bool wr)
+{//Read/write block 0 of bd by whatever path it needs, bypassing partition
+//bounds-checking. Caller holds the $LK,"BlkDevLock",A="MN:BlkDevLock"$().
+  if (bd->type==BDT_SDHCI)
+  {
+    if (wr)
+      fp_sdhci_blkdev_write(mbr,0,1);
+    else
+      fp_sdhci_blkdev_read(mbr,0,1);
+  }
+  else if (bd->type==BDT_USB)
+    BlkDevFnRw(bd,mbr,0,1,wr);
+  else if (AHCIMode)
+  {
+    if (wr)
+      AHCIAtaBlksWrite(bd,mbr,0,1);
+    else
+      AHCIAtaBlksRead(bd,mbr,0,1);
+  }
+  else
+  {
+    if (wr)
+      ATAWriteBlks(bd,mbr,0,1);
+    else
+      ATAReadBlks(bd,mbr,0,1);
+  }
+}
+
 U0 BootMHDOldRead(U8 src_drv,U8 dst_drv)
 {
   //Reads MBR from disk drive containing src partition.
@@ -31,10 +59,7 @@ U0 BootMHDOldRead(U8 src_drv,U8 dst_drv)
   {
 //Bypass partition bounds-checking
     BlkDevLock(bd);
-    if (AHCIMode)
-        AHCIAtaBlksRead(bd, &mbr, 0, 1);
-    else
-      ATAReadBlks(bd,&mbr,0,1);
+    BootMBRRw(bd,&mbr,FALSE);
     BlkDevUnlock(bd);
     Drv(dst_drv);
     DirMk(BOOT_DIR);
@@ -53,10 +78,7 @@ U0 BootMHDOldWrite(U8 src_drv,U8 dst_drv)
   {
 //Bypass partition bounds-checking
     BlkDevLock(bd);
-    if (AHCIMode)
-        AHCIAtaBlksWrite(bd, mbr, 0, 1);
-        else
-    ATAWriteBlks(bd,mbr,0,1);
+    BootMBRRw(bd,mbr,TRUE);
     BlkDevUnlock(bd);
   }
   Free(mbr);
@@ -75,10 +97,7 @@ public U0 BootMHDZero(U8 dst_drv)
   MemSet(&mbr,0,BLK_SIZE);
 //Bypass partition bounds-checking
   BlkDevLock(bd);
-    if (AHCIMode)
-        AHCIAtaBlksWrite(bd, mbr, 0, 1);
-        else
-  ATAWriteBlks(bd,&mbr,0,1);
+  BootMBRRw(bd,&mbr,TRUE);
   BlkDevUnlock(bd);
 }
 
@@ -166,12 +185,7 @@ public Bool BootMHDIns(U8 drv_let,U8 *drv_lst=NULL)
         *BMHD_DAP_BLK(I64 *)=Clus2Blk(dv,de.clus);
 //Bypass partition bounds-checking
         BlkDevLock(bd);
-        if (bd->type==BDT_SDHCI)
-          fp_sdhci_blkdev_read(&mbr, 0, 1);
-        else if (AHCIMode)
-          AHCIAtaBlksRead(bd, &mbr, 0, 1);
-        else
-          ATAReadBlks(bd,&mbr,0,1);
+        BootMBRRw(bd,&mbr,FALSE);
         for (i=0; i<BMHD_END-BMHD_CODE; i++)
           mbr.code[i]=BMHD_CODE(U8 *)[i];
 #assert sizeof(CMasterBoot.code)>=BMHD_END-BMHD_CODE
@@ -181,12 +195,7 @@ public Bool BootMHDIns(U8 drv_let,U8 *drv_lst=NULL)
           mbr.media_id=RandU32;
         mbr.zero=0;
         mbr.signature=0xAA55;
-        if (bd->type==BDT_SDHCI)
-          fp_sdhci_blkdev_write(&mbr, 0, 1);
-        else if (AHCIMode)
-          AHCIAtaBlksWrite(bd, &mbr, 0, 1);
-        else
-          ATAWriteBlks(bd,&mbr,0,1);
+        BootMBRRw(bd,&mbr,TRUE);
         BlkDevUnlock(bd);
         res=TRUE;
       }

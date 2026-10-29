@@ -1,54 +1,72 @@
-Bool TCPHandleValidSEQ(CTCPSocket *tcp_socket, CTCPHeader *header, U32 segment_seq_num, I64 length, U8 *data)
-{// returns the value of must_ack, used later in TCPHandleSocket. Copies data to receive buffer.
+Bool TCPHandleValidSEQ(CTCPSock *tcp_sock, CTCPHdr *hdr, U32 segment_seq_num, I64 len, U8 *data)
+{// returns the value of must_ack, used later in TCPHandleSock. Copies data to receive buffer.
   Bool must_ack = FALSE;
+  I64  mask, seq_offset;
   I64  write_position;
   I64  next_position;
-  I64  i;
-//  tcp_socket->send_window = header->window_size;
-  tcp_socket->send_window = EndianU16(header->window_size);
-  // Shrine doesn't use EndianU16 (ntohs)? are these all being stored network byte order? ...
-  switch (tcp_socket->state)
+  I64  i = 0;
+  U32  fin_seq;
+  tcp_sock->send_window = EndianU16(hdr->window_size);
+  switch (tcp_sock->state)
   {
   case TCP_STATE_ESTABLISHED:
   case TCP_STATE_FIN_WAIT1:
-  case TCP_STATE_FIN_WAIT2: // FIN2 check is ommitted in Shrine, yet used in below logic. Adding.
-  case TCP_STATE_CLOSE_WAIT: // allowing data to be pushed to receive buffer during closing state
+  case TCP_STATE_FIN_WAIT2:
+  case TCP_STATE_CLOSE_WAIT:
     NetDbg("TCP HANDLE VALID SEQ: Updating data in receive buffer.");
-    // TODO: review while loops, make sure we DO NOT HANG INTERRUPT HANDLER.
-    write_position = tcp_socket->write_position;
-    while (length && segment_seq_num != tcp_socket->next_recv_seq_num)
+    mask = tcp_sock->rx_buf_size - 1;
+    write_position = tcp_sock->write_position;
+    fin_seq = (segment_seq_num + len) & 0xFFFFFFFF;
+    seq_offset = (tcp_sock->next_recv_seq_num - segment_seq_num) & 0xFFFFFFFF;
+    if (seq_offset >= 0x80000000)
     {
-      segment_seq_num = (segment_seq_num + 1) & 0xFFFFFFFF;
-      data++;
-      length--;
+      len = 0;
+      must_ack = TRUE;
     }
-    for (i = 0; i < length; i++)
+    else if (seq_offset >= len)
     {
-//              next_position = (write_position + 1) & (tcp_socket->receive_buffer_size - 1);
-      next_position = (write_position + 1) % tcp_socket->receive_buffer_size;
-      if (next_position == tcp_socket->read_position)
-        break; // ...?
-      tcp_socket->receive_buffer[write_position] = data[i];
+      if (seq_offset)
+        must_ack = TRUE;
+      len = 0;
+    }
+    else
+    {
+      data += seq_offset;
+      len -= seq_offset;
+    }
+    for (i = 0; i < len; i++)
+    {
+      next_position = (write_position + 1) & mask;
+      if (next_position == tcp_sock->read_position)
+        break;
+      tcp_sock->rx_buf[write_position] = data[i];
       write_position = next_position;
     }
-    tcp_socket->write_position = write_position;
-    tcp_socket->next_recv_seq_num += i;
+    if (i < len)
+    {
+      if (!tcp_sock->rx_drops)
+        NetWarn("TCP HANDLE VALID SEQ: Receive buffer full, dropping %d of %d octets.",
+              len - i, len);
+      tcp_sock->rx_drops += len - i;
+    }
+    tcp_sock->write_position = write_position;
+    tcp_sock->next_recv_seq_num += i;
     if (i > 0)
       must_ack = TRUE;
-    if (Bt(&header->flags, TCPf_FIN))
+    if (hdr->fin && tcp_sock->next_recv_seq_num == fin_seq)
     {
       must_ack = TRUE;
-      tcp_socket->next_recv_seq_num++;
-      switch (tcp_socket->state)
+      tcp_sock->next_recv_seq_num++;
+      switch (tcp_sock->state)
       {
       case TCP_STATE_ESTABLISHED:
-        tcp_socket->state = TCP_STATE_CLOSE_WAIT;
+        tcp_sock->state = TCP_STATE_CLOSE_WAIT;
         break;
       case TCP_STATE_FIN_WAIT1:
       case TCP_STATE_FIN_WAIT2:
-        tcp_socket->state = TCP_STATE_TIME_WAIT;
+        tcp_sock->state = TCP_STATE_TIME_WAIT;
         break;
-      } // review RFC, whether more state checks needed here.
+      }
     }
     break;
   default:
@@ -58,75 +76,71 @@ Bool TCPHandleValidSEQ(CTCPSocket *tcp_socket, CTCPHeader *header, U32 segment_s
 }
 
 
-Bool TCPHandleACK(CTCPSocket *tcp_socket, CIPV4Packet *packet, CTCPHeader *header,
-                  U32 segment_seq_num, U32 segment_ack_num, U32 segment_length)
-{// returns the value of must_ack, used later in TCPHandleSocket
+Bool TCPHandleACK(CTCPSock *tcp_sock, CIPV4Pkt *pkt, CTCPHdr *hdr,
+                  U32 segment_seq_num, U32 segment_ack_num, U32 segment_len)
+{// returns the value of must_ack, used later in TCPHandleSock
   I64  ack_relative;
   I64  ack_next_relative;
-  if (Bt(&header->flags, TCPf_ACK))
+  if (hdr->ack)
   {
-    ack_relative = (segment_ack_num - tcp_socket->first_unacked_seq) & 0xFFFFFFFF;
-    ack_next_relative = (tcp_socket->next_send_seq_num - tcp_socket->first_unacked_seq) & 0xFFFFFFFF;
-    // Shrine has comments here about RFC poor wording,
-    // TODO: review RFC and implement more refined approach.
+    ack_relative = (segment_ack_num - tcp_sock->first_unacked_seq) & 0xFFFFFFFF;
+    ack_next_relative = (tcp_sock->next_send_seq_num - tcp_sock->first_unacked_seq) & 0xFFFFFFFF;
     if (ack_relative <= ack_next_relative)
     {
-      TCPAcknowledgePacket(tcp_socket, segment_ack_num);
-      // "Accept ACK"
-      tcp_socket->first_unacked_seq = segment_ack_num;
-      switch (tcp_socket->state)
+      TCPAcknowledgePkt(tcp_sock, segment_ack_num);
+      tcp_sock->first_unacked_seq = segment_ack_num;
+      switch (tcp_sock->state)
       {
       case TCP_STATE_SYN_SENT:
         NetDbg("TCP HANDLE ACK: Acceptable ACK; state: SYN_SENT");
-        if (!Bt(&header->flags, TCPf_SYN))
+        if (!hdr->syn)
           break;
-      // else, fall-through
       case TCP_STATE_SYN_RECEIVED:
-        tcp_socket->state = TCP_STATE_ESTABLISHED;
-        tcp_socket->srtt  = tS - tcp_socket->connection_time;
+        tcp_sock->state = TCP_STATE_ESTABLISHED;
+        tcp_sock->srtt  = tS - tcp_sock->connection_time;
         break;
       default:
         break;
       }
-      NetDbg("TCP HANDLE ACK: Acceptable ACK returning; state: 0x%0X", tcp_socket->state);
+      NetDbg("TCP HANDLE ACK: Acceptable ACK returning; state: 0x%0X", tcp_sock->state);
     }
     else
     {
       NetWarn("TCP HANDLE SOCKET: Invalid ACK.");
-      switch (tcp_socket->state)
+      switch (tcp_sock->state)
       {
       case TCP_STATE_LISTEN:
       case TCP_STATE_SYN_SENT:
       case TCP_STATE_SYN_RECEIVED:
-        TCPSend(packet->destination_ip_address,
-                EndianU16(header->destination_port),
-                packet->source_ip_address,
-                EndianU16(header->source_port),
+        TCPSend(pkt->dst_ip_addr,
+                EndianU16(hdr->dst_port),
+                pkt->src_ip_addr,
+                EndianU16(hdr->src_port),
                 segment_ack_num,
-                segment_seq_num + segment_length,
+                segment_seq_num + segment_len,
                 TCPF_ACK | TCPF_RST);
         break;
       default:
-        if (IsTCPStateSync(tcp_socket))
-          return TRUE; // must ACK the packet.
+        if (IsTCPStateSync(tcp_sock))
+          return TRUE;
         break;
       }
     }
   }
-  return FALSE; // do not need to ACK the packet.
+  return FALSE;
 }
 
-Bool TCPHandleRst(CTCPSocket *tcp_socket, CTCPHeader *header, Bool is_seq_valid)
+Bool TCPHandleRst(CTCPSock *tcp_sock, CTCPHdr *hdr, Bool is_seq_valid)
 {// returns whether or not to stop overall TCP procedure.
-  if (Bt(&header->flags, TCPf_RST))
+  if (hdr->rst)
   {
-    switch (tcp_socket->state)
+    switch (tcp_sock->state)
     {
     case TCP_STATE_SYN_SENT:
-      if (tcp_socket->first_unacked_seq == tcp_socket->next_send_seq_num)
+      if (tcp_sock->first_unacked_seq == tcp_sock->next_send_seq_num)
       {
         NetWarn("TCP HANDLE SOCKET: Got RST, socket state SYN_SENT. Connection refused.");
-        tcp_socket->state = TCP_STATE_CLOSED;
+        tcp_sock->state = TCP_STATE_CLOSED;
         return TRUE;
       }
       break;
@@ -134,7 +148,7 @@ Bool TCPHandleRst(CTCPSocket *tcp_socket, CTCPHeader *header, Bool is_seq_valid)
       if (is_seq_valid)
       {
         NetWarn("TCP HANDLE SOCKET: Got RST, connection refused by remote host.");
-        tcp_socket->state = TCP_STATE_CLOSED;
+        tcp_sock->state = TCP_STATE_CLOSED;
         return TRUE;
       }
     }
@@ -142,99 +156,99 @@ Bool TCPHandleRst(CTCPSocket *tcp_socket, CTCPHeader *header, Bool is_seq_valid)
   return FALSE;
 }
 
-U0 TCPHandleSocketLsten(CTCPSocket *tcp_socket, CIPV4Packet *packet, CTCPHeader *header, U32 segment_seq_num)
+U0 TCPHandleSockLsten(CTCPSock *tcp_sock, CIPV4Pkt *pkt, CTCPHdr *hdr, U32 segment_seq_num)
 {// if SYN and socket listening, queue up the connection in the socket's accept queue.
   CTCPAcceptQue *new_connection;
-  if (Bt(&header->flags, TCPf_SYN) && QueSize(tcp_socket->accept_queue) < tcp_socket->accept_queue_limit)
+  if (hdr->syn && QueSize(tcp_sock->accept_queue) < tcp_sock->accept_queue_limit)
   {
     NetDbg("TCP HANDLE SOCKET LISTEN: Adding new connection to Socket accept queue");
-    new_connection = CAlloc(sizeof(CTCPAcceptQue));
+    new_connection = CAlloc(sizeof(CTCPAcceptQue), adam_task);
     new_connection->segment_seq_num = segment_seq_num;
-    new_connection->ipv4_address    = packet->source_ip_address;
-    new_connection->port            = header->source_port;
-    QueInsRev(new_connection, tcp_socket->accept_queue);
+    new_connection->ipv4_addr    = pkt->src_ip_addr;
+    new_connection->port            = hdr->src_port;
+    QueInsRev(new_connection, tcp_sock->accept_queue);
   }
   else
   {
-    // refuse
     NetDbg("TCP HANDLE SOCKET LISTEN: Header flags not SYN or Que full, REFUSING CONNECTION");
-    TCPSend(packet->destination_ip_address,
-            EndianU16(header->destination_port),
-            packet->source_ip_address,
-            EndianU16(header->source_port),
+    TCPSend(pkt->dst_ip_addr,
+            EndianU16(hdr->dst_port),
+            pkt->src_ip_addr,
+            EndianU16(hdr->src_port),
             segment_seq_num + 1,
             segment_seq_num + 1,
             TCPF_ACK | TCPF_RST);
   }
 }
 
-U0 TCPHandleSocket(CTCPSocket *tcp_socket, CIPV4Packet *packet, CTCPHeader *header, U8 *data, I64 length)
+U0 TCPHandleSock(CTCPSock *tcp_sock, CIPV4Pkt *pkt, CTCPHdr *hdr, U8 *data, I64 len)
 {
-  U32  segment_length       = length;
-  U32  segment_seq_num  = EndianU32(header->seq_num);
-  U32  segment_ack_num  = EndianU32(header->ack_num);
+  U32  segment_len       = len;
+  U32  segment_seq_num  = EndianU32(hdr->seq_num);
+  U32  segment_ack_num  = EndianU32(hdr->ack_num);
   Bool must_ack         = FALSE;
   Bool is_seq_valid     = FALSE;
   I64  seq_relative;
   I64  seq_end_relative;
-  if (Bt(&header->flags, TCPf_FIN))
-    segment_length++;
-  if (Bt(&header->flags, TCPf_SYN))
-    segment_length++;
-  switch (tcp_socket->state)
+  if (hdr->fin)
+    segment_len++;
+  if (hdr->syn)
+    segment_len++;
+  switch (tcp_sock->state)
   {
   case TCP_STATE_LISTEN:
     NetDbg("TCP HANDLE SOCKET: Running TCP HANDLE SOCKET LISTEN");
-    TCPHandleSocketLsten(tcp_socket, packet, header, segment_seq_num);
+    TCPHandleSockLsten(tcp_sock, pkt, hdr, segment_seq_num);
     return;
   case TCP_STATE_CLOSED:
     NetErr("TCP HANDLE SOCKET: Received packet but TCP Socket is CLOSED.");
     return;
   default:
-    if (Bt(&header->flags, TCPf_SYN))
+    if (hdr->syn)
     {
-      tcp_socket->next_recv_seq_num = ++segment_seq_num;
+      tcp_sock->next_recv_seq_num = ++segment_seq_num;
       must_ack = TRUE;
     }
-    if (segment_length == 0 && tcp_socket->receive_window == 0)
+    if (segment_len == 0 && tcp_sock->rx_window == 0)
     {
       NetDbg("TCP HANDLE SOCKET: segment length == 0 && receive window == 0, SEQ valid if seq == next recv seq");
-      is_seq_valid = (segment_seq_num == tcp_socket->next_recv_seq_num);
+      is_seq_valid = (segment_seq_num == tcp_sock->next_recv_seq_num);
     }
     else
     {
-      seq_relative = (segment_seq_num - tcp_socket->next_recv_seq_num) & 0xFFFFFFFF;
-      seq_end_relative = (segment_seq_num + segment_length - 1 - tcp_socket->next_recv_seq_num) & 0xFFFFFFFF;
-      is_seq_valid = (seq_relative < tcp_socket->receive_window ||
-                      seq_end_relative < tcp_socket->receive_window);
+      seq_relative = (segment_seq_num - tcp_sock->next_recv_seq_num) & 0xFFFFFFFF;
+      seq_end_relative = (segment_seq_num + segment_len - 1 - tcp_sock->next_recv_seq_num) & 0xFFFFFFFF;
+      is_seq_valid = (seq_relative < tcp_sock->rx_window ||
+                      seq_end_relative < tcp_sock->rx_window);
     }
     if (!is_seq_valid)
       NetWarn("TCP HANDLE SOCKET: Invalid SEQ.");
-    must_ack |= TCPHandleACK(tcp_socket, packet, header, segment_seq_num, segment_ack_num, segment_length);
-    if (TCPHandleRst(tcp_socket, header, is_seq_valid))
+    must_ack |= TCPHandleACK(tcp_sock, pkt, hdr, segment_seq_num, segment_ack_num, segment_len);
+    if (TCPHandleRst(tcp_sock, hdr, is_seq_valid))
       return;
     if (is_seq_valid)
-      must_ack |= TCPHandleValidSEQ(tcp_socket, header, segment_seq_num, length, data);
+      must_ack |= TCPHandleValidSEQ(tcp_sock, hdr, segment_seq_num, len, data);
+    else if (!hdr->rst && IsTCPStateSync(tcp_sock))
+      must_ack = TRUE;
     if (must_ack)
-      TCPSendFlags(tcp_socket, TCPF_ACK);
+      TCPSendFlags(tcp_sock, TCPF_ACK);
   }
 }
 
-I64 TCPHandleRefuse(CIPV4Packet *packet, CTCPHeader *header, I64 length)
+I64 TCPHandleRefuse(CIPV4Pkt *pkt, CTCPHdr *hdr, I64 len)
 {
   I64 de_index;
-  U32 ack_num = EndianU32(header->ack_num);
-  U32 seq_num = EndianU32(header->seq_num);
-  no_warn length; // TODO: Will reset generation need length ?
+  U32 ack_num = EndianU32(hdr->ack_num);
+  U32 seq_num = EndianU32(hdr->seq_num);
+  no_warn len;
   ack_num = ++seq_num;
   seq_num = 0;
-  // review RFC Rst-Generation ...
-  if (Bt(&header->flags, TCPf_RST))
-    return 0; // bail: don't respond to a reset for a connection that doesn't exist
-  de_index = TCPSend(packet->destination_ip_address,
-                     EndianU16(header->destination_port),
-                     packet->source_ip_address,
-                     EndianU16(header->source_port),
+  if (hdr->rst)
+    return 0;
+  de_index = TCPSend(pkt->dst_ip_addr,
+                     EndianU16(hdr->dst_port),
+                     pkt->src_ip_addr,
+                     EndianU16(hdr->src_port),
                      seq_num,
                      ack_num,
                      TCPF_RST | TCPF_ACK);
@@ -246,52 +260,59 @@ I64 TCPHandleRefuse(CIPV4Packet *packet, CTCPHeader *header, I64 length)
   return 0;
 }
 
-I64 TCPHandler(CIPV4Packet *packet)
+I64 TCPHandler(CIPV4Pkt *pkt)
 {
-  CTCPHeader        *header;
-  U16                destination_port;
+  CTCPHdr        *hdr;
+  U16                dst_port;
   U8                *data;
-  I64                length;
-  CTCPTreeNode  *head = tcp_globals.bound_socket_tree;
-  CTCPTreeNode  *node;
-  CTCPTreeQue   *queue;
-  CTCPSocket        *tcp_socket;
-  I64                error = TCPPacketPrs(&header, &data, &length, packet);
+  I64                len;
+  CTCPTreeNode  *head, *node = NULL;
+  CTCPTreeQue   *queue = NULL;
+  CTCPSock        *tcp_sock = NULL;
+  I64                error = TCPPktPrs(&hdr, &data, &len, pkt);
   if (error < 0)
   {
     NetErr("TCP HANDLER: Packet Prs Error.");
     return error;
   }
-  NetDbg("TCP HANDLER: Caught packet with dest port of %0X (B.E.)", header->destination_port);
-  destination_port = EndianU16(header->destination_port); // B.E. -> L.E.
-  NetDbg("TCP HANDLER: Caught packet with dest port of %0X (L.E.)", destination_port);
+  NetDbg("TCP HANDLER: Caught packet with dest port of %0X (B.E.)", hdr->dst_port);
+  dst_port = EndianU16(hdr->dst_port);
+  NetDbg("TCP HANDLER: Caught packet with dest port of %0X (L.E.)", dst_port);
+  PUSHFD
+  CLI
+  while (LBts(&tcp_bound_tree_lock, 0))
+    PAUSE
+  head = tcp_globals.bound_sock_tree;
+  if (head && (node = TCPTreeNodeFind(dst_port, head)))
+    queue = TCPTreeNodeQueIPV4Find(pkt->src_ip_addr, node);
+  if (queue)
+  {
+    tcp_sock = queue->sock;
+    tcp_sock->handler_refs++;
+  }
+  LBtr(&tcp_bound_tree_lock, 0);
+  POPFD
   if (head)
   {
-    node = TCPTreeNodeFind(destination_port, head);
     if (node)
     {
-      NetDbg("TCP HANDLER: Found node for port, looking for address %0X (L.E.)", packet->source_ip_address);
-      queue = TCPTreeNodeQueIPV4Find(packet->source_ip_address, node); // TODO: make sure bit order is correct here!!
-      if (queue)
-      {
-        tcp_socket = queue->socket;
+      if (tcp_sock)
         NetLog("TCP HANDLER: Port and Address are in bound tree.");
-      }
       else
       {
         NetWarn("TCP HANDLER: Found node for port, but address is not in node queue.");
-        NetWarn("             TCP source ip: 0x%0X.", packet->source_ip_address);
+        NetWarn("             TCP source ip: 0x%0X.", pkt->src_ip_addr);
         NetWarn("TCP HANDLER: Sending TCP RST ACK packet. Refusing connection.");
-        TCPHandleRefuse(packet, header, length);
+        TCPHandleRefuse(pkt, hdr, len);
         return -1;
       }
     }
     else
     {
-      NetDbg("TCP HANDLER: NODE SEARCH FAILURE: PORT %0X", destination_port);
+      NetDbg("TCP HANDLER: NODE SEARCH FAILURE: PORT %0X", dst_port);
       NetWarn("TCP HANDLER: Node for Port is not in tree.");
       NetWarn("TCP HANDLER: Sending TCP RST ACK packet. Refusing connection.");
-      TCPHandleRefuse(packet, header, length);
+      TCPHandleRefuse(pkt, hdr, len);
       return -1;
     }
   }
@@ -299,10 +320,17 @@ I64 TCPHandler(CIPV4Packet *packet)
   {
     NetWarn("TCP HANDLER: Socket tree is currently empty.");
     NetWarn("TCP HANDLER: Sending TCP RST ACK packet. Refusing connection.");
-    TCPHandleRefuse(packet, header, length);
+    TCPHandleRefuse(pkt, hdr, len);
     return -1;
   }
-  // at this point, tcp_socket is set, otherwise has already returned -1.
   NetDbg("TCP HANDLER: Running TCP HANDLE SOCKET");
-  TCPHandleSocket(tcp_socket, packet, header, data, length);
+  TCPHandleSock(tcp_sock, pkt, hdr, data, len);
+  PUSHFD
+  CLI
+  while (LBts(&tcp_bound_tree_lock, 0))
+    PAUSE
+  tcp_sock->handler_refs--;
+  LBtr(&tcp_bound_tree_lock, 0);
+  POPFD
+  return 0;
 }

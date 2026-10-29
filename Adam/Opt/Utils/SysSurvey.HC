@@ -56,77 +56,96 @@ public I64 YNorU(I64 enter_default=0)
 }
 #help_index ""
 
-I64 AskQuestion(U8 *q)
-{
-  I64 def=q[StrLen(q)+1];
+#define SVY_NO		0
+#define SVY_YES		1
+#define SVY_UNKNOWN	2
+
+I64 SvyAsk(U8 *q,I64 enter_default)
+{//Ask q, returning SVY_NO, SVY_YES or SVY_UNKNOWN.
+  I64 res;
   "%s ",q;
-  return YNorU(def);
+  res=YNorU(enter_default);
+  "\n";
+  return res;
 }
 
-#define NUM_INS_SURVEY_QUESTIONS 3
-
-static U8 *ins_questions[NUM_INS_SURVEY_QUESTIONS]=
-{
-  "Did the automatic installer work\0u",
-  "Did you manually partition and format the drive\0u",
-  "Did you manually have to enter IO port numbers\0u",
-};
-
-#define NUM_STD_SURVEY_QUESTIONS 10
-
-static U8 *std_questions[NUM_STD_SURVEY_QUESTIONS]=
-{
-  "Is AHCI mode supported in BIOS\0u",
-  "Is Legacy/IDE mode supported in BIOS\0u",
-  "Does PS/2 emulation of USB both keyboard and mouse work in TinkerOS\0u",
-  "Does your system have a PS/2 mouse or combo port\0u",
-  "Does your system have a serial port\0u",
-  "Does your system have a parallel port\0u",
-  "Can you install and run TinkerOS bare metal\0u",
-  "Can you install and run TempleOS bare metal\0u",
-  "Does PS/2 emulation of USB both keyboard and mouse work in TempleOS\0u",
-  "Is this a custom built PC / motherboard you installed\0u",
-};
-
-
-U0 SetDefaultResp(U8 *q, I64 resp)
-{
-  q[StrLen(q)+1]=resp;
+I64 SvyUsbCnt(I64 kind,I64 kind2=-1)
+{//How many USB devices of kind (or kind2) are plugged in.
+  I64 k,n=0,t;
+  for (k=0; k<16; k++)
+  {
+    t=UsbDevKind(k);
+    if (t>0 && (t==kind || t==kind2))
+      n++;
+  }
+  return n;
 }
 
+Bool SvyUsbBoot()
+{//TRUE if we booted off a USB drive (TinkerOS's own USB driver).
+  CDrv *dv;
+  I64 let=blkdev.boot_drv_let;
+  if (USB_FIRST_DRV_LET<=let<=USB_LAST_DRV_LET)
+    return TRUE;
+  if (!DrvMounted(let)) return FALSE;
+  dv=Let2Drv(let);
+  if (!dv || !dv->bd) return FALSE;
+  return dv->bd->type==BDT_USB;
+}
 
 public U0 RunSysSurvey()
 {
-  CDrv *dv;
-  U8 *notes=NULL, *survey_file;
-  Bool is_laptop,extra_notes,installed,sysrep,clonezilla;
-  I64 have_kbd_ms,have_expresscard,have_dock,i,resp[NUM_STD_SURVEY_QUESTIONS], resp_ins[NUM_INS_SURVEY_QUESTIONS];
+  U8 *notes=NULL,*survey_file;
+  Bool usb_boot,usb_works,sysrep,is_laptop;
+  I64 usb_kbd,usb_ms,usb_cam,r_installed,def_installed='u',
+      r_usb_kbd,r_usb_ms,r_ps2_kbd,r_ps2_ms,r_usb_cam=SVY_UNKNOWN,
+      r_lt_kbd=SVY_UNKNOWN,r_lt_ms=SVY_UNKNOWN;
 
   DocClear;
   WinMax;
   DocMax;
   AutoComplete(0);
-
-  if (blkdev.boot_drv_let != 'B' && blkdev.boot_drv_let !='T') installed=TRUE;
-
-  if (AHCIMode) SetDefaultResp(std_questions[0],'y');
-  else SetDefaultResp(std_questions[0],'n');
-
-  if (!AHCIMode) SetDefaultResp(std_questions[1],'y');
-
   DefineLstLoad("ST_SYS_SURVEY","No\0Yes\0Unknown\0NA\0");
-  for (i=0; i<NUM_STD_SURVEY_QUESTIONS; i++)
+
+  usb_boot=SvyUsbBoot;
+  usb_kbd =SvyUsbCnt(USB_KIND_KBD);
+  usb_ms  =SvyUsbCnt(USB_KIND_MOUSE,USB_KIND_TABLET);
+  usb_cam =SvyUsbCnt(USB_KIND_VIDEO);
+
+  //Booting off a USB drive proves the USB stack works.
+  usb_works=usb_boot;
+
+  "Detected: %d USB keyboard(s), %d USB mouse/pointer(s), %d USB webcam(s)\n",
+    usb_kbd,usb_ms,usb_cam;
+  if (usb_boot)
+    "Booted from USB drive %C, so USB works.\n",blkdev.boot_drv_let;
+  "\n";
+
+  //A detected webcam says nothing about whether Apps/WebCam drives it, so
+  //this is asked before anything else: answering unknown hands out the
+  //directions and quits, with no other answers to lose.
+  if (usb_cam)
   {
-    resp[i]=AskQuestion(std_questions[i]);
-    if ((i==1||i==6) && resp[i]==0)
+    r_usb_cam=SvyAsk("Does the USB webcam work in Apps/WebCam",'u');
+    if (r_usb_cam==SVY_UNKNOWN)
     {
-      SetDefaultResp(std_questions[7],'n');
-      SetDefaultResp(std_questions[8],'n');
+      "$$PT$$Enter this to try the webcam:$$FG$$\n\n";
+      "  #include \"::/Apps/WebCam/WebCam\";WebCam;\n\n";
+      "Space takes a picture, Esc quits, and\n";
+      "::/Apps/WebCam/Help.DD has the rest.\n\n";
+      "Then run SysSurvey again and answer the webcam\n";
+      "question.\n\n";
+      AutoComplete(1);
+      return;
     }
-    if (i==2 && resp[i]==0)
-      SetDefaultResp(std_questions[8],'n');
-    "\n";
   }
+
+  "For all questions you may answer u for unknown.\n\n";
+
+  //Booting a hard drive partition means it got installed there.
+  if ('C'<=blkdev.boot_drv_let<='F')
+    def_installed='y';
+  r_installed=SvyAsk("Can you install and run TinkerOS bare metal",def_installed);
 
   "Is your system a laptop ";
   is_laptop=YorN('n');
@@ -134,27 +153,33 @@ public U0 RunSysSurvey()
 
   if (is_laptop)
   {
-    "Do the laptop keyboard and trackpad both work ";
-    have_kbd_ms=YNorU('u');
-    "\n";
-    "Do you have a dock with useful ports (ps/2,serial,parallel) ";
-    have_dock=YNorU('u');
-    "\n";
-    "Does your laptop have an expresscard slot ";
-    have_expresscard=YNorU('u');
-    "\n";
+    r_lt_kbd=SvyAsk("Does the built-in laptop keyboard work in TinkerOS",'u');
+    r_lt_ms=SvyAsk("Does the built-in laptop trackpad or mouse work in TinkerOS",'u');
   }
 
-  if (installed)
+  if (usb_kbd)
   {
-    for (i=0; i<NUM_INS_SURVEY_QUESTIONS; i++)
-    {
-      resp_ins[i]=AskQuestion(ins_questions[i]);
-      "\n";
-    }
+    r_usb_kbd=SvyAsk("Does the USB keyboard work in TinkerOS",'y');
+    //You needed a working keyboard to get here, but with a USB keyboard
+    //plugged in we cannot tell which one you typed on.
+    r_ps2_kbd=SvyAsk("Does a PS/2 keyboard work in TinkerOS",'u');
+  }
+  else
+  {
+    r_usb_kbd=SVY_UNKNOWN;
+    r_ps2_kbd=SVY_YES;
   }
 
-  "\n";
+  if (usb_ms)
+    r_usb_ms=SvyAsk("Does the USB mouse work in TinkerOS",'y');
+  else
+    r_usb_ms=SVY_UNKNOWN;
+
+  r_ps2_ms=SvyAsk("Does a PS/2 mouse or trackpad work in TinkerOS",'u');
+
+  if (r_usb_kbd==SVY_YES || r_usb_ms==SVY_YES || r_usb_cam==SVY_YES)
+    usb_works=TRUE;
+
   "You are able to automatically include important useful\n";
   "information on your hardware (serial numbers and other\n";
   "identifying personal information is excluded) and you\n";
@@ -162,16 +187,12 @@ public U0 RunSysSurvey()
   "before sending it.\n\n";
 
   "Can I gather this hardware information to include ";
-
   sysrep=YorN('y');
 
   "\n";
   "Any extra notes you would like to share ";
-
   if (YorN('n'))
-  {
     notes=PopUpGetStr("Please enter extra notes, then press ESC\n");
-  }
 
   DocClear;
 
@@ -189,63 +210,56 @@ public U0 RunSysSurvey()
   if (AHCIMode) "AHCI\n\n";
   else "IDE/Legacy\n\n";
   "Current boot drive: %C\n\n",blkdev.boot_drv_let;
+  if (blkdev.boot_drv_let!='B')
+    "Booted from USB: %s\n\n",DefineSub(usb_boot,"ST_SYS_SURVEY");
+  else
+    "Booted from USB: MemDisk to RAM disk\n\n";
+  "USB keyboards: %d, USB mice/pointers: %d, USB webcams: %d\n\n",
+    usb_kbd,usb_ms,usb_cam;
 
+  if (usb_works) "USB works\n\n";
 
+  "Can you install and run TinkerOS bare metal: %s\n\n",
+    DefineSub(r_installed,"ST_SYS_SURVEY");
   "Laptop: %s\n\n",DefineSub(is_laptop,"ST_SYS_SURVEY");
   if (is_laptop)
-    "Dock with useful ports available: %s\n\n",DefineSub(have_dock,"ST_SYS_SURVEY");
-  if (is_laptop)
-    "Expresscard slot available: %s\n\n",DefineSub(have_expresscard,"ST_SYS_SURVEY");
-  if (is_laptop)
-    "Do laptop keyboard and trackpad both work: %s\n\n",DefineSub(have_kbd_ms,"ST_SYS_SURVEY");
-
-  for (i=0; i<NUM_STD_SURVEY_QUESTIONS; i++)
   {
-    "%s: %s\n\n",std_questions[i],DefineSub(resp[i],"ST_SYS_SURVEY");
+    "Does the built-in laptop keyboard work in TinkerOS: %s\n\n",
+      DefineSub(r_lt_kbd,"ST_SYS_SURVEY");
+    "Does the built-in laptop trackpad or mouse work in TinkerOS: %s\n\n",
+      DefineSub(r_lt_ms,"ST_SYS_SURVEY");
   }
-
-  if (installed)
-  {
-    for (i=0; i<NUM_INS_SURVEY_QUESTIONS; i++)
-    {
-      "%s: %s\n\n",ins_questions[i],DefineSub(resp_ins[i],"ST_SYS_SURVEY");
-    }
-  }
+  "Does the USB keyboard work in TinkerOS: %s\n\n",
+    DefineSub(r_usb_kbd,"ST_SYS_SURVEY");
+  "Does the USB mouse work in TinkerOS: %s\n\n",
+    DefineSub(r_usb_ms,"ST_SYS_SURVEY");
+  "Does a PS/2 keyboard work in TinkerOS: %s\n\n",
+    DefineSub(r_ps2_kbd,"ST_SYS_SURVEY");
+  "Does a PS/2 mouse or trackpad work in TinkerOS: %s\n\n",
+    DefineSub(r_ps2_ms,"ST_SYS_SURVEY");
+  if (usb_cam)
+    "Does the USB webcam work in Apps/WebCam: %s\n\n",
+      DefineSub(r_usb_cam,"ST_SYS_SURVEY");
 
   if (!AHCIMode)
     GetBootDrvPortInfo;
 
-  if (extra_notes) "Extra notes: \n\n%s\n\n",notes;
+  if (notes) "Extra notes: \n\n%s\n\n",notes;
+
+  "USB devices:\n";
+  UsbRep;
+  "\n";
 
   if (sysrep)
   {
     "Results from SysRepSurvey:\n\n";
     SysRepSurvey;
+    "\nHypervisor present: %d\n\n",IsHypervisorPresent;
+    VidModes;
+    "\n";
   }
 
-
-  "\nHypervisor present: %d\n\n",IsHypervisorPresent;
-
-  VidModes;
-  "\n";
-
-  if (DrvMounted('C')||DrvMounted('D')||DrvMounted('E')||DrvMounted('F'))
-  {
-    clonezilla=TRUE;
-    for (i=0;i<4;i++)
-    {
-      if (DrvMounted('C'+i))
-      {
-        dv=Let2BlkDev('C'+i);
-        if (!dv || dv->size != 0x256534442) clonezilla=FALSE;
-      }
-    }
-  }
-  else clonezilla=FALSE;
-
-  if (clonezilla) "It appears clonezilla was used to partition the drive.\n";
-
-  if (installed && blkdev.boot_drv_let != 'T')
+  if (blkdev.boot_drv_let!='B' && blkdev.boot_drv_let!='T')
     survey_file=MStrPrint("%C:/Home/Survey.DD",blkdev.boot_drv_let);
   else
   {
@@ -256,17 +270,10 @@ public U0 RunSysSurvey()
   StrCpy(Fs->put_doc->filename.name,survey_file);
   DocWrite(Fs->put_doc);
 
-  "\nWrote %s, please transfer to an internet connected PC\n",survey_file;
-  "and rename it appropriately and make a github pull\n";
-  "request to add your system! This will help others\n";
-  "know what systems are TOS compatible!\n\n";
-
-  if (SNAIL_COM>0)
-  {
-    "Attempt to automatically send survey to TOS server over serial port ";
-    if (YorN('y'))
-      Fput(survey_file,"Survey.DD");
-  }
+  "\nWrote %s, please copy it to a USB drive and transfer it\n",survey_file;
+  "to an internet connected PC, rename it appropriately and\n";
+  "make a github pull request to add your system! This will\n";
+  "help others know what systems are TOS compatible!\n\n";
 
   Free(survey_file);
   Free(notes);

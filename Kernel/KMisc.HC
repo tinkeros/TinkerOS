@@ -36,6 +36,20 @@ I64 EndianI64(I64 d)
   return res;
 }
 
+U64 EndianU64(U64 d)
+{//Swap big<-->little endian.
+  U64 res;
+  res.u8[7]=d.u8[0];
+  res.u8[6]=d.u8[1];
+  res.u8[5]=d.u8[2];
+  res.u8[4]=d.u8[3];
+  res.u8[3]=d.u8[4];
+  res.u8[2]=d.u8[5];
+  res.u8[1]=d.u8[6];
+  res.u8[0]=d.u8[7];
+  return res;
+}
+
 I64 BCnt(I64 d)
 {//Count set bits in I64.
   I64 res=0,i;
@@ -115,6 +129,11 @@ F64 tS()
 U0 ZeroClass(U8 *ptr,I64 s_elem=firstsize)
 {//Set all data in a class to zero.
   MemSet(ptr,0,s_elem);
+}
+
+U0 ClassCpy(U8 *dst,U8 *src,I64 n_elem=1,I64 s_elem=firstsize)
+{//Copy n_elem elements of a class onto another, fixed or heap array alike.
+  MemCpy(dst,src,n_elem*s_elem);
 }
 
 U0 ArrayZero(U8 *ptr,I64 n_elem,I64 s_elem=firstsize)
@@ -362,7 +381,7 @@ CTask *SetSysFocusTask(CTask *task,Bool check_raw=TRUE)
   CLI
   SetAltScrn;  // Restore screen if full screen app loses focus
   CMsRawQue *entry = ms_hard.raw_queue->next;
-  if (!check_raw || !ms_hard.installed || IsDbgMode || IsRaw)
+  if (!check_raw || !(ms_hard.installed || ms_inject) || IsDbgMode || IsRaw)
   {
     sys_focus_task=task;
     POPFD
@@ -371,7 +390,7 @@ CTask *SetSysFocusTask(CTask *task,Bool check_raw=TRUE)
   ms_hard.raw_mode = MsRawQueFind(task);
   ms.show = !ms_hard.raw_mode;
   sys_focus_task=task;
-  while (ms_hard.installed && entry && entry != ms_hard.raw_queue)
+  while ((ms_hard.installed || ms_inject) && entry && entry != ms_hard.raw_queue)
   {
     if (!TaskValidate(entry->task))
     {

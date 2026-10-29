@@ -1,12 +1,12 @@
 U0 PCNetTest()
 {
-  U8 *packet_buffer;
+  U8 *pkt_buf;
   I64 de_index;
   while (TRUE)
   {
-    de_index = PCNetTransmitPacketAllocate(&packet_buffer, 8);
-    *(packet_buffer(U64 *)) = EndianU64(0xDEADBEEFC0DEFADE);
-    PCNetTransmitPacketFinish(de_index);
+    de_index = PCNetTxPktAlloc(&pkt_buf, 8);
+    *(pkt_buf(U64 *)) = EndianU64(0xDEADBEEFC0DEFADE);
+    PCNetTxPktFinish(de_index);
     Sleep(300);
   }
 }

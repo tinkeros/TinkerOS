@@ -2,26 +2,31 @@
 
 class CUDPMsgQue:CQue
 { // each bound socket queues data. recv functions & hndlr use this.
-	U8						*data;				// contains the UDP payload data.
-	I64						 data_length;		// size of payload data.
-	I64						 received_length;	// amount of the data received so far.
-	CSocketAddressStorage	 from_address;	// when UDP Handler sees UDP packet, this is filled with where packet came from.
-											// recvfrom uses this to fill its address_out parameter.
+	U8						*data;
+	I64						 data_len;
+	I64						 received_len;
+	CSockAddrStorage	 from_addr;
 };
 
-class CUDPSocket
+class CUDPSock
 {
-	CSocket					*socket;
-	CUDPMsgQue		*receive_queue;
-	CSocketAddressStorage	 receive_address;	// based on ->family, cast or assign to a var as IPV4/IPV6 CSocketAddress
-	I64						 receive_timeout_ms;
-	I64						 receive_max_timeout;
-	U16						 bound_to;			// represents the currently bound port
+	CSock					*sock;
+	CUDPMsgQue		*rx_queue;
+	CSockAddrStorage	 rx_addr;
+	I64						 rx_timeout_ms;
+	I64						 rx_max_timeout;
+	U16						 bound_to;
+	I64						 rx_queue_depth;
+	I64						 rx_lock;
+	I64						 handler_refs;
+	I64						 close_lock;
 };
+
+#define UDP_RECV_QUEUE_MAX	32
 
 class CUDPTreeQue:CQue
 {
-	CUDPSocket		*socket;
+	CUDPSock		*sock;
 };
 
 class CUDPTreeNode:CBST
@@ -29,16 +34,16 @@ class CUDPTreeNode:CBST
 	CUDPTreeQue	*queue;
 };
 
-class CUDPRepEntry:CQue
+class CUDPRepEnt:CQue
 {
 	CUDPTreeNode *node;
 };
 
-class CUDPHeader
+class CUDPHdr
 {
-	U16 source_port;
-	U16 destination_port;
-	U16 length;
+	U16 src_port;
+	U16 dst_port;
+	U16 len;
 	U16 checksum;
 };
 
@@ -46,7 +51,7 @@ class CUDPHeader
 class CUDPGlbls
 {
 
-	CUDPTreeNode *bound_socket_tree;
+	CUDPTreeNode *bound_sock_tree;
 
 } udp_globals;
 

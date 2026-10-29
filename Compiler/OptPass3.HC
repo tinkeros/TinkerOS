@@ -319,7 +319,7 @@ U0 OptPass3(CCmpCtrl *cc,COptReg *reg_offsets)
              tmpi1->ic_code==IC_IMM_F64) && !tmpi1->ic_data)
         {
           OptFree(tmpi1);
-          MemCpy(&tmpi->arg1,&tmpi->arg2,sizeof(CICArg));
+          ClassCpy(&tmpi->arg1,&tmpi->arg2);
           tmpi->arg2.type=MDF_NULL;
           if (code==IC_BR_EQU_EQU)
             code=tmpi->ic_code=IC_BR_ZERO;

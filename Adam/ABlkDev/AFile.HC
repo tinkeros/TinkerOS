@@ -8,7 +8,7 @@ U0 GetFileDate(U8 *filename,CDate *cd)
   if (FileFind(filename,&de,FUF_JUST_FILES))
   {
     Free(de.full_name);
-    MemCpy(cd, &de.datetime, sizeof(CDate));
+    ClassCpy(cd, &de.datetime);
   }
   Free(cur_dir);
 }

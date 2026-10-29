@@ -1,16 +1,16 @@
-// Must be in same directory as driver files. (Uses __DIR__)
 // Throws if stack has no driver for the PC's hardware.
 
 #define PCIV_PCNET      0x1022
 #define PCID_PCNET      0x2000
 
 #define PCIV_E1000      0x8086
+#define PCID_82540EM    0x100E
 #define PCID_82545EM    0x100F
-#define PCID_82579LM    0x1502  // Intel 82579LM Gigabit Network Connection (e1000e, PCH-based)
-
-
+#define PCID_82579LM    0x1502
+#define PCID_82574L     0x10D3
+#define PCID_I217LM     0x153A
+#define PCID_I217V      0x153B
 #define PCIV_VIRTIO     0x1AF4
-//#define PCID_VIRTIO_NET 0x1000
 
 U0 NetDriverInclude(U8 *driver)
 {
@@ -21,12 +21,26 @@ U0 NetDriverInclude(U8 *driver)
 
 CPciDevInfo net_driver_pci;
 
+Bool NetUsbEcmPresent()
+{//Check kernel's USB Ethernet driver for an adapter.
+  CHashFun *h = HashFind("UsbEcmPresent", Fs->hash_table, HTT_FUN);
+  Bool (*fp)();
+  if (!h)
+    return FALSE;
+  fp = h->exe_addr;
+  return (*fp)();
+}
 
 U0 NetDriverInit()
 {
-  I64 b, d, f;
-//TODOTODOTODO
+  I64 b, d, f, i;
   Bool   found = FALSE;
+  if (NetUsbEcmPresent)
+  {//A USB Ethernet adapter takes priority over a PCI NIC.
+    "Found USB Ethernet adapter\n";
+    NetDriverInclude("UsbEcm");
+    return;
+  }
   if(PciFindByID(PCIV_PCNET,PCID_PCNET, NULL, NULL, &b, &d, &f))
   {
     "Found PCNet network card\n";
@@ -46,6 +60,7 @@ U0 NetDriverInit()
   {
     PciGetDevInfo(&net_driver_pci,b,d,f);
     ClassRep(&net_driver_pci);
+    found=FALSE;
     switch (net_driver_pci.vendor_id)
     {
     case PCIV_PCNET:
@@ -60,9 +75,16 @@ U0 NetDriverInit()
     case PCIV_E1000:
       switch (net_driver_pci.device_id)
       {
+      case PCID_82540EM:
       case PCID_82545EM:
-      case PCID_82579LM:
         NetDriverInclude("E1000");
+        found = TRUE;
+        break;
+      case PCID_82579LM:
+      case PCID_82574L:
+      case PCID_I217LM:
+      case PCID_I217V:
+        NetDriverInclude("E1000E");
         found = TRUE;
         break;
       }
@@ -79,8 +101,19 @@ U0 NetDriverInit()
     }
   }
   else
-  {
-    "Found no network card!\n";
+  {//No PCI NIC: a USB Ethernet adapter, given time to enumerate.
+    for (i = 0; i < 300 && !NetUsbEcmPresent; i++)
+      Sleep(10);
+    if (NetUsbEcmPresent)
+    {
+      "Found USB Ethernet adapter\n";
+      NetDriverInclude("UsbEcm");
+    }
+    else
+    {
+      "Found no network card!\n";
+      throw('NODRIVER');
+    }
   }
 }
 

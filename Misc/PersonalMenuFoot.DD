@@ -1,0 +1,2 @@
+$MA-X+PU,"List all syms in alpabetic order",LM="DocMax;Who;View;"$
+$MA-X+PU,"List all syms in numeric order",LM="DocMax;Who(\"+m\");View;"$

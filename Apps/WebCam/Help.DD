@@ -1,0 +1,41 @@
+$WW,1$$FG,5$$TX+CX,"WebCam"$$FG$
+
+Live picture from a USB webcam, in the TinkerOS extended palette (the 16 standard colors plus the 214 web-safe ones, see $LK,"GrSetExtPalette",A="MN:GrSetExtPalette"$). Take pictures and save them as $FG,2$.GR$FG$ files.
+
+$FG,2$#include "::/Apps/WebCam/WebCam";$FG$
+$FG,2$WebCam;$FG$	320x240 window. $FG,2$WebCam(640,480);$FG$ for VGA, $FG,2$WebCam(1280,720);$FG$ for 720p (MJPEG). A picture bigger than the window is shown at half size and saved at full size. $FG,2$WebCam(640,480,,,UVC_MJPEG);$FG$ asks for MJPEG even where YUY2 has the size.
+
+$FG,5$Keys$FG$
+
+$FG,2$Space$FG$	Take a picture (the picture stays), again: back to live.
+$FG,2$S$FG$ or $FG,2$Enter$FG$	Save the picture as $FG,2$~/Pictures/CamNNN.GR$FG$ (the first free number). $FG,2$WebCam(320,240,"C:/Pics");$FG$ saves elsewhere.
+$FG,2$D$FG$	Dithered (ordered 4x4, the default) or each pixel's nearest color.
+$FG,2$P$FG$	All the extended palette's colors (the default) or just the 16 standard ones. $FG,2$WebCam(320,240,,,,UVC_PAL_16);$FG$ starts with 16.
+$FG,2$Esc$FG$	Quit.
+
+$FG,5$Streaming window$FG$
+
+$FG,2$CamStream;$FG$	The picture at half size in a small window in the lower right corner that stays on top and never takes the keyboard, so you keep working in your own window. $FG,2$CamStream(640,480);$FG$ for a 320x240 window, $FG,2$CamStream(320,240,FALSE,UVC_PAL_16);$FG$ for 16 colors without dithering (arguments: width, height, dither, colors, camera, format).
+$FG,2$CamStream16;$FG$	The same in the 16 standard colors, dithered ($FG,2$CamStream16(320,240,FALSE);$FG$: nearest of the 16, not dithered).
+$FG,2$CamStreamColors(UVC_PAL_ALL);$FG$	Change a running stream's colors from the next frame: $FG,2$UVC_PAL_ALL$FG$ or $FG,2$UVC_PAL_16$FG$, then dithered ($FG,2$TRUE$FG$, the default) or not.
+$FG,2$CamStreamStop;$FG$	Close it ($FG,2$CamStream;$FG$ again does too). One of $FG,2$WebCam$FG$ and $FG,2$CamStream$FG$ at a time: they share the camera.
+
+$FG,5$Other calls$FG$
+
+$FG,2$CamSnap;$FG$	One 640x480 picture without a window ($FG,2$CamSnap(,1280,720);$FG$ for 720p): saves $FG,2$~/Pictures/CamNNN.GR$FG$ and returns its name.
+$FG,2$CamRep;$FG$	The camera's formats, frame sizes, frame rates and streaming bandwidths.
+$FG,2$CamDiag;$FG$	Stream 320x240 for 3 seconds and report: frames, why any were dropped, the payloads and the kernel's counters. $FG,2$CamDiag(640,480);$FG$ for another size, $FG,2$CamDiag(640,480,3,UVC_MJPEG);$FG$ for MJPEG.
+$FG,2$CamDiagAll;$FG$	Each common size and frame rate for 2 seconds, one line each: frames whole or short (and by how many lines), MJPEG frames decoded.
+$FG,2$CamCap;$FG$	Record every packet for 4 seconds into $FG,2$~/TOSXfr/cap.bin$FG$ (length and payload header each) for $FG,2$tools/uvccap.py$FG$ on another machine.
+
+Pictures open in $FG,2$GrPaint$FG$ and anything else that reads $FG,2$.GR$FG$ files ($LK,"GRRead",A="MN:GRRead"$).
+
+$FG,5$Cameras$FG$
+
+USB Video Class (UVC) cameras that send uncompressed YUY2 or MJPEG, on EHCI (high speed) or xHCI. YUY2 is used when the camera has the size, MJPEG otherwise (often the only way to get 720p). That includes the built-in cameras of the ThinkPad T420 (Chicony $FG,2$04f2:b221$FG$), T430 ($FG,2$04f2:b2db$FG$, $FG,2$04f2:b2ea$FG$) and T440p (Bison $FG,2$5986:0268$FG$), and most external USB 2.0 webcams plugged into an EHCI port. $FG,2$UsbRep;$FG$ lists a camera as $FG,2$video$FG$.
+
+Not supported: H.264-only cameras. Full-speed (USB 1.1) cameras on EHCI go through the hub's split transactions (siTDs): written to the EHCI spec, not tested on real hardware yet.
+
+$FG,5$How it works$FG$
+
+The kernel enumerates the camera ($FG,2$USB_KIND_VIDEO$FG$) and streams its isochronous endpoint (EHCI iTDs or siTDs, xHCI Isoch TRBs: $LK,"UsbVenIsoStart",A="MN:UsbVenIsoStart"$, $LK,"UsbVenIsoRead",A="MN:UsbVenIsoRead"$). $LK,"Uvc.HC",A="FI:::/Apps/WebCam/Uvc.HC"$ does the rest: descriptors, probe/commit, payload headers, frame assembly and the conversion to the palette. $LK,"Jpeg.HC",A="FI:::/Apps/WebCam/Jpeg.HC"$ decodes MJPEG frames, and any baseline .jpg: $FG,2$JpgFileDecode("photo.jpg",&w,&h)$FG$ gives RGB.

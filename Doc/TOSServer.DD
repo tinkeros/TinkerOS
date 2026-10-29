@@ -1,0 +1,48 @@
+$WW,1$$FG,5$$TX+CX,"TOSServer"$$FG$
+
+$LK,"TOSServer",A="FI:::/Adam/Opt/Utils/TOSServer.HC"$ is $FG,2$tos_server.py$FG$ written in HolyC. It answers $LK,"TOSClient",A="FI:::/Doc/TOSClient.DD"$ on a COM port, so one TinkerOS machine can give another one files, its clipboard, URL fetches and a HolyC command line, with no Linux machine in between. The client side is unchanged: $LK,"ProbeComm",A="MN:ProbeComm"$, $LK,"Fget",A="MN:Fget"$, $LK,"Fput",A="MN:Fput"$, $LK,"Dget",A="MN:Dget"$, $LK,"Dput",A="MN:Dput"$, $LK,"Dsync",A="MN:Dsync"$, $LK,"Hdir",A="MN:Hdir"$, $LK,"ClipGet",A="MN:ClipGet"$, $LK,"ClipPut",A="MN:ClipPut"$, $LK,"HExec",A="MN:HExec"$, $LK,"HGetOS",A="MN:HGetOS"$, $LK,"URLGet",A="MN:URLGet"$ all work as they do against $FG,2$tos_server.py$FG$.
+
+$FG,5$Starting a server$FG$
+
+$FG,2$TOSServer(1);$FG$	Serial: a UART (a null-modem cable to the other machine, or a virtual machine's serial port). Any COM port works.
+
+With the network loaded ($FG,2$#include "::/Demo/Net/Start";$FG$), the TCP COM ports of $LK,"CommTCP",A="FI:::/Demo/Net/Utilities/CommTCP.HC"$:
+
+$FG,2$TOSServerTcp(7777);$FG$	Listen on TCP port 7777, like $FG,2$tos_server.py --mode server$FG$. The client machine connects with $FG,2$AddTcpCommCli("<this machine's ip>",7777);$FG$.
+
+$FG,2$TOSServerTcpCli("192.168.1.20",7777);$FG$	Connect out, like $FG,2$tos_server.py --mode client$FG$. The client machine listens first with $FG,2$AddTcpCommSrv(7777);$FG$.
+
+On the client machine, $FG,2$ProbeComm;$FG$ then finds the server, and every TOSClient call works.
+
+$FG,5$Arguments$FG$
+
+All four take, after the port: $FG,2$dir="~/TOSXfr"$FG$, the transfer directory (made if missing; the client's names are relative to it, and names that leave it are refused), $FG,2$exec=FALSE$FG$ and $FG,2$bg=TRUE$FG$.
+
+$FG,2$exec$FG$	$FG,2$TRUE$FG$ lets the client's $FG,2$HExec$FG$ run HolyC on this machine, in the server's task, and get back what it printed. Off by default: a client could run anything in ring 0. Over TCP that means anyone who can reach the port.
+
+$FG,2$bg$FG$	$FG,2$TRUE$FG$ runs the server in a background task (any number of them, one per COM port). $FG,2$FALSE$FG$ runs it in the current task, printing each request, until Esc.
+
+$FG,5$Managing servers$FG$
+
+$LK,"TOSServerRep",A="MN:TOSServerRep"$;	What each server has done: requests, files in and out, bytes, errors, the last request.
+$LK,"TOSServerStop",A="MN:TOSServerStop"$;	Stop all of them, or $FG,2$TOSServerStop(com);$FG$ one. A port that $FG,2$TOSServerTcp$FG$/$FG,2$TOSServerTcpCli$FG$ made is closed too.
+
+Background servers log each request to the Adam log ($FG,2$AdamLog$FG$).
+
+$FG,5$Differences from tos_server.py$FG$
+
+$ID,2$
+* $FG,2$HExec$FG$ runs HolyC, not a shell command, and only with $FG,2$exec=TRUE$FG$.
+* $FG,2$HGetOS$FG$ answers $FG,2$TinkerOS$FG$.
+* URLs: $FG,2$http://$FG$ only (no https), and only with the network loaded. $FG,2$URLGetTextStr$FG$ gets the page with its tags, scripts and styles removed.
+* The socket commands ($FG,2$create_connection$FG$, $FG,2$send$FG$, $FG,2$recv$FG$) also need the network. $FG,2$recv$FG$ waits at most 200 ms for data.
+* A file sent to $FG,2$Foo.HC$FG$ when $FG,2$Foo.HC.Z$FG$ exists replaces $FG,2$Foo.HC.Z$FG$, and $FG,2$Fget("Foo.HC")$FG$ finds $FG,2$Foo.HC.Z$FG$, as on the client side. Other names keep their $FG,2$.Z$FG$ (compressed on disk).
+* $FG,2$Dsync$FG$ and $FG,2$Dget$FG$ compare MD5 sums of the uncompressed contents on both sides.
+$ID,-2$
+$FG,5$Notes$FG$
+
+$ID,2$
+* $FG,2$ProbeComm$FG$ skips a COM port this machine's own TOSServer runs on, so one machine can be server and client at once (on two ports wired together).
+* The network part is in $LK,"TOSSrvNet",A="FI:::/Demo/Net/Utilities/TOSSrvNet.HC"$, which $FG,2$Demo/Net/Load.HC$FG$ includes. Including $FG,2$TOSServer.HC$FG$ again afterwards drops it (include $FG,2$TOSSrvNet$FG$ again).
+* Serial speed is 115200 baud, about 11 KB/s. A TCP port is several times faster.
+$ID,-2$

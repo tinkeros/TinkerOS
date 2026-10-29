@@ -4,7 +4,7 @@ Cd(__DIR__);;
 I64 retries = 0;
 NetCfg;
 while (ipv4_globals.local_ip == 0
-    && retries<3) // local_ip is set if NetConfigure is successful
+    && retries<3)
 {
   retries++;
   if (retries>0)
@@ -24,6 +24,6 @@ else
 NetRep;
 if (ipv4_globals.local_ip != 0 && Fs != adam_task)
 {
-  "\nNow run one of the $MA,"Programs",LM="Cd(\"/Demo/Net/Programs\");Dir;\n"$.\n";
+  "\nNow run one of the $$MA,\"Programs\",LM=\"Cd(\\\"/Demo/Net/Programs\\\");Dir;\n\"$$.\n";
       "\nIf anything crashes to Dbg, try typing $FG,0$G2;$FG$\n\n";
 }

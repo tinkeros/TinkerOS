@@ -18,6 +18,10 @@ doc_ed_warn_overwrite=TRUE;
 // to help prevent opening the same file twice.
 doc_ed_warn_already_open=TRUE;
 
+// Uncomment to mount a USB stick on plug-in (first free letter of U-Z) and
+// open a terminal on it.  Otherwise use Mount() and pick a U-Z letter.
+//usb_automount=TRUE;
+
 // Misc helper functions
 
 // Try to auto mount drive C.
@@ -129,6 +133,9 @@ if (IsHypervisorPresent) {
 }
 
 AudioInit;
+
+if (DrvIsWritable && !IsFileZorNotZ("::/PersonalMenu.DD"))
+  AdamFile("::/Misc/AppMenu");
 
 #include "~/HomeWrappers"
 MapFileLoad("::/Kernel/Kernel");

@@ -171,7 +171,7 @@ Bool FileFind(U8 *filename,CDirEntry *_de=NULL,I64 fuf_flags=0)
   {
     if (res)
     {
-      MemCpy(_de,&de,sizeof(CDirEntry));
+      ClassCpy(_de,&de);
       _de->full_name=full_name;
     }
     else

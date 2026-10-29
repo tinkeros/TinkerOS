@@ -11,7 +11,7 @@ U0 GridDemo()
 {
   CGridGlbls old_grid;
   U0 (*old_draw_ms)(CDC *dc,I64 x,I64 y); //Can't init this type of var.
-  MemCpy(&old_grid,&ms_grid,sizeof(CGridGlbls));
+  ClassCpy(&old_grid,&ms_grid);
   GridInit;
   ms_grid.snap=TRUE; //You can set other $LK,"stuff",A="MN:CGridGlbls"$.
   ms_grid.x=GRID;
@@ -25,7 +25,7 @@ U0 GridDemo()
   }
   DCFill;
   gr.fp_draw_ms=old_draw_ms;
-  MemCpy(&ms_grid,&old_grid,sizeof(CGridGlbls));
+  ClassCpy(&ms_grid,&old_grid);
 }
 
 GridDemo;

@@ -42,6 +42,7 @@ public U0 BootHDIns(U8 drv_let=0)
     case BDT_AHCI_SATA:
     case BDT_ATA:
     case BDT_SDHCI:
+    case BDT_USB:
       Move("/Kernel/Kernel.BIN.Z","/" KERNEL_BIN_C);
       if (!FileFind("/" KERNEL_BIN_C,&de,FUF_JUST_FILES))
         "No Kernel.BIN.C\n";

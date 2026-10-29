@@ -603,7 +603,7 @@ U0 ODERK5OneStep(CMathODE *ode)
   else
     ode->h*=5.0;
   ode->h=Clamp(ode->h,ode->h_min,ode->h_max);
-  MemCpy(ode->state_internal,tmpstate,sizeof(F64)*ode->n_internal);
+  ClassCpy(ode->state_internal,tmpstate,ode->n_internal);
 }
 
 F64 ode_alloced_factor=0.75;

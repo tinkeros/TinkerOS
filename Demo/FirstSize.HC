@@ -20,3 +20,29 @@ StructInfo(Fs);
 StructInfo(&a);
 StructInfo(&s);
 
+//ClassCpy() uses firstsize the same way, so copying a class onto
+//another of the same class needs no sizeof() at the call.
+Student b,roster[3],backup[3];
+I64 i;
+
+a.next=NULL;
+a.age=85;
+StrCpy(a.name,"Grace Hopper");
+
+ClassCpy(&b,&a);
+"\nClassCpy(&b,&a) copied %d bytes, no sizeof needed.\n",sizeof(Student);
+"b is \"%s\", age %d.\n",b.name,b.age;
+
+ZeroClass(&b);
+"After ZeroClass(&b): \"%s\", age %d.\n",b.name,b.age;
+
+//The third arg is an element count, dft 1, so whole arrays work too.
+for (i=0; i<3; i++)
+{
+  ClassCpy(&roster[i],&a);
+  roster[i].age=i;
+}
+ClassCpy(backup,roster,3);
+"\nClassCpy(backup,roster,3) copied %d bytes.\n",3*sizeof(Student);
+for (i=0; i<3; i++)
+  "backup[%d] is \"%s\", age %d.\n",i,backup[i].name,backup[i].age;

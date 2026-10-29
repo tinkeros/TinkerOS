@@ -181,6 +181,7 @@ U0 MPAPICInit()
   LTR	AX
   if (Gs->num)
   {
+    MemPatInit;
     IntInit1;
     SetRFlags(RFLAGG_NORMAL);
   }
@@ -310,7 +311,7 @@ U0 Core0StartMP()
   //specified by a byte vect number, $LK,"MPN_VECT",A="MN:MPN_VECT"$ which corresponds
   //to a location 4096*vect number, $LK,"MP_VECT_ADDR",A="MN:MP_VECT_ADDR"$$WW,0$.
   MemCpy(mp,COREAP_16BIT_INIT,COREAP_16BIT_INIT_END-COREAP_16BIT_INIT);
-  MemCpy(&mp->ap_gdt_ptr,SYS_GDT_PTR,sizeof(CSysLimitBase));
+  ClassCpy(&mp->ap_gdt_ptr,SYS_GDT_PTR);
   mp_cnt_initial=mp_cnt=1;
   mp_cnt_lock=0;
   *(LAPIC_LVT_ERR)(U32 *)=
@@ -353,6 +354,7 @@ U0 Core0Init()
 {//Called by adam during start-up
   CRAXRBXRCXRDX ee;
   CPUId(0x1,&ee);
+  MemPatInit;
   mp_cnt_initial=mp_cnt=1;
   mp_cnt_lock=0;
   dbg.mp_crash=ACAlloc(sizeof(CMPCrash));

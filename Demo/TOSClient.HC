@@ -118,11 +118,15 @@ U0 TestClipboardRoundTrip()
 }
 
 U0 TestHostExec()
-{//Runs a shell command on the host and checks its output
-  U8 *marker="TOSClient_Unit_Test_OK",*cmd,*res=NULL;
+{//Runs a shell command on the host and checks its output.
+  U8 *marker="TOSClient_Unit_Test_OK",*cmd,*res=NULL,*os_name=NULL;
   try
   {
-    cmd=MStrPrint("echo %s",marker);
+    os_name=HGetOSStr;
+    if (os_name && !StrCmp(os_name,"TinkerOS"))
+      cmd=MStrPrint("\"%s\\n\";",marker);
+    else
+      cmd=MStrPrint("echo %s",marker);
     res=HExecToStr(cmd);
     Free(cmd);
     TOSCheck(res && StrMatch(marker,res),"HExecToStr");
@@ -132,6 +136,7 @@ U0 TestHostExec()
     Fs->catch_except=TRUE;
     TOSCheck(FALSE,"TestHostExec (exception)");
   }
+  Free(os_name);
   Free(res);
 }
 

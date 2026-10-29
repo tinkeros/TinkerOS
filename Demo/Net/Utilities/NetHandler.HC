@@ -1,11 +1,12 @@
-U0 IPV4Handler(CEthernetFrame *ethernet_frame)
+U0 IPV4Handler(CEthFrame *eth_frame)
 {
-  CIPV4Packet packet;
-  IPV4PacketPrs(&packet, ethernet_frame);
-  ARPCachePut(packet.source_ip_address, ethernet_frame->source_address);
+  CIPV4Pkt pkt;
+  if (IPV4PktPrs(&pkt, eth_frame) < 0)
+    return;
+  ARPCachePut(pkt.src_ip_addr, eth_frame->src_addr);
 
   if (net_log_log) {
-    switch (packet.protocol)
+    switch (pkt.protocol)
       {
       case IP_PROTOCOL_ICMP:
         NetLog("IPV4 HANDLER: ICMP.");
@@ -17,21 +18,21 @@ U0 IPV4Handler(CEthernetFrame *ethernet_frame)
         NetLog("IPV4 HANDLER: UDP.");
         break;
       default:
-        NetLog("IPV4 HANDLER: Unrecognized protocol: 0x%X", packet.protocol);
+        NetLog("IPV4 HANDLER: Unrecognized protocol: 0x%X", pkt.protocol);
         break;
     }
   }
 
-  switch (packet.protocol)
+  switch (pkt.protocol)
     {
     case IP_PROTOCOL_ICMP:
-      ICMPHandler(&packet);
+      ICMPHandler(&pkt);
       break;
     case IP_PROTOCOL_TCP:
-      TCPHandler(&packet);
+      TCPHandler(&pkt);
       break;
     case IP_PROTOCOL_UDP:
-      UDPHandler(&packet);
+      UDPHandler(&pkt);
       break;
     default:
       break;
@@ -41,14 +42,19 @@ U0 IPV4Handler(CEthernetFrame *ethernet_frame)
     NetLog("IPV4 HANDLER: Exiting.");
 }
 
-U0 NetQueEntryHandle(CNetQueEntry *entry)
+U0 NetQueEntHandle(CNetQueEnt *ent)
 {
-  CEthernetFrame ethernet_frame;
-  EthernetFramePrs(&ethernet_frame, entry->frame, entry->packet_length);
+  CEthFrame eth_frame;
+  if (EthFramePrs(&eth_frame, ent->frame, ent->pkt_len) < 0)
+    return;
+  if (MemCmp(EthMACGet, eth_frame.dst_addr, MAC_ADDR_LEN) &&
+        MemCmp(eth_globals.eth_broadcast, eth_frame.dst_addr,
+        MAC_ADDR_LEN))
+    return;
 
   if (net_log_log)
     {
-    switch (ethernet_frame.ethertype)
+    switch (eth_frame.ethertype)
       {
       case ETHERTYPE_ARP:
         NetLog("HANDLE NETQUEUE ENTRY: ARP.");
@@ -60,18 +66,18 @@ U0 NetQueEntryHandle(CNetQueEntry *entry)
         NetLog("HANDLE NETQUEUE ENTRY: IPV6. FIXME");
         break;
       default:
-        NetLog("HANDLE NETQUEUE ENTRY: Unrecognized ethertype: 0x%X", ethernet_frame.ethertype);
+        NetLog("HANDLE NETQUEUE ENTRY: Unrecognized ethertype: 0x%X", eth_frame.ethertype);
         break;
     }
   }
 
-  switch (ethernet_frame.ethertype)
+  switch (eth_frame.ethertype)
     {
     case ETHERTYPE_ARP:
-      ARPHandler(&ethernet_frame);
+      ARPHandler(&eth_frame);
       break;
     case ETHERTYPE_IPV4:
-      IPV4Handler(&ethernet_frame);
+      IPV4Handler(&eth_frame);
       break;
     case ETHERTYPE_IPV6:
       break;
@@ -85,10 +91,10 @@ U0 NetQueEntryHandle(CNetQueEntry *entry)
 
 U0 NetHandler()
 {
-  CNetQueEntry *entry;
+  CNetQueEnt *ent;
   while (1)
     {
-    if (entry=NetQuePull)
+    if (ent=NetQuePull)
       {
       if (net_log_log)
         {
@@ -99,8 +105,8 @@ U0 NetHandler()
 	      "NET HANDLER: Handling entry.");
         NetLog("NET HANDLER: Caught NetQue Entry, handling.");
       }
-      NetQueEntryHandle(entry);
-      Free(entry);
+      NetQueEntHandle(ent);
+      Free(ent);
       if (net_log_log)
         {
         NetLog("NET HANDLER: Finished handling NetQue Entry, Freeing.");

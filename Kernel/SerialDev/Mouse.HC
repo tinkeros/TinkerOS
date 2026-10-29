@@ -77,7 +77,7 @@ public U0 MsRawRst()
 CMsRawQue *MsRawQueFind(CTask *task)
 {
   CMsRawQue *entry;
-  if (ms_hard.installed)
+  if (ms_hard.installed || ms_inject)
   {
     entry  = ms_hard.raw_queue->next;
     while (entry != ms_hard.raw_queue)
@@ -265,7 +265,7 @@ U0 MsHardSpeedSet()
 U0 MsHardSetPre()
 {
   I64 old_timestamp=ms_hard_last.timestamp;
-  MemCpy(&ms_hard_last,&ms_hard,sizeof(CMsHardStateGlbls));
+  ClassCpy(&ms_hard_last,&ms_hard);
   ms_hard_last.timestamp=old_timestamp;
 }
 
@@ -317,7 +317,7 @@ public U0 MsHardHndlr(U8 *pkt=NULL)
   }
   else
   {
-    for (i=0; i<ms_hard.pkt_size; i++)
+    for (i=0; i<4; i++)
       ms_buf[i]=pkt[i];
   }
   if (ms_buf[0] & 0x10)
@@ -463,16 +463,17 @@ U0 KbdMsInit()
   ms_hard.prescale.z=0/ms_hard.scale.z;
   ms_hard.pos.x=GR_WIDTH>>1;
   ms_hard.pos.y=GR_HEIGHT>>1;
-  MemCpy(&ms_hard_last,&ms_hard,sizeof(CMsHardStateGlbls));
+  ClassCpy(&ms_hard_last,&ms_hard);
   ms_hard.raw_queue = CAlloc(sizeof(CQue));
   QueInit(ms_hard.raw_queue);
 }
 
 public U0 MsPktInject(U8 *pkt)
-{// Inject a mouse packet from an external non-PS/2 source
+{// Inject a 4 byte PS/2-style mouse packet from an external non-PS/2 source
     PUSHFD
     CLI
-    ms.timestamp=GetTSC;
+    ms_inject=TRUE;
+    ms_hard.timestamp=GetTSC;
     MsHardHndlr(pkt);
     POPFD
 }

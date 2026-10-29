@@ -6,15 +6,15 @@
 // PCI virtio I/O registers.
 //
 
-#define VIRTIO_PCI_HOST_FEATURES 0  // Features supported by the host
-#define VIRTIO_PCI_GUEST_FEATURES 4 // Features activated by the guest
-#define VIRTIO_PCI_QUEUE_PFN 8      // PFN for the currently selected queue
-#define VIRTIO_PCI_QUEUE_SIZE 12 // Que size for the currently selected queue
-#define VIRTIO_PCI_QUEUE_SEL 14  // Que selector
-#define VIRTIO_PCI_QUEUE_NOTIFY 16 // Que notifier
-#define VIRTIO_PCI_STATUS 18       // Device status register
-#define VIRTIO_PCI_ISR 19          // Interrupt status register
-#define VIRTIO_PCI_CONFIG 20       // Cfguration data block
+#define VIRTIO_PCI_HOST_FEATURES 0
+#define VIRTIO_PCI_GUEST_FEATURES 4
+#define VIRTIO_PCI_QUEUE_PFN 8
+#define VIRTIO_PCI_QUEUE_SIZE 12
+#define VIRTIO_PCI_QUEUE_SEL 14
+#define VIRTIO_PCI_QUEUE_NOTIFY 16
+#define VIRTIO_PCI_STATUS 18
+#define VIRTIO_PCI_ISR 19
+#define VIRTIO_PCI_CONFIG 20
 
 //
 // PCI virtio status register bits
@@ -29,14 +29,14 @@
 // Ring descriptor flags
 //
 
-#define VRING_DESC_F_NEXT 1     // Buffer continues via the next field
-#define VRING_DESC_F_WRITE 2    // Buffer is write-only (otherwise read-only)
-#define VRING_DESC_F_INDIRECT 4 // Buffer contains a list of buffer descriptors
+#define VRING_DESC_F_NEXT 1
+#define VRING_DESC_F_WRITE 2
+#define VRING_DESC_F_INDIRECT 4
 
 class @virtio_queue_buf
 {
-  U64 address;
-  U32 length;
+  U64 addr;
+  U32 len;
   U16 flags;
   U16 next;
 };
@@ -50,7 +50,7 @@ class @virtio_avail
 class @virtio_used_item
 {
   U32 index;
-  U32 length;
+  U32 len;
 };
 class @virtio_used
 {
@@ -61,7 +61,7 @@ class @virtio_used
 };
 class @virtio_queue
 {
-  @virtio_queue_buf buffers[256];
+  @virtio_queue_buf bufs[256];
   @virtio_avail available;
   U8 padding[3578];
   @virtio_used used;
@@ -70,13 +70,13 @@ class @virtio_queue
 class @virtio_avail_buf
 {
   U32 index;
-  U64 address;
-  U32 length;
+  U64 addr;
+  U32 len;
 };
 
 class @virtio_buf_info
 {
-  U8 *buffer;
+  U8 *buf;
   U64 size;
   U8 flags;
 
@@ -91,12 +91,12 @@ class @virtio_buf_info
 // PCI VirtIO Net
 //
 
-I64 rx_buffer_ptr = 0;
-I64 tx_buffer_ptr = 0;
-I64 rx_buffer_cnt = 255;
-I64 tx_buffer_cnt = 256;
-U64 rx_buffers = MAlloc(ETHERNET_FRAME_SIZE * rx_buffer_cnt, sys_dma_heap);
-U64 tx_buffers = MAlloc(ETHERNET_FRAME_SIZE * tx_buffer_cnt, sys_dma_heap);
+I64 rx_buf_ptr = 0;
+I64 tx_buf_ptr = 0;
+I64 rx_buf_cnt = 255;
+I64 tx_buf_cnt = 256;
+U64 rx_bufs = MAlloc(ETH_FRAME_SIZE * rx_buf_cnt, sys_dma_heap);
+U64 tx_bufs = MAlloc(ETH_FRAME_SIZE * tx_buf_cnt, sys_dma_heap);
 
 class @virtio_net
 {
@@ -108,100 +108,94 @@ class @virtio_net
   I64 rq_index;
   I64 sq_size;
   I64 sq_index;
-  I64 rx_packets;
+  I64 rx_pkts;
   I64 rx_bytes;
-  I64 tx_packets;
+  I64 tx_pkts;
   I64 tx_bytes;
 };
 
-class @virtio_net_header
+class @virtio_net_hdr
 {
   U8 flags;
   U8 gso_type;
-  U16 header_length;
+  U16 hdr_len;
   U16 gso_size;
   U16 checksum_start;
   U16 checksum_offset;
 };
 
 @virtio_net VirtioNet;
-MemSet(&VirtioNet, 0, sizeof(@virtio_net));
+ZeroClass(&VirtioNet);
 
-@virtio_net_header *def_pkt_hdr = CAlloc(sizeof(@virtio_net_header), sys_dma_heap);
+@virtio_net_hdr *def_pkt_hdr = CAlloc(sizeof(@virtio_net_hdr), sys_dma_heap);
 
-static I64 @virtio_net_alloc_tx_packet(U8 **buffer_out, I64 length/*, I64 flags*/)
+static I64 @virtio_net_alloc_tx_pkt(U8 **buf_out, I64 len/*, I64 flags*/)
 {// FIXME: validate length
 //  flags = flags;
   I64 sq_idx = VirtioNet.sq->available.index % 256;
   I64 sq_idx2 = sq_idx % 128;
-  I64 index = tx_buffer_ptr;
-  tx_buffer_ptr = (tx_buffer_ptr + 1) & (tx_buffer_cnt - 1);
-  *buffer_out = tx_buffers + index * ETHERNET_FRAME_SIZE;
-  VirtioNet.sq->buffers[sq_idx2 * 2].address = def_pkt_hdr;
-  VirtioNet.sq->buffers[sq_idx2 * 2].length = sizeof(@virtio_net_header);
-  VirtioNet.sq->buffers[sq_idx2 * 2].flags = VRING_DESC_F_NEXT;
-  VirtioNet.sq->buffers[sq_idx2 * 2].next = (sq_idx2 * 2) + 1;
-  VirtioNet.sq->buffers[(sq_idx2 * 2) + 1].address = *buffer_out;
-  VirtioNet.sq->buffers[(sq_idx2 * 2) + 1].length = length;
-  VirtioNet.sq->buffers[(sq_idx2 * 2) + 1].flags = NULL;
-  VirtioNet.sq->buffers[(sq_idx2 * 2) + 1].next = 0;
+  I64 index = tx_buf_ptr;
+  tx_buf_ptr = (tx_buf_ptr + 1) & (tx_buf_cnt - 1);
+  *buf_out = tx_bufs + index * ETH_FRAME_SIZE;
+  VirtioNet.sq->bufs[sq_idx2 * 2].addr = def_pkt_hdr;
+  VirtioNet.sq->bufs[sq_idx2 * 2].len = sizeof(@virtio_net_hdr);
+  VirtioNet.sq->bufs[sq_idx2 * 2].flags = VRING_DESC_F_NEXT;
+  VirtioNet.sq->bufs[sq_idx2 * 2].next = (sq_idx2 * 2) + 1;
+  VirtioNet.sq->bufs[(sq_idx2 * 2) + 1].addr = *buf_out;
+  VirtioNet.sq->bufs[(sq_idx2 * 2) + 1].len = len;
+  VirtioNet.sq->bufs[(sq_idx2 * 2) + 1].flags = NULL;
+  VirtioNet.sq->bufs[(sq_idx2 * 2) + 1].next = 0;
   VirtioNet.sq->available.ring[sq_idx] = sq_idx2 * 2;
   VirtioNet.sq->available.index++;
-  VirtioNet.tx_packets++;
-  VirtioNet.tx_bytes += length;
+  VirtioNet.tx_pkts++;
+  VirtioNet.tx_bytes += len;
   return index;
 }
 
-static I64 @virtio_net_finish_tx_packet(I64)
+static I64 @virtio_net_finish_tx_pkt(I64)
 {
   OutU16(VirtioNet.port + VIRTIO_PCI_QUEUE_NOTIFY, 1);
   return 0;
 }
 
-U8 *loopback_frame = MAlloc(ETHERNET_FRAME_SIZE);
-I64 loopback_length = 0;
+U8 *loopback_frame = MAlloc(ETH_FRAME_SIZE);
+I64 loopback_len = 0;
 
-I64 EthernetFrameAllocate(U8 **buffer_out, U8 *src_addr, U8 *dst_addr,
-                          U16 ethertype, I64 length/*, I64 flags*/)
+I64 EthFrameAlloc(U8 **buf_out, U8 *src_addr, U8 *dst_addr,
+                          U16 ethertype, I64 len/*, I64 flags*/)
 {
   U8 *frame;
-  // APAD_XMT doesn't seem to work in VirtualBox, so we have to pad the frame
-  // ourselves
-  if (length < 46)
-    length = 46;
+  if (len < 46)
+    len = 46;
   I64 index;
   if (!MemCmp(dst_addr, &VirtioNet.mac, 6))
   {
     frame = loopback_frame;
-    loopback_length = length;
+    loopback_len = len;
     index = I64_MAX;
   }
   else
   {
-    index = @virtio_net_alloc_tx_packet(&frame, 14 + length/*, flags*/);
+    index = @virtio_net_alloc_tx_pkt(&frame, 14 + len/*, flags*/);
     if (index < 0)
       return index;
   }
-  MemCpy(frame + 0, dst_addr, 6);
-  MemCpy(frame + 6, src_addr, 6);
-  frame[12] = (ethertype >> 8);
-  frame[13] = (ethertype & 0xff);
-  *buffer_out = frame + 14;
+  *buf_out = EthHdrSet(frame, src_addr, dst_addr, ethertype);
   return index;
 }
 
-I64 EthernetFrameFinish(I64 index)
+I64 EthFrameFinish(I64 index)
 {
-  if (index == I64_MAX && loopback_frame && loopback_length)
+  if (index == I64_MAX && loopback_frame && loopback_len)
   {
-    NetQuePush(loopback_frame, loopback_length);
-    loopback_length = 0;
+    NetQuePush(loopback_frame, loopback_len);
+    loopback_len = 0;
     return 0;
   }
-  return @virtio_net_finish_tx_packet(index);
+  return @virtio_net_finish_tx_pkt(index);
 }
 
-U8 *EthernetMACGet()
+U8 *EthMACGet()
 {
   return &VirtioNet.mac;
 }
@@ -209,7 +203,6 @@ U8 *EthernetMACGet()
 I64 @virtio_net_init()
 {
   I64 i, j;
-  // Scan for device
   j = PCIClassFind(0x020000, 0);
   if (j < 0)
   {
@@ -221,37 +214,32 @@ I64 @virtio_net_init()
   {
     VirtioNet.mac[i] = InU8(VirtioNet.port + VIRTIO_PCI_CONFIG + i);
   }
-  // Rst Device
   OutU8(VirtioNet.port + VIRTIO_PCI_STATUS, 0);
-  // Found Driver
   OutU8(VirtioNet.port + VIRTIO_PCI_STATUS,
         InU8(VirtioNet.port + VIRTIO_PCI_STATUS) | VIRTIO_CONFIG_S_ACKNOWLEDGE |
         VIRTIO_CONFIG_S_DRIVER);
-  // Set up receive queue
   OutU16(VirtioNet.port + VIRTIO_PCI_QUEUE_SEL, 0);
-  VirtioNet.rq_size = InU16(VirtioNet.port + VIRTIO_PCI_QUEUE_SIZE); // 256
+  VirtioNet.rq_size = InU16(VirtioNet.port + VIRTIO_PCI_QUEUE_SIZE);
   VirtioNet.rq = CAllocAligned(sizeof(@virtio_queue), 4096, sys_dma_heap);
   OutU32(VirtioNet.port + VIRTIO_PCI_QUEUE_PFN, VirtioNet.rq / 4096);
-  // Set up send queue
   OutU16(VirtioNet.port + VIRTIO_PCI_QUEUE_SEL, 1);
-  VirtioNet.sq_size = InU16(VirtioNet.port + VIRTIO_PCI_QUEUE_SIZE); // 256
+  VirtioNet.sq_size = InU16(VirtioNet.port + VIRTIO_PCI_QUEUE_SIZE);
   VirtioNet.sq = CAllocAligned(sizeof(@virtio_queue), 4096, sys_dma_heap);
   OutU32(VirtioNet.port + VIRTIO_PCI_QUEUE_PFN, VirtioNet.sq / 4096);
   for (i = 0; i < 128; i++)
   {
-    VirtioNet.rq->buffers[i * 2].address = CAlloc(sizeof(@virtio_net_header), sys_dma_heap);
-    VirtioNet.rq->buffers[i * 2].length = sizeof(@virtio_net_header);
-    VirtioNet.rq->buffers[i * 2].flags = VRING_DESC_F_NEXT | VRING_DESC_F_WRITE;
-    VirtioNet.rq->buffers[i * 2].next = (i * 2) + 1;
-    VirtioNet.rq->buffers[(i * 2) + 1].address = CAlloc(ETHERNET_FRAME_SIZE, sys_dma_heap);
-    VirtioNet.rq->buffers[(i * 2) + 1].length = ETHERNET_FRAME_SIZE;
-    VirtioNet.rq->buffers[(i * 2) + 1].flags = VRING_DESC_F_WRITE;
-    VirtioNet.rq->buffers[(i * 2) + 1].next = 0;
+    VirtioNet.rq->bufs[i * 2].addr = CAlloc(sizeof(@virtio_net_hdr), sys_dma_heap);
+    VirtioNet.rq->bufs[i * 2].len = sizeof(@virtio_net_hdr);
+    VirtioNet.rq->bufs[i * 2].flags = VRING_DESC_F_NEXT | VRING_DESC_F_WRITE;
+    VirtioNet.rq->bufs[i * 2].next = (i * 2) + 1;
+    VirtioNet.rq->bufs[(i * 2) + 1].addr = CAlloc(ETH_FRAME_SIZE, sys_dma_heap);
+    VirtioNet.rq->bufs[(i * 2) + 1].len = ETH_FRAME_SIZE;
+    VirtioNet.rq->bufs[(i * 2) + 1].flags = VRING_DESC_F_WRITE;
+    VirtioNet.rq->bufs[(i * 2) + 1].next = 0;
     VirtioNet.rq->available.ring[i] = i * 2;
     VirtioNet.rq->available.ring[i + 128] = i * 2;
   }
   VirtioNet.rq->available.index = 1;
-  // Init OK
   OutU8(VirtioNet.port + VIRTIO_PCI_STATUS,
         InU8(VirtioNet.port + VIRTIO_PCI_STATUS) | VIRTIO_CONFIG_S_DRIVER_OK);
   OutU16(VirtioNet.port + VIRTIO_PCI_QUEUE_NOTIFY, 0);
@@ -266,10 +254,10 @@ I64 @virtio_net_init()
 @virtio_net_init;
 
 /*
-U0 @virtio_net_handle_net_fifo_entry(CNetFifoEntry *e) {
+U0 @virtio_net_handle_net_fifo_ent(CNetFifoEntry *e) {
   CEthFrame l2_frame;
 
-  if (EthernetFramePrs(&l2_frame, e->frame, e->length) < 0)
+  if (EthFramePrs(&l2_frame, e->frame, e->length) < 0)
     return;
 
   CL3Protocol *l3 = l3_protocols;
@@ -288,8 +276,8 @@ U0 @virtio_net_hndlr_task()
   I64 idx_used, idx_rec;
   I64 i, j;
   @virtio_used_item *item;
-  U8 *buffer;
-  I64 length;
+  U8 *buf;
+  I64 len;
   while (1)
   {
     idx_rec = VirtioNet.rq_index;
@@ -304,21 +292,18 @@ U0 @virtio_net_hndlr_task()
       for (i = idx_rec; i < idx_used; i++)
       {
         item = VirtioNet.rq->used.ring;
-        buffer = VirtioNet.rq->buffers[item[i % 256].index + 1];
-        length = item[i % 256].length;
-        NetQuePush(buffer, length - 10);
+        buf = VirtioNet.rq->bufs[item[i % 256].index + 1];
+        len = item[i % 256].len;
+        NetQuePush(buf, len - 10);
         j++;
-        VirtioNet.rx_packets++;
-        VirtioNet.rx_bytes += length - 10;
+        VirtioNet.rx_pkts++;
+        VirtioNet.rx_bytes += len - 10;
       }
       VirtioNet.rq_index = idx_used % 0x10000;
       VirtioNet.rq->available.index += j;
       OutU16(VirtioNet.port + VIRTIO_PCI_QUEUE_NOTIFY, 0);
     }
-    if (Gs->num)
-      Sleep(10);
-    else
-      Sleep(30);
+    Sleep(1);
   }
 }
 

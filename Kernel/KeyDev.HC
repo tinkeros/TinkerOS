@@ -156,7 +156,7 @@ U0 CtrlAltD(I64)
 {
   if (!IsDbgMode)
   {
-    if (Fs==Gs->idle_task)
+    if (Fs==Gs->idle_task || kbd_ctrl_alt_inject)
       BptS(sys_winmgr_task->rip,sys_winmgr_task);
     else
       BptS(*keydev.ctrl_alt_ret_addr);

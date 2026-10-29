@@ -321,19 +321,28 @@ Bool ProbeComm()
   I64 i,j;
   U8 tmp_buf[17], tmp_byte;
 
-  if (!comm_ports[1].base) Adam("CommInit;\n");
+  if (!CommExists(1)) Adam("CommInit;\n");
 
   MemSet(tmp_buf,0,17);
   for (i=1; i<=MAX_COMM_NUM; i++)
   {
-    if (comm_ports[i].base)
+    if (CommExists(i) && comm_ports[i].probe_skip)
+    {
+      "Skipping COMM %d: probe_skip is set on it\n",i;
+    }
+    else if (CommExists(i))
     {
       "Checking COMM %d - ",i;
       CommInit8n1(i, 115200);
       CommFlush(i);
       CommPutChar(i,0xAA);
-      Sleep(5);
-      if (CommGetCharNoWait(i,&tmp_byte))
+      for (j=0; j<20; j++)
+      {
+        Sleep(5);
+        if (CommGetCharNoWait(i,&tmp_byte))
+          break;
+      }
+      if (j<20)
       {
         if (tmp_byte==0xAA)
         {
@@ -650,7 +659,7 @@ public I64 URLGet(U8 *url, U8 *filename)
   if (!TOSServerCheck) return -1;
 
   ClientPutCmdAndStr(CMD_URL_GET_RAW, url);
-  if (!ReadRemoteLen(&len, 2500))
+  if (!ReadRemoteLen(&len, 15000))
   {
     "Failed to data (or size is zero)!\n";
     return 0;
@@ -678,7 +687,7 @@ public U8 *URLGetTextStr(U8 *url)
   if (!TOSServerCheck) return -1;
 
   ClientPutCmdAndStr(CMD_URL_GET_TEXT, url);
-  if (!ReadRemoteLen(&len, 2500))
+  if (!ReadRemoteLen(&len, 15000))
   {
     "Failed to read data (or size is zero)!\n";
     return 0;

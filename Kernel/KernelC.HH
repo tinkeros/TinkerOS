@@ -382,6 +382,11 @@ public extern U0 DrvsRelease();
 extern U0 FAT32FreeClus(CDrv *dv,I64 c);
 public extern CBlkDev *Let2BlkDev(U8 drv_let=0,Bool except=TRUE);
 public extern Bool SetDrvLetType(U8 drv_let, U8 type);
+public extern Bool BlkDevFnRw(CBlkDev *bd,U8 *buf,I64 blk,I64 cnt,Bool wr);
+public extern U8 *BlkVolFSName(U8 *br);
+public extern I64 BlkVolSerial(U8 *br);
+public extern U8 *BlkVolLabel(U8 *br,U8 *buf,I64 max);
+public extern I64 DrvVolSerial(U8 drv_let=0);
 public extern I64 Let2BlkDevType(U8 drv_let);
 public extern CDrv *Let2Drv(U8 drv_let=0,Bool except=TRUE);
 public extern U8 Let2Let(U8 drv_let=0);
@@ -582,6 +587,7 @@ public extern I64 ScanChar();
 public extern Bool ScanKey(I64 *_ch=NULL,I64 *_scan_code=NULL,Bool echo=FALSE);
 public extern CKbdStateGlbls	kbd;
 public extern U0 MsPktInject(U8 *pkt);
+public extern Bool ms_inject;
 public extern U0 KbdPktInject(U8 *pkt);
 
 #help_index "Math"
@@ -623,6 +629,7 @@ public _extern _MHEAP_CTRL CHeapCtrl *MHeapCtrl(U8 *src);
 public _extern _MSIZE I64 MSize(U8 *src);   //size of heap object
 public _extern _MSIZE2 I64 MSize2(U8 *src); //Internal size
 public extern U0 ZeroClass(U8 *ptr,I64 s_elem=firstsize);
+public extern U0 ClassCpy(U8 *dst,U8 *src,I64 n_elem=1,I64 s_elem=firstsize);
 public extern U0 ArrayZero(U8 *ptr,I64 n_elem,I64 s_elem=firstsize);
 
 #help_index "Memory/HeapCtrl"
@@ -636,6 +643,8 @@ public extern U8 *Seg2Linear(U32 *ptr);
 
 #help_index "Memory/Page Tables"
 public extern I64 *MemPageTable(U8 *a);
+public extern Bool MemWriteCombine(U8 *base,I64 size);
+extern U0 MemPatInit();
 
 #help_index "Messages"
 #help_file "::/Doc/Msgs"
@@ -650,6 +659,7 @@ public extern I64 ScanMsg(I64 *_arg1=NULL,I64 *_arg2=NULL,
 public extern I64 EndianI64(I64 d);
 public extern U16 EndianU16(U16 d);
 public extern U32 EndianU32(U32 d);
+public extern U64 EndianU64(U64 d);
 public extern U0 QSortI64(I64 *base,I64 num,
 	I64 (*fp_compare)(I64 e1,I64 e2));
 public extern F64 sys_os_version;
@@ -791,6 +801,53 @@ public extern I64 sys_num_spawned_tasks;
 extern CTask *sys_winmgr_task,*sys_task_being_scrn_updated;
 public extern CWinMgrGlbls winmgr;
 public extern CTask *SetSysFocusTask(CTask *task, Bool check_raw=TRUE);
+public extern U0 UsbRep();
+public extern I64 UsbDesc(I64 k,U8 *filename=NULL);
+public extern U8 UsbMount(I64 k=-1);
+public extern U8 UsbMountAt(I64 k=-1,U8 drv_let=0);
+public extern U8 UsbMountVol(I64 ser,U8 first_drv_let=0,I64 timeout_ms=6000);
+public extern I64 UsbMsdRep();
+public extern I64 UsbVolSerial(I64 k);
+public extern I64 UsbDevName(I64 k,U8 *buf,I64 max);
+public extern I64 UsbMsBlocks();
+public extern I64 UsbDevKind(I64 k);
+public extern I64 UsbDevLets(I64 k);
+public extern U0 (*fp_usb_plug)(I64 k,Bool on,I64 kind);
+public extern I64 usb_kbd_rep_delay,usb_kbd_rep_rate;
+public extern I64 UsbCdcGen(I64 k);
+public extern Bool UsbCdcOpen(I64 k,I64 gen,I64 baud,I64 bits=8,I64 parity=0,I64 stop=1);
+public extern Bool UsbCdcLines(I64 k,I64 gen,I64 dtr,I64 rts);
+public extern I64 UsbCdcWrite(I64 k,I64 gen,U8 *buf,I64 cnt,I64 timeout_ms=500);
+public extern Bool UsbCdcFlush(I64 k,I64 gen,I64 timeout_ms=500);
+public extern I64 UsbCdcRead(I64 k,I64 gen,U8 *buf,I64 max);
+public extern U0 UsbCdcClose(I64 k,I64 gen);
+public extern Bool UsbEcmPresent();
+public extern U0 UsbEcmMAC(U8 *out6);
+public extern I64 UsbEcmSend(U8 *frame,I64 len);
+public extern I64 UsbEcmRecv(U8 *dst,I64 max);
+public extern U0 UsbEcmRep();
+public extern U0 (*fp_usb_poll)();
+public extern I64 UsbVenGen(I64 k);
+public extern I64 UsbVenId(I64 k);
+public extern I64 UsbVenIf(I64 k);
+public extern I64 UsbVenCls(I64 k);
+public extern I64 UsbVenAlt(I64 k);
+public extern I64 UsbVenEp(I64 k,Bool dirin);
+public extern I64 UsbVenMps(I64 k);
+public extern I64 UsbVenSpeed(I64 k);
+public extern I64 UsbVenFind(I64 vid=-1,I64 pid=-1,I64 n=0,I64 kind=USB_KIND_VENDOR);
+public extern I64 UsbVenXfer(I64 k,I64 gen,Bool dirin,U8 *buf,I64 len);
+public extern I64 UsbVenCtl(I64 k,I64 gen,I64 rt,I64 req,I64 val,I64 idx,I64 len=0,U8 *buf=NULL);
+public extern Bool UsbVenRst(I64 k,I64 gen);
+public extern Bool UsbVenBinArm(I64 k,I64 gen,I64 len);
+public extern I64 UsbVenBinPoll(I64 k,I64 gen,U8 *buf);
+public extern U0 UsbVenBinCancel(I64 k,I64 gen);
+public extern I64 UsbVenCtlOut(I64 k,I64 gen,I64 rt,I64 req,I64 val,I64 idx,U8 *buf,I64 len);
+public extern I64 UsbVenIsoStart(I64 k,I64 gen,I64 ep,I64 mps,I64 interval);
+public extern I64 UsbVenIsoRead(I64 k,I64 gen,U8 *dst,I64 *lens,I64 max);
+public extern I64 UsbVenIsoWrite(I64 k,I64 gen,U8 *src,I64 *lens,I64 n);
+public extern I64 UsbVenIsoStat(I64 k,I64 gen,I64 which);
+public extern U0 UsbVenIsoStop(I64 k,I64 gen);
 
 #help_index "Task/Delay;Time/CPU Cycles"
 public extern U0 Busy(I64 ÊS); //Loosely timed
@@ -883,6 +940,9 @@ public extern U0 SdSetDma(Bool on);
 public extern Bool SdGetDma();
 public extern U0 SdSet4Bit(Bool on);
 public extern Bool SdGet4Bit();
+
+#help_index "USB Block Device"
+public extern Bool (*fp_usb_blkdev_write)(U8* buf, I64 blk, I64 cnt);
 
 #help_index "Virtual Block Device"
 public extern Bool (*fp_virtual_blkdev_init)();

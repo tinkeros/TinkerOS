@@ -9,6 +9,9 @@
 <p align="center"><a href="https://github.com/tinkeros/TinkerOS/blob/main/WindowsQEMU.md">TempleOS/TinkerOS Windows QEMU VM setup guide</a></p>
 <p align="center"><a href="https://github.com/tinkeros/TinkerOS/blob/main/VirtualBoxSetup.md">TinkerOS VirtualBox VM setup guide</a></p>
 <p align="center"><a href="https://github.com/tinkeros/TinkerOS/blob/main/Baremetal.md">TempleOS/TinkerOS baremetal (real hardware) setup guide</a></p>
+<p align="center"><a href="https://github.com/tinkeros/Tinkwanios">No VM, no problem, use Tinkwanios</a></p>
+<p align="center"><a href="https://tinkeros.github.io/palette.html">TempleOS/TinkerOS default color palette</a></p>
+<p align="center"><a href="https://tinkeros.github.io/palette_sorted.html">Sorted TinkerOS color palette</a></p>
 </p>
 
 

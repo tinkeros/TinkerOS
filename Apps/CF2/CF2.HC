@@ -1077,6 +1077,14 @@ U0 AnimateTask(I64)
 
 U0 CleanUp()
 {
+  if (relocate_task) {
+    Kill(relocate_task);
+    relocate_task=NULL;
+  }
+  if (respawn_task) {
+    Kill(respawn_task);
+    respawn_task=NULL;
+  }
   Free(map);
   Free(panels_processed_bitmap);
   map=NULL;

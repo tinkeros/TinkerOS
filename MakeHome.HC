@@ -11,6 +11,9 @@ Cd(__DIR__);;
 // Comment this if you do not want autocomplete
 AdamFile("/Adam/AutoComplete/DoACInit");
 
+// Terry Shadow Dance Screen Saver
+AdamFile("/Demo/ScreenSavers/ShadowDance");
+
 // Comment this if you don't want Ed to pop-up warnings
 // to help prevent overwriting already changed file.
 doc_ed_warn_overwrite=TRUE;

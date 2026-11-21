@@ -251,7 +251,7 @@ I64 SpriteBitMapEd(CDoc *,CDocEntry *doc_e,CDC *dc,I64 *_xx1,I64 *_yy1,
           goto bm_key_up_done;
         case 'c': //eye-dropper
           dc2=DCScrnCapture(FALSE);
-          color=GrPeek(dc2,ms.pos.x,ms.pos.y)^15;//Mouse cursor is XORed.
+          color=ColorHVSwap(GrPeek(dc2,ms.pos.x,ms.pos.y));//Undo the cursor.
           DCDel(dc2);
           break;
         case 't': //Set to transparent color

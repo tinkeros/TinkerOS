@@ -446,8 +446,10 @@ U0 AnimateTask(CTask *parent_task)
 	  o->get_ball_dt=d;
 	  o->get_ball_é=Arg(ball->DxDt*d+ball->x-o->x,
 	        ball->DyDt*d+ball->y-o->y);
-	  if (o!=last_owner && !nearest_ball[o->team] ||
-	        o->get_ball_dt<nearest_ball[o->team]->get_ball_dt)
+	  if (!nearest_ball[o->team]) {
+	    if (o!=last_owner)
+	      nearest_ball[o->team]=o;
+	  } else if (o->get_ball_dt<nearest_ball[o->team]->get_ball_dt)
 	    nearest_ball[o->team]=o;
         }
       }

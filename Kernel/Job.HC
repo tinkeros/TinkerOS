@@ -1,7 +1,10 @@
 U0 JobDel(CJob *tmpc)
 {//Free one cmd node.
-  Free(tmpc->aux_str);
-  Free(tmpc);
+  if (tmpc)
+  {
+    if (tmpc->aux_str) Free(tmpc->aux_str);
+    Free(tmpc);
+  }
 }
 
 U0 JobQueDel(CJob *head)
@@ -441,9 +444,9 @@ I64 PopUpPrint(U8 *fmt,...)
 
 I64 Adam(U8 *fmt,...)
 {//Make adam_task execute code.
-  I64 res;
+  I64 res=0;
   U8 *buf=StrPrintJoin(NULL,fmt,argc,argv);
-  CJob *tmpc;
+  CJob *tmpc=NULL;
   if (Fs==adam_task)
   {
     tmpc=TaskExe(adam_task,Fs,buf,0);
@@ -454,7 +457,7 @@ I64 Adam(U8 *fmt,...)
     TaskWait(adam_task);
     tmpc=TaskExe(adam_task,Fs,buf,1<<JOBf_WAKE_MASTER);
   }
-  JobResScan(tmpc,&res);
+  if (tmpc) JobResScan(tmpc,&res);
   Free(buf);
   return res;
 }

@@ -6,7 +6,8 @@
 
 U0 DrawPixel(CDC* dc, I64 x, I64 y, U8 color)
 {
-  dc->body[x + y * dc->width_internal] = color;
+  if (0<=x<dc->width && 0<=y<dc->height)
+    dc->body[x + y * dc->width_internal] = color;
 }
 
 U0 RandColorSqrs()

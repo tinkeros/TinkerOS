@@ -46,7 +46,7 @@ I64 ScanMsg(I64 *_arg1=NULL,I64 *_arg2=NULL,I64 mask=~1,CTask *task=NULL)
   Remove desired message, return $LK,"msg_code",A="MN:MSG_CMD"$.
   Note: This delivers messages from parent down to pop-up.
   */
-  I64 res,old_flags;
+  I64 res,old_flags,aux2;
   CJob *tmpc,*tmpc1;
   if (!task) task=Fs;
   old_flags=GetRFlags;
@@ -67,12 +67,13 @@ I64 ScanMsg(I64 *_arg1=NULL,I64 *_arg2=NULL,I64 mask=~1,CTask *task=NULL)
         QueRem(tmpc);
         SetRFlags(old_flags);
         res=tmpc->msg_code;
+        aux2=tmpc->aux2;
         if (_arg1)
           *_arg1=tmpc->aux1;
         if (_arg2)
           *_arg2=tmpc->aux2;
         JobDel(tmpc);
-        if ((res!=MSG_KEY_DOWN || !(tmpc->aux2&SCF_KEY_DESC) ||
+        if ((res!=MSG_KEY_DOWN || !(aux2&SCF_KEY_DESC) ||
              !Bt(&task->win_inhibit,WIf_SELF_KEY_DESC)) && Bt(&mask,res))
           goto sm_done;
       }

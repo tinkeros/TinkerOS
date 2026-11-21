@@ -149,7 +149,7 @@ U0 PrsVarInit2(CCmpCtrl *cc,U8 **_dst,CHashClass *tmpc,
     {
       LexPopNoRestore(cc);
       st=LexExtStr(cc,&i);
-      if (tmpad1->cnt<0) //[]
+      if (tmpad1->cnt<=0) //[]
       {
         tmpad1->cnt=i;
         tmpad->total_cnt=i*tmpad1->total_cnt;
@@ -177,7 +177,7 @@ U0 PrsVarInit2(CCmpCtrl *cc,U8 **_dst,CHashClass *tmpc,
         LexPush(cc);
         Lex(cc);
       }
-      if (tmpad1->cnt<0) //[]
+      if (tmpad1->cnt<=0) //[]
       {
         QueInit(&head);
         cnt=0;

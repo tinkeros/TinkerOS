@@ -22,15 +22,23 @@ public U0 PushHistoryItem(U8 *item)
   if (!StrCmp("Adam Task CPU",item)) return;
   if (!StrCmp("Cd;#include \"Once\";",item)) return;
 
+  if (mp_cnt>1)
+    while (LBts(&ac_history_lock,0))
+      PAUSE
+
   for (i=0;i<ac_history_cnt;i++)
     if (ac_history_items[i])
       if (!StrCmp(ac_history_items[i],item))
+      {
+        LBtr(&ac_history_lock,0);
         return;
+      }
 
   // Drop the oldest (last) entry if already at capacity.
   if (ac_history_cnt>=AC_HISTORY_MAX)
   {
     Free(ac_history_items[AC_HISTORY_MAX-1]);
+    ac_history_items[AC_HISTORY_MAX-1]=NULL;
     ac_history_cnt=AC_HISTORY_MAX-1;
   }
   // Shift everything toward the end to make room at index 0 (newest = top).
@@ -39,6 +47,7 @@ public U0 PushHistoryItem(U8 *item)
   ac_history_items[0]=AStrNew(item);
   ac_history_cnt++;
   ac_history_dirty=TRUE;
+  LBtr(&ac_history_lock,0);
 }
 
 public U0 EnableHistory()
@@ -50,14 +59,19 @@ public U0 EnableHistory()
 }
 
 public U0 ClearHistory()
-{
+{//Discard every recorded history item.
   I64 i;
-  PUSHFD
-  CLI
+  if (mp_cnt>1)
+    while (LBts(&ac_history_lock,0))
+      PAUSE
   for (i=0;i<ac_history_cnt;i++)
-    if (ac_history_items[i])
-      Free(ac_history_items[i]);
-  POPFD
+  {
+    Free(ac_history_items[i]);
+    ac_history_items[i]=NULL;
+  }
+  ac_history_cnt=0;
+  ac_history_dirty=TRUE;
+  LBtr(&ac_history_lock,0);
 }
 
 public U0 ToggleHistory()
@@ -71,8 +85,18 @@ public U0 ToggleHistory()
 
 public U0 ACHistoryFillIn(I64 n)
 {//Inject history item n (1-indexed) as synthetic keystrokes.
-  if (0<=--n<ac_history_cnt)
-    In(ac_history_items[n]);
+  U8 *st=NULL;
+  if (mp_cnt>1)
+    while (LBts(&ac_history_lock,0))
+      PAUSE
+  if (0<=--n<ac_history_cnt && ac_history_items[n])
+    st=StrNew(ac_history_items[n]);
+  LBtr(&ac_history_lock,0);
+  if (st)
+  {
+    In(st);
+    Free(st);
+  }
 }
 
 public Bool ACIsHistoryMode()
@@ -195,16 +219,23 @@ U0 ACShowHistory()
   if (!ac_history_dirty) return;
   ACDocRst(AC_def_win_x,AC_def_win_y);
   "$$PURPLE$$History:\n$$FG$$\n";
+  if (mp_cnt>1)
+    while (LBts(&ac_history_lock,0))
+      PAUSE
   if (ac_history_cnt==0)
     "$$DKGRAY$$  (empty)$$FG$$\n";
   else
     for (i=0; i<ac_history_cnt; i++)
     {
-      if (i<10)
-        "$$GREEN$$F%02d$$FG$$ %s\n",i+1,ac_history_items[i];
-      else
-        "     %s\n",ac_history_items[i];
+      if (ac_history_items[i])
+      {
+        if (i<10)
+          "$$GREEN$$F%02d$$FG$$ %s\n",i+1,ac_history_items[i];
+        else
+          "     %s\n",ac_history_items[i];
+      }
     }
+  LBtr(&ac_history_lock,0);
   ac_history_dirty=FALSE;
 }
 
@@ -239,7 +270,7 @@ U0 ACPutChoices(CDoc *focus_l,CDocEntry *doc_e,CTask *focus_task,
         tmpw=ac.hash_table->body[i];
         while (tmpw)
         {
-          if (!MemCmp(ac.cur_word,tmpw->str,StrLen(ac.cur_word)))
+          if (tmpw->str && !MemCmp(ac.cur_word,tmpw->str,StrLen(ac.cur_word)))
             ACFillInAdd(tmpw);
           tmpw=tmpw->next;
         }
@@ -472,6 +503,7 @@ public Bool AutoComplete(Bool val=OFF)
         old_val=TRUE;
       Kill(ac.task);
       DeathWait(&ac.task);
+      ac.task=NULL;
     }
   }
   return old_val;

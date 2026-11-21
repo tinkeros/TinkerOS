@@ -6,7 +6,7 @@ static I64 last_mounted_hd='C';
 
 class InstallOptions
 {
-  Bool extras,tinkersup;
+  Bool extras,tinkersup,community;
   U8 *res[4];
   I64 num;
 };
@@ -67,12 +67,96 @@ U0 PromptSupplementalFiles(Bool *extras,Bool *tinkersup)
   }
 }
 
+U8 *CommunityISOFind()
+{//Locate the Community file set's ISO on the boot media.  It is built by hand
+ //(build/rebuild_community.sh into build/git/Community) and no release script
+ //stages it, so most media carry none.  /Extras is where the other ISOs live;
+ //a drop at the media root is the other obvious place, so accept both.
+ //Returns a MAlloced path, or NULL when this media has no Community set.
+  if (FileFind("::/Extras/Community.ISO.C"))
+    return StrNew("::/Extras/Community.ISO.C");
+  if (FileFind("::/Community.ISO.C"))
+    return StrNew("::/Community.ISO.C");
+  return NULL;
+}
+
+U0 PromptCommunityFiles(Bool *community)
+{//Ask about the Community file set (HolyIRC, TOOM).  Asking only when the ISO
+ //is actually there keeps the question off media that cannot answer it -- and
+ //keeps the keystroke-driven installs (git/qemu_scripts/tos_install_*.tos)
+ //working unchanged, since their media carries no Community.ISO.C and so
+ //never sees this prompt.
+  U8 *iso=CommunityISOFind();
+  if (!iso)
+    return;
+  Free(iso);
+  "\nWould you like to install the Community programs (HolyIRC, TOOM) ";
+  *community=YorN('n');
+}
+
+I64 PromptExistingHome(U8 drv_let)
+{//Installing onto a drive that is already in use would quietly write over the
+ //files in /Home, so give the user the say before any copying starts.  A
+ //missing or empty /Home needs no prompt: Dir() counts "." and ".." as well,
+ //so a count of 2 is an empty dir.
+  Bool old_silent;
+  I64 i,n,ch,res=0;
+  U8 *st,*bak;
+  st=MStrPrint("%C:/Home",drv_let);
+  if (!IsDir(st))
+  {
+    Free(st);
+    return 0;
+  }
+  old_silent=Silent(ON);
+  n=Dir(st);
+  Silent(old_silent);
+  if (n<=2)
+  {
+    Free(st);
+    return 0;
+  }
+  '\n';
+  "$$RED$$Drive %C already has files in /Home.$$FG$$\n"
+  ,drv_let;
+  do
+  {
+    "\n"
+    "$$PURPLE$$1$$FG$$) Leave /Home as is (default)\n"
+    "$$PURPLE$$2$$FG$$) Copy the new /Home files in\n"
+    "$$PURPLE$$B$$FG$$) Back-up /Home, then copy the new files in\n"
+    "\nChoice: ";
+    ch=ToUpper(GetChar);
+    '\n';
+  }
+  while (ch!='1' && ch!='2' && ch!='B' && ch!=10);
+  if (ch=='1' || ch==10)
+    res=1;
+  else if (ch=='B')
+  {
+    //Don't merge into a back-up left behind by an earlier install, walk up to
+    //the first unused name instead.
+    bak=MStrPrint("%C:/Home.bak",drv_let);
+    i=1;
+    while (IsDir(bak) && i<100)
+    {
+      Free(bak);
+      i++;
+      bak=MStrPrint("%C:/Home.bak%d",drv_let,i);
+    }
+    ExePrint("CopyTree(\"%s\",\"%s\");",st,bak);
+    Free(bak);
+  }
+  Free(st);
+  return res;
+}
+
 U0 InstallDrv(U8 drv_let,Bool extras=FALSE,Bool templeos=FALSE,
-    Bool tinkersup=FALSE)
+    Bool tinkersup=FALSE,Bool community=FALSE)
 {
   Bool ready=FALSE,old_silent;
-  U8 *st,*st2;
-  I64 src_let,sup_let,timeout=0;
+  U8 *st,*st2,*comm_iso;
+  I64 src_let,sup_let,comm_let,timeout=0,home_mode;
   TempleOSCfg *drv_tos_cfg=TOSCfgGet(drv_let);
   src_let=':';
   st=MStrPrint("%C:/Ready",drv_let);
@@ -116,6 +200,7 @@ U0 InstallDrv(U8 drv_let,Bool extras=FALSE,Bool templeos=FALSE,
       templeos=FALSE;
     }
   }
+  home_mode=PromptExistingHome(drv_let);
   ExePrint("Copy(\"%C:/*.BIN.C\",\"%C:/\");",src_let,drv_let);
   ExePrint("CopyTree(\"%C:/0000Boot\",\"%C:/0000Boot\");",src_let,drv_let);
   ExePrint("Copy(\"%C:/*.DD.Z\",\"%C:/\");",src_let,drv_let);
@@ -144,25 +229,45 @@ U0 InstallDrv(U8 drv_let,Bool extras=FALSE,Bool templeos=FALSE,
     else
       "Could not mount ::/Extras/TinkerSup1.ISO.C\n";
   }
+  if (community && !templeos)
+  {
+    //Unlike the other file sets this one goes into its own /Community dir
+    //rather than merging into the tree, because the ISO holds whole projects
+    //(HolyIRC/, TOOM/) rather than files that belong in /Apps or /Demo.
+    comm_iso=CommunityISOFind();
+    if (comm_iso)
+    {
+      "\nInstalling Community files...\n";
+      comm_let=MountFile(comm_iso);
+      if (comm_let)
+      {
+        ExePrint("DirMk(\"%C:/Community\");",drv_let);
+        ExePrint("CopyTree(\"%C:/\",\"%C:/Community\");",comm_let,drv_let);
+        Unmount(comm_let);
+      }
+      else
+        "Could not mount %s\n",comm_iso;
+      Free(comm_iso);
+    }
+  }
   ExePrint("DirMk(\"%C:/Tmp\");",drv_let);
   ExePrint("DirMk(\"%C:/Tmp/ScrnShots\");",drv_let);
-  ExePrint("DirMk(\"%C:/Home\");",drv_let);
-  st=MStrPrint("%C:/Home/DoDistro.HC.Z",drv_let);
-  if (!FileFind(st))
+  if (home_mode)
+    "Leaving %C:/Home as it is.\n",drv_let;
+  else
   {
+    ExePrint("DirMk(\"%C:/Home\");",drv_let);
+    st=MStrPrint("%C:/Home/DoDistro.HC.Z",drv_let);
     st2=MStrPrint("%C:/Misc/DoDistro.HC.Z",src_let);
     Copy(st2,st);
     Free(st2);
-  }
-  Free(st);
-  st=MStrPrint("%C:/Home/MakeHome.HC.Z",drv_let);
-  if (!FileFind(st))
-  {
+    Free(st);
+    st=MStrPrint("%C:/Home/MakeHome.HC.Z",drv_let);
     st2=MStrPrint("%C:/MakeHome.HC.Z",src_let);
     Copy(st2,st);
     Free(st2);
+    Free(st);
   }
-  Free(st);
   if (templeos && drv_tos_cfg->add_patches)
   {
     ExePrint("CopyTree(\"::/Misc/TempleOS/NoHPET\",\"%C:/Kernel\");",drv_let);
@@ -180,16 +285,23 @@ U0 InstallDrv(U8 drv_let,Bool extras=FALSE,Bool templeos=FALSE,
     //driver to it to have it loaded at every boot.  It goes in second to
     //last so it lands ahead of the closing Cd("..") the file ends with.
     st=MStrPrint("%C:/Home/MakeHome.HC.Z",drv_let);
-    "Patching file %s\n"
-    ,st;
-    DocAppendLine(st,"#include \"/Demo/Snd/AC97TempleOS\"\n",-1);
+    if (home_mode)
+    {
+      "$$RED$$Add #include \"/Demo/Snd/AC97TempleOS\" to %s yourself,\n"
+      "the existing /Home was left alone.$$FG$$\n"
+      ,st;
+    }
+    else
+    {
+      "Patching file %s\n",st;
+      DocAppendLine(st,"#include \"/Demo/Snd/AC97TempleOS\"\n",-1);
+    }
     Free(st);
   }
   if (templeos && drv_tos_cfg->fps!=tos_orig.fps)
   {
     st=MStrPrint("%C:/Kernel/KernelA.HH.Z",drv_let);
-    "Patching file %s\n"
-    ,st;
+    "Patching file %s\n",st;
     st2=MStrPrint("#define WINMGR_FPS      (%d000.0/1001)\n",drv_tos_cfg->fps);
     DocAppendLine(st,st2);
     Free(st2);
@@ -219,12 +331,12 @@ Bool VMPrtDskAHCI(CTask *task,I64 port, I64 num)
 
 U0 VMInstallDrv(CTask *task,U8 drv_let,
     CATARep *ata_drv,CATARep *atapi_drv,U8 *res, Bool extras=FALSE,
-    Bool tinkersup=FALSE)
+    Bool tinkersup=FALSE,Bool community=FALSE)
 {
   Bool templeos=FALSE;
   if (StrLen(res)<3)
     templeos=TRUE;
-  InstallDrv(drv_let, extras, templeos, tinkersup);
+  InstallDrv(drv_let, extras, templeos, tinkersup, community);
   if (AHCIMode)
   {
     XTalkWait(task,"BootHDIns('%C');\n\nB\n0x20000\n",drv_let);
@@ -439,6 +551,7 @@ U0 VMInstallSetup(InstallOptions *cfg)
     cfg->res[i]=ResPrompt('C'+i);
   }
   PromptSupplementalFiles(&cfg->extras,&cfg->tinkersup);
+  PromptCommunityFiles(&cfg->community);
 }
 
 U0 VMInstall(Bool just_std_ide=TRUE, InstallOptions *cfg)
@@ -509,7 +622,7 @@ U0 VMInstall(Bool just_std_ide=TRUE, InstallOptions *cfg)
     for (i=0; i<cfg->num; i++)
     {
       VMInstallDrv(task,'C'+i,ata_drv,atapi_drv,cfg->res[i],cfg->extras,
-          cfg->tinkersup);
+          cfg->tinkersup,cfg->community);
       Free(cfg->res[i]);
     }
     BootMHDIns('C');
@@ -531,7 +644,8 @@ U0 RegularInstallWiz()
   I64 ch,num_hints=0;
   CTask *task;
   CBlkDev *tmpbd;
-  Bool probe, just_ide, extras=FALSE, templeos=FALSE, tinkersup=FALSE;
+  Bool probe, just_ide, extras=FALSE, templeos=FALSE, tinkersup=FALSE,
+      community=FALSE;
   task=User;
   TaskWait(task);
   task->border_src=BDS_CONST;
@@ -660,11 +774,12 @@ U0 RegularInstallWiz()
       Fmt(drv_let,,FALSE,FSt_REDSEA);
   }
   PromptSupplementalFiles(&extras,&tinkersup);
+  PromptCommunityFiles(&community);
   DispResOptions(drv_let);
   res=ResPrompt(drv_let);
   if (StrLen(res)<3)
     templeos=TRUE;
-  InstallDrv(drv_let,extras,templeos,tinkersup);
+  InstallDrv(drv_let,extras,templeos,tinkersup,community);
   if (!base0)
   {
     tmpbd=Let2BlkDev('C');
@@ -708,7 +823,8 @@ Bool RegularInstallWizUSB()
  //master boot loader went onto it without asking and the caller is done.
   I64 drv_let,usb_k,ch,n,vol_ser;
   U8 *res;
-  Bool extras=FALSE,tinkersup=FALSE,repart=FALSE,auto_mbr=FALSE;
+  Bool extras=FALSE,tinkersup=FALSE,community=FALSE,repart=FALSE,
+      auto_mbr=FALSE;
   CTask *task;
   task=User;
   TaskWait(task);
@@ -810,7 +926,8 @@ Bool RegularInstallWizUSB()
     "can only name the stick by device number -- which moves with\n"
     "the port.  Let this wizard format it to give it one.\n",drv_let;
   PromptSupplementalFiles(&extras,&tinkersup);
-  InstallDrv(drv_let,extras,FALSE,tinkersup);
+  PromptCommunityFiles(&community);
+  InstallDrv(drv_let,extras,FALSE,tinkersup,community);
   DispResOptions(drv_let);
   res=ResPrompt(drv_let);
   //KCfg: boot drv letter, RAM drive B, then the stick.  The device number
@@ -848,7 +965,7 @@ U0 RegularInstallWizAHCI()
   I64 drv_let;
   U8	*st, *port_st, *res, *tmpstr;
   I64 i, ch, default_port=0, selected_port;
-  Bool extras=FALSE, tinkersup=FALSE;
+  Bool extras=FALSE, tinkersup=FALSE, community=FALSE;
   CTask	*task;
   task = User;
   TaskWait(task);
@@ -923,7 +1040,8 @@ U0 RegularInstallWizAHCI()
       Fmt(drv_let,, FALSE, FSt_REDSEA);
   }
   PromptSupplementalFiles(&extras,&tinkersup);
-  InstallDrv(drv_let,extras,FALSE,tinkersup);
+  PromptCommunityFiles(&community);
+  InstallDrv(drv_let,extras,FALSE,tinkersup,community);
   DispResOptions(drv_let);
   res=ResPrompt(drv_let);
   XTalkWait(task,"BootHDIns('%C');\n\nB\n0x20000\n"

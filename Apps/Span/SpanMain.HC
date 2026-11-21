@@ -481,6 +481,7 @@ span_done: //Don't goto out of try
   CtrlBttnDel(bt_run);
   CtrlBttnDel(bt_mode);
   SpanDel(ode);
+  Fs->draw_it=NULL;
   DCFill(dc);
   DCDel(dc);
   MenuPop;

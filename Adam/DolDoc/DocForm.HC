@@ -304,7 +304,7 @@ public Bool DocForm(U8 *_d,U8 *class_name=lastclass,
           if (ml->dim.next) //Array
           {
             if (tmpc2->raw_type==RT_U8 &&
-                LBtr(&doc_e->de_flags,&DOCEf_DFT_LEN))
+                LBtr(&doc_e->de_flags,DOCEf_DFT_LEN))
             {
               doc_e->len=ml->dim.total_cnt;
               if (doc_e->de_flags&DOCEF_HAS_TERMINATOR)

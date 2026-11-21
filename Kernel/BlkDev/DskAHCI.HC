@@ -924,7 +924,7 @@ Bool AHCIInit(I64 addr=NULL)
     {
       "AHCI: PCI controller found\n";
       hba = PCIReadU32(bdf.u8[2], bdf.u8[1], bdf.u8[0],
-              PCIR_BASE5) & ~0x1F; //Last 4 bits not part of address.
+              PCIR_BASE5) & ~0x0F; //Last 4 bits not part of address.
     }
     // Skip for now to prevent delay
     /*
@@ -953,7 +953,7 @@ Bool AHCIInit(I64 addr=NULL)
   }
   "AHCI: Controller found\n";
   hba = PCIReadU32(bdf.u8[2], bdf.u8[1], bdf.u8[0],
-          PCIR_BASE5) & ~0x1F; //Last 4 bits not part of address.
+          PCIR_BASE5) & ~0x0F; //Last 4 bits not part of address.
   *MemPageTable(hba)=*MemPageTable(hba)&~0x18 |0x11;
   *MemPageTable(hba+mem_page_size)=*MemPageTable(hba+mem_page_size)&~0x18 |0x11;
   InvlPg(hba);

@@ -269,6 +269,7 @@ lt_done:
   }
   catch
     PutExcept;
+  Fs->draw_it=NULL;
   SettingsPop;
   DCFill(dc);
   DCDel(dc);

@@ -63,6 +63,19 @@ public CDoc *DocDblBufStart(CTask *task=NULL)
   return res;
 }
 
+U0 DocBorderRepoint(CDoc *bdoc,CDoc *old_doc,CDoc *new_doc)
+{//Repoint the border indicator callbacks from a replaced doc to its successor.
+  CDocEntry *doc_e;
+  if (!bdoc || bdoc->doc_signature!=DOC_SIGNATURE_VAL) return;
+  doc_e=bdoc->head.next;
+  while (doc_e!=bdoc)
+  {
+    if (doc_e->tag_cb && doc_e->user_data==old_doc)
+      doc_e->user_data=new_doc;
+    doc_e=doc_e->next;
+  }
+}
+
 public Bool DocDblBufEnd(CTask *task=NULL)
 {//See $LK,"::/Demo/Spy.HC"$
   Bool res=FALSE;
@@ -75,6 +88,7 @@ public Bool DocDblBufEnd(CTask *task=NULL)
     DocLock(ddoc);
     task->display_doc=pdoc;
     DocUnlock(ddoc);
+    DocBorderRepoint(task->border_doc,ddoc,pdoc);
     DocDel(ddoc);
     res=TRUE;
   }

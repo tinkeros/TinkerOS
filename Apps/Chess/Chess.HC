@@ -85,7 +85,7 @@ I64 piece_scores[6]={
 100<<SHIFT_PIECE_SCORE
 };
 
-U8 piece_letters[]="PRNBQK";
+U8 piece_letters[7]="PRNBQK";
 
 class Move
 {
@@ -491,7 +491,7 @@ Bool MoveDo(GameState *state,I64 piece_num,I64 x2,I64 y2,Bool final)
     if (state->cur_player)
       DocPrint(chess_doc,"$$FG,LTGRAY$$");
     else
-      DocPrint(chess_doc,"$$FG,BLACK");
+      DocPrint(chess_doc,"$$FG,BLACK$$");
     DocPrint(chess_doc,"%c:%c%c-%c%c",piece_letters[p->type],
 	  y1+'A',x1+'1',y2+'A',x2+'1');
     if (ty>=0) {
@@ -1046,6 +1046,7 @@ ch_done:
   DocClear;
   SettingsPop;
   MenuPop;
+  Fs->draw_it=NULL;
   DCDel(brd_dc);
   Free(s2w);
   Free(w2s);

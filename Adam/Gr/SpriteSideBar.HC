@@ -52,7 +52,7 @@ U0 SpriteSideBarPickNew(CDoc *doc,CSprite *head,I64 old_num)
                 DocPrint(doc,"$$LTRED$$$$MU-UL,\"%$$Q\",LE=%d$$\n",st,cur_elem_num++);
     else
       doc_e=DocPrint(doc,"$$LTBLUE$$$$MU-UL,\"%$$Q\",LE=%d$$\n",st,cur_elem_num++);
-    BEqu(&doc_e->de_flags,DOCEf_SEL,Bt(&tmpg->type,&SPf_SEL));
+    BEqu(&doc_e->de_flags,DOCEf_SEL,Bt(&tmpg->type,SPf_SEL));
     BEqu(&doc_e->type,DOCEt_SEL,Bt(&tmpg->type,SPf_SEL));
     Free(st);
     tmpg=tmpg->next;

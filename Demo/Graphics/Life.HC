@@ -104,6 +104,7 @@ public U0 Life()
   GetMsg(,,1<<MSG_KEY_UP);
   SettingsPop;
   DCFill;
+  Fs->draw_it=NULL;
   DCDel(dc[0]);
   DCDel(dc[1]);
 }

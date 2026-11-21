@@ -91,6 +91,93 @@ public I64 GetNearestColorNum(U8 r, U8 g, U8 b)
   return val + 15;
 }
 
+#define COLORS_EXT_NUM	230	// 16 CGA colors + the 214 ext web-safe ones
+
+public U8 gr_hv_swap_lut[16*PAL_COLORS_NUM];
+
+public I64 ColorHVSwap(I64 color, I64 mask=HV_SWAP_ALL)
+{// Swap a color's hue 180 degrees around the wheel and its value, light for dark.
+  I64 val, ri, gi, bi;
+
+  mask &= 15;
+  if (!mask)
+    mask = HV_SWAP_ALL;
+
+  if (0 <= color < COLORS_NUM)
+    return color ^ mask;
+
+  if (color == TRANSPARENT)
+    return TRANSPARENT;
+
+  if (COLORS_NUM <= color < COLORS_EXT_NUM)
+  {
+    if (mask & HVF_INTENSITY)
+      mask |= HVF_RED | HVF_GREEN | HVF_BLUE;
+
+    val = color - COLORS_NUM + 1;
+    ri = val / 36;
+    gi = val % 36 / 6;
+    bi = val % 6;
+
+    if (mask & HVF_RED)   ri = 5 - ri;
+    if (mask & HVF_GREEN) gi = 5 - gi;
+    if (mask & HVF_BLUE)  bi = 5 - bi;
+
+    val = ri * 36 + gi * 6 + bi;
+
+    if (!val) return BLACK;
+    if (val == 215) return WHITE;
+    return val + COLORS_NUM - 1;
+  }
+
+  if (0 <= color < PAL_COLORS_NUM)
+    return BLACK;
+
+  return color;
+}
+
+public U0 HVSwapLUTInit()
+{// Build the ROP_HV_SWAP lookup tables, one row per 4 bit mask.
+  I64 mask, c;
+
+  for (mask = 0; mask < 16; mask++)
+    for (c = 0; c < PAL_COLORS_NUM; c++)
+      gr_hv_swap_lut[mask << 8 + c] = ColorHVSwap(c, mask);
+}
+HVSwapLUTInit;
+
+public U64 HVSwap8(U64 d, U8 *lut)
+{// Swap the 8 pix in one I64 of a bitmap.
+  I64 i;
+  U64 c, res = 0;
+
+  for (i = 0; i < 64; i += 8)
+  {
+    c = lut[d >> i & 0xFF];
+    res |= c << i;
+  }
+
+  return res;
+}
+
+public U64 HVSwap8D(U64 d, U8 *lut, U8 *lut2)
+{// HVSwap8() with two masks, alternating pix by pix for dithering.
+  I64 i;
+  U64 c, res = 0;
+
+  for (i = 0; i < 64; i += 8)
+  {
+    if (i & 8)
+      c = lut2[d >> i & 0xFF];
+    else
+      c = lut[d >> i & 0xFF];
+    res |= c << i;
+  }
+
+  return res;
+}
+
+
 F64 FMod(F64 x, F64 y)
 {
   if (y==0.0) return 0.0;

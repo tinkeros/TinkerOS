@@ -126,7 +126,7 @@ public U0 JukeBox(U8 *dirname="~/Psalmody",U8 **_filename=NULL)
   try
   {
     dirname=StrNew(dirname);
-    st=MStrPrint("%s/*.HC.Z",dirname);
+    st=MStrPrint("%s/*.HC*",dirname);
     tmpde=tmpde1=FilesFind(st);
     Free(st);
     Free(dirname);

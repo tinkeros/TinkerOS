@@ -1209,7 +1209,7 @@ I64 SpriteMainEd(CDoc *doc)
           goto ei_done;
         case 'c': //eye-dropper
           dc3=DCScrnCapture(FALSE);
-          color=GrPeek(dc3,ms.pos.x,ms.pos.y)^15;//Mouse cursor is XORed.
+          color=ColorHVSwap(GrPeek(dc3,ms.pos.x,ms.pos.y));//Undo the cursor.
           DCDel(dc3);
           tmpg=CAlloc(SpriteElemQuedBaseSize(SPT_COLOR));
           tmpg->type=SPT_COLOR;

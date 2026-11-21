@@ -221,11 +221,11 @@ U0 DrawMs(CDC *dc)
         if (!ms_xor_invert)
           dc->color=BLACK;
         else if (ms.lb)
-          dc->color=ROP_XOR+(LTPURPLE^TRANSPARENT)&0xf;
+          dc->color=ROP_HV_SWAP+HVF_GREEN;
         else if (ms.rb)
-          dc->color=ROP_XOR+(LTCYAN^TRANSPARENT)&0xf;
+          dc->color=ROP_HV_SWAP+HVF_RED;
         else
-          dc->color=ROP_XOR+(BLACK^TRANSPARENT)&0xf;
+          dc->color=ROP_HV_SWAP+HV_SWAP_ALL;
         if (winmgr.grab_scroll && gr.fp_draw_grab_ms)
           (*gr.fp_draw_grab_ms)(dc,x,y,winmgr.grab_scroll_closed);
         else

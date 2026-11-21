@@ -12,6 +12,8 @@ public U0 ACDWordsLoad()
   if (in_ptr=FileReadCached(ACD_WORD_FILENAME,&size))
   {
     in_start=in_ptr;
+    Free(acd.word_lst);
+    acd.num_fillins=0;
     acd.word_lst=AMAlloc(size);
     MemCpy(acd.word_lst,in_start,size);
     acd.word_lst_size=size;

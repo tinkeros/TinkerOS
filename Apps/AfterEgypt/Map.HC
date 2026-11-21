@@ -74,6 +74,7 @@ U0 AEMap()
   DocClear;
   SettingsPop(Fs,TSF_SAME_SONG);
   Free(r);
+  Fs->draw_it=NULL;
   DCFill(dc);
   DCDel(dc);
 }

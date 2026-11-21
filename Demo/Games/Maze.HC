@@ -2,16 +2,16 @@
 
 #define ATTR (BLACK<<12+WHITE<<8)
 
-U32 text[TEXT_ROWS][TEXT_COLS];
+U32 text2[TEXT_ROWS][TEXT_COLS];
 
 U0 DrawIt(CTask *task,CDC *)
-{//$LK,"gr.text_base",A="MN:CGrGlbls"$gets clear 30fps, so we must use our own permanent text array.
-  ClassCpy(gr.text_base+TEXT_COLS,text,(TEXT_ROWS-1)*TEXT_COLS);
+{//$LK,"gr.text_base",A="MN:CGrGlbls"$gets clear 30fps, so we must use our own permanent text2 array.
+  ClassCpy(gr.text_base+TEXT_COLS,text2,(TEXT_ROWS-1)*TEXT_COLS);
   // You can copy it this way, if you like:
   //  I64 i,j;
   //  for (j=0;j<TEXT_ROWS;j++)
   //	for (i=0;i<TEXT_COLS;i++)
-  //	 TextChar(task,,i,j,text[j][i]);
+  //	 TextChar(task,,i,j,text2[j][i]);
   TextPrint(task,0,0,ATTR>>8,"Draw a maze with left bttn.");
   TextPrint(task,0,1,ATTR>>8,"Solve maze starting at right click.");
 }
@@ -48,12 +48,12 @@ U0 SolveMaze(I64 x,I64 y)
       Beep;
       break;
     }
-    if (!text[y][x].u8[0])
-      text[y][x]='.'+ATTR;
+    if (!text2[y][x].u8[0])
+      text2[y][x]='.'+ATTR;
     x+=dir_x[dir];
     y+=dir_y[dir];
 //u8.[0] is the ASCII
-    if (text[y][x].u8[0])
+    if (text2[y][x].u8[0])
     {
       x-=dir_x[dir];
       y-=dir_y[dir];
@@ -93,16 +93,16 @@ U0 Maze()
   try
     do
     {
-      MemSet(text,0,sizeof(text));
+      MemSet(text2,0,sizeof(text2));
       while (!(ch=ScanChar))
       {
         x=ms.pos_text.x-Fs->win_left-Fs->scroll_x/FONT_WIDTH;
         y=ms.pos_text.y-Fs->win_top-Fs->scroll_y/FONT_HEIGHT;
         if (ms.lb&&!winmgr.grab_scroll)
-          text[y][x]=CH_SPACE+ATTRF_INVERT+ATTR;
+          text2[y][x]=CH_SPACE+ATTRF_INVERT+ATTR;
         if (ms.rb&&!winmgr.grab_scroll)
         {
-          text[y][x]='*'+ATTR;
+          text2[y][x]='*'+ATTR;
           SolveMaze(x,y);
           ch=GetChar;
           break;

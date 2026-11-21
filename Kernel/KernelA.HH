@@ -23,6 +23,12 @@ extern class CUSB;
 #define FALSE	0
 #define ON	1
 #define OFF	0
+
+//Always on here; it lets source shared with Tinkwanios carry #ifdef guards.
+#define TARGET_X86	1
+
+//The OS brand as a string, so shared source need not spell a name out.
+#define OS_NAME	"TinkerOS"
 #define I8_MIN (-0x80)
 #define I8_MAX 0x7F
 #define U8_MIN 0
@@ -3363,6 +3369,7 @@ public class CDevGlbls
 #define ROPB_XOR			0x01
 #define ROPB_COLLISION			0x02
 #define ROPB_MONO			0x03
+#define ROPB_HV_SWAP			0x04 //dst hue 180 degrees around the wheel, value swapped
 #define ROPBF_HALF_RANGE_COLOR		0x10
 #define ROPBF_TWO_SIDED			0x20
 #define ROPBF_DITHER			0x40
@@ -3372,6 +3379,13 @@ public class CDevGlbls
 #define ROP_XOR				(ROPB_XOR<<8)
 #define ROP_COLLISION			(ROPB_COLLISION<<8)
 #define ROP_MONO			(ROPB_MONO<<8)
+#define ROP_HV_SWAP			(ROPB_HV_SWAP<<8)
+
+#define HVF_BLUE			0x01
+#define HVF_GREEN			0x02
+#define HVF_RED				0x04
+#define HVF_INTENSITY			0x08
+#define HV_SWAP_ALL			0x0F
 
 //These are just for $LK,"ROPF_PROBABILITY_DITHER",A="MN:ROPF_PROBABILITY_DITHER"$
 //See $LK,"DCLighting",A="MN:DCLighting"$().
